@@ -1,4 +1,4 @@
-# Basic node//express/react/axios notes
+# Basic node/express/react/axios notes
 
 At this point we have a working Express server and React client. We also use Axios to communicate between the two.
 
@@ -18,3 +18,8 @@ cd client
 npm run start
 ```
 
+Starting the mysql server:
+
+```
+/usr/local/opt/mysql/bin/mysqld_safe --datadir\=/usr/local/var/mysql
+```
