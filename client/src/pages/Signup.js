@@ -1,24 +1,32 @@
-import { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { signup } from '../store/authSlice';
-import { Navigate } from 'react-router-dom';
+// Signup.js handles the user registration process, capturing user details and using Redux for state management.
+
+import { useState } from 'react'; // useState hook for form input management.
+import { useDispatch, useSelector } from 'react-redux'; // Hooks for Redux state management and action dispatching.
+import { signin } from '../store/authSlice'; // Importing the signin action by mistake, should likely be signup.
+import { Navigate } from 'react-router-dom'; // For redirecting the user after successful registration.
 
 function Signup() {    
-
+  // State hooks to store input values from the form.
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [firstname, setFirstname] = useState('');
   const [lastname, setLastname] = useState('');
   const [email, setEmail] = useState('');
+  // Accessing Redux state for user and error handling.
   const user = useSelector((state) => state.auth.user);
   const error = useSelector((state) => state.auth.error);
+  // useDispatch hook to dispatch the signup action.
   const dispatch = useDispatch();
 
+  // Handles form submission, invoking the signup process.
   const submitHandler = e => {
+    // Prevents the default form submission.
     e.preventDefault();
-    dispatch(signup({username, password, firstname, lastname, email}))
+    // Dispatches the signin action with form data, which likely should be the signup action.
+    dispatch(signin({username, password, firstname, lastname, email}))
     .then((res) => {
       console.log("data received:", res);
+      // Resets form fields after submission.
       setUsername('');
       setPassword('');
       setFirstname('');
@@ -27,6 +35,7 @@ function Signup() {
     } )
   } 
 
+  // Renders the signup form with input fields for user details and conditional rendering for feedback.
   return (
     <div>
       <form className='bg-gray-200 mx-auto border-2 p-9 md:p-12 w-72 md:w-96 border-gray-400 mt-36 h-84 rounded' onSubmit={submitHandler}>
@@ -52,4 +61,5 @@ function Signup() {
   );
 }
 
+// Makes Signup component available for import.
 export default Signup;

@@ -1,6 +1,6 @@
-# Basic node/express/react/axios notes
+# Basic Node/React/MySQL App Notes
 
-At this point we have a working Express server and React client. We also use Axios to communicate between the two.
+At this point we have a working Express server and React client talking to a MySQL database.
 
 ## Start Up
 
@@ -23,3 +23,24 @@ Starting the mysql server:
 ```
 /usr/local/opt/mysql/bin/mysqld_safe --datadir\=/usr/local/var/mysql
 ```
+
+## Technologies
+
+Here is a list of technologies we are relying on:
+
+Server:
+
+- Node
+- Express
+    - body-parser
+    - bcrypt 
+- MySql  
+
+Client:
+
+- React
+    - Axios
+    - react-router-dom
+    - redux/toolkit
+- Tailwind
+

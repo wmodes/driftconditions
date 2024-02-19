@@ -1,27 +1,35 @@
+// The Signin component facilitates user login, interacting with Redux for state management and react-router-dom for navigation post-login.
+
+// React's useState hook for managing form inputs.
 import { useState } from 'react';
-import axios from 'axios';
+// Hooks for dispatching actions and accessing Redux state.
+import { useDispatch, useSelector } from 'react-redux';
+// signin async thunk for authentication.
+import { signin } from '../store/authSlice';
+// Navigate component for redirecting the user upon successful login.
 import { Navigate } from 'react-router-dom';
 
 function Signin() {
-
+  // Local state for managing form inputs.
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [user, setUser] = useState(null);
+  // Accessing the global state to check for current user and any authentication errors.
+  const user = useSelector((state) => state.auth.user);
+  const error = useSelector((state) => state.auth.error);
+  // Hook to dispatch authentication action.
+  const dispatch = useDispatch(); 
 
+  // Handles form submission, dispatching the signin action and resetting form fields.
   const submitHandler = e => {
-    e.preventDefault();
-    axios.post('http://localhost:8080/signin', {
-        username: username, 
-        password: password
-       })
-      .then((res) => {
-        console.log("data received:", res);
-        setUsername('');
-        setPassword('');
-        setUser(res.data.username);
-      } )
-  } 
+    e.preventDefault(); // Prevents the default form submission behavior.
+    dispatch(signin({username, password}))
+    .then(() => {
+      setUsername(''); // Resets username field.
+      setPassword(''); // Resets password field.
+    })
+  }
 
+  // Renders the sign-in form. Uses conditional rendering for displaying errors and redirecting on successful login.
   return (
     <div>
       <form className='bg-gray-200 mx-auto border-2 p-9 md:p-12 w-72 md:w-96 border-gray-400 mt-36 h-84 rounded' onSubmit={submitHandler}>
@@ -34,10 +42,12 @@ function Signin() {
           <button className='px-3 py-13 rounded-sm bg-white' type="button">Cancel</button>
           <button className='px-3 py-1 rounded-sm bg-white' type="submit">SignIn</button>
         </div>
-        {user ? <Navigate to='/profile' replace={true} state={user} /> : null}
+        {error ? <p className='pt-10 text-center text-red-600'>{error}</p> : null}
+        {user ? <Navigate to='/profile' replace={true} /> : null}
       </form>
     </div>
   );
 }
 
+// Exports the Signin component for use elsewhere in the app.
 export default Signin;
