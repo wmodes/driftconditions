@@ -1,24 +1,9 @@
-import axios from 'axios';
-import './App.css';
-
 function App() {
-
-  const apiCall = () => {
-    axios.get('http://localhost:8080/')
-      .then((data) => {
-        console.log("data received:", data);
-      } )
-  } 
-
   return (
-    <div className="App">
-      <header className="App-header">
-
-        <button onClick={apiCall}>Make API Call</button>
-
-      </header>
+    <div>
+      <h1 className='text-2xl text-center text-black'>interference</h1>
     </div>
-  );
+  )
 }
 
 export default App;
