@@ -20,6 +20,12 @@ import Error from './pages/Error';
 // Layout component that wraps around the entire application.
 import RootLayout from './layouts/RootLayout';
 
+// Making the store accessible in the browser's console for debugging
+if (process.env.NODE_ENV === 'development') {
+  console.log("Redux store available at window.store");
+  window.store = store;
+}
+
 // Defining application routes using React Router. The structure shows nested routes where `RootLayout` acts as a layout wrapper for other components.
 const router = createBrowserRouter(
   createRoutesFromElements((

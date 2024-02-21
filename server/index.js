@@ -83,7 +83,7 @@ app.post('/signin', (req, res) => {
           res.status(500).send(err.message);
         } else if (isMatch) {
           // If the passwords match, generate a JWT token for the user.
-          const token = jwt.sign({ userID: result[0].id }, 'yourSecretKey', { expiresIn: '6h' });
+          const token = jwt.sign({ userID: result[0].user_id }, 'yourSecretKey', { expiresIn: '6h' });
           // Send the token to the client as part of the response.
           res.json({ 
             token, 

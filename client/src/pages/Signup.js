@@ -58,7 +58,7 @@ function Signup() {
           <button className='px-3 py-1 rounded-sm bg-white' type="submit">Register</button>
         </div>
         {error ? <p className='pt-10 text-center text-red-600'>{error}</p> : null}
-        {user ? <Navigate to='/profile' replace={true} /> : null}
+        {user ? <Navigate to='/signin' replace={true} /> : null}
       </form>
     </div>
   );

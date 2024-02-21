@@ -23,7 +23,11 @@ export const signup = createAsyncThunk('auth/signup', async ({username, password
 // and handles the response similarly to the signup thunk.
 export const signin = createAsyncThunk('auth/signin', async ({username, password}, thunkAPI) => {
   try {
+    // Send a POST request to the server with the user's credentials
     const response = await axios.post('http://localhost:8080/signin', {username, password})
+    // Store the token in sessionStorage to maintain the user's session
+    sessionStorage.setItem('sessionToken', response.data.token);
+    // Return the user data from the response
     return response.data;
   } catch (error) {
     console.log(error);
@@ -48,12 +52,14 @@ export const authSlice = createSlice({
   initialState,
   reducers: {
     // The logout reducer resets the authentication state to its initial values.
-    logout: (state, action) => {
+    logout: (state) => {
       state.user = '';
       state.token = null;
       state.isAuthenticated = false;
       state.loading = false;
       state.error = null; 
+      // Clear the token from sessionStorage upon logout
+      sessionStorage.removeItem('sessionToken');  
     }
   },
   extraReducers: (builder) => {
@@ -61,7 +67,7 @@ export const authSlice = createSlice({
       // Handling the pending, fulfilled, and rejected states of signup and signin thunks,
       // adjusting the auth state based on the outcome of these asynchronous operations.
       .addCase(signup.pending, (state, action) => {
-        state.loading = true;
+        state.loading = true; 
         state.error = null;
       })
       .addCase(signup.fulfilled, (state, action) => {
@@ -83,6 +89,8 @@ export const authSlice = createSlice({
         state.user = action.payload.username;
         state.isAuthenticated = true;
         state.error = null;
+        state.token = action.payload.token;
+        // TODO: The previous strategy was to keep track of user/username in state. However, I'd like to use token instead and extract the userid from it and keep only this in state. Could token even replace isAuthenticated? 
       })
       .addCase(signin.rejected, (state, action) => {
         state.loading = false;

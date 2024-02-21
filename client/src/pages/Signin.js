@@ -23,11 +23,20 @@ function Signin() {
   const submitHandler = e => {
     e.preventDefault(); // Prevents the default form submission behavior.
     dispatch(signin({username, password}))
-    .then(() => {
-      setUsername(''); // Resets username field.
-      setPassword(''); // Resets password field.
+    .unwrap() // Unwraps the result of the thunk execution to handle it directly.
+    .then((response) => {
+      // Store the token in sessionStorage to maintain the user's session
+      sessionStorage.setItem('sessionToken', response.token);
+      console.log("Token stored in sessionStorage");
+      // Proceed with resetting form fields or redirecting the user
+      setUsername('');
+      setPassword('');
     })
-  }
+    .catch((error) => {
+        // Handle any error here
+        console.error("Login error:", error);
+    });
+}
 
   // Renders the sign-in form. Uses conditional rendering for displaying errors and redirecting on successful login.
   return (
