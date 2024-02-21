@@ -1,3 +1,9 @@
+require('dotenv').config();
+const dbPassword = process.env.DATABASE_PASSWORD;
+const jwtSecretKey = process.env.JWT_SECRET_KEY;
+// console.log('dbPassword:', dbPassword);
+// console.log('jwtSecretKey:', jwtSecretKey);
+
 // Initialize express and middleware to facilitate API routing and cross-origin resource sharing.
 const express = require('express');
 const app = express();
@@ -6,6 +12,9 @@ var mysql = require('mysql2');
 const bcrypt = require('bcrypt'); 
 const bodyParser = require('body-parser');
 const jwt = require('jsonwebtoken');
+
+// Import the verifyToken middleware
+const verifyToken = require('./middleware/authMiddleware');
 
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
@@ -16,14 +25,14 @@ const db  = mysql.createPool({
   connectionLimit : 10,
   host            : 'localhost',
   user            : 'root',
-  password        : 'my$ql',
+  password        : dbPassword,
   database        : 'interference'
 });
 
 // Defines the number of hashing rounds for bcrypt, balancing security and performance.
 const saltRounds = 10;
 
-// app.get('/', (req, res) => {
+// app.get('/', verifyToken, (req, res) => {
 //   db.query('INSERT INTO roles (role_name, permisssions) VALUES ("user", "[]")', (err, result) => {  
 //     if (err) {
 //       console.log(err)
@@ -83,12 +92,13 @@ app.post('/signin', (req, res) => {
           res.status(500).send(err.message);
         } else if (isMatch) {
           // If the passwords match, generate a JWT token for the user.
-          const token = jwt.sign({ userID: result[0].user_id }, 'yourSecretKey', { expiresIn: '6h' });
+          const token = jwt.sign({ userID: result[0].user_id }, jwtSecretKey, { expiresIn: '6h' });
           // Send the token to the client as part of the response.
           res.json({ 
             token, 
+            userID: result[0].user_id,
             username: result[0].username, 
-            firstname: result[0].firstname, 
+            firstname: result[0].firstnsame, 
             lastname: result[0].lastname, 
             email: result[0].email });
         } else {  
