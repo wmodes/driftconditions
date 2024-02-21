@@ -33,8 +33,9 @@ export const signin = createAsyncThunk('auth/signin', async ({username, password
 
 // Initial state for the auth slice, setting up default values for user authentication status.
 const initialState = {
-  user: '',
+  userID: null,
   token: null,
+  user: '',
   isAuthenticated: false,
   loading: false,
   error: null

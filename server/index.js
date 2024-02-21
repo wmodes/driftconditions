@@ -5,6 +5,7 @@ const cors = require('cors');
 var mysql = require('mysql2');
 const bcrypt = require('bcrypt'); 
 const bodyParser = require('body-parser');
+const jwt = require('jsonwebtoken');
 
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
@@ -73,19 +74,25 @@ app.post('/signin', (req, res) => {
   // Authenticating user by comparing hashed password, showcasing secure login mechanism.
   db.query("SELECT * FROM users WHERE username = ?", [ussername], (err, result) => {
     if (err) {
-      res.status(418).send(err.message);
+      res.status(500).send(err.message);
     } else if (result.length < 1) {
       res.status(418).send(`Username or password doesn't match any records`);  
     } else {
-      bcrypt.compare(password, result[0].password, (err, response) => {
-        if (response) {
-          res.send({
-            username: result[0].username,
-            firstname: result[0].firstname,
-            lastname: result[0].lastname,
-            email: result[0].email
-          });
+      bcrypt.compare(password, result[0].password, (err, isMatch) => {
+        if (err) {
+          res.status(500).send(err.message);
+        } else if (isMatch) {
+          // If the passwords match, generate a JWT token for the user.
+          const token = jwt.sign({ userID: result[0].id }, 'yourSecretKey', { expiresIn: '6h' });
+          // Send the token to the client as part of the response.
+          res.json({ 
+            token, 
+            username: result[0].username, 
+            firstname: result[0].firstname, 
+            lastname: result[0].lastname, 
+            email: result[0].email });
         } else {  
+          // If the passwords do not match, respond with an error.
           res.status(418).send(`Username or password doesn't match any records`);
         }
       })
