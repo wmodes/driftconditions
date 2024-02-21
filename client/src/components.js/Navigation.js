@@ -1,6 +1,4 @@
-// This component creates a navigation bar for the application, dynamically adjusting its content
-// based on the user's authentication status. It leverages react-router-dom for navigation and
-// react-redux for state management. 
+// This component creates a navigation bar for the application, dynamically adjusting its content based on the user's authentication status. It leverages react-router-dom for navigation and react-redux for state management. 
 
 // Enables declarative navigation within the app.
 import { Link } from 'react-router-dom';

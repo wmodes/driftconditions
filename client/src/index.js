@@ -3,16 +3,22 @@ import ReactDOM from 'react-dom/client';
 
 // Importing React and ReactDOM for UI rendering, and essential React Router and Redux functionalities.
 import { createBrowserRouter, createRoutesFromElements, Route, RouterProvider } from 'react-router-dom';
-import { store } from './store/store'; // Importing the Redux store setup from its definition.
-import { Provider } from 'react-redux'; // Redux Provider to make the store available to all components.
-
-// Importing CSS for global styles and components for routing.
-import App from './App'; // The main application component.
-import Signup from './pages/Signup'; // Signup page component.
-import Signin from './pages/Signin'; // Signin page component.
-import Profile from './pages/Profile'; // User profile page component.
-import Error from './pages/Error'; // Error page component for handling unmatched routes.
-import RootLayout from './layouts/RootLayout'; // Layout component that wraps around the entire application.
+// Importing the Redux store setup from its definition.
+import { store } from './store/store';
+// Redux Provider to make the store available to all components.
+import { Provider } from 'react-redux';
+import './index.css';
+import App from './App';
+// Signup page component.
+import Signup from './pages/Signup';
+// Signin page component.
+import Signin from './pages/Signin';
+// User profile page component.
+import Profile from './pages/Profile';
+// Error page component for handling unmatched routes.
+import Error from './pages/Error';
+// Layout component that wraps around the entire application.
+import RootLayout from './layouts/RootLayout';
 
 // Defining application routes using React Router. The structure shows nested routes where `RootLayout` acts as a layout wrapper for other components.
 const router = createBrowserRouter(

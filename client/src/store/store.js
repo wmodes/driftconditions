@@ -4,8 +4,9 @@ import authSlice from './authSlice'; // Importing the auth slice to handle authe
 
 export const store = configureStore({
   reducer: {
-    auth: authSlice // Registers authSlice under the 'auth' namespace in the global state.
+    // Registers authSlice under the 'auth' namespace in the global state.
+    auth: authSlice
   }
   // This store setup facilitates state management and encapsulates authentication logic within the auth slice.
   // The structure allows for easy integration of additional slices for different app features.
-});
+})

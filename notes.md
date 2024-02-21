@@ -33,8 +33,8 @@ Server:
 - Node
 - Express
     - body-parser
-    - bcrypt 
-- MySql  
+    - bcrypt
+- MySql
 
 Client:
 
@@ -43,4 +43,3 @@ Client:
     - react-router-dom
     - redux/toolkit
 - Tailwind
-

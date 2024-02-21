@@ -1,10 +1,13 @@
 // Signup.js handles the user registration process, capturing user details and using Redux for state management.
 
-import { useState } from 'react'; // useState hook for form input management.
-import { useDispatch, useSelector } from 'react-redux'; // Hooks for Redux state management and action dispatching.
-import { signin } from '../store/authSlice'; // Importing the signin action by mistake, should likely be signup.
-import { Navigate } from 'react-router-dom'; // For redirecting the user after successful registration.
-
+// useState hook for form input management.
+import { useState } from 'react';
+// Hooks for Redux state management and action dispatching.
+import { useDispatch, useSelector } from 'react-redux';
+// Importing the signup action from authSlice.
+import { signup } from '../store/authSlice';
+// For redirecting the user after successful registration.
+import { Navigate } from 'react-router-dom';
 function Signup() {    
   // State hooks to store input values from the form.
   const [username, setUsername] = useState('');
@@ -22,8 +25,8 @@ function Signup() {
   const submitHandler = e => {
     // Prevents the default form submission.
     e.preventDefault();
-    // Dispatches the signin action with form data, which likely should be the signup action.
-    dispatch(signin({username, password, firstname, lastname, email}))
+    // Dispatches the signup action with user details.
+    dispatch(signup({username, password, firstname, lastname, email}))
     .then((res) => {
       console.log("data received:", res);
       // Resets form fields after submission.
