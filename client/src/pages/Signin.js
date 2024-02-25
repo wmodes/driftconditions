@@ -14,7 +14,8 @@ function Signin() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   // Accessing the global state to check for current user and any authentication errors.
-  const user = useSelector((state) => state.auth.user);
+  // Instead of selecting `user`, select the authentication status flag
+  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
   const error = useSelector((state) => state.auth.error);
   // Hook to dispatch authentication action.
   const dispatch = useDispatch(); 
@@ -24,10 +25,7 @@ function Signin() {
     e.preventDefault(); // Prevents the default form submission behavior.
     dispatch(signin({username, password}))
     .unwrap() // Unwraps the result of the thunk execution to handle it directly.
-    .then((response) => {
-      // Store the token in sessionStorage to maintain the user's session
-      sessionStorage.setItem('sessionToken', response.token);
-      console.log("Token stored in sessionStorage");
+    .then(() => {
       // Proceed with resetting form fields or redirecting the user
       setUsername('');
       setPassword('');
@@ -52,7 +50,7 @@ function Signin() {
           <button className='px-3 py-1 rounded-sm bg-white' type="submit">SignIn</button>
         </div>
         {error ? <p className='pt-10 text-center text-red-600'>{error}</p> : null}
-        {user ? <Navigate to='/profile' replace={true} /> : null}
+        {isAuthenticated ? <Navigate to='/profile' replace={true} /> : null}
       </form>
     </div>
   );

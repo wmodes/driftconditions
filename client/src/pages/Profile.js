@@ -23,3 +23,6 @@ const Profile = () => {
 }
 // Exports the Profile component for use in the application's routing setup.
 export default Profile; 
+
+//TODO: Handling Protected Client-Side Routes  
+//TODO: Ensure we have token and userID available for this page in order to query the database for more information about the user.

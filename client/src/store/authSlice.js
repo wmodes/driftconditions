@@ -24,21 +24,31 @@ export const signup = createAsyncThunk('auth/signup', async ({username, password
 export const signin = createAsyncThunk('auth/signin', async ({username, password}, thunkAPI) => {
   try {
     // Send a POST request to the server with the user's credentials
-    const response = await axios.post('http://localhost:8080/signin', {username, password})
-    // Store the token in sessionStorage to maintain the user's session
-    sessionStorage.setItem('sessionToken', response.data.token);
-    // Return the user data from the response
-    return response.data;
+    const response = await axios.post('http://localhost:8080/signin', {username, password}, { withCredentials: true });
+    return { isAuthenticated: true };
   } catch (error) {
     console.log(error);
     return thunkAPI.rejectWithValue(error.message);  
   }
 })
 
+// logout thunk for logging out a user. It sends a POST request to the server to invalidate the user's session.
+export const logout = createAsyncThunk('auth/logout', async (_, thunkAPI) => {
+  try {
+    const response = await axios.post('http://localhost:8080/logout', {}, { withCredentials: true });
+    // console.log('Logout response:', response);
+    return {}; // Return an empty object or any relevant data on successful logout
+  } catch (error) {
+    // console.error('Logout error:', error);
+    return thunkAPI.rejectWithValue(error.response.data);
+  }
+});
+
 // Initial state for the auth slice, setting up default values for user authentication status.
-const initialState = {
-  userID: null,
+const initialState = {  
   token: null,
+  userID: null,
+  // TODO: Remove user param after implementing token and userID in state
   user: '',
   isAuthenticated: false,
   loading: false,
@@ -50,18 +60,7 @@ const initialState = {
 export const authSlice = createSlice({
   name: 'auth',
   initialState,
-  reducers: {
-    // The logout reducer resets the authentication state to its initial values.
-    logout: (state) => {
-      state.user = '';
-      state.token = null;
-      state.isAuthenticated = false;
-      state.loading = false;
-      state.error = null; 
-      // Clear the token from sessionStorage upon logout
-      sessionStorage.removeItem('sessionToken');  
-    }
-  },
+  reducers: {},
   extraReducers: (builder) => {
     builder
       // Handling the pending, fulfilled, and rejected states of signup and signin thunks,
@@ -86,19 +85,25 @@ export const authSlice = createSlice({
       })
       .addCase(signin.fulfilled, (state, action) => {
         state.loading = false;  
-        state.user = action.payload.username;
-        state.isAuthenticated = true;
+        state.isAuthenticated = action.payload.isAuthenticated; 
         state.error = null;
-        state.token = action.payload.token;
-        // TODO: The previous strategy was to keep track of user/username in state. However, I'd like to use token instead and extract the userid from it and keep only this in state. Could token even replace isAuthenticated? 
+        // Since the user object is no longer being stored, there's no need to update anything related to it here.
       })
       .addCase(signin.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
+      .addCase(logout.fulfilled, (state) => {
+        // console.log('Executing logout.fulfilled reducer');
+        // Reset the authentication state
+        state.token = null;
+        state.isAuthenticated = false;
+        state.loading = false;
+        state.error = null;
+      })
   }
 });
 
 // Exports the logout action for use in components and the reducer function for the Redux store.
-export const { setUser, setToken, setLoading, setError, logout } = authSlice.actions;
+export const { setUser, setToken, setLoading, setError } = authSlice.actions;
 export default authSlice.reducer;
