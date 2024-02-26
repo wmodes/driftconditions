@@ -14,7 +14,6 @@ export const signup = createAsyncThunk('auth/signup', async ({username, password
     const response = await axios.post('http://localhost:8080/signup', {username, password, firstname, lastname, email});
     return response.data;
   } catch (error) {
-    console.log(error); 
     return thunkAPI.rejectWithValue(error.message);  
   }
 });
@@ -24,10 +23,10 @@ export const signup = createAsyncThunk('auth/signup', async ({username, password
 export const signin = createAsyncThunk('auth/signin', async ({username, password}, thunkAPI) => {
   try {
     // Send a POST request to the server with the user's credentials
-    const response = await axios.post('http://localhost:8080/signin', {username, password}, { withCredentials: true });
+    await axios.post('http://localhost:8080/signin', {username, password}, { withCredentials: true });
     return { isAuthenticated: true };
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return thunkAPI.rejectWithValue(error.message);  
   }
 })
@@ -35,14 +34,56 @@ export const signin = createAsyncThunk('auth/signin', async ({username, password
 // logout thunk for logging out a user. It sends a POST request to the server to invalidate the user's session.
 export const logout = createAsyncThunk('auth/logout', async (_, thunkAPI) => {
   try {
-    const response = await axios.post('http://localhost:8080/logout', {}, { withCredentials: true });
+    await axios.post('http://localhost:8080/logout', {}, { withCredentials: true });
     // console.log('Logout response:', response);
     return {}; // Return an empty object or any relevant data on successful logout
   } catch (error) {
     // console.error('Logout error:', error);
-    return thunkAPI.rejectWithValue(error.response.data);
+    return thunkAPI.rejectWithValue(error.message);
   }
 });
+
+// fetchUserProfile thunk for fetching the logged-in user's profile information.
+export const fetchProfile = createAsyncThunk('auth/fetchUserProfile', async (_, thunkAPI) => {
+  try {
+    // Assuming your server is set to respond to GET or POST requests at /profile endpoint.
+    // Adjust the method (GET/POST) and headers as necessary for your API.
+    const response = await axios.post('http://localhost:8080/profile', {}, { withCredentials: true });
+    return response.data; // Assuming the response body contains the profile data
+  } catch (error) {
+    console.error('Fetch profile error:', error);
+    return thunkAPI.rejectWithValue(error.message);
+  }
+});
+
+// update profile thunk for updating user profile. Utilizes Axios for posting user data to the server.
+// On success or failure, it either returns the user data or rejects with an error message.
+export const updateProfile = createAsyncThunk(
+  'auth/profileUpdate',
+  async (userData, thunkAPI) => {
+    console.log('authSlice updateProfile running')
+    try {
+      // The userData parameter is expected to be an object containing the fields
+      // to be updated. It can include any user profile field such as password,
+      // firstname, lastname, email, bio, location, and url.
+
+      // Construct the URL for your API endpoint
+      const url = 'http://localhost:8080/profile/update';
+
+      // Make a POST request to the server with the userData
+      const response = await axios.post(url, userData, { withCredentials: true });
+      console.log('updateProfile response:', response);
+
+      // On success, the response data (presumably the updated user profile) is returned
+      return response.data;
+    } catch (error) {
+      console.error('updateProfile error:', error); 
+      // If the request fails, thunkAPI.rejectWithValue is used to return a rejected action
+      // containing the error message. This allows for error handling in the reducer.
+      return thunkAPI.rejectWithValue(error.response?.data?.error || error.message);
+    }
+  }
+);
 
 // Initial state for the auth slice, setting up default values for user authentication status.
 const initialState = {  
@@ -60,7 +101,11 @@ const initialState = {
 export const authSlice = createSlice({
   name: 'auth',
   initialState,
-  reducers: {},
+  reducers: {
+    setAuthState: (state, action) => {
+      state.isAuthenticated = action.payload.isAuthenticated;
+    },
+  },
   extraReducers: (builder) => {
     builder
       // Handling the pending, fulfilled, and rejected states of signup and signin thunks,
@@ -105,5 +150,5 @@ export const authSlice = createSlice({
 });
 
 // Exports the logout action for use in components and the reducer function for the Redux store.
-export const { setUser, setToken, setLoading, setError } = authSlice.actions;
+export const { setUser, setToken, setLoading, setError, setAuthState } = authSlice.actions;
 export default authSlice.reducer;

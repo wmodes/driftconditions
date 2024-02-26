@@ -11,7 +11,7 @@ import { logout } from '../store/authSlice';
 export default function Navigation() {
   // Accesses Redux state to check if the user is authenticated
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
-  // console.log("isAuthenticated:", isAuthenticated);
+  console.log("isAuthenticated:", isAuthenticated);
   // Initializes dispatch function for logging out
   const dispatch = useDispatch();
   // Initializes the navigate hook for redirecting the user.
@@ -27,7 +27,7 @@ export default function Navigation() {
 
   // Renders the navigation bar with conditional links for authenticated and unauthenticated users
   return (
-    <nav className='flex items-center justify-between w-full h-16 py-2 text-white border-b px-28 mb-36 bg-cornflower'>
+    <nav className='flex items-center justify-between w-full h-16 py-2 text-white border-b px-28 mb-1 bg-cornflower'>
       <Link to='/' className='text-2xl font-medium text-white'>
         interference
       </Link>

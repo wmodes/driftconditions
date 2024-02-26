@@ -15,6 +15,8 @@
   import Signin from './pages/Signin';
   // User profile page component.
   import Profile from './pages/Profile';
+  // User profile edit page component.
+  import ProfileEdit from './pages/ProfileEdit';
   // Error page component for handling unmatched routes.
   import Error from './pages/Error';
   // Layout component that wraps around the entire application.
@@ -44,6 +46,7 @@
         <Route path='/signup' element={<Signup />} />
         <Route path='/signin' element={<Signin />} />
         <Route path='/profile' element={<Profile />} /> 
+        <Route path='/profile/edit' element={<ProfileEdit />} /> 
         <Route path='*' element={<Error />} /> 
       </Route>
     )

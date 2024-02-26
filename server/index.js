@@ -1,9 +1,6 @@
 require('dotenv').config();
 const dbPassword = process.env.DATABASE_PASSWORD;
 const jwtSecretKey = process.env.JWT_SECRET_KEY;
-// console.log('dbPassword:', dbPassword);
-// console.log('jwtSecretKey:', jwtSecretKey);
-
 // Initialize express which is a web framework that handles routing and middleware.  
 const express = require('express');
 const app = express();
@@ -39,7 +36,7 @@ app.use(cookieParser());
 
 // Place the logging middleware after cookie-parser to ensure cookies are parsed
 app.use((req, res, next) => {
-  console.log('Cookies: ', req.cookies);
+  // console.log('Cookies: ', req.cookies);
   next();
 });
 
@@ -80,6 +77,7 @@ app.post('/signup', (req, res) => {
   const firstname = req.body.firstname;
   const lastname = req.body.lastname;
   const email = req.body.email;
+  //TODO: Abstract the hashing and storing of user details into a separate function
   // Extracting and hashing user password, then storing user details in the database.
   // Responds with user info on success or error message on failure.
   bcrypt.hash(password, saltRounds, (err, hashedPassword) => {
@@ -158,35 +156,94 @@ app.post('/logout', (req, res) => {
   res.status(200).send({ message: 'Logged out successfully' });
 });
 
+// Route for checking if the user is authenticated. It checks for the presence of the token cookie.
+app.post('/api/auth/check', (req, res) => {
+  if (req.cookies.token) {
+    res.status(200).json({ isAuthenticated: true });
+  } else {
+    res.status(200).json({ isAuthenticated: false });
+  }
+});
+
+
 
 //
 // USER PROFILES & MODIFYING USER INFORMATION
 //
 
-// Route for showing the logged in user's profile. It extracts the user ID from the token, and returns the user's information.
+// Route for showing a user's public profile. 
+// If a targetID is provided, it shows that ID, 
+// otherwise it extracts the user ID from the token, and returns the user's information.
 // This is a protected route, only accessible to authenticated users.
 app.post('/profile', verifyToken, async (req, res) => {
+  const fields = ['username', 'firstname', 'lastname', 'email', 'url', 'bio', 'location', 'role_name', 'added_on'];
+
   try {
-    // console.log('Profile route accessed');
-    // Extract the token from the http-only cookie
     const token = req.cookies.token;
-    // console.log('Token from cookie:', token);
-    // Verify and decode the token to extract user ID
     const decoded = jwt.verify(token, jwtSecretKey);
-    // console.log('Decoded token:', decoded);
-    const userID = decoded.userID;
-    // console.log('User ID from token:', userID);
-    // Fetch user information based on the userID extracted from the token
-    const userInfo = await getUserInfo({ userID : userID });
-    console.log('User info:', userInfo);
-    // Respond with the user's information
+    const userIDFromToken = decoded.userID;
+
+    // Determine the targetID: Use provided targetID from the body or fallback to userID from the token
+    const targetID = req.body.targetID || userIDFromToken;
+
+    // Fetch the target user's information based on targetID or the userID from the token if targetID is not provided
+    const userInfo = await getUserInfo({ userID: targetID });
+
+    // Filter userInfo to include only the specified fields
+    const filteredUserInfo = Object.keys(userInfo).reduce((acc, key) => {
+      if (fields.includes(key)) {
+        acc[key] = userInfo[key];
+      }
+      return acc;
+    }, {});
+
+    // Determine if the edit flag should be true or false
+    const isEditable = targetID == userIDFromToken;
+
+    // Respond with the user's information and the edit flag
     res.status(200).json({
       success: true,
-      data: userInfo
+      data: { ...filteredUserInfo, edit: isEditable }
     });
   } catch (error) {
     console.error('Error in profile route:', error);
     res.status(500).send("Server error");
+  }
+});
+
+// Route to update user profile information in the database.
+// It extracts the user information from the request and updates the user's information.
+// This is a protected route, only accessible to authenticated users.
+// TODO: Deal with password updates
+app.post('/profile/update', verifyToken, (req, res) => {
+  console.log('update profile');
+  const { firstname, lastname, email, bio, location, url } = req.body;
+  console.log('Request to update profile:', { firstname, lastname, email, bio, location, url });
+  try {
+    // Verify the token to get user ID
+    const decoded = jwt.verify(req.cookies.token, jwtSecretKey);
+    const userID = decoded.userID;
+
+    // SQL query to update user information
+    const query = `
+      UPDATE users 
+      SET firstname = ?, lastname = ?, email = ?, bio = ?, location = ?, url = ?
+      WHERE user_id = ?
+    `;
+    const values = [firstname, lastname, email, bio, location, url, userID];
+
+    // Execute the query
+    db.query(query, values, (err, result) => {
+      if (err) {
+        console.error('Error updating user profile:', err);
+        res.status(500).send('Error updating user profile');
+      } else {
+        res.status(200).send({ message: 'Profile updated successfully' });
+      }
+    });
+  } catch (error) {
+    console.error('Error in /profile/edit route:', error);
+    res.status(500).send('Server error');
   }
 });
 
@@ -206,13 +263,13 @@ async function getUserInfo({ userID = null, username = null } = {}) {
     }
     db.query(query, values, (err, result) => {
       if (err) {
-        console.error("Error fetching user info:", err);
+        // console.error("Error fetching user info:", err);
         return reject(err);
       } else if (result.length < 1) {
-        console.log("No user found, returning null.");
+        // console.log("No user found, returning null.");
         return resolve(null); // No user found
       } else {
-        console.log("Returning user info:", result[0]);
+        // console.log("Returning user info:", result[0]);
         return resolve(result[0]); // Assuming the query returns a single user
       }
     });
@@ -223,10 +280,10 @@ async function getUserInfo({ userID = null, username = null } = {}) {
 // Adjusted hasPermission function with added console.log statements
 async function hasPermission(requestingUserInfo, callingRoute) {
   return new Promise((resolve, reject) => {
-    console.log('Checking permissions for:', requestingUserInfo.role_name, 'on route:', callingRoute);
+    // console.log('Checking permissions for:', requestingUserInfo.role_name, 'on route:', callingRoute);
     // Early exit if requestingUserInfo is not provided or invalid
     if (!requestingUserInfo || !requestingUserInfo.role_name) {
-      console.error('Invalid or missing requesting user info.');
+      // console.error('Invalid or missing requesting user info.');
       return reject(new Error('Invalid or missing requesting user info.'));
     }
     // Prep db params
@@ -235,22 +292,22 @@ async function hasPermission(requestingUserInfo, callingRoute) {
     // run db query
     db.query(query, values, (err, results) => {
       if (err) {
-        console.error('Error checking permissions:', err);
+        // console.error('Error checking permissions:', err);
         return reject(err); // In case of error, default to denying permission
       }
-      console.log('Permissions query result:', results);
+      // console.log('Permissions query result:', results);
       if (results.length > 0 && results[0].permissions) {
         // Parse the permissions JSON to an array
         const permissionsArray = results[0].permissions;
-        console.log('Parsed permissions:', permissionsArray);
+        // console.log('Parsed permissions:', permissionsArray);
         // Check if the callingRoute is in the user's permissions
         const isPermitted = permissionsArray.includes(callingRoute);
-        console.log('Permission for route:', callingRoute, 'is', isPermitted ? 'granted' : 'denied');
-        console.log('Returning permission:', isPermitted)
+        // console.log('Permission for route:', callingRoute, 'is', isPermitted ? 'granted' : 'denied');
+        // console.log('Returning permission:', isPermitted)
         return resolve(isPermitted);
       } else {
         // If no permissions found or callingRoute is not permitted, return false
-        console.log('No permissions found or callingRoute not permitted for role:', requestingUserInfo.role_name);
+        // console.log('No permissions found or callingRoute not permitted for role:', requestingUserInfo.role_name);
         return resolve(false);
       }
     });
@@ -260,41 +317,47 @@ async function hasPermission(requestingUserInfo, callingRoute) {
 // Route for showing another user's profile. It extracts the user ID from the token, and returns the target user's information.
 // This is a protected route, only accessible to authenticated users.
 app.post('/userlookup', verifyToken, async (req, res) => {
+  fields = ['username', 'firstname', 'lastname', 'email', 'url', 'bio', 'location', 'role_name', 'validated', 'added_on'];
   try {
     const { username } = req.body; // Extracting username from the request body
-    console.log('Request for userlookup received', { username });
+    // console.log('Request for userlookup received', { username });
     if (!username) {
-      console.log('Bad request: Missing username');
+      // console.log('Bad request: Missing username');
       return res.status(400).send("Bad request: Missing username");
     }
     // Extract userID of the requesting user from the token
     const token = req.cookies.token;
     const decoded = jwt.verify(token, jwtSecretKey);
     const requestingUserID = decoded.userID;
-    console.log('Decoded JWT for user ID', { requestingUserID });
+    // console.log('Decoded JWT for user ID', { requestingUserID });
     // Fetch requesting user's information for permission check
     const requestingUserInfo = await getUserInfo({ userID: requestingUserID });
-    console.log('Requesting user info:', requestingUserInfo);
+    // console.log('Requesting user info:', requestingUserInfo);
     // Check if the requesting user has permission to view the target user's information
     if (!await hasPermission(requestingUserInfo, 'userlookup')) { // Make sure to await the result
-      console.log('Permission denied for userlookup', { requestingUserID });
+      // console.log('Permission denied for userlookup', { requestingUserID });
       return res.status(403).send("Forbidden: You do not have permission to view this user's information");
     }
     // Fetch and return the target user's information based on username
     const targetUserInfo = await getUserInfo({ username: username });
-    console.log('Target user info:', targetUserInfo);
-
+    // remove all but the fields we want to return  
+    for (const field in targetUserInfo) {
+      if (!fields.includes(field)) {
+        delete targetUserInfo[field];
+      }
+    }
+    // console.log('Target user info:', targetUserInfo);
     if (targetUserInfo) {
       res.status(200).json({
         success: true,
         data: targetUserInfo
       });
     } else {
-      console.log('User not found', { username });
+      // console.log('User not found', { username });
       res.status(404).send("User not found");
     }
   } catch (error) {
-    console.error('Error in userlookup route:', error);
+    // console.error('Error in userlookup route:', error);
     res.status(500).send("Server error");
   }
 });

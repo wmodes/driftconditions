@@ -38,20 +38,26 @@ function Signin() {
 
   // Renders the sign-in form. Uses conditional rendering for displaying errors and redirecting on successful login.
   return (
-    <div>
-      <form className='bg-gray-200 mx-auto border-2 p-9 md:p-12 w-72 md:w-96 border-gray-400 mt-36 h-84 rounded' onSubmit={submitHandler}>
-        <h2 className='pb-6 text-2xl text-center text-black'>Sign In</h2>
-        <label className='mb-1 text-xl text-black-400' htmlFor="username">Username:</label>
-        <input className='w-full h-8 p-1 mb-3' type="text" id="username" value={username} onChange={e => setUsername(e.target.value)} />
-        <label className='mb-1 text-xl text-black-400'  htmlFor="password">Password:</label>
-        <input className='w-full h-8 p-1 mb-3' type="password" id="password" value={password} onChange={e => setPassword(e.target.value)} />
-        <div className='flex justify-between mt-4'>
-          <button className='px-3 py-13 rounded-sm bg-white' type="button">Cancel</button>
-          <button className='px-3 py-1 rounded-sm bg-white' type="submit">SignIn</button>
+    <div class="sigin-wrapper">
+      <div class="display-box-wrapper">
+        <div class="display-box">
+          <form onSubmit={submitHandler}>
+            <h2 class='title'>Sign In</h2>
+            <label class="form-label" htmlFor="username">Username:</label>
+            <input class="form-field" type="text" id="username" value={username} onChange={e => setUsername(e.target.value)} />
+            <label class="form-label"  htmlFor="password">Password:</label>
+            <input class="form-field" type="password" id="password" value={password} onChange={e => setPassword(e.target.value)} />
+            <div class='button-box'>
+              <button class='button cancel' type="button">Cancel</button>
+              <button class='button submit' type="submit">SignIn</button>
+            </div>
+            <div class='error-box'>
+              {error && <p class="error">{error}</p>}
+            </div>
+            {isAuthenticated ? <Navigate to='/profile' replace={true} /> : null}
+          </form>
         </div>
-        {error ? <p className='pt-10 text-center text-red-600'>{error}</p> : null}
-        {isAuthenticated ? <Navigate to='/profile' replace={true} /> : null}
-      </form>
+      </div>
     </div>
   );
 }
