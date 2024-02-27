@@ -9,6 +9,8 @@
   import { Provider } from 'react-redux';
   import './index.css';
   import App from './App';
+  // Homepage component.
+  import Homepage from './pages/Homepage';
   // Signup page component.
   import Signup from './pages/Signup';
   // Signin page component.
@@ -42,7 +44,7 @@
   const router = createBrowserRouter(
     createRoutesFromElements((
       <Route path='/' element={<RootLayout />}>
-        <Route path='/' element={<App />} />
+        <Route path='/' element={<Homepage />} />
         <Route path='/signup' element={<Signup />} />
         <Route path='/signin' element={<Signin />} />
         <Route path='/profile' element={<Profile />} /> 

@@ -13,6 +13,56 @@ svg {
   font-weight: 500;
 }
 
+/*
+ *  Naviggation Elements
+ */
+
+#logo {
+  width: auto;
+  height: 30px !important;
+}
+
+#logo g {
+  stroke: #fff !important; /* White stroke */
+  fill: #fff !important; /* Adjust fill color as needed */
+}
+
+/*
+ *  Layout Elements
+ */
+
+.homepage-box-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 100vh;
+  margin-top: 0.5rem;
+  padding-bottom: 5rem;
+}
+
+.homepage-box {
+  max-width: 80%;
+  min-width: min-content;
+  min-height: calc(100vh - 10rem);
+  padding: 1rem 3rem; 
+  margin-left: auto;
+  margin-right: auto;
+  border: 2px solid #D1D5DB; /* border-gray-400 */
+  border-radius: 0.5rem; /* rounded */
+  background-color: #E5E7EB; /* bg-gray-200 */
+}
+
+.homepage-box .title {
+  padding-bottom: 1rem; 
+  font-size: 1.75rem; 
+  text-align: center;
+  letter-spacing: 0.5em;
+}
+
+.homepage-box p {
+  margin-bottom: 1rem;
+}
 
 /*
  *  Layout Elements
