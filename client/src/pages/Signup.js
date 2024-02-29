@@ -38,6 +38,10 @@ function Signup() {
     } )
   } 
 
+  // Check if required fields are filled
+  const isFormValid = username && password && firstname && lastname && email;
+  const Required = () => <span className="required">*</span>;
+
   // Renders the signup form with input fields for user details and conditional rendering for feedback.
   return (
     <div class="signup-wrapper">
@@ -45,19 +49,19 @@ function Signup() {
         <div class="display-box">
           <form onSubmit={submitHandler}>
             <h2 class='title'>Sign Up</h2>
-            <label class="form-label" htmlFor="username">Username:</label>
+            <label class="form-label" htmlFor="username">Username: <Required /></label>
             <input class="form-field" type="text" id="username" value={username} onChange={e => setUsername(e.target.value)} />
-            <label class="form-label"  htmlFor="password">Password:</label>
+            <label class="form-label"  htmlFor="password">Password: <Required /></label>
             <input class="form-field" type="password" id="password" value={password} onChange={e => setPassword(e.target.value)} />
-            <label class="form-label"  htmlFor="firstname">First Name:</label>
+            <label class="form-label"  htmlFor="firstname">First Name: <Required /></label>
             <input class="form-field" type="text" id="firstname" value={firstname} onChange={e => setFirstname(e.target.value)} />
-            <label class="form-label"  htmlFor="lastname">Last Name:</label>
+            <label class="form-label"  htmlFor="lastname">Last Name: <Required /></label>
             <input class="form-field" type="text" id="email" value={lastname} onChange={e => setLastname(e.target.value)} />
-            <label class="form-label"  htmlFor="email">Email:</label>
+            <label class="form-label"  htmlFor="email">Email <Required /></label>
             <input class="form-field" type="text" id="email" value={email} onChange={e => setEmail(e.target.value)} />
             <div class='button-box'>
               <button class='button cancel' type="button">Cancel</button>
-              <button class='button submit' type="submit">Register</button>
+              <button class='button submit' type="submit" disabled={!isFormValid}>Register</button>
             </div>
             <div class='error-box'>
               {error && <p class="error">{error}</p>}

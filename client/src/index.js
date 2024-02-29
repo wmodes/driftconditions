@@ -19,6 +19,8 @@
   import Profile from './pages/Profile';
   // User profile edit page component.
   import ProfileEdit from './pages/ProfileEdit';
+  // Audio upload page component.
+  import UploadAudio from './pages/UploadAudio';
   // Error page component for handling unmatched routes.
   import Error from './pages/Error';
   // Layout component that wraps around the entire application.
@@ -49,6 +51,7 @@
         <Route path='/signin' element={<Signin />} />
         <Route path='/profile' element={<Profile />} /> 
         <Route path='/profile/edit' element={<ProfileEdit />} /> 
+        <Route path='/uploadaudio' element={<UploadAudio />} /> 
         <Route path='*' element={<Error />} /> 
       </Route>
     )

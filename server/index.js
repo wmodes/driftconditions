@@ -16,6 +16,16 @@ const bodyParser = require('body-parser');
 const jwt = require('jsonwebtoken');
 // Import the cookie-parser module to parse cookies from the request headers. 
 const cookieParser = require('cookie-parser');
+// Import multer module used to handle file uploads.
+const multer = require('multer');
+// Import path modules to handle file paths.
+const path = require('path');
+// Import fs module to handle file system operations.
+const fs = require('fs');
+// Import ffmpeg module to handle audio file conversion.
+const ffmpeg = require('fluent-ffmpeg');
+// Import ffprobePath from ffprobe-static to get the path to the ffprobe binary.
+const ffprobePath = require('ffprobe-static').path;
 
 // Import the verifyToken middleware
 const verifyToken = require('./middleware/authMiddleware');
@@ -164,8 +174,6 @@ app.post('/api/auth/check', (req, res) => {
     res.status(200).json({ isAuthenticated: false });
   }
 });
-
-
 
 //
 // USER PROFILES & MODIFYING USER INFORMATION
@@ -361,6 +369,122 @@ app.post('/userlookup', verifyToken, async (req, res) => {
     res.status(500).send("Server error");
   }
 });
+
+//
+// AUDIO UPLOAD & MANAGEMENT
+//
+
+// Multer configuration for temporary upload
+const upload = multer({ dest: '../uploads/tmp' });
+
+// Route to upload audio file
+app.post('/api/audio/upload', verifyToken, upload.single('file'), async (req, res) => {
+  if (!req.file) {
+    return res.status(400).send('No file uploaded.');
+  }
+  try {
+    // Verify token and get userID (sync)
+    const decoded = jwt.verify(req.cookies.token, jwtSecretKey);
+    const uploader_id = decoded.userID;
+    console.log('Uploader ID:', uploader_id);
+    // Rename file and move into place (async)
+    const fullFilePath = await renameAndStore(req.file.path, req.body.title);
+    console.log('New path:', fullFilePath);
+    // Get audio duration (async)
+    const duration = await getAudioDuration(newPath);
+    console.log('Duration:', duration);
+    // Get file type from file name in lowercase (sync)
+    const file_type = path.extname(req.file.originalname).toLowerCase().substring(1);
+    console.log('File type:', file_type);
+    // Normalize and deduplicate tags (sync)
+    const tags = normalizeTags(req.body.tags);
+    // Prep db params
+    const query = `INSERT INTO audio (title, filename, uploader_id, duration, file_type, classification, tags, comments, copyright_cert) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+    const values = [
+      req.body.title, // From request body
+      fullFilePath,       // Calculated in route
+      uploader_id,    // Derived from token or request
+      duration,       // Calculated from the file
+      file_type,      // Determined from the file
+      req.body.classification, // If calculated or from request
+      JSON.stringify(tags), // Processed in route
+      req.body.comments,    // From request body
+      req.body.copyright_cert // From request body
+    ];
+
+    // Execute the query
+    db.query(query, values, (err, result) => {
+      if (err) {
+        console.error('Error inserting audio file into database:', err);
+        res.status(500).send('Error saving file info to database');
+      } else {
+        res.status(200).send({ message: 'File uploaded successfully', filepath: filePathForDB });
+      }
+    });
+
+  } catch (error) {
+    console.error('Error processing upload:', error);
+    res.status(500).send('Server error during file processing');
+  }
+});
+
+// Renames the file and moves it to the final upload directory
+//   - the upload dir is "../upload" at the root of the project
+//   - final dir will be upload/year/monthnum/filename, and these dirs may have to be created
+//   - filename will be the title in lowercase, punctuation removed, and spaces replaced with dashes
+//   - extensions will be preserved but changed to lowercase. ex: eavesdropping-in-a-cafe.mp3
+//   - the filename returned will be the full filepath minus the "../upload" root
+async function renameAndStore(tempPath, title) {
+  const now = new Date();
+  const year = now.getFullYear().toString();
+  const month = (now.getMonth() + 1).toString().padStart(2, '0');
+  
+  // Convert title to filename
+  const filename = title.toLowerCase().replace(/[\W_]+/g, '-').replace(/^\-+|\-+$/g, '') + path.extname(tempPath).toLowerCase();
+  
+  // Construct new path
+  const uploadDir = path.join(__dirname, '../upload', year, month);
+  await mkdirp(uploadDir);
+  
+  const newPath = path.join(uploadDir, filename);
+  
+  // Move file from temp location to new path
+  await fs.rename(tempPath, newPath);
+  
+  // Return the path relative to the "../upload" root
+  return newPath.substring(newPath.indexOf('/upload/') + '/upload/'.length);
+}
+
+// Set ffprobe path for fluent-ffmpeg
+ffmpeg.setFfprobePath(ffprobePath);
+
+const getAudioDuration = (filePath) => {
+  return new Promise((resolve, reject) => {
+    ffmpeg.ffprobe(filePath, (err, metadata) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(metadata.format.duration);
+      }
+    });
+  });
+};
+
+// for tags, we will go through them (separated by commas) and normalized by converting to lowercase, removing special characters, trimming leading and trailing whitespace, and converting spaces to dashes. Also ensure that there are no duplicate tags.
+const normalizeTags = (tagsString) => {
+  // Split the string into an array by commas, then process each tag
+  const tagsArray = tagsString.split(',')
+    .map(tag => 
+      // Convert to lowercase, trim whitespace, replace special characters and spaces with dashes
+      tag.toLowerCase().trim().replace(/[\W_]+/g, '-')
+    )
+    // Remove duplicate tags
+    .filter((value, index, self) => self.indexOf(value) === index);
+
+  // Return the processed tags as a JSON string to be compatible with database storage
+  return JSON.stringify(tagsArray);
+};
+
 
 // Starts the server, highlighting the use of a specific port for listening to incoming requests.
 app.listen(8080, () => {

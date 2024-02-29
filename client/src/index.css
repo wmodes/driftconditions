@@ -42,6 +42,8 @@ svg {
 }
 
 .homepage-box {
+  display: flex;
+  flex-wrap: wrap;
   max-width: 80%;
   min-width: min-content;
   min-height: calc(100vh - 10rem);
@@ -53,6 +55,16 @@ svg {
   background-color: #E5E7EB; /* bg-gray-200 */
 }
 
+.homepage-box .column1 {
+  flex: 1;
+  padding: 1rem;
+}
+
+.homepage-box .column2 {
+  flex: 2;
+  padding: 1rem;
+}
+
 .homepage-box .title {
   padding-bottom: 1rem; 
   font-size: 1.75rem; 
@@ -60,8 +72,23 @@ svg {
   letter-spacing: 0.5em;
 }
 
+.homepage-box .text {
+  font-size: 1.1rem;
+}
+
 .homepage-box p {
   margin-bottom: 1rem;
+}
+
+.homepage-box p.pullquote {
+  margin-bottom: 1rem;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  border-top: 3px solid #333; /* border-gray-400 */
+  border-bottom: 3px solid #333; /* border-gray-400 */
+  line-height: 1.5;
+  text-align: center;
+  font-size: 1.5rem;
 }
 
 /*
@@ -117,11 +144,35 @@ svg {
   margin-bottom: 0.75rem;
 }
 
+.form-upload {
+  width: 100%; 
+  height: 2.5rem;
+  padding: 0.25rem;
+  margin-bottom: 0.5rem;
+}
+
 .form-textarea {
   width: 100%;
   height: 5rem;
   padding: 0.25rem;
   margin-bottom: 0.25rem;
+}
+
+.form-note {
+  font-size: 0.75rem;
+  font-style: italic;
+  margin-top: -0.75rem;
+  margin-bottom: 0.25rem;
+}
+
+.form-checkbox {
+  columns: 6rem;
+  margin-left: 0.5rem;
+}
+
+.required {
+  color: red;
+  font-weight: bold;
 }
 
 .error-box {
@@ -150,13 +201,19 @@ svg {
 }
 
 .button.cancel {
-  background-color: #9CA3AF !important; /* bg-gray-400 */
+  background-color: #9CA3AF; /* bg-gray-400 */
   color: #FFFFFF; /* text-white */
 }
 
 .button.submit {
-  background-color: #336699 !important; /* bg-cornflower */
+  background-color: #336699; /* bg-cornflower */
   color: #FFFFFF; /* text-white */
+}
+
+button.submit:disabled {
+  background-color: #cccccc;
+  color: #666666;
+  cursor: not-allowed;
 }
 
 /*

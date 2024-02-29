@@ -10,6 +10,7 @@ import { Navigate } from 'react-router-dom';
 
 function ProfileEdit() {
 
+  // These fields: firstname, lastname, email, bio, location, and url are mutable.
   const mutableFields = [
     { key: 'firstname', label: 'First Name' },
     { key: 'lastname', label: 'Last Name' },
@@ -34,9 +35,9 @@ function ProfileEdit() {
   const [confirmPassword, setConfirmPassword] = useState('');
   // Accessing Redux state for user (to check if logged in)
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
-  const error = useSelector((state) => state.auth.error);
   const dispatch = useDispatch();
-  // Add this state to store form related errors
+  // Add this state to store errors
+  const error = useSelector((state) => state.auth.error);
   const [formError, setFormError] = useState('');
 
   useEffect(() => {
@@ -81,6 +82,11 @@ function ProfileEdit() {
     setFormError(''); // Clear any existing errors
   };
 
+  // Check if required fields are filled
+  const requiredFields = ['firstname', 'lastname', 'email'];
+  const isFormValid = requiredFields.every(field => profile[field]);
+  const Required = () => <span className="required">*</span>;
+
   // Renders the user's profile information
   return (
     <div class="profile-edit-wrapper">
@@ -98,10 +104,12 @@ function ProfileEdit() {
             <input class="form-field" type="password" id="confirmPassword" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />
             {mutableFields.map(({ key, label }) => (
               <div key={key}>
-              <label class="form-label" htmlFor={key}>{label}:</label>
+                <label className="form-label" htmlFor={key}>
+                  {label}: {requiredFields.includes(key) && <Required />}
+                </label>
                 {key === 'bio' ? (
                   <textarea
-                    class="form-textarea" // Adjust height as needed
+                    className="form-textarea"
                     id={key}
                     name={key}
                     value={profile[key]}
@@ -109,7 +117,7 @@ function ProfileEdit() {
                   />
                 ) : (
                   <input
-                    class="form-field"
+                    className="form-field"
                     type="text"
                     id={key}
                     name={key}
@@ -121,7 +129,7 @@ function ProfileEdit() {
             ))}
             <div class='button-box'>
               <button class='button cancel' type="button">Cancel</button>
-              <button class='button submit' type="submit">Save Changes</button>
+              <button class='button submit' type="submit" disabled={!isFormValid}>Save Changes</button>
             </div>
             <div class='error-box'>
               {formError && <p class="error">{formError}</p>}

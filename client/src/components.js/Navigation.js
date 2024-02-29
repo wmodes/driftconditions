@@ -52,6 +52,9 @@ export default function Navigation() {
         <li onClick={closeMenu}>
           <Link to='/profile' className='block px-4 py-2 text-white hover:bg-blue-500'>Profile</Link>
         </li>
+      <li onClick={closeMenu}>
+        <Link to='/uploadaudio' className='block px-4 py-2 text-white hover:bg-blue-500'>Upload Audio</Link>
+      </li>
         <li onClick={closeMenu}>
           <Link to='/' onClick={(e) => {
               e.preventDefault();

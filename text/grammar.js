@@ -1,20 +1,12 @@
-// client/src/pages/Homepage.js
 
-import React from 'react';
-// feather icons
-import FeatherIcon from 'feather-icons-react';
-// import Tracery
-var tracery = require('tracery-grammar');
 
 var grammar = tracery.createGrammar(
   {
     "origin": [
         "#assertion#"
     ],
-    "intro": [
-      "Interference is an online streaming audio source that captures #evocativeNounPhrase# in #evocativeNounPhrase#."
-    ],
     "assertion": [
+        "Interference is an online streaming audio source that captures #evocativeNounPhrase# in an #evocativeNounPhrase#.",
         "#thingsWeWillFind.capitalize#, #thingsWeWillFind#, and #thingsWeWillFind# weave #thingsWeWillFind# that draws listeners into #evocativeNounPhrase#.",
         "Inspired by the unpredictability of real-world radio broadcast, Interference explores the boundaries between intention and happenstance, inviting listeners to eavesdrop on #evocativeNounPhrase#.",
         "With each new listening experience, Interference offers #evocativeNounPhrase#.",
@@ -25,6 +17,7 @@ var grammar = tracery.createGrammar(
         "Interference blends #evocativeNounPhrase# with #evocativeNounPhrase#, crafting #evocativeNounPhrase#.",
         "This online audio experience weaves #evocativeNounPhrase#, drawing listeners into #evocativeNounPhrase#.",
         "Each session offers #evocativeNounPhrase#, exploring #evocativeNounPhrase#.",
+        "Interference is an online streaming audio source that captures #evocativeNounPhrase# in an #evocativeNounPhrase#.",
         "#thingsWeWillFind#, #thingsWeWillFind#, and #thingsWeWillFind# weave #thingsWeWillFind# that draws listeners into #evocativeNounPhrase#.",
         "Inspired by the unpredictability of real-world radio interference, Interference explores the boundaries between intention and happenstance, inviting listeners to eavesdrop on #evocativeNounPhrase#.",
         "With each new listening session, Interference offers #evocativeNounPhrase#."
@@ -68,73 +61,7 @@ var grammar = tracery.createGrammar(
         "an uncanny audio stream generated on the fly by code"
     ],
     "evocativeNounPhrase": [
-      "#plainENP#", "<b>#plainENP#</b>"
+      "#plainENP#", "#plainENP#", "<b>#plainENP#</b>"
     ]
   }
 );
-
-grammar.addModifiers(tracery.baseEngModifiers);
-
-const randomText = (() => {
-  let texts = [];
-  let shortestIndex = 1; // Start considering from the second element
-  let shortestLength = Infinity; // Initialize with a very large number
-
-  // intro phrase
-  texts.push(grammar.flatten('#intro#'));
-
-  for (let i = 0; i < 6; i++) {
-    let text = grammar.flatten('#origin#');
-    // Capitalize the first character and concatenate the rest of the string
-    text = text.charAt(0).toUpperCase() + text.slice(1);
-    texts.push(text);
-
-    // Skip the first element for shortest check, start from the second
-    if (i >= 1 && text.length < shortestLength) {
-      shortestLength = text.length;
-      shortestIndex = i + 1; // Adjust index because of the initial intro phrase
-    }
-  }
-
-  // Move the shortest text to the second position if it's not already there
-  // Ensure the shortest text is not the intro phrase itself
-  if (shortestIndex > 1 && shortestIndex !== 2) { // Adjusted condition to account for intro phrase
-    const [shortestText] = texts.splice(shortestIndex, 1); // Remove the shortest text
-    texts.splice(2, 0, shortestText); // Corrected to insert at the second position, accounting for the intro
-  }
-  return texts;
-})(); // This function is invoked immediately
-
-const Homepage = () => {
-  // Function to safely set inner HTML
-  const createMarkup = (htmlString) => {
-    return { __html: htmlString };
-  };
-
-  return (
-    <div class="profile-edit-wrapper">
-      <div class="homepage-box-wrapper">
-        <div class="homepage-box">
-          <div class="column1">
-            <h2 class='title'>
-              <FeatherIcon icon="radio" />&nbsp;tune in</h2>
-              <div class="text">
-                <p dangerouslySetInnerHTML={createMarkup(randomText[0])}></p> 
-                <p dangerouslySetInnerHTML={createMarkup(randomText[1])}></p> 
-                <p class="pullquote" dangerouslySetInnerHTML={createMarkup(randomText[2])}></p>
-                <p dangerouslySetInnerHTML={createMarkup(randomText[3])}></p>
-              </div>
-            </div>
-            <div class="column2">
-              <div class='player'>
-              <h2 class='title'>
-              <FeatherIcon icon="volume-2" />&nbsp;listen</h2>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default Homepage;
