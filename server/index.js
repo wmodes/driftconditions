@@ -1,4 +1,19 @@
+// index.js - primary server code including:
+//   - User registration and authentication
+//   - User profiles and modifying user information
+//   - Audio upload and management
+//   - Protected routes and middleware
+//   - Database connection and queries
+//   - File upload and processing
+//   - JWT token generation and verification
+//   - Error handling and logging
+//   - CORS and cookie management
+
+// Load environment variables from .env file
 require('dotenv').config();
+// Load our config file
+const config = require('./config');
+// Load the database password and JWT secret key from environment variables
 const dbPassword = process.env.DATABASE_PASSWORD;
 const jwtSecretKey = process.env.JWT_SECRET_KEY;
 // Initialize express which is a web framework that handles routing and middleware.  
@@ -18,14 +33,14 @@ const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 // Import multer module used to handle file uploads.
 const multer = require('multer');
+// Import mkdirp module to create directories.
+const { mkdirp } = require('mkdirp')
 // Import path modules to handle file paths.
 const path = require('path');
 // Import fs module to handle file system operations.
-const fs = require('fs');
-// Import ffmpeg module to handle audio file conversion.
-const ffmpeg = require('fluent-ffmpeg');
-// Import ffprobePath from ffprobe-static to get the path to the ffprobe binary.
-const ffprobePath = require('ffprobe-static').path;
+const fs = require('fs').promises;
+// Import the get-audio-duration module to get the duration of an audio file.
+const { getAudioDurationInSeconds } = require('get-audio-duration');
 
 // Import the verifyToken middleware
 const verifyToken = require('./middleware/authMiddleware');
@@ -375,7 +390,7 @@ app.post('/userlookup', verifyToken, async (req, res) => {
 //
 
 // Multer configuration for temporary upload
-const upload = multer({ dest: '../uploads/tmp' });
+const upload = multer({ dest: config.tmpFileDir });
 
 // Route to upload audio file
 app.post('/api/audio/upload', verifyToken, upload.single('file'), async (req, res) => {
@@ -383,15 +398,17 @@ app.post('/api/audio/upload', verifyToken, upload.single('file'), async (req, re
     return res.status(400).send('No file uploaded.');
   }
   try {
+    console.log("orig file name: ", req.file.originalname)
     // Verify token and get userID (sync)
     const decoded = jwt.verify(req.cookies.token, jwtSecretKey);
     const uploader_id = decoded.userID;
     console.log('Uploader ID:', uploader_id);
     // Rename file and move into place (async)
-    const fullFilePath = await renameAndStore(req.file.path, req.body.title);
-    console.log('New path:', fullFilePath);
+    const filePathForDB = await renameAndStore(req.file.path, req.file.originalname, req.body.title);
+    const relFilePath = path.join(config.uploadFileDir, filePathForDB);
+    console.log('relFilePath:', relFilePath, 'fullFilePath:', filePathForDB);
     // Get audio duration (async)
-    const duration = await getAudioDuration(newPath);
+    const duration = await getAudioDuration(relFilePath);
     console.log('Duration:', duration);
     // Get file type from file name in lowercase (sync)
     const file_type = path.extname(req.file.originalname).toLowerCase().substring(1);
@@ -402,7 +419,7 @@ app.post('/api/audio/upload', verifyToken, upload.single('file'), async (req, re
     const query = `INSERT INTO audio (title, filename, uploader_id, duration, file_type, classification, tags, comments, copyright_cert) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
     const values = [
       req.body.title, // From request body
-      fullFilePath,       // Calculated in route
+      filePathForDB,       // Calculated in route
       uploader_id,    // Derived from token or request
       duration,       // Calculated from the file
       file_type,      // Determined from the file
@@ -429,48 +446,77 @@ app.post('/api/audio/upload', verifyToken, upload.single('file'), async (req, re
 });
 
 // Renames the file and moves it to the final upload directory
-//   - the upload dir is "../upload" at the root of the project
+//   - the upload dir is "../uploads" at the root of the project
 //   - final dir will be upload/year/monthnum/filename, and these dirs may have to be created
 //   - filename will be the title in lowercase, punctuation removed, and spaces replaced with dashes
 //   - extensions will be preserved but changed to lowercase. ex: eavesdropping-in-a-cafe.mp3
-//   - the filename returned will be the full filepath minus the "../upload" root
-async function renameAndStore(tempPath, title) {
+//   - check to see if file already exists, if so, add a number to the end of the filename
+//   - move/rename file into the final directory
+//   - the filename returned will be the full filepath minus the "../uploads" root
+// @param tempPath - the temporary path where multer stored the file
+// @param origFilename - the original filename of the file
+// @param title - the title of the file
+// @returns the relative path of the file in the "../uploads" directory
+async function renameAndStore(tempPath, origFilename, title) {
+
+  // get date info for the directory structure
   const now = new Date();
   const year = now.getFullYear().toString();
   const month = (now.getMonth() + 1).toString().padStart(2, '0');
-  
-  // Convert title to filename
-  const filename = title.toLowerCase().replace(/[\W_]+/g, '-').replace(/^\-+|\-+$/g, '') + path.extname(tempPath).toLowerCase();
-  
-  // Construct new path
-  const uploadDir = path.join(__dirname, '../upload', year, month);
+
+  // create the directory if it doesn't exist
+  const uploadDir = path.join(__dirname, config.uploadFileDir, year, month);
+  console.log('Upload dir:', uploadDir);
   await mkdirp(uploadDir);
   
-  const newPath = path.join(uploadDir, filename);
+  // Extract the extension from the original filename
+  const extension = path.extname(origFilename).toLowerCase();
+  console.log('Original file extension:', extension);
+
+  // Normalize the title to be used as the filename
+  let baseFilename = title.toLowerCase().replace(/[\W_]+/g, '-').replace(/^\-+|\-+$/g, '');
+
+  // Combine the base filename and extension
+  // base case, if the file doesn't alraedy exist
+  // ex: 2024/03/eavesdropping-in-a-cafe.mp3
+  let filename = `${baseFilename}${extension}`;
+  let newPath = path.join(uploadDir, filename);
+
+  // Check if file exists and append a number if it does
+  // ex: 2024/03/eavesdropping-in-a-cafe-1.mp3
+  let counter = 0;
+  // Check if file exists and append a number if it does
+  while (await fs.access(newPath).then(() => true).catch(() => false)) {
+    counter++;
+    filename = `${baseFilename}-${counter}${extension}`;
+    newPath = path.join(uploadDir, filename);
+  }
+
+  console.log('Final filename:', filename);
   
   // Move file from temp location to new path
   await fs.rename(tempPath, newPath);
+
+  console.log('File moved to:', newPath);
   
-  // Return the path relative to the "../upload" root
-  return newPath.substring(newPath.indexOf('/upload/') + '/upload/'.length);
+  // Calculate the relative path without hardcoding
+  const relativePath = path.relative(path.join(__dirname, config.uploadFileDir), newPath);
+  console.log('Relative path:', relativePath);
+
+  return relativePath;
 }
 
-// Set ffprobe path for fluent-ffmpeg
-ffmpeg.setFfprobePath(ffprobePath);
-
+// Get the duration of an audio file in seconds using the get-audio-duration module
 const getAudioDuration = (filePath) => {
-  return new Promise((resolve, reject) => {
-    ffmpeg.ffprobe(filePath, (err, metadata) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(metadata.format.duration);
-      }
-    });
-  });
+  return getAudioDurationInSeconds(filePath);
 };
 
-// for tags, we will go through them (separated by commas) and normalized by converting to lowercase, removing special characters, trimming leading and trailing whitespace, and converting spaces to dashes. Also ensure that there are no duplicate tags.
+// Normalizes a string of tags:
+// - Splits by commas into individual tags.
+// - Converts to lowercase, trims whitespace.
+// - Replaces special characters and spaces with dashes.
+// - Removes duplicate tags.
+// Returns processed tags as a JSON string for database storage.
 const normalizeTags = (tagsString) => {
   // Split the string into an array by commas, then process each tag
   const tagsArray = tagsString.split(',')
@@ -482,7 +528,7 @@ const normalizeTags = (tagsString) => {
     .filter((value, index, self) => self.indexOf(value) === index);
 
   // Return the processed tags as a JSON string to be compatible with database storage
-  return JSON.stringify(tagsArray);
+  return tagsArray;
 };
 
 
