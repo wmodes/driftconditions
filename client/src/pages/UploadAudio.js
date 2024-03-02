@@ -6,6 +6,11 @@ import { Navigate } from 'react-router-dom';
 // Assuming there's an action defined to handle audio uploads in your Redux store
 import { uploadAudio } from '../store/audioSlice';
 
+// Import the config object from the config.js file
+const config = require('../config/config');
+// pull variables from the config object
+const allowedFileTypes = config.audio.allowedFileTypes;
+
 function UploadAudio() {
   // Local state for managing form inputs
   const [title, setTitle] = useState('');
@@ -17,9 +22,11 @@ function UploadAudio() {
   // Accessing the authentication state to check if the user is logged in
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
   const dispatch = useDispatch();  
-  // Add this state to store errors
+
+  // Success and error handling
+  const [successMessage, setSuccessMessage] = useState(''); // New state for success message
   const error = useSelector((state) => state.auth.error);
-  // const [formError, setFormError] = useState('');
+  const [formError, setFormError] = useState('');
 
   // Local state for managing classification checkboxes
   const [classification, setClassification] = useState({
@@ -37,6 +44,22 @@ function UploadAudio() {
     setClassification(prev => ({ ...prev, [name]: checked }));
   };
 
+  const handleFileChange = (e) => {
+    const selectedFile = e.target.files[0];
+  
+    if (selectedFile && allowedFileTypes.includes(selectedFile.type)) {
+      // Set the file if it's one of the allowed types
+      setFile(selectedFile);
+      setFormError(''); // Clear any previous error message
+    } else {
+      // Clear the file input and show an error if the file type is not allowed
+      e.target.value = ''; // Clears the file input
+      // Display an error message to the user
+      console.error("Invalid file type:", selectedFile?.type);
+      setFormError('Invalid file type. Please select a valid audio file.');
+    }
+  };
+
   const submitHandler = e => {
     e.preventDefault();
     // Convert tags from string to array
@@ -48,11 +71,16 @@ function UploadAudio() {
     formData.append('comments', comments);
     formData.append('file', file);
     formData.append('copyright_cert', isCertified ? 1 : 0);
+    // Convert classification object to an array of keys where the value is true
+    const classificationArray = Object.entries(classification).filter(([_, value]) => value).map(([key, _]) => key);
+    formData.append('classification', JSON.stringify(classificationArray));
 
     dispatch(uploadAudio(formData))
       .unwrap()
       .then(() => {
-        // Reset form or handle success
+        // Set success message on successful upload
+        setSuccessMessage('Upload successful!'); 
+        // setFormError('');
       })
       .catch(error => {
         // Handle any error here
@@ -105,7 +133,7 @@ function UploadAudio() {
             <textarea className="form-textarea" id="comments" value={comments} onChange={e => setComments(e.target.value)}></textarea>
             
             <label className="form-label" htmlFor="file">Audio File: <Required /></label>
-            <input className="form-upload" type="file" id="file" onChange={e => setFile(e.target.files[0])} />
+            <input className="form-upload" type="file" id="file" onChange={handleFileChange} />
             <p className="form-note">Supported file types: mp3, wav, ogg, flac</p>
             
             <div className='checkbox-wrapper'>
@@ -116,8 +144,10 @@ function UploadAudio() {
             <div className='button-box'>
               <button className='button submit' type="submit" disabled={!isFormValid}>Upload</button>
             </div>
-            <div class='error-box'>
-              {error && <p class="error">{error}</p>}
+            <div className='message-box'>
+              {successMessage && <p className="success">{successMessage}</p>}
+              {formError && <p className="error">{formError}</p>}
+              {error && <p className="error">{error}</p>}
             </div>
           </form>
         </div>

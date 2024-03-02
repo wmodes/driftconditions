@@ -13,10 +13,12 @@ function Signin() {
   // Local state for managing form inputs.
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+
   // Accessing the global state to check for current user and any authentication errors.
   // Instead of selecting `user`, select the authentication status flag
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
   const error = useSelector((state) => state.auth.error);
+  
   // Hook to dispatch authentication action.
   const dispatch = useDispatch(); 
 
@@ -38,21 +40,21 @@ function Signin() {
 
   // Renders the sign-in form. Uses conditional rendering for displaying errors and redirecting on successful login.
   return (
-    <div class="sigin-wrapper">
-      <div class="display-box-wrapper">
-        <div class="display-box">
+    <div className="sigin-wrapper">
+      <div className="display-box-wrapper">
+        <div className="display-box">
           <form onSubmit={submitHandler}>
-            <h2 class='title'>Sign In</h2>
-            <label class="form-label" htmlFor="username">Username:</label>
-            <input class="form-field" type="text" id="username" value={username} onChange={e => setUsername(e.target.value)} />
-            <label class="form-label"  htmlFor="password">Password:</label>
-            <input class="form-field" type="password" id="password" value={password} onChange={e => setPassword(e.target.value)} />
-            <div class='button-box'>
-              <button class='button cancel' type="button">Cancel</button>
-              <button class='button submit' type="submit">SignIn</button>
+            <h2 className='title'>Sign In</h2>
+            <label className="form-label" htmlFor="username">Username:</label>
+            <input className="form-field" type="text" id="username" value={username} onChange={e => setUsername(e.target.value)} />
+            <label className="form-label"  htmlFor="password">Password:</label>
+            <input className="form-field" type="password" id="password" value={password} onChange={e => setPassword(e.target.value)} />
+            <div className='button-box'>
+              <button className='button cancel' type="button">Cancel</button>
+              <button className='button submit' type="submit">SignIn</button>
             </div>
-            <div class='error-box'>
-              {error && <p class="error">{error}</p>}
+            <div className='message-box'>
+              {error && <p className="error">{error}</p>}
             </div>
             {isAuthenticated ? <Navigate to='/profile' replace={true} /> : null}
           </form>

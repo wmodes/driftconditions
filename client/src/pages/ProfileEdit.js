@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 // Hooks for Redux state management and action dispatching, if needed.
 import { useDispatch, useSelector } from 'react-redux';
 // Assuming you have an action or function to fetch user profile
-import { fetchProfile, updateProfile } from '../store/authSlice';
+import { profileInfo, profileEdit } from '../store/userSlice';
 // For redirecting the user in case they are not logged in
 import { Navigate } from 'react-router-dom';  
 
@@ -36,14 +36,16 @@ function ProfileEdit() {
   // Accessing Redux state for user (to check if logged in)
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
   const dispatch = useDispatch();
-  // Add this state to store errors
+
+  // Success and error handling
   const error = useSelector((state) => state.auth.error);
   const [formError, setFormError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
     console.log("isAuthenticated:", isAuthenticated);
     if (isAuthenticated) {
-      dispatch(fetchProfile())
+      dispatch(profileInfo())
         .then((res) => {
           if (res.payload && res.payload.data) {
             setProfile(res.payload.data);
@@ -77,9 +79,16 @@ function ProfileEdit() {
       setFormError('Passwords do not match.');
       return; // Prevent the form from being submitted
     }
-    // Proceed with dispatching the updateProfile action if passwords match
-    dispatch(updateProfile({ ...profile, password: newPassword })); // Make sure your updateProfile action can handle password updates
-    setFormError(''); // Clear any existing errors
+    // Proceed with dispatching the profileEdit action if passwords match
+    dispatch(profileEdit({ ...profile, password: newPassword }))
+      .then(() => {
+        setSuccessMessage('Profile updated successfully!'); 
+        setFormError(''); // Clear any existing errors
+      })
+      .catch(error => {
+        console.error("Failed to update profile:", error);
+        setFormError('An error occurred while updating the profile.');
+      });
   };
 
   // Check if required fields are filled
@@ -89,19 +98,19 @@ function ProfileEdit() {
 
   // Renders the user's profile information
   return (
-    <div class="profile-edit-wrapper">
-      <div class="display-box-wrapper">
-        <div class="display-box">
+    <div className="profile-edit-wrapper">
+      <div className="display-box-wrapper">
+        <div className="display-box">
           <form onSubmit={handleSubmit}>
-            <h2 class='title'>Edit Profile</h2>
+            <h2 className='title'>Edit Profile</h2>
             <p className='mb-2'>
               <span className='mb-1 pr-4'>Username:</span>
               <span className='pb-1 text-xl'>{profile.username}</span>
             </p>
-            <label class="form-label" htmlFor="password">New Password:</label>
-            <input class="form-field" type="password" id="newPassword" value={newPassword} onChange={e => setNewPassword(e.target.value)} />
-            <label class="form-label" htmlFor="password">Confirm Password:</label>
-            <input class="form-field" type="password" id="confirmPassword" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />
+            <label className="form-label" htmlFor="password">New Password:</label>
+            <input className="form-field" type="password" id="newPassword" value={newPassword} onChange={e => setNewPassword(e.target.value)} />
+            <label className="form-label" htmlFor="password">Confirm Password:</label>
+            <input className="form-field" type="password" id="confirmPassword" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />
             {mutableFields.map(({ key, label }) => (
               <div key={key}>
                 <label className="form-label" htmlFor={key}>
@@ -127,13 +136,14 @@ function ProfileEdit() {
                 )}
               </div>
             ))}
-            <div class='button-box'>
-              <button class='button cancel' type="button">Cancel</button>
-              <button class='button submit' type="submit" disabled={!isFormValid}>Save Changes</button>
+            <div className='button-box'>
+              <button className='button cancel' type="button">Cancel</button>
+              <button className='button submit' type="submit" disabled={!isFormValid}>Save Changes</button>
             </div>
-            <div class='error-box'>
-              {formError && <p class="error">{formError}</p>}
-              {error && <p class="error">{error}</p>}
+            <div className='message-box'>
+              {successMessage && <p className="success">{successMessage}</p>}
+              {formError && <p className="error">{formError}</p>}
+              {error && <p className="error">{error}</p>}
             </div>
           </form>
         </div>

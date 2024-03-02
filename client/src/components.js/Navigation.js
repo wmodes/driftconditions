@@ -17,7 +17,7 @@ import FeatherIcon from 'feather-icons-react';
 export default function Navigation() {
   // Accesses Redux state to check if the user is authenticated
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
-  console.log("isAuthenticated:", isAuthenticated);
+  // console.log("isAuthenticated:", isAuthenticated);
   // Initializes dispatch function for logging out
   const dispatch = useDispatch();
   // Initializes the navigate hook for redirecting the user.

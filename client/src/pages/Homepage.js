@@ -112,22 +112,22 @@ const Homepage = () => {
   };
 
   return (
-    <div class="profile-edit-wrapper">
-      <div class="homepage-box-wrapper">
-        <div class="homepage-box">
-          <div class="column1">
-            <h2 class='title'>
+    <div className="profile-edit-wrapper">
+      <div className="homepage-box-wrapper">
+        <div className="homepage-box">
+          <div className="column1">
+            <h2 className='title'>
               <FeatherIcon icon="radio" />&nbsp;tune in</h2>
-              <div class="text">
+              <div className="text">
                 <p dangerouslySetInnerHTML={createMarkup(randomText[0])}></p> 
                 <p dangerouslySetInnerHTML={createMarkup(randomText[1])}></p> 
-                <p class="pullquote" dangerouslySetInnerHTML={createMarkup(randomText[2])}></p>
+                <p className="pullquote" dangerouslySetInnerHTML={createMarkup(randomText[2])}></p>
                 <p dangerouslySetInnerHTML={createMarkup(randomText[3])}></p>
               </div>
             </div>
-            <div class="column2">
-              <div class='player'>
-              <h2 class='title'>
+            <div className="column2">
+              <div className='player'>
+              <h2 className='title'>
               <FeatherIcon icon="volume-2" />&nbsp;listen</h2>
             </div>
           </div>

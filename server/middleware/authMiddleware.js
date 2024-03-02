@@ -2,8 +2,10 @@
 // This middleware is responsible for verifying the JWT token in incoming requests.
 // It ensures that the token is valid. It should not return the userID because we will use the token in the future to get the user's identity.
 
-require('dotenv').config();
-const jwtSecretKey = process.env.JWT_SECRET_KEY;
+const config = require('../config');
+
+// pull these out of the config object
+const jwtSecretKey = config.authToken.jwtSecretKey;
 
 const jwt = require('jsonwebtoken');
 

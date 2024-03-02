@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 // Hooks for Redux state management and action dispatching, if needed.
 import { useDispatch, useSelector } from 'react-redux';
 // Assuming you have an action or function to fetch user profile
-import { fetchProfile } from '../store/authSlice';
+import { profileInfo } from '../store/userSlice';
 // For redirecting the user in case they are not logged in
 import { Link, Navigate } from 'react-router-dom';
 // feather icons
@@ -28,9 +28,8 @@ function Profile() {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    console.log("isAuthenticated:", isAuthenticated);
     if (isAuthenticated) {
-      dispatch(fetchProfile())
+      dispatch(profileInfo())
         .then((res) => {
           // Dynamically update profile state with res.payload.data properties
           if (res.payload && res.payload.data) {
@@ -73,15 +72,15 @@ function Profile() {
   // Renders the user's profile information
   return (
     <div className="profile-wrapper">
-      <div class="display-box-wrapper">
-        <div class="display-box">
+      <div className="display-box-wrapper">
+        <div className="display-box">
           <div className='flex items-center'>
             <div className='flex-shrink-0'>
               <FeatherIcon icon="circle" color="#9fbfdf" fill="#9fbfdf" size="100" />
             </div>
             <div className='flex-grow ml-4 text-center'>
-              <h2 class='title'>{profile.firstname} {profile.lastname}</h2>
-              <h3 class='subtitle'>{profile.username}</h3>
+              <h2 className='title'>{profile.firstname} {profile.lastname}</h2>
+              <h3 className='subtitle'>{profile.username}</h3>
             </div>
           </div>
           {profile.bio && <p className='my-2'>{profile.bio}</p>}
@@ -111,8 +110,8 @@ function Profile() {
             </div>
           )}
         </div>
-        <div class='error-box'>
-          {error && <p class="error">{error}</p>}
+        <div className='message-box'>
+          {error && <p className="error">{error}</p>}
         </div>
       </div>
     </div>

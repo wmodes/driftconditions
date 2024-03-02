@@ -175,9 +175,15 @@ svg {
   font-weight: bold;
 }
 
-.error-box {
+.message-box {
   padding-top: 0.5rem; /* 8px */
   height: 2rem; /* 32px */
+}
+
+.success {
+  text-align: center;
+  color: #2d5b89;
+  font-weight: bold;
 }
 
 .error {

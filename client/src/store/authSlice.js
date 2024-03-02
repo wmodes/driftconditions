@@ -1,17 +1,30 @@
-//This script integrates asynchronous operations for user authentication within a Redux state management setup, highlighting the use of createAsyncThunk for API interactions and the structuring of response and error handling to maintain the application's state.
+// authSlice.js - Redux slice for user authentication
+//   - signup thunk for registering a new user
+//   - signin thunk for logging in a user
+//   - logout thunk for logging out a user
 
-// This file defines asynchronous actions for user authentication using Redux Toolkit's createAsyncThunk, facilitating side effects like API calls with Axios for a streamlined async flow within Redux.
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'; 
 import axios from 'axios';
+
+// Import the config object from the config.js file
+const config = require('../config/config');
+
+// pull variables from the config object
+const serverBaseURL = config.server.baseURL;
+
+// Routes
+const signupRoute = serverBaseURL + '/api/auth/signup';
+const signinRoute = serverBaseURL + '/api/auth/signin';
+const logoutRoute = serverBaseURL + '/api/auth/logout';
 
 // createAsyncThunk is used to handle asynchronous logic, allowing for side effects like API calls.
 // It automatically manages pending, fulfilled, and rejected action types based on the promise state.
 
 // signup thunk for registering a new user. Utilizes Axios for posting user data to the server.
 // On success or failure, it either returns the user data or rejects with an error message.
-export const signup = createAsyncThunk('auth/signup', async ({username, password, firstname, lastname, email}, thunkAPI) => {
+export const signup = createAsyncThunk(signupRoute, async ({username, password, firstname, lastname, email}, thunkAPI) => {
   try {
-    const response = await axios.post('http://localhost:8080/signup', {username, password, firstname, lastname, email});
+    const response = await axios.post(signupRoute, {username, password, firstname, lastname, email});
     return response.data;
   } catch (error) {
     return thunkAPI.rejectWithValue(error.message);  
@@ -20,10 +33,10 @@ export const signup = createAsyncThunk('auth/signup', async ({username, password
 
 // signin thunk for logging in a user. It sends username and password to the server,
 // and handles the response similarly to the signup thunk.
-export const signin = createAsyncThunk('auth/signin', async ({username, password}, thunkAPI) => {
+export const signin = createAsyncThunk(signinRoute, async ({username, password}, thunkAPI) => {
   try {
     // Send a POST request to the server with the user's credentials
-    await axios.post('http://localhost:8080/signin', {username, password}, { withCredentials: true });
+    await axios.post(signinRoute, {username, password}, { withCredentials: true });
     return { isAuthenticated: true };
   } catch (error) {
     console.error(error);
@@ -32,9 +45,9 @@ export const signin = createAsyncThunk('auth/signin', async ({username, password
 })
 
 // logout thunk for logging out a user. It sends a POST request to the server to invalidate the user's session.
-export const logout = createAsyncThunk('auth/logout', async (_, thunkAPI) => {
+export const logout = createAsyncThunk(logoutRoute, async (_, thunkAPI) => {
   try {
-    await axios.post('http://localhost:8080/logout', {}, { withCredentials: true });
+    await axios.post(logoutRoute, {}, { withCredentials: true });
     // console.log('Logout response:', response);
     return {}; // Return an empty object or any relevant data on successful logout
   } catch (error) {
@@ -42,48 +55,6 @@ export const logout = createAsyncThunk('auth/logout', async (_, thunkAPI) => {
     return thunkAPI.rejectWithValue(error.message);
   }
 });
-
-// fetchUserProfile thunk for fetching the logged-in user's profile information.
-export const fetchProfile = createAsyncThunk('auth/fetchUserProfile', async (_, thunkAPI) => {
-  try {
-    // Assuming your server is set to respond to GET or POST requests at /profile endpoint.
-    // Adjust the method (GET/POST) and headers as necessary for your API.
-    const response = await axios.post('http://localhost:8080/profile', {}, { withCredentials: true });
-    return response.data; // Assuming the response body contains the profile data
-  } catch (error) {
-    console.error('Fetch profile error:', error);
-    return thunkAPI.rejectWithValue(error.message);
-  }
-});
-
-// update profile thunk for updating user profile. Utilizes Axios for posting user data to the server.
-// On success or failure, it either returns the user data or rejects with an error message.
-export const updateProfile = createAsyncThunk(
-  'auth/profileUpdate',
-  async (userData, thunkAPI) => {
-    console.log('authSlice updateProfile running')
-    try {
-      // The userData parameter is expected to be an object containing the fields
-      // to be updated. It can include any user profile field such as password,
-      // firstname, lastname, email, bio, location, and url.
-
-      // Construct the URL for your API endpoint
-      const url = 'http://localhost:8080/profile/update';
-
-      // Make a POST request to the server with the userData
-      const response = await axios.post(url, userData, { withCredentials: true });
-      console.log('updateProfile response:', response);
-
-      // On success, the response data (presumably the updated user profile) is returned
-      return response.data;
-    } catch (error) {
-      console.error('updateProfile error:', error); 
-      // If the request fails, thunkAPI.rejectWithValue is used to return a rejected action
-      // containing the error message. This allows for error handling in the reducer.
-      return thunkAPI.rejectWithValue(error.response?.data?.error || error.message);
-    }
-  }
-);
 
 // Initial state for the auth slice, setting up default values for user authentication status.
 const initialState = {  

@@ -6,7 +6,7 @@ var grammar = tracery.createGrammar(
         "#assertion#"
     ],
     "assertion": [
-        "Interference is an online streaming audio source that captures #evocativeNounPhrase# in an #evocativeNounPhrase#.",
+        "Interference is an online streaming audio source that captures #evocativeNounPhrase# in #evocativeNounPhrase#.",
         "#thingsWeWillFind.capitalize#, #thingsWeWillFind#, and #thingsWeWillFind# weave #thingsWeWillFind# that draws listeners into #evocativeNounPhrase#.",
         "Inspired by the unpredictability of real-world radio broadcast, Interference explores the boundaries between intention and happenstance, inviting listeners to eavesdrop on #evocativeNounPhrase#.",
         "With each new listening experience, Interference offers #evocativeNounPhrase#.",
