@@ -3,7 +3,6 @@ import axios from 'axios'; // Assuming axios for HTTP requests
 
 // Import the config object from the config.js file
 const config = require('../config/config');
-
 // pull variables from the config object
 const serverBaseURL = config.server.baseURL;
 
