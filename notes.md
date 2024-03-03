@@ -42,4 +42,4 @@ Client:
     - Axios
     - react-router-dom
     - redux/toolkit
-- Tailwind
+- Tailwind / CSS

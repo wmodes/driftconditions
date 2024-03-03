@@ -9,21 +9,17 @@
   import { Provider } from 'react-redux';
   import './index.css';
   import App from './App';
-  // Homepage component.
+
+  // Page components
   import Homepage from './pages/Homepage';
-  // Signup page component.
   import Signup from './pages/Signup';
-  // Signin page component.
   import Signin from './pages/Signin';
-  // User profile page component.
   import Profile from './pages/Profile';
-  // User profile edit page component.
   import ProfileEdit from './pages/ProfileEdit';
-  // Audio upload page component.
-  import UploadAudio from './pages/UploadAudio';
-  // Error page component for handling unmatched routes.
+  import AudioUpload from './pages/AudioUpload';
+  import AudioList from './pages/AudioList';
+  import AudioEdit from './pages/AudioEdit';
   import Error from './pages/Error';
-  // Layout component that wraps around the entire application.
   import RootLayout from './layouts/RootLayout';
 
   // Just for testing purposes
@@ -51,7 +47,9 @@
         <Route path='/signin' element={<Signin />} />
         <Route path='/profile' element={<Profile />} /> 
         <Route path='/profile/edit' element={<ProfileEdit />} /> 
-        <Route path='/uploadaudio' element={<UploadAudio />} /> 
+        <Route path='/audio/upload' element={<AudioUpload />} />
+        <Route path='/audio/list' element={<AudioList />} /> 
+        <Route path='/audio/edit' element={<AudioEdit />} /> 
         <Route path='*' element={<Error />} /> 
       </Route>
     )

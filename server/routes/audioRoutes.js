@@ -173,4 +173,66 @@ const normalizeTags = (tagsString) => {
   return tagsArray;
 };
 
+// Route to list audio files
+router.post('/list', verifyToken, async (req, res) => {
+  try {
+    // Verify the token to get user ID
+    const decoded = jwt.verify(req.cookies.token, jwtSecretKey);
+    const userID = decoded.userID;
+    // Construct query to join audio table with users table for uploader and editor usernames
+    const query = `SELECT * FROM audio ORDER BY upload_date DESC`;
+    const values = []; // If you need to pass any values to the query, they would go here
+    db.query(query, values, (err, results) => {
+      if (err) {
+        console.error('Error fetching audio list:', err);
+        return res.status(500).send('Error fetching audio list');
+      }
+      const listPrepped = results.map(audio => {
+        // Optionally, remove uploader_id and editor_id if they are not needed in the response
+        delete audio.uploader_id;
+        delete audio.editor_id;
+        return audio;
+      });
+      // Return total number of records alongside the data
+      res.status(200).json({
+        totalRecords: results.length,
+        audioList: listPrepped,
+      });
+    });
+  } catch (error) {
+    console.error('Error listing audio files:', error);
+    res.status(500).send('Server error during audio list retrieval');
+  }
+});
+
+// Route to trash an audio file
+router.post('/trash', verifyToken, async (req, res) => {
+  const audioID = req.body.audioID;
+  if (!audioID) {
+    return res.status(400).send('Audio ID is required');
+  }
+  try {
+    // Verify the token to get user ID
+    const decoded = jwt.verify(req.cookies.token, jwtSecretKey);
+    const userID = decoded.userID;
+    // construct query and values
+    const query = `UPDATE audio SET status = 'Trashed' WHERE audio_id = ?`;
+    const values = [audioID];
+    db.query(query, values, (err, result) => {
+      if (err) {
+        console.error('Error trashing audio:', err);
+        return res.status(500).send('Error trashing audio');
+      }
+      if (result.affectedRows === 0) {
+        return res.status(404).send('Audio not found');
+      }
+      res.status(200).send({ message: 'Audio trashed successfully' });
+    });
+  } catch (error) {
+    console.error('Error trashing audio file:', error);
+    res.status(500).send('Server error during audio trashing');
+  }
+});
+
+
 module.exports = router;

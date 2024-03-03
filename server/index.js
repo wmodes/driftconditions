@@ -15,6 +15,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const { dbConfig, corsOptions } = require('./config');
+const { notFound, errorHandler } = require('./middleware/errorHandler');
 
 // Middleware setup
 app.use(bodyParser.urlencoded({extended: false}));
@@ -37,6 +38,12 @@ const audioRoutes = require('./routes/audioRoutes');
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/audio', audioRoutes);
+
+// Use the notFound middleware
+app.use(notFound);
+
+// Use the errorHandler middleware
+app.use(errorHandler);
 
 // Starts the server, highlighting the use of a specific port for listening to incoming requests.
 app.listen(8080, () => {

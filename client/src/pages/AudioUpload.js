@@ -1,17 +1,16 @@
-
+// AudioUpload.js - A page for uploading audio files
 
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Navigate } from 'react-router-dom';
-// Assuming there's an action defined to handle audio uploads in your Redux store
-import { uploadAudio } from '../store/audioSlice';
+import { audioUpload } from '../store/audioSlice';
 
 // Import the config object from the config.js file
 const config = require('../config/config');
 // pull variables from the config object
 const allowedFileTypes = config.audio.allowedFileTypes;
 
-function UploadAudio() {
+function AudioUpload() {
   // Local state for managing form inputs
   const [title, setTitle] = useState('');
   const [tags, setTags] = useState('');
@@ -75,7 +74,7 @@ function UploadAudio() {
     const classificationArray = Object.entries(classification).filter(([_, value]) => value).map(([key, _]) => key);
     formData.append('classification', JSON.stringify(classificationArray));
 
-    dispatch(uploadAudio(formData))
+    dispatch(audioUpload(formData))
       .unwrap()
       .then(() => {
         // Set success message on successful upload
@@ -156,4 +155,4 @@ function UploadAudio() {
   );
 }
 
-export default UploadAudio;
+export default AudioUpload;
