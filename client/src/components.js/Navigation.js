@@ -46,45 +46,40 @@ export default function Navigation() {
   
   
   // Menu items based on authentication
-  const menuItems = [
-    // Dynamically generate menu items based on authentication status
-    isAuthenticated ? (
-      <>
-        <li><div className="nav-level1"><FeatherIcon icon="volume-1" />&nbsp;Audio</div>
-          <ul className="nav-level2">
-            <li onClick={closeMenu}>
-              <Link to='/audio/list' className='nav-item'>All Audio</Link>
-            </li>
-            <li onClick={closeMenu}>
-              <Link to='/audio/upload' className='nav-item'>Add New Audio</Link>
-            </li>
-          </ul>
+  const menuItems = isAuthenticated ? [
+    <li key="audio">
+      <div className="nav-level1"><FeatherIcon icon="volume-1" />&nbsp;Audio</div>
+        <ul className="nav-level2">
+          <li key="all-audio" onClick={closeMenu}>
+            <Link to='/audio/list' className='nav-item'>All Audio</Link>
+          </li>
+          <li key="new-audio" onClick={closeMenu}>
+            <Link to='/audio/upload' className='nav-item'>Add New Audio</Link>
+          </li>
+        </ul>
+    </li>,
+    <li key="users">
+      <div className="nav-level1"><FeatherIcon icon="user" />&nbsp;Users</div>
+      <ul className="nav-level2">
+        <li key="profile" onClick={closeMenu}>
+          <Link to='/profile' className='nav-item'>Your Profile</Link>
         </li>
-        <li><div className="nav-level1"><FeatherIcon icon="user" />&nbsp;Users</div>
-          <ul className="nav-level2">
-            <li onClick={closeMenu}>
-              <Link to='/profile' className='nav-item'>Your Profile</Link>
-            </li>
-            <li onClick={closeMenu}>
-              <Link to='/' onClick={(e) => {
-                  e.preventDefault();
-                  handleLogout();
-                  closeMenu();
-                }} className='nav-item'>Logout</Link>
-            </li>
-          </ul>
+        <li key="logout" onClick={closeMenu}>
+          <Link to='/' onClick={(e) => {
+              e.preventDefault();
+              handleLogout();
+              closeMenu();
+            }} className='nav-item'>Logout</Link>
         </li>
-      </>
-    ) : (
-      <>
-        <li onClick={closeMenu}>
-          <Link to='/signup' className='nav-item'>Signup</Link>
-        </li>
-        <li onClick={closeMenu}>
-          <Link to='/signin' className='nav-item'>Signin</Link>
-        </li>
-      </>
-    )
+      </ul>
+    </li>
+  ] : [
+    <li key="signup" onClick={closeMenu}>
+      <Link to='/signup' className='nav-item'>Signup</Link>
+    </li>,
+    <li key="signin" onClick={closeMenu}>
+      <Link to='/signin' className='nav-item'>Signin</Link>
+    </li>
   ];
 
   // Renders the navigation bar with conditional links for authenticated and unauthenticated users
@@ -97,7 +92,7 @@ export default function Navigation() {
       </div>
       <div className="navburger">
         {/* Navburger Icon */}
-        <button onClick={toggleMenu}>
+        <button key="navburger" onClick={toggleMenu}>
           {/* Icon or text representing the navburger */}
           <FeatherIcon icon="menu" />&nbsp;
         </button>

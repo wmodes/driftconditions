@@ -49,8 +49,6 @@ function AudioEdit() {
       .unwrap()
       .then(response => {
         // Parse and transform the response as needed, similar to how it's done in UploadAudio
-        console.log("tags raw:", response.tags);
-        console.log("tags parsed:", response.tags.join(', '));
         setAudioDetails(prevState => ({
           ...prevState,
           ...response,

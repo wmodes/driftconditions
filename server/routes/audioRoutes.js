@@ -45,7 +45,7 @@ router.post('/list', verifyToken, async (req, res) => {
     const sort = req.body.sort || 'upload_date';
     const order = req.body.order || 'DESC';
     const filter = req.body.filter;
-    const userID = req.body.targetID || req.user.userID;
+    const targetID = req.body.targetID || req.user.userID;
 
     // Determine sort column from provided sort parameter
     const sortOptions = {
@@ -60,12 +60,12 @@ router.post('/list', verifyToken, async (req, res) => {
     // Define filter options
     const filterOptions = {
       all : {
-        query: '',
-        values: []
+        query: 'AND a.status != ?',
+        values: ['Trashed']
       },
       user: {
-        query: 'AND a.uploader_id = ?',
-        values: [userID] // userID will be dynamically added from the verified token
+        query: 'AND a.uploader_id = ? AND a.status != ?',
+        values: [targetID, 'Trashed'] 
       },
       trash: {
         query: 'AND a.status = ?',
@@ -85,9 +85,9 @@ router.post('/list', verifyToken, async (req, res) => {
       }
     };
     // Determine filter condition from provided filter parameter
-    let filterCondition = filterOptions[filter] || {};
-    let filterQuery = filterCondition.query || '';
-    let filterValues = filterCondition.values || [];
+    let filterCondition = filterOptions[filter] || filterOptions['all'];
+    let filterQuery = filterCondition.query;
+    let filterValues = filterCondition.values;
 
     // Construct the final query
     const query = `
@@ -106,6 +106,9 @@ router.post('/list', verifyToken, async (req, res) => {
       ORDER BY 
         ${sortColumn} ${order};
     `;
+
+    // console.log('Query:', query);
+    // console.log('Values:', filterValues);
 
     db.query(query, filterValues, (err, results) => {
       if (err) {

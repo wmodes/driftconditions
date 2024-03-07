@@ -311,12 +311,18 @@ function AudioList() {
                 </tbody>
               </table>
               <div className="pagination">
-                {/* Pagination controls */}
-                {[...Array(Math.ceil(totalRecords / recordsPerPage)).keys()].map(n => (
-                  <button key={n + 1} onClick={() => handlePageChange(n + 1)} disabled={page === n + 1}>
-                    {n + 1}
-                  </button>
-                ))}
+                Page: 
+                <ul>
+                  {[...Array(Math.ceil(totalRecords / recordsPerPage)).keys()].map(n => (
+                    <li>
+                      <button key={n + 1} 
+                        onClick={() => handlePageChange(n + 1)} 
+                        disabled={page === n + 1}>
+                        {n + 1}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
               </div>
               <audio className="audioPlayer" ref={audioRef} controls onEnded={() => setPlayingAudio({ ...playingAudio, playing: false })}></audio>
             </>

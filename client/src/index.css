@@ -294,13 +294,20 @@ svg {
   margin-bottom: 0.3rem;
 }
 
-.filter-box li {
-  display: inline;
-  margin-right: 0.5rem;
-  font-size: 0.9em;
+.pagination {
+  display: flex;
+  justify-content: flex-end;
+  font-size: 0.9rem;
 }
 
-.filter-box li:not(:last-child)::after {
+.filter-box li, .pagination li {
+  display: inline;
+  margin-right: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.filter-box li:not(:last-child)::after,
+.pagination li:not(:last-child)::after {
   content: "|";
   margin: 0 0.20rem; /* Adjust spacing around the separator as needed */
 }
