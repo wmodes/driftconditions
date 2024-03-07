@@ -33,6 +33,11 @@ function AudioList() {
   const [totalRecords, setTotalRecords] = useState(0);
   const [playingAudio, setPlayingAudio] = useState({ src: "", playing: false });
 
+  // Add sort, order, and filter to state
+  const [sort, setSort] = useState('');
+  const [order, setOrder] = useState('DESC'); // Default to DESC
+  const [filter, setFilter] = useState('');
+  const [targetID, setTargetID] = useState(null);
 
   // Success and error handling
   const [retryAttempt, setRetryAttempt] = useState(0);
@@ -47,30 +52,40 @@ function AudioList() {
   const audioRef = useRef(null);
 
   useEffect(() => {
-    if (!isAuthenticated || retryAttempt >= retryLimit || !isLoading) return;
+    if (!isAuthenticated || retryAttempt >= retryLimit) return;
     setIsLoading(true); // Start loading
-
-    const queryParams = { ...currentFilters, page, recordsPerPage };
-
+  
+    // Directly extract params from URL each time the effect runs
+    const searchParams = new URLSearchParams(location.search);
+    const page = searchParams.get('page') || 1;
+    const sort = searchParams.get('sort') || 'date';
+    const order = searchParams.get('order') || 'DESC';
+    const filter = searchParams.get('filter') || 'all';
+  
+    const queryParams = {
+      page,
+      sort,
+      order,
+      filter,
+      recordsPerPage,
+    };
+  
     dispatch(audioListAction({ queryParams }))
       .unwrap()
       .then(response => {
-        console.log("Response: ", response);
-        console.log("Audio List:", response.audioList, "Total Records:", response.totalRecords);
-        // Assuming the response includes the list of audio records and the total number of records
         setAudioList(response.audioList);
         setTotalRecords(response.totalRecords);
-        // setSuccessMessage('Audio list fetched successfully.'); // Update success message
         setIsLoading(false); // Stop loading once data is fetched
       })
       .catch(error => {
         console.error("Error fetching audio list:", error);
-        setCriticalError('Failed to fetch audio list.'); 
+        setCriticalError('Failed to fetch audio list.');
         setAudioList([]);
         setIsLoading(false); // Stop loading on error
-        setRetryAttempt(retryAttempt + 1); // Increment retry attempt
+        setRetryAttempt(prevAttempt => prevAttempt + 1); // Increment retry attempt
       });
-    }, [dispatch, page, recordsPerPage, currentFilters, isAuthenticated, retryAttempt, isLoading]);
+  // Only dependency is location.search to react to changes in search parameters
+  }, [dispatch, location.search, isAuthenticated, retryAttempt, recordsPerPage]);
 
   const audioTrash = (audioID) => {
     dispatch(audioTrashAction({ audioID }))
@@ -93,6 +108,29 @@ function AudioList() {
     setSuccessMessage('');
     setCriticalError('');
     setError('');
+  };
+
+  const handleSort = (newSort, newOrder = 'DESC') => {
+    const searchParams = new URLSearchParams(location.search);
+    newSort && searchParams.set('sort', newSort);
+    newOrder && searchParams.set('order', newOrder);
+    navigate(`${location.pathname}?${searchParams.toString()}`);
+  };
+  
+  const handleFilter = (newFilter, targetID = null) => {
+    const searchParams = new URLSearchParams(location.search);
+  
+    if (newFilter === 'all') {
+      searchParams.delete('filter');
+    } else {
+      searchParams.set('filter', newFilter);
+      if (newFilter === 'user' && targetID) {
+        searchParams.set('targetID', targetID);
+      } else {
+        searchParams.delete('targetID');
+      }
+    }
+    navigate(`${location.pathname}?${searchParams.toString()}`);
   };
 
   // Placeholder for roles check function
@@ -163,14 +201,62 @@ function AudioList() {
           </div>
           {!criticalError && !isLoading ? (
             <>
+              <div className="filter-box">
+                <ul>
+                  <li>
+                    <button className="link" onClick={() => handleFilter('all')}>
+                      All
+                    </button>
+                  </li>
+                  <li>
+                    <button className="link" onClick={() => handleFilter('review')}>
+                      Review
+                    </button>
+                  </li>
+                  <li>
+                    <button className="link" onClick={() => handleFilter('approved')}>
+                      Approved
+                    </button>
+                  </li>
+                  <li>
+                    <button className="link" onClick={() => handleFilter('disapproved')}>
+                      Disapproved
+                    </button>
+                  </li>
+                  <li>
+                    <button className="link" onClick={() => handleFilter('trash')}>
+                      Trash
+                    </button>
+                  </li>
+                </ul>
+              </div>
               <table className="audio-table big-table">
                 <thead>
                   <tr>
-                    <th className="id">ID</th>
-                    <th className="title">Title</th>
-                    <th className="author">Author / Date</th>
+                    <th className="id">
+                      <button className="link" onClick={() => handleSort('id', 'ASC')}>
+                        ID
+                      </button>
+                    </th>
+                    <th className="title">
+                      <button className="link" onClick={() => handleSort('title', 'ASC')}>
+                        Title
+                      </button>
+                    </th>
+                    <th className="author">
+                      <button className="link" onClick={() => handleSort('author', 'ASC')}>
+                        Author
+                      </button> / 
+                      <button className="link" onClick={() => handleSort('date', 'ASC')}>
+                         Date
+                      </button>
+                    </th>
                     <th className="duration">Duration</th>
-                    <th className="status">Status</th>
+                    <th className="status">
+                      <button className="link" onClick={() => handleSort('status', 'DESC')}>
+                        Status
+                      </button>
+                    </th>
                     <th className="classification">Classification</th>
                     <th className="tags">Tags</th>
                     <th className="listen">Listen</th>
@@ -192,11 +278,21 @@ function AudioList() {
                       </td>
                       <td className="author">
                         <div className="authorline">
-                          Upload: <Link to={`/profile/${audio.uploader_username}`}>{audio.uploader_username}</Link> on {niceDate(audio.upload_date)}
+                          Upload:&nbsp;
+                          <button className="link" 
+                            onClick={() => handleFilter('user', audio.uploader_username)}>
+                            {audio.uploader_username}
+                          </button> 
+                          &nbsp;on {niceDate(audio.upload_date)}
                         </div>
                         {audio.editor_username && (
                           <div className="authorline">
-                            Edit: <Link to={`/profile/${audio.editor_username}`}>{audio.editor_username}</Link> on {niceDate(audio.edit_date)}
+                            Edit:&nbsp;
+                            <button className="link" 
+                              onClick={() => handleFilter('user', audio.editor_username)}>
+                              {audio.editor_username}
+                            </button> 
+                            &nbsp;on {niceDate(audio.edit_date)}
                           </div>
                         )}
                       </td>

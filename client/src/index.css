@@ -33,8 +33,6 @@ svg {
 
 .display-box a, .link {
   color: var(--link-color) !important;
-  /* text-transform: uppercase; */
-  /* font-size: 0.9em; */
   font-weight: 500;
 }
 
@@ -235,6 +233,11 @@ svg {
   font-size: 0.9rem;
 }
 
+.big-table .link {
+  color: var(--link-color) !important;
+  font-weight: 800;
+}
+
 .big-table thead {
   border: 1px solid var(--table-border-color);
 }
@@ -285,6 +288,21 @@ svg {
 .big-table .action-list li {
   display: inline;
   margin-right: 0.5rem;
+}
+
+.filter-box {
+  margin-bottom: 0.3rem;
+}
+
+.filter-box li {
+  display: inline;
+  margin-right: 0.5rem;
+  font-size: 0.9em;
+}
+
+.filter-box li:not(:last-child)::after {
+  content: "|";
+  margin: 0 0.20rem; /* Adjust spacing around the separator as needed */
 }
 
 /*

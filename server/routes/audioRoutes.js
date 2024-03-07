@@ -59,6 +59,10 @@ router.post('/list', verifyToken, async (req, res) => {
 
     // Define filter options
     const filterOptions = {
+      all : {
+        query: '',
+        values: []
+      },
       user: {
         query: 'AND a.uploader_id = ?',
         values: [userID] // userID will be dynamically added from the verified token
@@ -102,8 +106,6 @@ router.post('/list', verifyToken, async (req, res) => {
       ORDER BY 
         ${sortColumn} ${order};
     `;
-
-    console.log('Query:', query);
 
     db.query(query, filterValues, (err, results) => {
       if (err) {
