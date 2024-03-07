@@ -15,13 +15,23 @@ const serverBaseURL = config.server.baseURL;
 const profileRoute = serverBaseURL + '/api/user/profile';
 const profileEditRoute = serverBaseURL + '/api/user/profile/edit';
 
-export const profileInfo = createAsyncThunk(profileRoute, async (_, thunkAPI) => {
+export const profileInfo = createAsyncThunk('user/profileInfo', async (username, thunkAPI) => {
+  // Prepare the request body based on whether a username is provided
+  const requestBody = username ? { targetUsername: username } : {};
+
   try {
-    const response = await axios.post(profileRoute, {}, { withCredentials: true });
-    return response.data;
+    const response = await axios.post(profileRoute, requestBody, { withCredentials: true });
+    if (response.data.success) {
+      return response.data;
+    } else {
+      // Assuming your API consistently returns a success flag and a message in cases of failure
+      return thunkAPI.rejectWithValue(response.data.message);
+    }
   } catch (error) {
     console.error('Fetch profile error:', error);
-    return thunkAPI.rejectWithValue(error.message);
+    // Assuming your API error responses are structured in a certain way
+    const message = error.response?.data?.message || error.message;
+    return thunkAPI.rejectWithValue(message);
   }
 });
 

@@ -7,10 +7,11 @@ const config = {
     routes: {
       audioUpload: '/api/audio/upload',
       audioInfo: '/api/audio/info',
-      audioEdit: '/api/audio/edit',
+      audioUpdate: '/api/audio/update',
       audioList: '/api/audio/list',
       audioTrash: '/api/audio/trash',
     },
+    audioBaseURL: 'http://localhost:8080/api/audio/sample',
   },
   audio: {
     allowedFileTypes: ['audio/mpeg', 'audio/wav', 'audio/ogg', 'audio/flac'],

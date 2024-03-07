@@ -8,7 +8,7 @@
   // Redux Provider to make the store available to all components.
   import { Provider } from 'react-redux';
   import './index.css';
-  import App from './App';
+  // import App from './App';
 
   // Page components
   import Homepage from './pages/Homepage';
@@ -46,9 +46,11 @@
         <Route path='/signup' element={<Signup />} />
         <Route path='/signin' element={<Signin />} />
         <Route path='/profile' element={<Profile />} /> 
+        <Route path="/profile/:username" element={<Profile />} />
         <Route path='/profile/edit' element={<ProfileEdit />} /> 
         <Route path='/audio/upload' element={<AudioUpload />} />
         <Route path='/audio/list' element={<AudioList />} /> 
+        <Route path='/audio/edit/:audioID' element={<AudioEdit />} />
         <Route path='/audio/edit' element={<AudioEdit />} /> 
         <Route path='*' element={<Error />} /> 
       </Route>

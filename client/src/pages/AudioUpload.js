@@ -2,8 +2,9 @@
 
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Navigate } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { audioUpload } from '../store/audioSlice';
+import { formatTagsForDB, formatTagsForDisplay } from '../utils/dataUtils';
 
 // Import the config object from the config.js file
 const config = require('../config/config');
@@ -17,6 +18,7 @@ function AudioUpload() {
   const [comments, setComments] = useState('');
   const [file, setFile] = useState(null);
   const [isCertified, setIsCertified] = useState(false);
+  const [uploadedAudioID, setUploadedAudioID] = useState(null);
 
   // Accessing the authentication state to check if the user is logged in
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
@@ -37,6 +39,7 @@ function AudioUpload() {
     soundEffects: false,
     other: false,
   });
+  
   // Handle classification checkbox change
   const handleClassificationChange = (e) => {
     const { name, checked } = e.target;
@@ -61,31 +64,35 @@ function AudioUpload() {
 
   const submitHandler = e => {
     e.preventDefault();
-    // Convert tags from string to array
-    const tagsArray = tags.split(',').map(tag => tag.trim());
+    
+    // Normalize tags before converting them to array for submission
+    const normalizedTags = formatTagsForDB(tags);
+  
     // Create a FormData object to submit the file and other form data
     const formData = new FormData();
     formData.append('title', title);
-    formData.append('tags', JSON.stringify(tagsArray));
+    formData.append('tags', JSON.stringify(normalizedTags)); // Use normalized tags
     formData.append('comments', comments);
     formData.append('file', file);
     formData.append('copyright_cert', isCertified ? 1 : 0);
     // Convert classification object to an array of keys where the value is true
     const classificationArray = Object.entries(classification).filter(([_, value]) => value).map(([key, _]) => key);
     formData.append('classification', JSON.stringify(classificationArray));
-
+  
     dispatch(audioUpload(formData))
       .unwrap()
-      .then(() => {
-        // Set success message on successful upload
-        setSuccessMessage('Upload successful!'); 
-        // setFormError('');
+      .then(response => {
+        setSuccessMessage('Upload successful!');
+        setFormError('');
+        setUploadedAudioID(response.audioID);
+        // Update tags input with normalized tags
+        setTags(formatTagsForDisplay(normalizedTags));
       })
       .catch(error => {
-        // Handle any error here
         console.error("Upload error:", error);
+        setFormError(error.message || 'Failed to upload audio.');
       });
-  };
+  };  
 
   // Redirect to signin page if not authenticated
   if (isAuthenticated === false) {
@@ -141,8 +148,15 @@ function AudioUpload() {
             </div>
             
             <div className='button-box'>
-              <button className='button submit' type="submit" disabled={!isFormValid}>Upload</button>
+              <button className='button submit' type="submit" disabled={!isFormValid || uploadedAudioID}>Upload</button>
             </div>
+            {uploadedAudioID && (
+              <div className="edit-box">
+              <Link to={`/audio/edit/${uploadedAudioID}`} className="edit-button">
+                  Edit
+                </Link>
+              </div>
+            )}
             <div className='message-box'>
               {successMessage && <p className="success">{successMessage}</p>}
               {formError && <p className="error">{formError}</p>}

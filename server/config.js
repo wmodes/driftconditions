@@ -23,6 +23,7 @@ module.exports = {
     cookieExpires: 7 * 24 * 60 * 60 * 1000, // 7 days in
   },
   corsOptions: {
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     origin: 'http://localhost:3000',
     credentials: true,
   },

@@ -1,13 +1,17 @@
+@import url('https://fonts.googleapis.com/css2?family=Anton&display=swap');
 
 :root {
   --body-color: #f5f5f5;
   --link-color: #135394;
   --logo-color: #fff;
+  --nav-background-color: #336699;
+  --nav-text-color: #fff;
   --content-box-color: #E5E7EB;
   --content-box-border-color: #D1D5DB;
-  --text-wingding-color: #333;
+  --text-wingding-color: #303030;
   --table-background-color: #fff;
-  --table-background-2-color: #eee;
+  --table-background-2-color: #f2f2f2;
+  --table-background-hover-color: #e3e5e8;
   --table-border-color: #D1D5DB;
   --error-text-color: #dc2626;
   --success-text-color: #2d5b89;
@@ -27,7 +31,7 @@ svg {
   display: inline !important;
 }
 
-.profile-wrapper a {
+.display-box a, .link {
   color: var(--link-color) !important;
   /* text-transform: uppercase; */
   /* font-size: 0.9em; */
@@ -35,17 +39,86 @@ svg {
 }
 
 /*
- *  Naviggation Elements
+ *  Navigation Elements
  */
 
-#logo {
-  width: auto;
-  height: 30px !important;
+.navbar {
+  display: flex; /* flex */
+  align-items: center; /* items-center */
+  justify-content: space-between; /* justify-between */
+  width: 100%; /* w-full */
+  height: 4rem; /* h-16 */
+  padding-top: 0.5rem; /* py-2 */
+  padding-bottom: 0.5rem; /* py-2 */
+  color: white; /* text-white */
+  border-bottom: 1px solid; /* border-b */
+  padding-left: 7rem; /* px-28 */
+  padding-right: 7rem; /* px-28 */
+  margin-bottom: 0.25rem; /* mb-1 */
+  background-color: var(--nav-background-color); /* bg-cornflower */
 }
 
-#logo g {
-  stroke: var(--logo-color) !important; /* White stroke */
-  fill: var(--logo-color) !important; /* Adjust fill color as needed */
+.logo-wrapper {
+  position: relative;
+  height: 40px;
+  width: 100%;
+  overflow: hidden;
+}
+
+.logo-wrapper .logo {
+  font-size: 30px;
+  font-family: "Anton", sans-serif;
+  font-weight: 800;
+  font-style: normal;
+  text-transform: lowercase;
+}
+
+.navburger {
+  position: relative;
+  margin-top: 1.5rem;
+  color: var(--nav-text-color);
+}
+
+.nav-dropdown {
+  margin-top: -0.5rem; 
+  padding-top: 0.5rem; /* py-2 */
+  padding-bottom: 0.5rem; /* py-2 */
+  padding-left: 1.5rem; /* px-6 */
+  padding-right: 1.5rem; /* px-6 */
+  position: absolute; /* absolute */
+  right: 0; /* right-0 */
+  width: 12rem; /* w-48 */
+  background-color: var(--nav-background-color); /* bg-cornflower */
+  color: var(--nav-text-color); /* text-white */
+}
+
+.nav-level1 {
+  font-size: 1.1rem;
+  font-weight:500;
+  margin-top: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.nav-level1 svg {
+  width: 20px;
+  height: 20px;
+}
+
+.nav-level2 {
+
+}
+
+.nav-item {
+  display: block; /* block */
+  padding-left: 1rem; /* px-4 */
+  padding-right: 1rem; /* px-4 */
+  padding-top: 0.25rem; /* py-2 */
+  padding-bottom: 0.25rem; /* py-2 */
+  color: white; /* text-white */
+}
+
+.nav-item:hover {
+  background-color: #3b82f6; /* hover:bg-blue-500 */
 }
 
 /*
@@ -105,8 +178,8 @@ svg {
   margin-bottom: 1rem;
   padding-top: 1rem;
   padding-bottom: 1rem;
-  border-top: 3px solid var(--text-wingding-color); /* border-gray-400 */
-  border-bottom: 3px solid var(--text-wingding-color); /* border-gray-400 */
+  border-top: 3px solid #333;
+  border-bottom: 3px solid #333;
   line-height: 1.5;
   text-align: center;
   font-size: 1.5rem;
@@ -150,27 +223,68 @@ svg {
 }
 
 /*
- *  Table Elements
+ *  Big Table Elements
  */
 
-table thead {
+.big-table {
+  width: 100%;
+  max-width: 100%;
+  border-collapse: collapse;
+  background-color: var(--table-background-color);
+  border: 2px solid var(--table-border-color);
+  font-size: 0.9rem;
+}
+
+.big-table thead {
   border: 1px solid var(--table-border-color);
 }
 
-table thead tr {
-  background-color: var(--table-background-color) !important;
+.big-table th {
+  text-align: left;
+  font-size: 1em;
+  font-weight: normal;
 }
 
-table th, table td {
+.big-table th, .big-table td {
   padding: 0 0.5rem;
 }
 
-table tr:nth-child(odd) {
+.big-table thead tr {
+  background-color: var(--table-background-color) !important;
+}
+
+.big-table tr:nth-child(odd) {
   background-color: var(--table-background-2-color); 
 }
 
-table tr:nth-child(even) {
+.big-table tr:nth-child(even) {
   background-color: var(--table-background-color);
+}
+
+.big-table tr:hover {
+  background-color: #f2f2f2; /* bg-gray-300 */
+}
+
+.big-table td {
+  vertical-align: top;
+}
+
+.big-table .action-list {
+  font-size: 0.75rem;
+  visibility: hidden;
+}
+
+.big-table tr:hover {
+  background-color: var(--table-background-hover-color);
+}
+
+.big-table tr:hover .action-list {
+  visibility: visible;
+}
+
+.big-table .action-list li {
+  display: inline;
+  margin-right: 0.5rem;
 }
 
 /*
@@ -189,40 +303,55 @@ table tr:nth-child(even) {
   padding-bottom: 0;
 }
 
-.audio-table {
-  width: 100%;
-  border-collapse: collapse;
-  background-color: var(--table-background-color);
-  border: 2px solid var(--table-border-color);
-}
-
-.audio-table th {
-  text-align: left;
-  font-size: 1em;
-  font-weight: normal;
-}
-
 .audio-table .title {
-  width: 20rem;
+  width: 15rem;
 }
 
-.audio-table .action-list {
-  font-size: 0.75rem;
+.audio-table .author .authorline {
+  /* white-space: nowrap; */
+}
+
+.audioPlayer {
   visibility: hidden;
 }
 
-.audio-table tr:hover .action-list {
-  visibility: visible;
+/* Animated icon madness */
+
+/* Initially hide all but frame0 which is always on */
+.listen button svg .frame0 {
+  opacity: 1 !important;
+}
+.listen button svg .frame1,
+.listen button svg .frame2 {
+  opacity: 0; 
 }
 
-.audio-table .action-list li {
-  display: inline;
-  margin-right: 0.5rem;
+/* Define the animation for cycling icons */
+@keyframes cycleIcons {
+  0%, 60%, 100% { opacity: 0; }
+  0.1% { opacity: 1; }
 }
+
+.listen button.active svg .frame1 {
+  animation: cycleIcons 1s infinite;
+  animation-delay: 0.3s; 
+}
+
+.listen button.active svg .frame2 {
+  animation: cycleIcons 1s infinite;
+  animation-delay: 0.6s; 
+}
+
 
 /*
  *  Form Elements
  */
+
+.form-group {
+  margin-bottom: 1rem;
+  border: solid 1px var(--content-box-border-color);
+  padding: 1rem;
+}
 
 .form-label {
   margin-bottom: 4px;
@@ -313,6 +442,20 @@ button.submit:disabled {
   color: var(--button-disabled-text-color);
   cursor: not-allowed;
 }
+
+form .edit-box {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.edit-button {
+  margin-top: 20px;
+  margin-bottom: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  font-size: 0.875rem;
+}
+
 
 /*
  *  Tailwind CSS v2.0.2

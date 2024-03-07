@@ -43,3 +43,38 @@ Client:
     - react-router-dom
     - redux/toolkit
 - Tailwind / CSS
+
+Names that ChatGPT and I created:
+
+EchoLume
+VoxLiminal
+AuralPath
+EchoForge
+LiminalTone
+VoxEther
+VoxScape
+EchoVox
+
+static on a radio driving on a dark highway. 
+sounds in a seashell . 
+shattered dreams. 
+diaspora from a catalyzing event. 
+a faded bar in a forgotten part of town. 
+a broken jukebox in which you can still hear echos. 
+a speech that no one was there to hear. 
+rain on a metal roof.
+
+Static Drift
+Radio Chatter
+Radio Nocturne
+Whiskey Murmurs
+Toxic Event
+Drift Conditions
+Radio Interference
+Dusk Variations
+Drift Frequencies
+Radio Halcyon
+Radio Mirage
+Radio Elegy
+Radio Diaspora
+Project Aether

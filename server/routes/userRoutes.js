@@ -38,11 +38,17 @@ router.post('/profile', verifyToken, async (req, res) => {
     const decoded = jwt.verify(token, jwtSecretKey);
     const userIDFromToken = decoded.userID;
 
-    // Determine the targetID: Use provided targetID from the body or fallback to userID from the token
-    const targetID = req.body.targetID || userIDFromToken;
+    // Determine the target: Use provided targetID or username from the body or fallback to userID from the token
+    const { targetID, targetUsername } = req.body; // Get username from the request body
+    let userInfo;
 
-    // Fetch the target user's information based on targetID or the userID from the token if targetID is not provided
-    const userInfo = await getUserInfo({ userID: targetID });
+    // Attempt to fetch the target user's information based on targetID or username
+    userInfo = await getUserInfo({ userID: targetID || userIDFromToken, username: targetUsername });
+
+    // Check if userInfo is null (user not found) and respond accordingly
+    if (!userInfo) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
 
     // Filter userInfo to include only the specified fields
     const filteredUserInfo = Object.keys(userInfo).reduce((acc, key) => {
@@ -53,7 +59,7 @@ router.post('/profile', verifyToken, async (req, res) => {
     }, {});
 
     // Determine if the edit flag should be true or false
-    const isEditable = targetID == userIDFromToken;
+    const isEditable = targetID === userIDFromToken || (!targetID && !targetUsername);
 
     // Respond with the user's information and the edit flag
     res.status(200).json({
@@ -61,8 +67,9 @@ router.post('/profile', verifyToken, async (req, res) => {
       data: { ...filteredUserInfo, edit: isEditable }
     });
   } catch (error) {
+    // Log the error and respond with a server error status
     console.error('Error in profile route:', error);
-    res.status(500).send("Server error");
+    res.status(500).json({ success: false, message: "Server error" });
   }
 });
 

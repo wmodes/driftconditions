@@ -8,8 +8,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 // Imports the logout action for user sign-out.
 import { logout } from '../store/authSlice';
-// Import logo
-import { ReactComponent as Logo } from '../images/interference.svg';
 // feather icons
 import FeatherIcon from 'feather-icons-react';
 
@@ -17,7 +15,10 @@ import FeatherIcon from 'feather-icons-react';
 export default function Navigation() {
   // Accesses Redux state to check if the user is authenticated
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
-  // console.log("isAuthenticated:", isAuthenticated);
+  // Access projectName from the global state
+  const projectName = useSelector(state => state.app.projectName);
+  // console.log("nav Project Name: ", projectName);
+  
   // Initializes dispatch function for logging out
   const dispatch = useDispatch();
   // Initializes the navigate hook for redirecting the user.
@@ -49,27 +50,38 @@ export default function Navigation() {
     // Dynamically generate menu items based on authentication status
     isAuthenticated ? (
       <>
-        <li onClick={closeMenu}>
-          <Link to='/profile' className='block px-4 py-2 text-white hover:bg-blue-500'>Profile</Link>
+        <li><div className="nav-level1"><FeatherIcon icon="volume-1" />&nbsp;Audio</div>
+          <ul className="nav-level2">
+            <li onClick={closeMenu}>
+              <Link to='/audio/list' className='nav-item'>All Audio</Link>
+            </li>
+            <li onClick={closeMenu}>
+              <Link to='/audio/upload' className='nav-item'>Add New Audio</Link>
+            </li>
+          </ul>
         </li>
-      <li onClick={closeMenu}>
-        <Link to='/audio/upload' className='block px-4 py-2 text-white hover:bg-blue-500'>Upload Audio</Link>
-      </li>
-        <li onClick={closeMenu}>
-          <Link to='/' onClick={(e) => {
-              e.preventDefault();
-              handleLogout();
-              closeMenu();
-            }} className='block px-4 py-2 text-white hover:bg-blue-500'>Logout</Link>
+        <li><div className="nav-level1"><FeatherIcon icon="user" />&nbsp;Users</div>
+          <ul className="nav-level2">
+            <li onClick={closeMenu}>
+              <Link to='/profile' className='nav-item'>Your Profile</Link>
+            </li>
+            <li onClick={closeMenu}>
+              <Link to='/' onClick={(e) => {
+                  e.preventDefault();
+                  handleLogout();
+                  closeMenu();
+                }} className='nav-item'>Logout</Link>
+            </li>
+          </ul>
         </li>
       </>
     ) : (
       <>
         <li onClick={closeMenu}>
-          <Link to='/signup' className='block px-4 py-2 text-white hover:bg-blue-500'>Signup</Link>
+          <Link to='/signup' className='nav-item'>Signup</Link>
         </li>
         <li onClick={closeMenu}>
-          <Link to='/signin' className='block px-4 py-2 text-white hover:bg-blue-500'>Signin</Link>
+          <Link to='/signin' className='nav-item'>Signin</Link>
         </li>
       </>
     )
@@ -77,18 +89,20 @@ export default function Navigation() {
 
   // Renders the navigation bar with conditional links for authenticated and unauthenticated users
   return (
-    <nav className='flex items-center justify-between w-full h-16 py-2 text-white border-b px-28 mb-1 bg-cornflower'>
-      <Link to='/'>
-        <Logo id="logo" />
-      </Link>
-      <div className="relative">
+    <nav className='navbar'>
+      <div className="logo-wrapper">
+        <Link className="logo" to='/'>
+          {projectName}
+        </Link>
+      </div>
+      <div className="navburger">
         {/* Navburger Icon */}
-        <button onClick={toggleMenu} className="px-2 py-1 text-white">
+        <button onClick={toggleMenu}>
           {/* Icon or text representing the navburger */}
           <FeatherIcon icon="menu" />&nbsp;
         </button>
         {/* Dropdown Menu */}
-        <ul className={`mt-2 py-2 px-6 absolute right-0 w-48 bg-cornflower ${isMenuOpen ? 'block' : 'hidden'}`}>
+        <ul className={`nav-dropdown ${isMenuOpen ? 'block' : 'hidden'}`}>
           {menuItems}
         </ul>
       </div>

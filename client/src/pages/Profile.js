@@ -6,11 +6,17 @@ import { useDispatch, useSelector } from 'react-redux';
 // Assuming you have an action or function to fetch user profile
 import { profileInfo } from '../store/userSlice';
 // For redirecting the user in case they are not logged in
-import { Link, Navigate } from 'react-router-dom';
+import { Link, Navigate, useParams, useNavigate } from 'react-router-dom';
 // feather icons
 import FeatherIcon from 'feather-icons-react';
 
 function Profile() {
+  // Accessing the username from the URL
+  const { username } = useParams();
+  // Accessing Redux state for user (to check if logged in)
+  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
+  // State hooks to store error message
+  const [error, setError] = useState('');
   // State hooks to store user profile information
   const [profile, setProfile] = useState({
     username: '',
@@ -21,30 +27,48 @@ function Profile() {
     added_on: '',
   });
 
-  // Accessing Redux state for user (to check if logged in)
-  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
-  const error = useSelector((state) => state.auth.error);
+  const notFoundUser = {
+    username: '$&**$%@!',
+    firstname: 'User',
+    lastname: 'Not Found',
+    email: 'notfound@modes.io',
+    url: 'https://unavoidabledisaster.com',
+    location: "Nowhere",
+    bio: "An enigmatic figure vanishing in digital shadows, leaving a trail of 404 errors, and enjoying unresolvable DNS queries. A true internet mystery.", 
+    role_name: 'A mystery wrapped in an enigma',
+    added_on: 'January 1, 1970',
+  }
 
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (isAuthenticated) {
-      dispatch(profileInfo())
+      dispatch(profileInfo(username)) // Dispatching with potentially undefined username
         .then((res) => {
-          // Dynamically update profile state with res.payload.data properties
           if (res.payload && res.payload.data) {
             let newProfile = {};
             for (const [key, value] of Object.entries(res.payload.data)) {
               newProfile[key] = value;
             }
             setProfile(newProfile);
+            if (!username) {
+              // Navigate to URL including the user's username
+              navigate(`/profile/${newProfile.username}`, { replace: true });
+            }
+          } else if (res.error) {
+            // Handle the case where the user is not found
+            setError('User not found');
+            setProfile(notFoundUser); // Set the profile information to a notFoundUser
           }
         })
         .catch((error) => {
           console.error("Failed to fetch profile:", error);
+          setError(error.toString());
+          setProfile(notFoundUser); // Fallback to notFoundUser in case of any error
         });
     }
-  }, [dispatch, isAuthenticated, error]);
+  }, [dispatch, isAuthenticated, username, navigate]);
 
   // If not logged in, redirect to sign-in page
   if (isAuthenticated === false) {
@@ -103,15 +127,15 @@ function Profile() {
           Current role: <span className="italic capitalize">{profile.role_name}</span>
           </p>
           {profile.edit && (
-            <div className="flex justify-end">
-              <Link to="/profile/edit" className="mt-5 mb-0 py-0 text-sm">
+            <div className="edit-box">
+              <Link to="/profile/edit" className="edit-button">
                 Edit
               </Link>
             </div>
           )}
-        </div>
-        <div className='message-box'>
-          {error && <p className="error">{error}</p>}
+          <div className='message-box'>
+            {error && <p className="error">{error}</p>}
+          </div>
         </div>
       </div>
     </div>

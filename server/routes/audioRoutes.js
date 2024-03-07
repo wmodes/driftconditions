@@ -1,6 +1,10 @@
 // audioRoutes.js - This file contains the routes for audio file upload and management.
 // List of routes:
 //   /api/audio/upload - Route to upload audio file
+//   /api/audio/info - Route to fetch audio info
+//   /api/audio/list - Route to list audio files
+//   /api/audio/update - Route to update audio information
+//   /api/audio/trash - Route to trash an audio file
 
 // foundational imports
 const express = require('express');
@@ -31,12 +35,165 @@ const tmpFileDir = config.upload.tmpFileDir;
 // AUDIO UPLOAD & MANAGEMENT
 //
 
+
+
+// Route to list audio files
+router.post('/list', verifyToken, async (req, res) => {
+  try {
+
+    // Construct sort and filter parameters
+    const sort = req.body.sort || 'upload_date';
+    const order = req.body.order || 'DESC';
+    const filter = req.body.filter;
+    const userID = req.body.targetID || req.user.userID;
+
+    // Determine sort column from provided sort parameter
+    const sortOptions = {
+      id: 'audio_id',
+      title: 'LOWER(title)',
+      status: 'LOWER(status)',
+      author: 'uploader_id', 
+      date: 'upload_date',
+    };
+    const sortColumn = sortOptions[sort] || 'upload_date';
+
+    // Define filter options
+    const filterOptions = {
+      user: {
+        query: 'AND a.uploader_id = ?',
+        values: [userID] // userID will be dynamically added from the verified token
+      },
+      trash: {
+        query: 'AND a.status = ?',
+        values: ['Trashed']
+      },
+      review: {
+        query: 'AND a.status = ?',
+        values: ['Review']
+      },
+      approved: {
+        query: 'AND a.status = ?',
+        values: ['Approved']
+      },
+      disapproved: {
+        query: 'AND a.status = ?',
+        values: ['Disapproved']
+      }
+    };
+    // Determine filter condition from provided filter parameter
+    let filterCondition = filterOptions[filter] || {};
+    let filterQuery = filterCondition.query || '';
+    let filterValues = filterCondition.values || [];
+
+    // Construct the final query
+    const query = `
+      SELECT 
+        a.*,
+        u1.username AS uploader_username,
+        u2.username AS editor_username
+      FROM 
+        audio a
+      LEFT JOIN 
+        users u1 ON a.uploader_id = u1.user_id
+      LEFT JOIN 
+        users u2 ON a.editor_id = u2.user_id
+      WHERE 1=1
+        ${filterQuery}
+      ORDER BY 
+        ${sortColumn} ${order};
+    `;
+
+    console.log('Query:', query);
+
+    db.query(query, filterValues, (err, results) => {
+      if (err) {
+        console.error('Error fetching audio list:', err);
+        return res.status(500).send('Error fetching audio list');
+      }
+      // Return total number of records alongside the data
+      res.status(200).json({
+        totalRecords: results.length,
+        audioList: results,
+      });
+    });
+  } catch (error) {
+    console.error('Error listing audio files:', error);
+    res.status(500).send('Server error during audio list retrieval');
+  }
+});
+
+// Route to fetch audio info
+router.post('/info', verifyToken, async (req, res) => {
+  const { audioID } = req.body;
+  if (!audioID) {
+    return res.status(400).send('Audio ID is required');
+  }
+  try {
+    // Verify token and get userID (optional for this route, depending on your security model)
+    const decoded = jwt.verify(req.cookies.token, jwtSecretKey);
+    // You might not need the userID here unless you're checking if the user has the right to view this audio's info
+
+    // Construct query to fetch audio info from the database
+    const query = `SELECT * FROM audio WHERE audio_id = ?`;
+    const values = [audioID];
+
+    db.query(query, values, (err, result) => {
+      if (err) {
+        console.error('Error fetching audio info:', err);
+        return res.status(500).send('Error fetching audio info');
+      }
+      if (result.length === 0) {
+        // If no record is found, send a 404 Not Found response
+        return res.status(404).send('Audio not found');
+      }
+      // Assuming result returns an array, and we need the first item if it exists
+      res.status(200).json(result[0]);
+    });
+  } catch (error) {
+    console.error('Error verifying token or fetching audio info:', error);
+    res.status(500).send('Server error during audio info retrieval');
+  }
+});
+
+// Route to trash an audio file
+router.post('/trash', verifyToken, async (req, res) => {
+  const audioID = req.body.audioID;
+  if (!audioID) {
+    return res.status(400).send('Audio ID is required');
+  }
+  try {
+    // Verify the token to get user ID
+    const decoded = jwt.verify(req.cookies.token, jwtSecretKey);
+    const userID = decoded.userID;
+    // construct query and values
+    const query = `UPDATE audio SET status = 'Trashed' WHERE audio_id = ?`;
+    const values = [audioID];
+    db.query(query, values, (err, result) => {
+      if (err) {
+        console.error('Error trashing audio:', err);
+        return res.status(500).send('Error trashing audio');
+      }
+      if (result.affectedRows === 0) {
+        return res.status(404).send('Audio not found');
+      }
+      res.status(200).send({ message: 'Audio trashed successfully' });
+    });
+  } catch (error) {
+    console.error('Error trashing audio file:', error);
+    res.status(500).send('Server error during audio trashing');
+  }
+});
+
+//
+// UPLOAD AUDIO FILE
+//
+
 // Multer configuration for temporary upload
 const upload = multer({ dest: tmpFileDir });
 
 // Route to upload audio file
 router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
-  console.log(req.body);
+  // console.log(req.body);
   if (!req.file) {
     return res.status(400).send('No file uploaded.');
   }
@@ -78,7 +235,13 @@ router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
         console.error('Error inserting audio file into database:', err);
         res.status(500).send('Error saving file info to database');
       } else {
-        res.status(200).send({ message: 'File uploaded successfully', filepath: filePathForDB });
+        // The auto-incremented ID is typically found in result.insertId for MySQL
+        const audioID = result.insertId;
+        res.status(200).send({
+          message: 'File uploaded successfully',
+          filepath: filePathForDB,
+          audioID: audioID // Correctly return the auto-generated ID from the insert operation
+        });
       }
     });
 
@@ -173,66 +336,78 @@ const normalizeTags = (tagsString) => {
   return tagsArray;
 };
 
-// Route to list audio files
-router.post('/list', verifyToken, async (req, res) => {
+// Route to fetch audio info
+router.get('/sample/:year/:month/:filename', verifyToken, async (req, res) => {
+  // Extract parameters from the request
+  const { year, month, filename } = req.params;
+
+  // Construct the file path
+  // Adjust the path according to your actual files location
+  const filePath = path.join(uploadFileDir, year, month, filename);
+  // console.log('File path:', filePath);
+
   try {
-    // Verify the token to get user ID
-    const decoded = jwt.verify(req.cookies.token, jwtSecretKey);
-    const userID = decoded.userID;
-    // Construct query to join audio table with users table for uploader and editor usernames
-    const query = `SELECT * FROM audio ORDER BY upload_date DESC`;
-    const values = []; // If you need to pass any values to the query, they would go here
-    db.query(query, values, (err, results) => {
+    // Use fs.promises.access to check if the file exists. 
+    // Note: fs.promises.access does not directly return a value, but it will reject if the file does not exist
+    await fs.access(filePath, fs.constants.F_OK);
+    // console.log('File exists:', filePath);
+
+    // If the file exists, send it
+    res.sendFile(filePath, (err) => {
       if (err) {
-        console.error('Error fetching audio list:', err);
-        return res.status(500).send('Error fetching audio list');
+        // console.error('Error sending file:', err);
+        // Handle error, but don't expose internal details
+        res.status(500).send('Error serving the file');
       }
-      const listPrepped = results.map(audio => {
-        // Optionally, remove uploader_id and editor_id if they are not needed in the response
-        delete audio.uploader_id;
-        delete audio.editor_id;
-        return audio;
-      });
-      // Return total number of records alongside the data
-      res.status(200).json({
-        totalRecords: results.length,
-        audioList: listPrepped,
-      });
     });
-  } catch (error) {
-    console.error('Error listing audio files:', error);
-    res.status(500).send('Server error during audio list retrieval');
+  } catch (err) {
+    // console.error('File does not exist:', filePath);
+    res.status(404).send('File not found');
   }
 });
 
-// Route to trash an audio file
-router.post('/trash', verifyToken, async (req, res) => {
-  const audioID = req.body.audioID;
+//
+// UPDATING AUDIO
+//
+
+// Route to update audio information
+router.post('/update', verifyToken, async (req, res) => {
+  const { audioID, title, status, classification, tags, comments } = req.body;
+  
   if (!audioID) {
-    return res.status(400).send('Audio ID is required');
+    return res.status(400).send('Audio ID is required for update.');
   }
+  
   try {
-    // Verify the token to get user ID
-    const decoded = jwt.verify(req.cookies.token, jwtSecretKey);
-    const userID = decoded.userID;
-    // construct query and values
-    const query = `UPDATE audio SET status = 'Trashed' WHERE audio_id = ?`;
-    const values = [audioID];
+    // Optional: Validate the input data for safety
+
+    // Construct the SQL query for update. This is a basic example; you might need to adjust it.
+    // This assumes your 'classification' and 'tags' are stored in a manner that directly accepts the provided format.
+    const query = `UPDATE audio SET
+        title = ?,
+        status = ?,
+        classification = ?,
+        tags = ?,
+        comments = ?
+      WHERE audio_id = ?`;
+    const values = [title, status, JSON.stringify(classification), JSON.stringify(tags), comments, audioID];
+
+    // Execute the query
     db.query(query, values, (err, result) => {
       if (err) {
-        console.error('Error trashing audio:', err);
-        return res.status(500).send('Error trashing audio');
+        console.error('Error updating audio information:', err);
+        return res.status(500).send('Error updating audio information');
       }
       if (result.affectedRows === 0) {
-        return res.status(404).send('Audio not found');
+        // This means the audio ID was not found or no fields were changed.
+        return res.status(404).send('Audio not found or no update was made');
       }
-      res.status(200).send({ message: 'Audio trashed successfully' });
+      res.status(200).send({ message: 'Audio updated successfully' });
     });
   } catch (error) {
-    console.error('Error trashing audio file:', error);
-    res.status(500).send('Server error during audio trashing');
+    console.error('Server error during audio update:', error);
+    res.status(500).send('Server error');
   }
 });
-
 
 module.exports = router;

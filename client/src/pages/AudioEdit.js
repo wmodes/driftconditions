@@ -5,10 +5,11 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { audioInfo, audioEdit } from '../store/audioSlice';
+import { audioInfo, audioUpdate } from '../store/audioSlice';
+import { formatDateForDB, formatDateForDisplay, formatTagsForDB, formatTagsForDisplay } from '../utils/dataUtils';
 
 function AudioEdit() {
-  const { audioId } = useParams();
+  const { audioID } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
@@ -43,15 +44,18 @@ function AudioEdit() {
   });
 
   useEffect(() => {
-    if (!audioId) return;
-    dispatch(audioInfo(audioId))
+    if (!audioID) return;
+    dispatch(audioInfo(audioID))
       .unwrap()
       .then(response => {
         // Parse and transform the response as needed, similar to how it's done in UploadAudio
+        console.log("tags raw:", response.tags);
+        console.log("tags parsed:", response.tags.join(', '));
         setAudioDetails(prevState => ({
           ...prevState,
           ...response,
-          tags: response.tags.join(', '), // Assuming tags are stored as an array
+          tags: formatTagsForDisplay(response.tags),
+          upload_date: formatDateForDisplay(response.upload_date),
           classification: response.classification.reduce((acc, curr) => ({
             ...acc,
             [curr]: true
@@ -62,7 +66,7 @@ function AudioEdit() {
         console.error('Error fetching audio details:', err);
         setFormError('Failed to fetch audio details.');
       });
-  }, [audioId, dispatch]);
+  }, [audioID, dispatch]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -79,27 +83,34 @@ function AudioEdit() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Ensure tags are sent as an array, and classification as an array of keys where the value is true
+    // Normalize tags before submitting
+    const normalizedTags = formatTagsForDB(audioDetails.tags);
+
     const updatedDetails = {
       ...audioDetails,
-      tags: audioDetails.tags.split(',').map(tag => tag.trim()),
+      tags: normalizedTags,
       classification: Object.keys(audioDetails.classification).filter(key => audioDetails.classification[key])
     };
 
-    dispatch(audioEdit({audioId, ...updatedDetails}))
+    dispatch(audioUpdate({audioID, ...updatedDetails}))
       .unwrap()
       .then(() => {
-        setSuccessMessage('Edit successful!');
-        navigate('/audio-list'); // or wherever you'd like to redirect
+        setSuccessMessage('Update successful!');
+        // Update audioDetails state with normalized tags to reflect in the input field
+        setAudioDetails(prevDetails => ({
+          ...prevDetails,
+          // Convert array back to string for input field
+          tags: formatTagsForDisplay(normalizedTags) 
+        }));
       })
       .catch(err => {
-        console.error('Edit error:', err);
+        console.error('Update error:', err);
         setFormError('Failed to update audio.');
       });
   };
 
   // Redirect to signin page if not authenticated
-  if (!isAuthenticated) {
+  if (isAuthenticated === false) {
     return <Navigate to='/signin' replace={true} />;
   }
 
@@ -116,41 +127,50 @@ function AudioEdit() {
         <div className="display-box">
           <form onSubmit={handleSubmit}>
             <h2 className='title'>Edit Audio</h2>
-            {/* Similar form structure and input elements as in UploadAudio */}
-            <label className="form-label" htmlFor="title">Title: <Required /></label>
-            <input className="form-field" type="text" id="title" name="title" value={audioDetails.title} onChange={handleChange} />
-            
-            <label className="form-label">Filename: <span className="non-editable">{audioDetails.filename}</span></label>
+            <div className="form-group">
+              <label className="form-label" htmlFor="title">Title: <Required /></label>
+              <input className="form-field" type="text" id="title" name="title" value={audioDetails.title} onChange={handleChange} />
+              
+              <div className="mb-2">
+                <label className="form-label">Filename: <span className="non-editable">{audioDetails.filename}</span></label>
+              </div>
 
-            <label className="form-label" htmlFor="status">Status:</label>
-            <select name="status" value={audioDetails.status} onChange={handleChange} className="form-select">
-              <option value="REVIEW">Under Review</option>
-              <option value="APPROVED">Approved</option>
-              <option value="DISAPPROVED">Disapproved</option>
-              <option value="TRASHED">Trashed</option>
-            </select>
-
-            <div className="form-checkbox">
-              {Object.entries(audioDetails.classification).map(([key, value]) => (
-                <div key={key}>
-                  <input
-                    type="checkbox"
-                    id={key}
-                    name={key}
-                    checked={value}
-                    onChange={handleChange}
-                  />
-                  <label htmlFor={key}> {prepLabel(key)}</label>
-                </div>
-              ))}
+              <label className="form-label" htmlFor="status">Status:</label>
+              <select name="status" value={audioDetails.status} onChange={handleChange} className="form-select">
+                <option value="Review">Under Review</option>
+                <option value="Approved">Approved</option>
+                <option value="Disapproved">Disapproved</option>
+                <option value="Trashed">Trashed</option>
+              </select>
             </div>
 
-            <label className="form-label" htmlFor="tags">Tags:</label>
-            <input className="form-field" type="text" id="tags" name="tags" value={audioDetails.tags} onChange={handleChange} />
-            <p className="form-note">Separated with commas</p>
+            <div className="form-group">
+              Editing elements here.
+            </div>
 
-            <label className="form-label" htmlFor="comments">Comments:</label>
-            <textarea className="form-textarea" id="comments" name="comments" value={audioDetails.comments} onChange={handleChange}></textarea>
+            <div className="form-group">
+              <div className="form-checkbox">
+                {Object.entries(audioDetails.classification).map(([key, value]) => (
+                  <div key={key}>
+                    <input
+                      type="checkbox"
+                      id={key}
+                      name={key}
+                      checked={value}
+                      onChange={handleChange}
+                    />
+                    <label htmlFor={key}> {prepLabel(key)}</label>
+                  </div>
+                ))}
+              </div>
+
+              <label className="form-label" htmlFor="tags">Tags:</label>
+              <input className="form-field" type="text" id="tags" name="tags" value={audioDetails.tags} onChange={handleChange} />
+              <p className="form-note">Separated with commas</p>
+
+              <label className="form-label" htmlFor="comments">Comments:</label>
+              <textarea className="form-textarea" id="comments" name="comments" value={audioDetails.comments} onChange={handleChange}></textarea>
+            </div>
 
             <div className='button-box'>
               <button className='button cancel' type="button" onClick={() => navigate('/audio-list')}>Cancel</button>

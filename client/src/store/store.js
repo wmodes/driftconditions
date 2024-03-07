@@ -1,6 +1,9 @@
 // Setup of the Redux store with Redux Toolkit, enhancing configuration simplicity and middleware integration.
 import { configureStore } from '@reduxjs/toolkit';
-import authSlice from './authSlice'; // Importing the auth slice to handle authentication related state.
+import authSlice from './authSlice';
+import audioSlice from './audioSlice';
+import userSlice from './userSlice'; 
+import appSlice from './appSlice'; 
 
 // Include any initial state you want preloaded, especially the token from sessionStorage
 const preloadedState = {
@@ -12,10 +15,11 @@ const preloadedState = {
 
 export const store = configureStore({
   reducer: {
-    // Registers authSlice under the 'auth' namespace in the global state.
-    auth: authSlice
+    auth: authSlice,
+    audio: audioSlice, // Add the audio slice to the store
+    user: userSlice, // Add the user slice to the store
+    app: appSlice, // Add the app slice to the store
   },
   preloadedState
-  // This store setup facilitates state management and encapsulates authentication logic within the auth slice.
-  // The structure allows for easy integration of additional slices for different app features.
+  // With this setup, your store is now equipped to handle state management for authentication, audio, user, and app-specific states.
 })

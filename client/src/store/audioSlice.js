@@ -9,14 +9,16 @@ const serverBaseURL = config.server.baseURL;
 // Routes
 const audioUploadRoute = serverBaseURL + config.server.routes.audioUpload;
 const audioInfoRoute = serverBaseURL + config.server.routes.audioInfo;
-const audioEditRoute = serverBaseURL + config.server.routes.audioEdit;
+const audioUpdateRoute = serverBaseURL + config.server.routes.audioUpdate;
 const audioListRoute = serverBaseURL + config.server.routes.audioList;
 const audioTrashRoute = serverBaseURL + config.server.routes.audioTrash;
 
 // Async thunk for uploading audio
-export const audioUpload = createAsyncThunk(audioUploadRoute, async (formData, thunkAPI) => {
+export const audioUpload = createAsyncThunk(
+  audioUploadRoute, 
+  async (audioID, thunkAPI) => {
     try {
-      const response = await axios.post(audioUploadRoute, formData, {
+      const response = await axios.post(audioUploadRoute, audioID, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -31,12 +33,14 @@ export const audioUpload = createAsyncThunk(audioUploadRoute, async (formData, t
 );
 
 // Async thunk for fetching audio info
-export const audioInfo = createAsyncThunk(audioInfoRoute, async (audioID, thunkAPI) => {
+export const audioInfo = createAsyncThunk(
+  audioInfoRoute, 
+  async (audioID, thunkAPI) => {
     try {
-      // Assuming you need to send the audioID within a request body for a POST request.
+      // Change to sending JSON data and adjust content type accordingly
       const response = await axios.post(audioInfoRoute, { audioID }, {
         headers: {
-          'Content-Type': 'multipart/form-data',
+          'Content-Type': 'application/json',
         },
         withCredentials: true,
       });
@@ -48,11 +52,19 @@ export const audioInfo = createAsyncThunk(audioInfoRoute, async (audioID, thunkA
   }
 );
 
-
-// Async thunk for editing audio
-export const audioEdit = createAsyncThunk(audioEditRoute, async (formData, thunkAPI) => {
+export const audioUpdate = createAsyncThunk(
+  audioUpdateRoute, 
+  async (audioData, { rejectWithValue }) => {
     try {
-      const response = await axios.post(audioEditRoute, formData, {
+      const { audioID, title, status, classification, tags, comments } = audioData;
+      const response = await axios.post(audioUpdateRoute, {
+        audioID,
+        title,
+        status,
+        classification,
+        tags: tags,
+        comments
+      }, {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -60,14 +72,15 @@ export const audioEdit = createAsyncThunk(audioEditRoute, async (formData, thunk
       });
       return response.data;
     } catch (error) {
-      console.error('Audio edit error:', error);
-      return thunkAPI.rejectWithValue(error.message);
+      return rejectWithValue(error.response.data);
     }
   }
 );
 
 // Define async thunk for fetching the audio list
-export const audioList = createAsyncThunk(audioListRoute, async ({ queryParams }, thunkAPI) => {
+export const audioList = createAsyncThunk(
+  audioListRoute, 
+  async ({ queryParams }, thunkAPI) => {
     try {
       const response = await axios.post(audioListRoute, queryParams, {
         withCredentials: true,
@@ -82,19 +95,20 @@ export const audioList = createAsyncThunk(audioListRoute, async ({ queryParams }
 );
 
 // Async thunk for trashing an audio
-export const audioTrash = createAsyncThunk(audioTrashRoute, async (audioID, thunkAPI) => {
+export const audioTrash = createAsyncThunk(
+  audioTrashRoute, 
+  async ({audioID}, thunkAPI) => {
     try {
-      const response = await axios.post(audioTrashRoute, {}, {
+      const response = await axios.post(audioTrashRoute, { audioID }, {
         withCredentials: true,
       });
-      return response.data; // Assuming the API returns some data on success
+      return response.data;
     } catch (error) {
       console.error('Trash audio error:', error);
       return thunkAPI.rejectWithValue(error.response.data);
     }
   }
 );
-
 
 const audioSlice = createSlice({
   name: 'audio',
@@ -108,6 +122,9 @@ const audioSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      //
+      // audioUpload
+      //
       .addCase(audioUpload.pending, (state) => {
         state.isLoading = true;
         state.error = null;
@@ -121,6 +138,9 @@ const audioSlice = createSlice({
         state.isLoading = false;
         state.error = action.payload;
       })
+      //
+      // audioInfo
+      //
       .addCase(audioInfo.pending, (state) => {
         state.isLoading = true;
         state.error = null;
@@ -134,19 +154,9 @@ const audioSlice = createSlice({
         state.isLoading = false;
         state.error = action.payload;
       })
-      .addCase(audioEdit.pending, (state) => {
-        state.isLoading = true;
-        state.error = null;
-      })
-      .addCase(audioEdit.fulfilled, (state, action) => {
-        state.isLoading = false;
-        // Optionally update audioData or handle success differently
-        state.error = null;
-      })
-      .addCase(audioEdit.rejected, (state, action) => {
-        state.isLoading = false;
-        state.error = action.payload;
-      })
+      //
+      // audioList
+      //
       .addCase(audioList.pending, (state) => {
         state.isLoading = true;
       })
@@ -158,7 +168,24 @@ const audioSlice = createSlice({
       .addCase(audioList.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload;
-      });
+      })
+      //
+      // audioUpdate
+      //
+      .addCase(audioUpdate.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(audioUpdate.fulfilled, (state, action) => {
+        state.isLoading = false;
+        // Here, you might want to update the state to reflect the changes made to the audio data.
+        // This could mean updating a specific audio item within a list, for example.
+        state.error = null;
+      })
+      .addCase(audioUpdate.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload;
+      })
   }, 
 });
 
