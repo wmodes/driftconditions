@@ -1,12 +1,13 @@
 // AudioEdit.js - Edit audio details
 
-// TODO: Modify URL to show audioID
+// TODO: Link back to List at top of form 
 
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { audioInfo, audioUpdate } from '../store/audioSlice';
-import { formatDateForDB, formatDateForDisplay, formatTagsForDB, formatTagsForDisplay } from '../utils/dataUtils';
+import { formatDateForDisplay, formatTagsForDB, formatTagsForDisplay } from '../utils/formatUtils';
+import FeatherIcon from 'feather-icons-react';
 
 function AudioEdit() {
   const { audioID } = useParams();
@@ -30,7 +31,7 @@ function AudioEdit() {
       foreground: false,
       spoken: false,
       music: false,
-      soundEffects: false,
+      effect: false,
       other: false,
     },
     tags: '',
@@ -119,6 +120,17 @@ function AudioEdit() {
     .replace(/^./, match => match.toUpperCase())
     .trim();
 
+  // Function to render advanced pagination buttons with navigation controls
+  const renderBreadcrumbs = () => {
+    return (
+      <div className="breadcrumb-box">
+        <span className="link" onClick={() => navigate('/audio/list')}>
+          <FeatherIcon icon="arrow-left" />List
+        </span>
+      </div>
+    );
+  };
+
   return (
     <div className="edit-wrapper">
       <div className="display-box-wrapper">
@@ -130,7 +142,7 @@ function AudioEdit() {
               <input className="form-field" type="text" id="title" name="title" value={audioDetails.title} onChange={handleChange} />
               
               <div className="mb-2">
-                <label className="form-label">Filename: <span className="non-editable">{audioDetails.filename}</span></label>
+                <label className="form-label">Filename:</label> <span className="non-editable">{audioDetails.filename}</span>
               </div>
 
               <label className="form-label" htmlFor="status">Status:</label>
@@ -147,6 +159,7 @@ function AudioEdit() {
             </div>
 
             <div className="form-group">
+              <label className="form-label" htmlFor="status">Classification:</label>
               <div className="form-checkbox">
                 {Object.entries(audioDetails.classification).map(([key, value]) => (
                   <div key={key}>
@@ -171,7 +184,7 @@ function AudioEdit() {
             </div>
 
             <div className='button-box'>
-              <button className='button cancel' type="button" onClick={() => navigate('/audio-list')}>Cancel</button>
+              <button className='button cancel' type="button" onClick={() => navigate('/audio/list')}>Cancel</button>
               <button className='button submit' type="submit">Save Changes</button>
             </div>
 
@@ -181,6 +194,7 @@ function AudioEdit() {
               {error && <p className="error">{error}</p>}
             </div>
           </form>
+          {renderBreadcrumbs()}
         </div>
       </div>
     </div>

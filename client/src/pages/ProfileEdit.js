@@ -43,7 +43,7 @@ function ProfileEdit() {
   const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
-    console.log("isAuthenticated:", isAuthenticated);
+    // console.log("isAuthenticated:", isAuthenticated);
     if (isAuthenticated) {
       dispatch(profileInfo())
         .then((res) => {

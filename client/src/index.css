@@ -2,6 +2,7 @@
 
 :root {
   --body-color: #f5f5f5;
+  --default-text-color: #222;
   --link-color: #135394;
   --logo-color: #fff;
   --nav-background-color: #336699;
@@ -21,10 +22,13 @@
   --button-submit-text-color: #fff;
   --button-disabled-background-color: #cccccc;
   --button-disabled-text-color: #666666;
+  --avatar-background-color: #9fbfdf;
+  --avatar-color: white;
 }
 
 body {
   background-color: var(--body-color);
+  color: var(--default-text-color);
 }
 
 svg {
@@ -34,6 +38,16 @@ svg {
 .display-box a, .link {
   color: var(--link-color) !important;
   font-weight: 500;
+  cursor: pointer;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+.link svg {
+  height: 1rem;
+  /* margin-right: 0.1rem; */
 }
 
 /*
@@ -48,7 +62,7 @@ svg {
   height: 4rem; /* h-16 */
   padding-top: 0.5rem; /* py-2 */
   padding-bottom: 0.5rem; /* py-2 */
-  color: white; /* text-white */
+  color: var(--nav-text-color); /* text-white */
   border-bottom: 1px solid; /* border-b */
   padding-left: 7rem; /* px-28 */
   padding-right: 7rem; /* px-28 */
@@ -100,6 +114,7 @@ svg {
 .nav-level1 svg {
   width: 20px;
   height: 20px;
+  margin-right: 0.5rem;
 }
 
 .nav-level2 {
@@ -120,7 +135,7 @@ svg {
 }
 
 /*
- *  Layout Elements
+ *  Homepage Elements
  */
 
 .homepage-box-wrapper {
@@ -220,6 +235,39 @@ svg {
   font-style: italic;
 }
 
+.display-box p {
+  margin-bottom: 0.75rem;
+}
+
+/*
+ *  Profile Elements
+ */
+
+.avatar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 8rem;
+  height: 8rem;
+  border-radius: 50%;
+  margin: 0 auto;
+  background-color: var(--avatar-background-color);
+  overflow: hidden;
+}
+
+.avatar svg {
+  min-width: 8.5rem;
+  min-height: 8.5rem;
+  fill: var(--avatar-color);
+  stroke: var(--avatar-color);
+}
+
+.avatar.error svg {
+  min-width: 6rem;
+  min-height: 6rem;
+  fill: transparent;
+}
+
 /*
  *  Big Table Elements
  */
@@ -290,14 +338,25 @@ svg {
   margin-right: 0.5rem;
 }
 
-.filter-box {
-  margin-bottom: 0.3rem;
+/* list controls */
+
+.top-controls, .bottom-controls {
+  font-size: 0.9rem;
+  display: flex;
+  flex-direction: row;
 }
 
-.pagination {
-  display: flex;
+.top-controls {
+  /* justify at ends with space between */
+  justify-content: space-between;
+}
+
+.bottom-controls {
   justify-content: flex-end;
-  font-size: 0.9rem;
+}
+
+.filter-box {
+  margin-bottom: 0.3rem;
 }
 
 .filter-box li, .pagination li {
@@ -311,6 +370,23 @@ svg {
   content: "|";
   margin: 0 0.20rem; /* Adjust spacing around the separator as needed */
 }
+
+.pagination .page-num {
+  margin: 0 0.5rem;
+}
+
+.pagination button svg {
+  height: 15px;
+}
+
+.pagination button svg {
+  stroke-width: 2.5;
+}
+
+.pagination button:disabled svg {
+  stroke: var(--button-disabled-text-color);
+}
+
 
 /*
  *  Audio List Elements
@@ -378,9 +454,22 @@ svg {
   padding: 1rem;
 }
 
+.form-row {
+  display: flex;
+  gap: 1em;
+  margin-bottom: 0.25rem;
+}
+
+.form-col {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 0.25rem;
+}
+
 .form-label {
   margin-bottom: 4px;
   font-size: 16px;
+  font-weight: bold;
 }
 
 .form-field {
@@ -468,7 +557,7 @@ button.submit:disabled {
   cursor: not-allowed;
 }
 
-form .edit-box {
+.edit-box {
   display: flex;
   justify-content: flex-end;
 }
@@ -479,6 +568,11 @@ form .edit-box {
   padding-top: 0;
   padding-bottom: 0;
   font-size: 0.875rem;
+}
+
+.breadcrumb-box {
+  display: flex;
+  justify-content: space-between;
 }
 
 

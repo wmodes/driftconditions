@@ -24,3 +24,21 @@ export function formatTagsForDB(tagStr) {
 export function formatTagsForDisplay(tags) {
   return tags.join(', ');
 }
+
+export function niceDate(dateString) {
+  return new Date(dateString).toLocaleString('en-US', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true
+  }).replace(',', ' at');
+}
+
+export function niceList(input) {
+  if (!input) return '';
+  // Ensure input is treated as an array, useful if the input is an "array-like" object
+  const arrayInput = Array.isArray(input) ? input : Object.values(input);
+  return arrayInput.join(', ');
+}

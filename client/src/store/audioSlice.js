@@ -52,6 +52,8 @@ export const audioInfo = createAsyncThunk(
   }
 );
 
+// TODO: make all of the args for thunk and params passed to axios.post consistent
+
 export const audioUpdate = createAsyncThunk(
   audioUpdateRoute, 
   async (audioData, { rejectWithValue }) => {
@@ -80,7 +82,7 @@ export const audioUpdate = createAsyncThunk(
 // Define async thunk for fetching the audio list
 export const audioList = createAsyncThunk(
   audioListRoute, 
-  async ({ queryParams }, thunkAPI) => {
+  async (queryParams, thunkAPI) => {
     try {
       const response = await axios.post(audioListRoute, queryParams, {
         withCredentials: true,

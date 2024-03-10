@@ -12,9 +12,13 @@ import FeatherIcon from 'feather-icons-react';
 
 function Profile() {
   // Accessing the username from the URL
-  const { username } = useParams();
+  const { username: targetUsername } = useParams();
   // Accessing Redux state for user (to check if logged in)
-  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
+  const { isAuthenticated } = useSelector(state => state.auth);
+  // console.log("Profile isAuthenticated", isAuthenticated);
+  // console.log("Profile userId", userID);
+  // console.log("Profile username", username);
+  // console.log("Profile targetUsername", targetUsername);
   // State hooks to store error message
   const [error, setError] = useState('');
   // State hooks to store user profile information
@@ -44,7 +48,7 @@ function Profile() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      dispatch(profileInfo(username)) // Dispatching with potentially undefined username
+      dispatch(profileInfo(targetUsername)) // Dispatching with potentially undefined username
         .then((res) => {
           if (res.payload && res.payload.data) {
             let newProfile = {};
@@ -52,10 +56,11 @@ function Profile() {
               newProfile[key] = value;
             }
             setProfile(newProfile);
-            if (!username) {
-              // Navigate to URL including the user's username
+            if (!targetUsername) {
+              // Modify URL to include the user's username
               navigate(`/profile/${newProfile.username}`, { replace: true });
             }
+            setError('');
           } else if (res.error) {
             // Handle the case where the user is not found
             setError('User not found');
@@ -68,7 +73,7 @@ function Profile() {
           setProfile(notFoundUser); // Fallback to notFoundUser in case of any error
         });
     }
-  }, [dispatch, isAuthenticated, username, navigate]);
+  }, [dispatch, isAuthenticated, targetUsername, navigate]);
 
   // If not logged in, redirect to sign-in page
   if (isAuthenticated === false) {
@@ -100,7 +105,9 @@ function Profile() {
         <div className="display-box">
           <div className='flex items-center'>
             <div className='flex-shrink-0'>
-              <FeatherIcon icon="circle" color="#9fbfdf" fill="#9fbfdf" size="100" />
+              <div className='avatar'>
+                <FeatherIcon icon="user" />
+              </div>
             </div>
             <div className='flex-grow ml-4 text-center'>
               <h2 className='title'>{profile.firstname} {profile.lastname}</h2>

@@ -14,6 +14,7 @@ const serverBaseURL = config.server.baseURL;
 // Routes
 const profileRoute = serverBaseURL + '/api/user/profile';
 const profileEditRoute = serverBaseURL + '/api/user/profile/edit';
+const userListRoute = serverBaseURL + '/api/user/list';
 
 export const profileInfo = createAsyncThunk('user/profileInfo', async (username, thunkAPI) => {
   // Prepare the request body based on whether a username is provided
@@ -43,6 +44,23 @@ export const profileEdit = createAsyncThunk(profileEditRoute, async (userData, t
     return thunkAPI.rejectWithValue(error.response?.data?.error || error.message);
   }
 });
+
+// Define async thunk for fetching the audio list
+export const userList = createAsyncThunk(
+  userListRoute, 
+  async (queryParams, thunkAPI) => {
+    try {
+      const response = await axios.post(userListRoute, queryParams, {
+        withCredentials: true,
+      });
+      // Assuming the response includes { totalRecords, audioList }
+      return response.data; 
+    } catch (error) {
+      console.error('Fetch user list error:', error);
+      return thunkAPI.rejectWithValue(error.response.data);
+    }
+  }
+);
 
 const initialState = {
   profile: {},

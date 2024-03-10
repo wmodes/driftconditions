@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, Navigate } from 'react-router-dom';
 import { audioUpload } from '../store/audioSlice';
-import { formatTagsForDB, formatTagsForDisplay } from '../utils/dataUtils';
+import { formatTagsForDB, formatTagsForDisplay } from '../utils/formatUtils';
 
 // Import the config object from the config.js file
 const config = require('../config/config');
@@ -36,7 +36,7 @@ function AudioUpload() {
     foreground: false,
     spoken: false,
     music: false,
-    soundEffects: false,
+    effect: false,
     other: false,
   });
   

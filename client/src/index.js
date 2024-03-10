@@ -16,8 +16,10 @@
   import Signin from './pages/Signin';
   import Profile from './pages/Profile';
   import ProfileEdit from './pages/ProfileEdit';
+  import UserList from './pages/UserList';
   import AudioUpload from './pages/AudioUpload';
   import AudioList from './pages/AudioList';
+  import AudioView from './pages/AudioView';
   import AudioEdit from './pages/AudioEdit';
   import Error from './pages/Error';
   import RootLayout from './layouts/RootLayout';
@@ -48,10 +50,11 @@
         <Route path='/profile' element={<Profile />} /> 
         <Route path="/profile/:username" element={<Profile />} />
         <Route path='/profile/edit' element={<ProfileEdit />} /> 
+        <Route path='/user/list' element={<UserList />} />
         <Route path='/audio/upload' element={<AudioUpload />} />
         <Route path='/audio/list' element={<AudioList />} /> 
+        <Route path='/audio/view/:audioID' element={<AudioView />} />
         <Route path='/audio/edit/:audioID' element={<AudioEdit />} />
-        <Route path='/audio/edit' element={<AudioEdit />} /> 
         <Route path='*' element={<Error />} /> 
       </Route>
     )

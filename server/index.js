@@ -14,7 +14,7 @@ const app = express();
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
-const { dbConfig, corsOptions } = require('./config');
+const { corsOptions } = require('./config');
 const { notFound, errorHandler } = require('./middleware/errorHandler');
 
 // Middleware setup

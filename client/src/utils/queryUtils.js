@@ -1,6 +1,5 @@
+// queryUtils - Utility functions for constructing and parsing query parameters
 
-
-// queryUtils.js
 /**
  * Constructs query parameters for audio list fetch requests.
  *

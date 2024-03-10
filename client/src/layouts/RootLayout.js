@@ -5,7 +5,7 @@ import Navigation from '../components.js/Navigation';
 import { Outlet } from 'react-router-dom';
 import { setAuthState } from '../store/authSlice'; 
 import { setProjectName } from '../store/appSlice';
-import { getProjectName } from '../utils/nameUtils';
+import { getProjectName } from '../utils/textUtils';
 
 export default function RootLayout() {
   const dispatch = useDispatch();
@@ -19,12 +19,22 @@ export default function RootLayout() {
         const response = await axios.post('http://localhost:8080/api/auth/check', {}, {
           withCredentials: true, // Ensure credentials are sent with the request
         });
-        // Dispatch an action to set isAuthenticated in your Redux store
-        dispatch(setAuthState({ isAuthenticated: response.data.isAuthenticated }));
+        // console.log('RootLayout: userID:', response.data.userID);
+        // console.log('RootLayout: username:', response.data.username);
+        // Update your Redux store or component state with authentication status, userID, and username
+        dispatch(setAuthState({
+          isAuthenticated: response.data.isAuthenticated,
+          userID: response.data.userID,
+          username: response.data.username
+        }));
       } catch (error) {
         console.error('Error checking authentication status:', error);
-        // Set isAuthenticated to false in case of error
-        dispatch(setAuthState({ isAuthenticated: false }));
+        // Set isAuthenticated to false in case of error, and clear userID and username
+        dispatch(setAuthState({
+          isAuthenticated: false,
+          userID: null,
+          username: null
+        }));
       }
     };
 

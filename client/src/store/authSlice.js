@@ -75,6 +75,8 @@ export const authSlice = createSlice({
   reducers: {
     setAuthState: (state, action) => {
       state.isAuthenticated = action.payload.isAuthenticated;
+      state.userID = action.payload.userID;
+      state.username = action.payload.username;
     },
   },
   extraReducers: (builder) => {
@@ -102,8 +104,9 @@ export const authSlice = createSlice({
       .addCase(signin.fulfilled, (state, action) => {
         state.loading = false;  
         state.isAuthenticated = action.payload.isAuthenticated; 
+        state.userID = action.payload.userID;
+        state.username = action.payload.username;
         state.error = null;
-        // Since the user object is no longer being stored, there's no need to update anything related to it here.
       })
       .addCase(signin.rejected, (state, action) => {
         state.loading = false;

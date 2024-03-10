@@ -10,12 +10,16 @@ const config = {
       audioUpdate: '/api/audio/update',
       audioList: '/api/audio/list',
       audioTrash: '/api/audio/trash',
+      userList: '/api/user/list',
     },
     audioBaseURL: 'http://localhost:8080/api/audio/sample',
   },
   audio: {
     allowedFileTypes: ['audio/mpeg', 'audio/wav', 'audio/ogg', 'audio/flac'],
-    recordsPerPage: 20,
+    recordsPerPage: 15,
+  },
+  user: {
+    recordsPerPage: 15,
   },
 };
 

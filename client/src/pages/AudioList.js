@@ -1,14 +1,13 @@
 // AudioList.js - Edit audio details
 
-// TODO: Modify URL to show audioID, sort, and filter
-
+// TODO: Add search field
 
 import React, { useEffect, useState, useRef } from 'react';
 import { Navigate, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { audioList as audioListAction, audioTrash as audioTrashAction } from '../store/audioSlice';
 import { parseQuery, stringifyQuery } from '../utils/queryUtils';
-import FeatherIcon from 'feather-icons-react';
+import { renderPagination } from '../utils/listUtils'; 
 import { ReactComponent as AudioOn } from '../images/volume-animate.svg';
 
 // Import the config object from the config.js file
@@ -24,22 +23,14 @@ function AudioList() {
   const location = useLocation();
   const { isAuthenticated, userRole } = useSelector((state) => state.auth); 
 
-  // Add a loading state
-  const [isLoading, setIsLoading] = useState(true);
-
   // Local state for managing audio list and pagination
   const [audioList, setAudioList] = useState([]);
-  const [page, setPage] = useState(1);
   const [totalRecords, setTotalRecords] = useState(0);
+  const [page, setpage] = useState(1);
   const [playingAudio, setPlayingAudio] = useState({ src: "", playing: false });
 
-  // Add sort, order, and filter to state
-  const [sort, setSort] = useState('');
-  const [order, setOrder] = useState('DESC'); // Default to DESC
-  const [filter, setFilter] = useState('');
-  const [targetID, setTargetID] = useState(null);
-
   // Success and error handling
+  const [isLoading, setIsLoading] = useState(true);
   const [retryAttempt, setRetryAttempt] = useState(0);
   const [successMessage, setSuccessMessage] = useState(''); // State for success message
   const [error, setError] = useState(''); // State for general errors
@@ -57,20 +48,20 @@ function AudioList() {
   
     // Directly extract params from URL each time the effect runs
     const searchParams = new URLSearchParams(location.search);
-    const page = searchParams.get('page') || 1;
+    const page = parseInt(searchParams.get('page') || 1, 10);
+    setpage(page);
     const sort = searchParams.get('sort') || 'date';
     const order = searchParams.get('order') || 'DESC';
     const filter = searchParams.get('filter') || 'all';
   
     const queryParams = {
-      page,
+      page: page,
       sort,
       order,
       filter,
-      recordsPerPage,
     };
   
-    dispatch(audioListAction({ queryParams }))
+    dispatch(audioListAction(queryParams))
       .unwrap()
       .then(response => {
         setAudioList(response.audioList);
@@ -85,7 +76,17 @@ function AudioList() {
         setRetryAttempt(prevAttempt => prevAttempt + 1); // Increment retry attempt
       });
   // Only dependency is location.search to react to changes in search parameters
-  }, [dispatch, location.search, isAuthenticated, retryAttempt, recordsPerPage]);
+  }, [dispatch, location.search, isAuthenticated, retryAttempt]);
+
+  // Placeholder for roles check function
+  // const hasPermission = (action) => {
+  //   return ['editor', 'mod', 'admin'].includes(userRole); // Simplified, adjust as needed
+  // };
+
+  // Redirect to signin if not authenticated
+  if (isAuthenticated === false) {
+    return <Navigate to='/signin' replace={true} />;
+  }
 
   const audioTrash = (audioID) => {
     dispatch(audioTrashAction({ audioID }))
@@ -98,16 +99,6 @@ function AudioList() {
         console.error("Error trashing audio:", error);
         setError('Failed to trash audio.'); // Update error state
       });
-  };
-
-  const handlePageChange = (newPage) => {
-    setPage(newPage);
-    const newQueryParams = { ...currentFilters, page: newPage, recordsPerPage }; // Ensure recordsPerPage is included if needed
-    navigate({ search: stringifyQuery(newQueryParams) }); // Update URL without reloading the page
-    // Optionally, you might want to clear messages when changing pages
-    setSuccessMessage('');
-    setCriticalError('');
-    setError('');
   };
 
   const handleSort = (newSort, newOrder = 'DESC') => {
@@ -133,16 +124,18 @@ function AudioList() {
     navigate(`${location.pathname}?${searchParams.toString()}`);
   };
 
-  // Placeholder for roles check function
-  // const hasPermission = (action) => {
-  //   return ['editor', 'mod', 'admin'].includes(userRole); // Simplified, adjust as needed
-  // };
+  const handlePageChange = (newPage) => {
+    setpage(newPage);
+    const newQueryParams = { ...currentFilters, page: newPage };
+    navigate({ search: stringifyQuery(newQueryParams) }); // Update URL without reloading the page
+    setSuccessMessage('');
+    setCriticalError('');
+    setError('');
+  };
 
-  if (isAuthenticated === false) {
-    return <Navigate to='/signin' replace={true} />;
-  }
-
+  //
   // Formating helpers
+  //
 
   function niceDate(dateString) {
     return new Date(dateString).toLocaleString('en-US', {
@@ -161,6 +154,10 @@ function AudioList() {
     const arrayInput = Array.isArray(input) ? input : Object.values(input);
     return arrayInput.join(', ');
   }
+
+  //
+  // audio preview
+  //
 
   const togglePlayAudio = (filename, event) => {
     const newSrc = `${audioBaseURL}/${filename}`;
@@ -200,35 +197,38 @@ function AudioList() {
             {error && <p className="error">{error}</p>}
           </div>
           {!criticalError && !isLoading ? (
-            <>
-              <div className="filter-box">
-                <ul>
-                  <li>
-                    <button className="link" onClick={() => handleFilter('all')}>
-                      All
-                    </button>
-                  </li>
-                  <li>
-                    <button className="link" onClick={() => handleFilter('review')}>
-                      Review
-                    </button>
-                  </li>
-                  <li>
-                    <button className="link" onClick={() => handleFilter('approved')}>
-                      Approved
-                    </button>
-                  </li>
-                  <li>
-                    <button className="link" onClick={() => handleFilter('disapproved')}>
-                      Disapproved
-                    </button>
-                  </li>
-                  <li>
-                    <button className="link" onClick={() => handleFilter('trash')}>
-                      Trash
-                    </button>
-                  </li>
-                </ul>
+            <div>
+              <div className="top-controls">
+                <div className="filter-box">
+                  <ul>
+                    <li>
+                      <button className="link" onClick={() => handleFilter('all')}>
+                        All
+                      </button>
+                    </li>
+                    <li>
+                      <button className="link" onClick={() => handleFilter('review')}>
+                        Review
+                      </button>
+                    </li>
+                    <li>
+                      <button className="link" onClick={() => handleFilter('approved')}>
+                        Approved
+                      </button>
+                    </li>
+                    <li>
+                      <button className="link" onClick={() => handleFilter('disapproved')}>
+                        Disapproved
+                      </button>
+                    </li>
+                    <li>
+                      <button className="link" onClick={() => handleFilter('trash')}>
+                        Trash
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+                {renderPagination(totalRecords, recordsPerPage, page, handlePageChange)}
               </div>
               <table className="audio-table big-table">
                 <thead>
@@ -310,22 +310,11 @@ function AudioList() {
                   ))}
                 </tbody>
               </table>
-              <div className="pagination">
-                Page: 
-                <ul>
-                  {[...Array(Math.ceil(totalRecords / recordsPerPage)).keys()].map(n => (
-                    <li>
-                      <button key={n + 1} 
-                        onClick={() => handlePageChange(n + 1)} 
-                        disabled={page === n + 1}>
-                        {n + 1}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
+              <div className="bottom-controls">
+                {renderPagination(totalRecords, recordsPerPage, page, handlePageChange)}
               </div>
               <audio className="audioPlayer" ref={audioRef} controls onEnded={() => setPlayingAudio({ ...playingAudio, playing: false })}></audio>
-            </>
+            </div>
           ) : null}
         </div>
       </div>

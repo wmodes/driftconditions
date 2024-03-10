@@ -3,7 +3,7 @@
 //
 // The database connection is created and exported as a pool to be used throughout the application.
 
-const mysql = require('mysql2');
+const mysql = require('mysql2/promise');
 const { dbConfig } = require('./config'); // Ensure the path to config.js is correct
 
 const pool = mysql.createPool(dbConfig);

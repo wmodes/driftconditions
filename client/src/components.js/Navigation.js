@@ -13,11 +13,12 @@ import FeatherIcon from 'feather-icons-react';
 
 // Defines a functional component for navigation that dynamically displays links based on user authentication status
 export default function Navigation() {
-  // Accesses Redux state to check if the user is authenticated
-  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
+  // Accessing Redux state for user (to check if logged in)
+  const { isAuthenticated, userID, username } = useSelector(state => state.auth);
   // Access projectName from the global state
   const projectName = useSelector(state => state.app.projectName);
-  // console.log("nav Project Name: ", projectName);
+  // console.log('Nav userID', userID);
+  // console.log('Nav username', username);
   
   // Initializes dispatch function for logging out
   const dispatch = useDispatch();
@@ -48,23 +49,26 @@ export default function Navigation() {
   // Menu items based on authentication
   const menuItems = isAuthenticated ? [
     <li key="audio">
-      <div className="nav-level1"><FeatherIcon icon="volume-1" />&nbsp;Audio</div>
+      <div className="nav-level1"><FeatherIcon icon="volume-1" />Audio</div>
         <ul className="nav-level2">
-          <li key="all-audio" onClick={closeMenu}>
+          <li onClick={closeMenu}>
             <Link to='/audio/list' className='nav-item'>All Audio</Link>
           </li>
-          <li key="new-audio" onClick={closeMenu}>
+          <li onClick={closeMenu}>
             <Link to='/audio/upload' className='nav-item'>Add New Audio</Link>
           </li>
         </ul>
     </li>,
     <li key="users">
-      <div className="nav-level1"><FeatherIcon icon="user" />&nbsp;Users</div>
+      <div className="nav-level1"><FeatherIcon icon="user" />User</div>
       <ul className="nav-level2">
-        <li key="profile" onClick={closeMenu}>
-          <Link to='/profile' className='nav-item'>Your Profile</Link>
+        <li onClick={closeMenu}>
+          <Link to='/profile' className='nav-item'>{ username }</Link>
         </li>
-        <li key="logout" onClick={closeMenu}>
+        <li onClick={closeMenu}>
+          <Link to='/profile/edit' className='nav-item'>Edit Profile</Link>
+        </li>
+        <li onClick={closeMenu}>
           <Link to='/' onClick={(e) => {
               e.preventDefault();
               handleLogout();
@@ -74,11 +78,11 @@ export default function Navigation() {
       </ul>
     </li>
   ] : [
+    <li key="signin" onClick={closeMenu}>
+      <Link to='/signin' className='nav-item'>Log In</Link>
+    </li>,
     <li key="signup" onClick={closeMenu}>
       <Link to='/signup' className='nav-item'>Signup</Link>
-    </li>,
-    <li key="signin" onClick={closeMenu}>
-      <Link to='/signin' className='nav-item'>Signin</Link>
     </li>
   ];
 
