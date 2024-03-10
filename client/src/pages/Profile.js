@@ -15,10 +15,6 @@ function Profile() {
   const { username: targetUsername } = useParams();
   // Accessing Redux state for user (to check if logged in)
   const { isAuthenticated } = useSelector(state => state.auth);
-  // console.log("Profile isAuthenticated", isAuthenticated);
-  // console.log("Profile userId", userID);
-  // console.log("Profile username", username);
-  // console.log("Profile targetUsername", targetUsername);
   // State hooks to store error message
   const [error, setError] = useState('');
   // State hooks to store user profile information

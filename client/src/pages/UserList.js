@@ -7,7 +7,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { userList as userListAction } from '../store/userSlice'; 
 import { parseQuery, stringifyQuery } from '../utils/queryUtils';
 import { renderPagination } from '../utils/listUtils';
-import { formatDateForDisplay, niceDate } from '../utils/formatUtils';
+import { formatDateForDisplay } from '../utils/formatUtils';
 
 // Import the config object
 const config = require('../config/config');
@@ -49,7 +49,7 @@ function UserList() {
     const role = searchParams.get('role');
 
     const queryParams = { page, sort, order, filter, role };
-    console.log('User list query params:', queryParams);
+    // console.log('User list query params:', queryParams);
 
     dispatch(userListAction(queryParams))
       .unwrap()
@@ -87,9 +87,6 @@ function UserList() {
   
     let role;
     switch (newFilter) {
-      case 'user':
-        role = 'user';
-        break;
       case 'contrib':
         role = 'contributor';
         break;
@@ -101,6 +98,9 @@ function UserList() {
         break;
       case 'admin':
         role = 'admin';
+        break;
+      default:
+        role = '';
         break;
     }
     if (role) {
@@ -208,7 +208,11 @@ function UserList() {
                     <tr key={user.userID}>
                       {/* Adapt table cells for user data */}
                       <td>{user.user_id}</td>
-                      <td>{user.username}</td>
+                      <td>
+                        <Link to={`/profile/${user.username}`} className="link-button">
+                          {user.username}
+                        </Link>
+                      </td>
                       <td>{user.firstname}</td>
                       <td>{user.lastname}</td>
                       <td>{user.email}</td>

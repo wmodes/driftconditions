@@ -6,7 +6,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { audioInfo, audioUpdate } from '../store/audioSlice';
-import { formatDateForDisplay, formatTagsForDB, formatTagsForDisplay } from '../utils/formatUtils';
+import { formatDateForDisplay, formatListForDB, formatListForDisplay } from '../utils/formatUtils';
 import FeatherIcon from 'feather-icons-react';
 
 function AudioEdit() {
@@ -17,7 +17,6 @@ function AudioEdit() {
 
   // Success and error handling
   const [successMessage, setSuccessMessage] = useState('');
-  const [formError, setFormError] = useState('');
   const [error, setError] = useState('');
 
   // State for managing form inputs
@@ -53,7 +52,7 @@ function AudioEdit() {
         setAudioDetails(prevState => ({
           ...prevState,
           ...response,
-          tags: formatTagsForDisplay(response.tags),
+          tags: formatListForDisplay(response.tags),
           upload_date: formatDateForDisplay(response.upload_date),
           classification: response.classification.reduce((acc, curr) => ({
             ...acc,
@@ -63,7 +62,7 @@ function AudioEdit() {
       })
       .catch(err => {
         console.error('Error fetching audio details:', err);
-        setFormError('Failed to fetch audio details.');
+        setError('Failed to fetch audio details.');
       });
   }, [audioID, dispatch]);
 
@@ -83,7 +82,7 @@ function AudioEdit() {
   const handleSubmit = (e) => {
     e.preventDefault();
     // Normalize tags before submitting
-    const normalizedTags = formatTagsForDB(audioDetails.tags);
+    const normalizedTags = formatListForDB(audioDetails.tags);
 
     const updatedDetails = {
       ...audioDetails,
@@ -99,12 +98,12 @@ function AudioEdit() {
         setAudioDetails(prevDetails => ({
           ...prevDetails,
           // Convert array back to string for input field
-          tags: formatTagsForDisplay(normalizedTags) 
+          tags: formatListForDisplay(normalizedTags) 
         }));
       })
       .catch(err => {
         console.error('Update error:', err);
-        setFormError('Failed to update audio.');
+        setError('Failed to update audio.');
       });
   };
 
@@ -190,7 +189,6 @@ function AudioEdit() {
 
             <div className='message-box'>
               {successMessage && <p className="success">{successMessage}</p>}
-              {formError && <p className="error">{formError}</p>}
               {error && <p className="error">{error}</p>}
             </div>
           </form>

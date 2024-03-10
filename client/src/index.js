@@ -21,6 +21,7 @@
   import AudioList from './pages/AudioList';
   import AudioView from './pages/AudioView';
   import AudioEdit from './pages/AudioEdit';
+  import NotAuth from './pages/NotAuth';
   import Error from './pages/Error';
   import RootLayout from './layouts/RootLayout';
 
@@ -55,6 +56,7 @@
         <Route path='/audio/list' element={<AudioList />} /> 
         <Route path='/audio/view/:audioID' element={<AudioView />} />
         <Route path='/audio/edit/:audioID' element={<AudioEdit />} />
+        <Route path='/notauth' element={<NotAuth />} />
         <Route path='*' element={<Error />} /> 
       </Route>
     )

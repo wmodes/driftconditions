@@ -5,27 +5,7 @@ export function formatDateForDB(dateStr) {
 }
 
 // format db date for display
-export function formatDateForDisplay(date) {
-  return new Date(date).toLocaleDateString();
-}
-
-// format tags for database with normalization
-export function formatTagsForDB(tagStr) {
-  return tagStr.split(',')
-    .map(tag =>
-      // Convert to lowercase, trim whitespace, then replace special characters and spaces with dashes
-      tag.toLowerCase().trim().replace(/[\W_]+/g, '-').replace(/^-+|-+$/g, '')
-    )
-    // Remove duplicate tags
-    .filter((value, index, self) => self.indexOf(value) === index);
-}
-
-// format tags for display
-export function formatTagsForDisplay(tags) {
-  return tags.join(', ');
-}
-
-export function niceDate(dateString) {
+export function formatDateForDisplay(dateString) {
   return new Date(dateString).toLocaleString('en-US', {
     year: 'numeric',
     month: '2-digit',
@@ -36,7 +16,18 @@ export function niceDate(dateString) {
   }).replace(',', ' at');
 }
 
-export function niceList(input) {
+// format tags for database with normalization
+export function formatListForDB(tagStr) {
+  return tagStr.split(',')
+    .map(tag =>
+      // Convert to lowercase, trim whitespace, then replace special characters and spaces with dashes
+      tag.toLowerCase().trim().replace(/[\W_]+/g, '-').replace(/^-+|-+$/g, '')
+    )
+    // Remove duplicate tags
+    .filter((value, index, self) => self.indexOf(value) === index);
+}
+
+export function formatListForDisplay(input) {
   if (!input) return '';
   // Ensure input is treated as an array, useful if the input is an "array-like" object
   const arrayInput = Array.isArray(input) ? input : Object.values(input);

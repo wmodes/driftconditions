@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { audioInfo } from '../store/audioSlice';
-import { formatDateForDisplay, formatTagsForDisplay } from '../utils/formatUtils';
+import { formatDateForDisplay, formatListForDisplay } from '../utils/formatUtils';
 import FeatherIcon from 'feather-icons-react';
 
 function AudioView() {
@@ -12,6 +12,8 @@ function AudioView() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
+
+  const [error, setError] = useState('');
 
   const [audioDetails, setAudioDetails] = useState({
     title: '',
@@ -34,12 +36,15 @@ function AudioView() {
       .then(response => {
         setAudioDetails({
           ...response,
-          classification: formatTagsForDisplay(response.classification),
-          tags: formatTagsForDisplay(response.tags),
+          classification: formatListForDisplay(response.classification),
+          tags: formatListForDisplay(response.tags),
           upload_date: formatDateForDisplay(response.upload_date),
         });
       })
-      .catch(err => console.error('Error fetching audio details:', err));
+      .catch(err => {
+        console.error('Error fetching audio details:', err);
+        setError('Failed to fetch audio details.');
+      });
   }, [audioID, dispatch]);
 
   // Redirect to signin page if not authenticated
@@ -100,6 +105,10 @@ function AudioView() {
               <div className="form-label">Comments:</div>
               <div className="form-value">{audioDetails.comments}</div>
             </div>
+          </div>
+
+          <div className='message-box'>
+            {error && <p className="error">{error}</p>}
           </div>
   
           {renderBreadcrumbs()}

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, Navigate } from 'react-router-dom';
 import { audioUpload } from '../store/audioSlice';
-import { formatTagsForDB, formatTagsForDisplay } from '../utils/formatUtils';
+import { formatListForDB, formatListForDisplay } from '../utils/formatUtils';
 
 // Import the config object from the config.js file
 const config = require('../config/config');
@@ -26,8 +26,7 @@ function AudioUpload() {
 
   // Success and error handling
   const [successMessage, setSuccessMessage] = useState(''); // New state for success message
-  const error = useSelector((state) => state.auth.error);
-  const [formError, setFormError] = useState('');
+  const [error, setError] = useState('');
 
   // Local state for managing classification checkboxes
   const [classification, setClassification] = useState({
@@ -52,13 +51,13 @@ function AudioUpload() {
     if (selectedFile && allowedFileTypes.includes(selectedFile.type)) {
       // Set the file if it's one of the allowed types
       setFile(selectedFile);
-      setFormError(''); // Clear any previous error message
+      setError(''); // Clear any previous error message
     } else {
       // Clear the file input and show an error if the file type is not allowed
       e.target.value = ''; // Clears the file input
       // Display an error message to the user
       console.error("Invalid file type:", selectedFile?.type);
-      setFormError('Invalid file type. Please select a valid audio file.');
+      setError('Invalid file type. Please select a valid audio file.');
     }
   };
 
@@ -66,7 +65,7 @@ function AudioUpload() {
     e.preventDefault();
     
     // Normalize tags before converting them to array for submission
-    const normalizedTags = formatTagsForDB(tags);
+    const normalizedTags = formatListForDB(tags);
   
     // Create a FormData object to submit the file and other form data
     const formData = new FormData();
@@ -83,14 +82,14 @@ function AudioUpload() {
       .unwrap()
       .then(response => {
         setSuccessMessage('Upload successful!');
-        setFormError('');
+        setError('');
         setUploadedAudioID(response.audioID);
         // Update tags input with normalized tags
-        setTags(formatTagsForDisplay(normalizedTags));
+        setTags(formatListForDisplay(normalizedTags));
       })
       .catch(error => {
         console.error("Upload error:", error);
-        setFormError(error.message || 'Failed to upload audio.');
+        setError(error.message || 'Failed to upload audio.');
       });
   };  
 
@@ -159,7 +158,6 @@ function AudioUpload() {
             )}
             <div className='message-box'>
               {successMessage && <p className="success">{successMessage}</p>}
-              {formError && <p className="error">{formError}</p>}
               {error && <p className="error">{error}</p>}
             </div>
           </form>

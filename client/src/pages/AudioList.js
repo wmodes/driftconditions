@@ -8,6 +8,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { audioList as audioListAction, audioTrash as audioTrashAction } from '../store/audioSlice';
 import { parseQuery, stringifyQuery } from '../utils/queryUtils';
 import { renderPagination } from '../utils/listUtils'; 
+import { formatDateForDisplay, formatListForDisplay } from '../utils/formatUtils';
 import { ReactComponent as AudioOn } from '../images/volume-animate.svg';
 
 // Import the config object from the config.js file
@@ -33,8 +34,7 @@ function AudioList() {
   const [isLoading, setIsLoading] = useState(true);
   const [retryAttempt, setRetryAttempt] = useState(0);
   const [successMessage, setSuccessMessage] = useState(''); // State for success message
-  const [error, setError] = useState(''); // State for general errors
-  const [criticalError, setCriticalError] = useState('');
+  const [error, setError] = useState('');
 
   // Parse current URL search params
   const currentFilters = parseQuery(location.search);
@@ -70,7 +70,7 @@ function AudioList() {
       })
       .catch(error => {
         console.error("Error fetching audio list:", error);
-        setCriticalError('Failed to fetch audio list.');
+        setError('Failed to fetch audio list.');
         setAudioList([]);
         setIsLoading(false); // Stop loading on error
         setRetryAttempt(prevAttempt => prevAttempt + 1); // Increment retry attempt
@@ -129,31 +129,9 @@ function AudioList() {
     const newQueryParams = { ...currentFilters, page: newPage };
     navigate({ search: stringifyQuery(newQueryParams) }); // Update URL without reloading the page
     setSuccessMessage('');
-    setCriticalError('');
+    setError('');
     setError('');
   };
-
-  //
-  // Formating helpers
-  //
-
-  function niceDate(dateString) {
-    return new Date(dateString).toLocaleString('en-US', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true
-    }).replace(',', ' at');
-  }
-
-  function niceList(input) {
-    if (!input) return '';
-    // Ensure input is treated as an array, useful if the input is an "array-like" object
-    const arrayInput = Array.isArray(input) ? input : Object.values(input);
-    return arrayInput.join(', ');
-  }
 
   //
   // audio preview
@@ -193,10 +171,9 @@ function AudioList() {
           <div className='message-box'>
             {isLoading && <p className="success">Loading...</p>}
             {successMessage && <p className="success">{successMessage}</p>}
-            {criticalError && <p className="error">{criticalError}</p>}
             {error && <p className="error">{error}</p>}
           </div>
-          {!criticalError && !isLoading ? (
+          {!error && !isLoading ? (
             <div>
               <div className="top-controls">
                 <div className="filter-box">
@@ -283,7 +260,7 @@ function AudioList() {
                             onClick={() => handleFilter('user', audio.uploader_username)}>
                             {audio.uploader_username}
                           </button> 
-                          &nbsp;on {niceDate(audio.upload_date)}
+                          &nbsp;on {formatDateForDisplay(audio.upload_date)}
                         </div>
                         {audio.editor_username && (
                           <div className="authorline">
@@ -292,14 +269,14 @@ function AudioList() {
                               onClick={() => handleFilter('user', audio.editor_username)}>
                               {audio.editor_username}
                             </button> 
-                            &nbsp;on {niceDate(audio.edit_date)}
+                            &nbsp;on {formatDateForDisplay(audio.edit_date)}
                           </div>
                         )}
                       </td>
                       <td className="duration">{parseFloat(audio.duration).toFixed(2)}s</td>
                       <td className="status">{audio.status}</td>
-                      <td className="classification">{niceList(audio.classification)}</td>
-                      <td className="tags">{niceList(audio.tags)}</td>
+                      <td className="classification">{formatListForDisplay(audio.classification)}</td>
+                      <td className="tags">{formatListForDisplay(audio.tags)}</td>
                       <td className="listen">
                         <button onClick={(e) => togglePlayAudio(audio.filename, e)}>
                           {/* <FeatherIcon className="icon default" icon="volume" /> */}

@@ -38,8 +38,7 @@ function ProfileEdit() {
   const dispatch = useDispatch();
 
   // Success and error handling
-  const error = useSelector((state) => state.auth.error);
-  const [formError, setFormError] = useState('');
+  const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
@@ -76,18 +75,18 @@ function ProfileEdit() {
     if (newPassword !== confirmPassword) {
       console.log('Passwords do not match.');
       // Set an error state or alert the user
-      setFormError('Passwords do not match.');
+      setError('Passwords do not match.');
       return; // Prevent the form from being submitted
     }
     // Proceed with dispatching the profileEdit action if passwords match
     dispatch(profileEdit({ ...profile, password: newPassword }))
       .then(() => {
         setSuccessMessage('Profile updated successfully!'); 
-        setFormError(''); // Clear any existing errors
+        setError(''); // Clear any existing errors
       })
       .catch(error => {
         console.error("Failed to update profile:", error);
-        setFormError('An error occurred while updating the profile.');
+        setError('An error occurred while updating the profile.');
       });
   };
 
@@ -142,7 +141,6 @@ function ProfileEdit() {
             </div>
             <div className='message-box'>
               {successMessage && <p className="success">{successMessage}</p>}
-              {formError && <p className="error">{formError}</p>}
               {error && <p className="error">{error}</p>}
             </div>
           </form>

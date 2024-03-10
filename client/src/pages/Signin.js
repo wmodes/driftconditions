@@ -17,7 +17,7 @@ function Signin() {
   // Accessing the global state to check for current user and any authentication errors.
   // Instead of selecting `user`, select the authentication status flag
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
-  const error = useSelector((state) => state.auth.error);
+  const [error, setError] = useState('');
   
   // Hook to dispatch authentication action.
   const dispatch = useDispatch(); 
@@ -35,6 +35,7 @@ function Signin() {
     .catch((error) => {
         // Handle any error here
         console.error("Login error:", error);
+        setError('Invalid username or password');
     });
 }
 
