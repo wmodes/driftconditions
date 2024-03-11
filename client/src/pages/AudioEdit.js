@@ -2,12 +2,18 @@
 
 // TODO: Link back to List at top of form 
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { audioInfo, audioUpdate } from '../store/audioSlice';
+import { initWaveSurfer } from '../utils/waveUtils';
 import { formatDateForDisplay, formatListForDB, formatListForDisplay } from '../utils/formatUtils';
 import FeatherIcon from 'feather-icons-react';
+
+// Import the config object from the config.js file
+const config = require('../config/config');
+// pull variables from the config object
+const audioBaseURL = config.server.audioBaseURL;
 
 function AudioEdit() {
   const { audioID } = useParams();
@@ -15,7 +21,11 @@ function AudioEdit() {
   const dispatch = useDispatch();
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
 
+  const [isDomReady, setIsDomReady] = useState(false);
+  const waveSurferRef = useRef(null);
+
   // Success and error handling
+  const [isLoading, setIsLoading] = useState(true);
   const [successMessage, setSuccessMessage] = useState('');
   const [error, setError] = useState('');
 
@@ -44,7 +54,9 @@ function AudioEdit() {
   });
 
   useEffect(() => {
-    if (!audioID) return;
+    if (!audioID || !isAuthenticated) return;
+    setIsLoading(true); // Start loading
+
     dispatch(audioInfo(audioID))
       .unwrap()
       .then(response => {
@@ -59,12 +71,14 @@ function AudioEdit() {
             [curr]: true
           }), {...audioDetails.classification})
         }));
+        setIsLoading(false); // Stop loading once data is fetched
       })
       .catch(err => {
         console.error('Error fetching audio details:', err);
         setError('Failed to fetch audio details.');
+        setIsLoading(false); // Stop loading on error
       });
-  }, [audioID, dispatch]);
+  }, [audioID, dispatch, isAuthenticated]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -83,13 +97,11 @@ function AudioEdit() {
     e.preventDefault();
     // Normalize tags before submitting
     const normalizedTags = formatListForDB(audioDetails.tags);
-
     const updatedDetails = {
       ...audioDetails,
       tags: normalizedTags,
       classification: Object.keys(audioDetails.classification).filter(key => audioDetails.classification[key])
     };
-
     dispatch(audioUpdate({audioID, ...updatedDetails}))
       .unwrap()
       .then(() => {
@@ -106,6 +118,30 @@ function AudioEdit() {
         setError('Failed to update audio.');
       });
   };
+
+  // This useEffect ensures the component is mounted before initializing WaveSurfer
+  useEffect(() => {
+    setIsDomReady(true);
+    console.log('Component mounted');
+  }, []);
+
+  // initialize WaveSurfer once the component is mounted and audioDetails.filename is available
+  useEffect(() => {
+    if (isDomReady && audioDetails.filename) {
+      const audioURL = `${audioBaseURL}/${audioDetails.filename}`;
+      console.log('Initializing WaveSurfer:', audioURL);
+      waveSurferRef.current = initWaveSurfer('waveform', audioURL, (wavesurfer) => {
+        console.log('WaveSurfer is ready:', wavesurfer);
+        // Additional setup or actions after WaveSurfer is ready
+      });
+    }
+    // Cleanup function to destroy WaveSurfer instance on component unmount
+    return () => {
+      // if (waveSurferRef.current) {
+      //   waveSurferRef.current.destroy();
+      // }
+    };
+  }, [isDomReady, audioDetails.filename]); 
 
   // Redirect to signin page if not authenticated
   if (isAuthenticated === false) {
@@ -154,7 +190,7 @@ function AudioEdit() {
             </div>
 
             <div className="form-group">
-              Editing elements here.
+              <div id="waveform"></div>
             </div>
 
             <div className="form-group">

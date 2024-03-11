@@ -1,5 +1,6 @@
 import WaveSurfer from 'wavesurfer.js';
 import TimelinePlugin from 'wavesurfer.js/dist/plugins/timeline.esm.js'
+import RegionsPlugin from 'wavesurfer.js/dist/plugins/regions.esm.js'
 import config from '../config/config';
 
 const wsConfig = config.wavesurfer;
@@ -21,17 +22,42 @@ export const fetchAudioFile = async (audioUrl) => {
 export const initWaveSurfer = async (containerId, audioUrl, onReadyCallback) => {
   const url = await fetchAudioFile(audioUrl);
   
-  const wavesurfer = WaveSurfer.create({
+  const ws = WaveSurfer.create({
     ...wsConfig,
     container: `#${containerId}`,
     url,
     plugins: [TimelinePlugin.create()],
   });
 
-  wavesurfer.on('ready', () => {
-    onReadyCallback(wavesurfer);
-    wavesurfer.on('click', () => wavesurfer.playPause());
-  });
+  // Initialize the Regions plugin
+  const wsRegions = ws.registerPlugin(RegionsPlugin.create())
+  wsRegions.enableDragSelection({
+    color: 'rgba(255, 0, 0, 0.1)',
+  })
+  wsRegions.on('region-updated', (region) => {
+    console.log('Updated region', region)
+  })
 
-  return wavesurfer;
+  waveSurferEvents(ws);
+  
+  return ws;
 };
+
+function waveSurferEvents (ws) {
+    // Add click play/pause listener
+    ws.on('click', () => {
+      ws.playPause();
+    });
+    // Add spacebar play/pause listener
+    document.addEventListener('keydown', (event) => {
+      if (event.code === "Space" && !isFocusInsideForm()) {
+        event.preventDefault(); // Prevent the default spacebar action (scrolling)
+        ws.playPause();
+      }
+    });
+}
+
+function isFocusInsideForm() {
+  const activeElement = document.activeElement;
+  return activeElement && (activeElement.classList.contains('form-field') || activeElement.classList.contains('form-textarea'));
+}
