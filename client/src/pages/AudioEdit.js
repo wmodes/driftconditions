@@ -6,7 +6,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { audioInfo, audioUpdate } from '../store/audioSlice';
-import { initWaveSurfer } from '../utils/waveUtils';
+import { initWaveSurfer, destroyWaveSurfer } from '../utils/waveUtils';
 import { formatDateForDisplay, formatListForDB, formatListForDisplay } from '../utils/formatUtils';
 import FeatherIcon from 'feather-icons-react';
 
@@ -126,20 +126,26 @@ function AudioEdit() {
   }, []);
 
   // initialize WaveSurfer once the component is mounted and audioDetails.filename is available
-  useEffect(() => {
+  useEffect(() => {  //
     if (isDomReady && audioDetails.filename) {
       const audioURL = `${audioBaseURL}/${audioDetails.filename}`;
-      console.log('Initializing WaveSurfer:', audioURL);
-      waveSurferRef.current = initWaveSurfer('waveform', audioURL, (wavesurfer) => {
+      console.log('waveSurferRef.current:', waveSurferRef.current);
+      // check if waveSurferRef.current is already initialized
+      if (waveSurferRef.current) {
+        destroyWaveSurfer();
+      }
+      // Initialize a new WaveSurfer instance
+      initWaveSurfer(audioURL, (wavesurfer) => {
         console.log('WaveSurfer is ready:', wavesurfer);
-        // Additional setup or actions after WaveSurfer is ready
+      }).then(wavesurfer => {
+        waveSurferRef.current = wavesurfer;
       });
     }
     // Cleanup function to destroy WaveSurfer instance on component unmount
-    return () => {
-      // if (waveSurferRef.current) {
-      //   waveSurferRef.current.destroy();
-      // }
+    return () => {  //
+      if (waveSurferRef.current) {
+        destroyWaveSurfer();
+      }
     };
   }, [isDomReady, audioDetails.filename]); 
 

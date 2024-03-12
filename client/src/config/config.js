@@ -32,23 +32,13 @@ const config = {
     normalize: true,
     responsive: true,
     hideScrollbar: true,
-    // plugins: [
-    //   WaveSurfer.cursor.create({
-    //     showTime: true,
-    //     opacity: 1,
-    //     customShowTimeStyle: {
-    //       'background-color': '#000',
-    //       color: '#fff',
-    //       padding: '2px',
-    //       'font-size': '10px',
-    //     },
-    //   }),
-    //   WaveSurfer.regions.create({
-    //     dragSelection: {
-    //       slop: 5,
-    //     },
-    //   }),
-    // ],
+    plugins: {
+      regions: {
+        dragSelection: {
+          color: 'rgba(255, 0, 0, 0.1)',
+        },
+      },
+    }
   }
 };
 
