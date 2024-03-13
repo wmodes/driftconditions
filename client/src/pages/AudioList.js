@@ -278,7 +278,7 @@ function AudioList() {
                       <td className="classification">{formatListForDisplay(audio.classification)}</td>
                       <td className="tags">{formatListForDisplay(audio.tags)}</td>
                       <td className="listen">
-                        <button onClick={(e) => togglePlayAudio(audio.filename, e)}>
+                        <button className="icon" onClick={(e) => togglePlayAudio(audio.filename, e)}>
                           {/* <FeatherIcon className="icon default" icon="volume" /> */}
                           <AudioOn className="icon active" />
                         </button>

@@ -10,17 +10,17 @@ export const renderPagination = (totalRecords, recordsPerPage, currentPage, page
       <span className="mr-4">{totalRecords} items</span>
       {/* <span className="mr-1">Page:</span> */}
       <span className="pagination-controls">
-        <button onClick={() => pageHandler(1)} disabled={currentPage === 1}>
+        <button className="icon" onClick={() => pageHandler(1)} disabled={currentPage === 1}>
           <FeatherIcon icon="skip-back" />
         </button>
-        <button onClick={() => pageHandler(Math.max(1, currentPage - 1))} disabled={currentPage === 1}>
+        <button className="icon" onClick={() => pageHandler(Math.max(1, currentPage - 1))} disabled={currentPage === 1}>
           <FeatherIcon icon="rewind" />
         </button>
         <span className="page-num">page {currentPage} of {pageCount}</span>
-        <button onClick={() => pageHandler(Math.min(pageCount, currentPage + 1))} disabled={currentPage === pageCount}>
+        <button className="icon" onClick={() => pageHandler(Math.min(pageCount, currentPage + 1))} disabled={currentPage === pageCount}>
           <FeatherIcon icon="fast-forward" />
         </button>
-        <button onClick={() => pageHandler(pageCount)} disabled={currentPage === pageCount}>
+        <button className="icon" onClick={() => pageHandler(pageCount)} disabled={currentPage === pageCount}>
           <FeatherIcon icon="skip-forward" />
         </button>
       </span>

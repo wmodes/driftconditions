@@ -66,21 +66,20 @@ function AudioView() {
   // This useEffect ensures the component is mounted before initializing WaveSurfer
   useEffect(() => {
     setIsDomReady(true);
-    console.log('Component mounted');
+    // console.log('Component mounted');
   }, []);
 
   // initialize WaveSurfer once the component is mounted and audioDetails.filename is available
   useEffect(() => {  //
     if (isDomReady && audioDetails.filename) {
       const audioURL = `${audioBaseURL}/${audioDetails.filename}`;
-      console.log('waveSurferRef.current:', waveSurferRef.current);
       // check if waveSurferRef.current is already initialized
-      // if (waveSurferRef.current) {
-      //   destroyWaveSurfer();
-      // }
+      if (waveSurferRef.current) {
+        destroyWaveSurfer();
+      }
       // Initialize a new WaveSurfer instance
       initWaveSurfer(audioURL, (wavesurfer) => {
-        console.log('WaveSurfer is ready:', wavesurfer);
+        // console.log('WaveSurfer is ready:', wavesurfer);
       }).then(wavesurfer => {
         waveSurferRef.current = wavesurfer;
       });

@@ -54,20 +54,17 @@ function ProfileEdit() {
           console.error("Failed to fetch profile:", error);
         });
     }
-  }, [dispatch, isAuthenticated, error]);
+  }, [dispatch, isAuthenticated]);
 
   // If not logged in, redirect to sign-in page
   if (isAuthenticated === false) { 
     return <Navigate to='/signin' replace />;
   }
 
-  // Handles form submission, invoking the update process.
+  // Keep values in sync with form values
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setProfile(prevProfile => ({
-      ...prevProfile,
-      [name]: value
-    }));
+    setProfile(prevState => ({ ...prevState, [name]: value }));
   };
 
   const handleSubmit = (e) => {

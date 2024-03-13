@@ -8,14 +8,12 @@ import axios from 'axios';
 
 // Import the config object from the config.js file
 const config = require('../config/config');
-
 // pull variables from the config object
 const serverBaseURL = config.server.baseURL;
-
 // Routes
-const signupRoute = serverBaseURL + '/api/auth/signup';
-const signinRoute = serverBaseURL + '/api/auth/signin';
-const logoutRoute = serverBaseURL + '/api/auth/logout';
+const signupRoute = serverBaseURL + config.server.routes.signup;
+const signinRoute = serverBaseURL + config.server.routes.signin;
+const logoutRoute = serverBaseURL + config.server.routes.logout;
 
 // createAsyncThunk is used to handle asynchronous logic, allowing for side effects like API calls.
 // It automatically manages pending, fulfilled, and rejected action types based on the promise state.

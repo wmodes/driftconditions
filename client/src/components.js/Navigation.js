@@ -76,6 +76,17 @@ export default function Navigation() {
             }} className='nav-item'>Logout</Link>
         </li>
       </ul>
+    </li>,
+    <li key="admin">
+      <div className="nav-level1"><FeatherIcon icon="clipboard" />Admin</div>
+        <ul className="nav-level2">
+          <li onClick={closeMenu}>
+            <Link to='/user/list' className='nav-item'>All Users</Link>
+          </li>
+          <li onClick={closeMenu}>
+            <Link to='/role/list' className='nav-item'>Roles</Link>
+          </li>
+        </ul>
     </li>
   ] : [
     <li key="signin" onClick={closeMenu}>
@@ -96,7 +107,7 @@ export default function Navigation() {
       </div>
       <div className="navburger">
         {/* Navburger Icon */}
-        <button key="navburger" onClick={toggleMenu}>
+        <button className="icon" key="navburger" onClick={toggleMenu}>
           {/* Icon or text representing the navburger */}
           <FeatherIcon icon="menu" />&nbsp;
         </button>

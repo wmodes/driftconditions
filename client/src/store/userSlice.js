@@ -12,9 +12,11 @@ const config = require('../config/config');
 const serverBaseURL = config.server.baseURL;
 
 // Routes
-const profileRoute = serverBaseURL + '/api/user/profile';
-const profileEditRoute = serverBaseURL + '/api/user/profile/edit';
-const userListRoute = serverBaseURL + '/api/user/list';
+const profileRoute = serverBaseURL + config.server.routes.profile;
+const profileEditRoute = serverBaseURL + config.server.routes.profileEdit;
+const userListRoute = serverBaseURL + config.server.routes.userList;
+const roleListRoute = serverBaseURL + config.server.routes.roleList;
+const roleUpdateRoute = serverBaseURL + config.server.routes.roleUpdate;
 
 export const profileInfo = createAsyncThunk('user/profileInfo', async (username, thunkAPI) => {
   // Prepare the request body based on whether a username is provided
@@ -62,6 +64,33 @@ export const userList = createAsyncThunk(
   }
 );
 
+// Define async thunk for fetching the audio list
+export const roleList = createAsyncThunk(
+  roleListRoute, 
+  async (queryParams, thunkAPI) => {
+    try {
+      const response = await axios.post(roleListRoute, queryParams, {
+        withCredentials: true,
+      });
+      // Assuming the response includes { totalRecords, audioList }
+      return response.data; 
+    } catch (error) {
+      console.error('Fetch role list error:', error);
+      return thunkAPI.rejectWithValue(error.response.data);
+    }
+  }
+);
+
+export const roleUpdate = createAsyncThunk(roleUpdateRoute, async (roleData, thunkAPI) => {
+  try {
+    const response = await axios.post(roleUpdateRoute, roleData, { withCredentials: true });
+    return response.data;
+  } catch (error) {
+    return thunkAPI.rejectWithValue(error.response?.data?.error || error.message);
+  }
+});
+
+
 const initialState = {
   profile: {},
   loading: false,
@@ -76,6 +105,8 @@ export const userSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      // profile info
+      //
       .addCase(profileInfo.pending, (state) => {
         state.loading = true;
       })
@@ -87,6 +118,8 @@ export const userSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
+      // profile edit
+      //
       .addCase(profileEdit.pending, (state) => {
         state.loading = true;
       })
@@ -97,6 +130,38 @@ export const userSlice = createSlice({
       .addCase(profileEdit.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+      // role list
+      //
+      .addCase(roleList.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(roleList.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.roles = action.payload.roles; 
+      })
+      .addCase(roleList.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload || 'Failed to fetch roles';
+      })
+      // role update
+      //
+      .addCase(roleUpdate.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(roleUpdate.fulfilled, (state, action) => {
+        state.isLoading = false;
+        // Assuming payload contains the updated role, find and update it in the state
+        const index = state.roles.findIndex(role => role.role_id === action.payload.role_id);
+        if (index !== -1) {
+          state.roles[index] = action.payload;
+        }
+      })
+      .addCase(roleUpdate.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload || 'Failed to update role';
       });
   }
 });

@@ -1,11 +1,8 @@
-// userRoutes.js - This file contains the routes for user profiles and modifying user information.
+// userRoutes.js - contains the routes for user profiles and modifying user information
 // List of routes:
-//   /api/user/profile - Route for showing a user's public profile. If a targetID is provided, 
-//        it shows that ID, otherwise it extracts the user ID from the token, and returns the 
-//        user's information.
-//   /api/user/profile/edit - Route to update user profile information in the database.
-//   /api/user/user - Route for showing another user's profile. It extracts the user ID from 
-//        the token, and returns the target user's information.
+//   /api/user/profile - Route for showing a user's public profile
+//   /api/user/profile/edit - Route to update user profile
+//   /api/user/user - Route for showing another user's profile (unimplemented)
 
 // foundational imports
 const express = require('express');
@@ -18,7 +15,6 @@ const verifyToken = require('../middleware/authMiddleware');
 
 // configuration import
 const config = require('../config');
-
 // pull these out of the config object
 const jwtSecretKey = config.authToken.jwtSecretKey;
 

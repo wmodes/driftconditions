@@ -269,8 +269,18 @@ svg {
 }
 
 /*
- *  Big Table Elements
+ *  Table Elements
  */
+
+.list-wrapper .display-box {
+  min-width: calc(100vw - 20px);
+  min-height: calc(100vh - 5rem);
+  padding: 0.5rem;
+}
+
+.list-wrapper h2.title {
+  padding-bottom: 0;
+}
 
 .big-table {
   width: 100%;
@@ -312,8 +322,8 @@ svg {
   background-color: var(--table-background-color);
 }
 
-.big-table tr:hover {
-  background-color: #f2f2f2; /* bg-gray-300 */
+.big-table tr:not(.edit-row):hover {
+  background-color: var(--table-background-hover-color);
 }
 
 .big-table td {
@@ -323,10 +333,6 @@ svg {
 .big-table .action-list {
   font-size: 0.75rem;
   visibility: hidden;
-}
-
-.big-table tr:hover {
-  background-color: var(--table-background-hover-color);
 }
 
 .big-table tr:hover .action-list {
@@ -387,22 +393,9 @@ svg {
   stroke: var(--button-disabled-text-color);
 }
 
+/* Specific field widths for the audio table */
 
-/*
- *  Audio List Elements
- */
-
-/* Note that they are mods to .display-box */
-
-.list-wrapper .display-box {
-  min-width: calc(100vw - 20px);
-  min-height: calc(100vh - 5rem);
-  padding: 0.5rem;
-}
-
-.list-wrapper h2.title {
-  padding-bottom: 0;
-}
+/* Audio table */
 
 .audio-table .title {
   width: 15rem;
@@ -419,30 +412,56 @@ svg {
 /* Animated icon madness */
 
 /* Initially hide all but frame0 which is always on */
-.listen button svg .frame0 {
+.audio-table .listen button svg .frame0 {
   opacity: 1 !important;
 }
-.listen button svg .frame1,
-.listen button svg .frame2 {
+.audio-table .listen button svg .frame1,
+.audio-table .listen button svg .frame2 {
   opacity: 0; 
 }
-
 /* Define the animation for cycling icons */
 @keyframes cycleIcons {
   0%, 60%, 100% { opacity: 0; }
   0.1% { opacity: 1; }
 }
-
-.listen button.active svg .frame1 {
+.audio-table .listen button.active svg .frame1 {
   animation: cycleIcons 1s infinite;
   animation-delay: 0.3s; 
 }
-
-.listen button.active svg .frame2 {
+.audio-table .listen button.active svg .frame2 {
   animation: cycleIcons 1s infinite;
   animation-delay: 0.6s; 
 }
 
+/* Role table */
+
+.big-table.role-table .row-odd {
+  background-color: var(--table-background-2-color); 
+}
+
+.big-table.role-table .row-even {
+  background-color: var(--table-background-color);
+}
+
+.role-table .role-id {
+  width: 3rem;
+}
+
+.role-table .role-name {
+  width: 8rem;
+}
+
+.role-table .edit-field {
+  width: 4rem;
+}
+
+.role-table .form-textarea {
+  border: 1px solid var(--table-border-color);
+}
+
+.role-table .edit-row form {
+  padding: 0.5rem 0;
+}
 
 /*
  *  Form Elements
@@ -538,7 +557,17 @@ svg {
   padding-right: 12px;
   padding-top: 4px;
   padding-bottom: 4px;
+}
+
+button:not(.link,.icon) {
   border-radius: 0.25rem; /* 2px */
+  background-color: var(--button-submit-background-color);
+  border: 1px solid var(--table-border-color);
+  color: var(--button-submit-text-color);
+  padding-left: 12px;
+  padding-right: 12px;
+  padding-top: 4px;
+  padding-bottom: 4px;
 }
 
 .button.cancel {

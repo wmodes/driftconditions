@@ -17,6 +17,7 @@
   import Profile from './pages/Profile';
   import ProfileEdit from './pages/ProfileEdit';
   import UserList from './pages/UserList';
+  import RoleList from './pages/RoleList';
   import AudioUpload from './pages/AudioUpload';
   import AudioList from './pages/AudioList';
   import AudioView from './pages/AudioView';
@@ -52,6 +53,7 @@
         <Route path="/profile/:username" element={<Profile />} />
         <Route path='/profile/edit' element={<ProfileEdit />} /> 
         <Route path='/user/list' element={<UserList />} />
+        <Route path='/role/list' element={<RoleList />} />
         <Route path='/audio/upload' element={<AudioUpload />} />
         <Route path='/audio/list' element={<AudioList />} /> 
         <Route path='/audio/view/:audioID' element={<AudioView />} />

@@ -1,3 +1,4 @@
+// formatUtil - utilities for formatting data
 
 // format loose date for database
 export function formatDateForDB(dateStr) {
