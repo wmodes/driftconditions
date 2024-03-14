@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, Navigate } from 'react-router-dom';
 import { audioUpload } from '../store/audioSlice';
-import { formatListForDB, formatListForDisplay } from '../utils/formatUtils';
+import { formatListStrForDB, formatListForDisplay } from '../utils/formatUtils';
 
 // Import the config object from the config.js file
 const config = require('../config/config');
@@ -65,7 +65,7 @@ function AudioUpload() {
     e.preventDefault();
     
     // Normalize tags before converting them to array for submission
-    const normalizedTags = formatListForDB(tags);
+    const normalizedTags = formatListStrForDB(tags);
   
     // Create a FormData object to submit the file and other form data
     const formData = new FormData();

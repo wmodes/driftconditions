@@ -14,13 +14,15 @@ const serverBaseURL = config.server.baseURL;
 const signupRoute = serverBaseURL + config.server.routes.signup;
 const signinRoute = serverBaseURL + config.server.routes.signin;
 const logoutRoute = serverBaseURL + config.server.routes.logout;
+const checkRoute = serverBaseURL + config.server.routes.check;
 
 // createAsyncThunk is used to handle asynchronous logic, allowing for side effects like API calls.
 // It automatically manages pending, fulfilled, and rejected action types based on the promise state.
 
 // signup thunk for registering a new user. Utilizes Axios for posting user data to the server.
 // On success or failure, it either returns the user data or rejects with an error message.
-export const signup = createAsyncThunk(signupRoute, async ({username, password, firstname, lastname, email}, thunkAPI) => {
+export const signup = createAsyncThunk(signupRoute, 
+  async ({username, password, firstname, lastname, email}, thunkAPI) => {
   try {
     const response = await axios.post(signupRoute, {username, password, firstname, lastname, email});
     return response.data;
@@ -31,7 +33,9 @@ export const signup = createAsyncThunk(signupRoute, async ({username, password, 
 
 // signin thunk for logging in a user. It sends username and password to the server,
 // and handles the response similarly to the signup thunk.
-export const signin = createAsyncThunk(signinRoute, async ({username, password}, thunkAPI) => {
+export const signin = createAsyncThunk(
+  signinRoute, 
+  async ({username, password}, thunkAPI) => {
   try {
     // Send a POST request to the server with the user's credentials
     await axios.post(signinRoute, {username, password}, { withCredentials: true });
@@ -43,7 +47,9 @@ export const signin = createAsyncThunk(signinRoute, async ({username, password},
 })
 
 // logout thunk for logging out a user. It sends a POST request to the server to invalidate the user's session.
-export const logout = createAsyncThunk(logoutRoute, async (_, thunkAPI) => {
+export const logout = createAsyncThunk(
+  logoutRoute, 
+  async (_, thunkAPI) => {
   try {
     await axios.post(logoutRoute, {}, { withCredentials: true });
     // console.log('Logout response:', response);
@@ -53,6 +59,26 @@ export const logout = createAsyncThunk(logoutRoute, async (_, thunkAPI) => {
     return thunkAPI.rejectWithValue(error.message);
   }
 });
+
+export const checkPageAuth = createAsyncThunk(
+  checkRoute,
+  async (pageContext, { rejectWithValue }) => {
+    try {
+      const response = await axios.post(checkRoute, { context: pageContext }, { withCredentials: true });
+      return response.data;
+    } catch (error) {
+      if (!error.response) {
+        // Network or other axios-specific error
+        throw error;
+      }
+      // Return custom error payload if we have a response (which could be 403 or other HTTP status)
+      return rejectWithValue({
+        status: error.response.status,
+        data: error.response.data,
+      });
+    }
+  }
+);
 
 // Initial state for the auth slice, setting up default values for user authentication status.
 const initialState = {  

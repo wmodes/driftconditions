@@ -5,21 +5,24 @@ const config = {
     baseURL: 'http://localhost:8080',
     retryLimit: 3,
     routes: {
+      // auth
       signup: '/api/auth/signup',
       signin: '/api/auth/signin',
       logout: '/api/auth/logout',
+      check: '/api/auth/check',
+      // user
       profile: '/api/user/profile',
       profileEdit: '/api/user/profile/edit',
       userList: '/api/user/list',
+      // role
       roleList: '/api/role/list',
       roleUpdate: '/api/role/update',
+      // audio
       audioUpload: '/api/audio/upload',
       audioInfo: '/api/audio/info',
       audioUpdate: '/api/audio/update',
       audioList: '/api/audio/list',
       audioTrash: '/api/audio/trash',
-      userList: '/api/user/list',
-      rolesList: '/api/roles/list',
     },
     audioBaseURL: 'http://localhost:8080/api/audio/sample',
   },

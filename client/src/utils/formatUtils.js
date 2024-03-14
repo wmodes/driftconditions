@@ -17,12 +17,14 @@ export function formatDateForDisplay(dateString) {
   }).replace(',', ' at');
 }
 
-// format tags for database with normalization
-export function formatListForDB(tagStr) {
+// format list for database with normalization
+export function formatListStrForDB(tagStr) {
+  console.log('formatListForDB tagStr:', tagStr);
+  if (!tagStr) return '';
   return tagStr.split(',')
     .map(tag =>
-      // Convert to lowercase, trim whitespace, then replace special characters and spaces with dashes
-      tag.toLowerCase().trim().replace(/[\W_]+/g, '-').replace(/^-+|-+$/g, '')
+      // trim whitespace
+      tag.trim()
     )
     // Remove duplicate tags
     .filter((value, index, self) => self.indexOf(value) === index);
@@ -34,3 +36,16 @@ export function formatListForDisplay(input) {
   const arrayInput = Array.isArray(input) ? input : Object.values(input);
   return arrayInput.join(', ');
 }
+
+// format tags for database with normalization
+export function formatTagStrForDB(tagStr) {
+  return tagStr.split(',')
+    .map(tag =>
+      // Convert to lowercase, trim whitespace, then replace special characters and spaces with dashes
+      tag.toLowerCase().trim().replace(/[\W_]+/g, '-').replace(/^-+|-+$/g, '')
+    )
+    // Remove duplicate tags
+    .filter((value, index, self) => self.indexOf(value) === index);
+}
+
+export const formatTagsForDisplay = formatListForDisplay;

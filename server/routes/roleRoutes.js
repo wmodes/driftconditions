@@ -39,7 +39,7 @@ router.post('/list', verifyToken, async (req, res) => {
 
 router.post('/update', verifyToken, async (req, res) => {
   const { role_id, role_name, permissions, comments } = req.body;
-  console.log('Request to update role:', { role_id, role_name, permissions, comments });
+  // console.log('Request to update role:', { role_id, role_name, permissions, comments });
 
   try {
     // Convert permissions back to a string if it's not already, assuming your database expects a JSON string

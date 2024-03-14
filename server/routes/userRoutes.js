@@ -84,23 +84,6 @@ router.post('/list',  verifyToken, async (req, res) => {
     
     const totalRecords = countResult[0].totalRecords;
 
-    console.log(`
-    SELECT 
-      user_id,
-      username,
-      firstname,
-      lastname,
-      email,
-      url,
-      location,
-      role_name,
-      added_on
-    FROM users
-    WHERE 1=1 ${filterQuery}
-    ORDER BY ${sortColumn} ${sortOrder}
-    LIMIT ? OFFSET ?;
-  `);
-
     const [userList] = await db.query(`
       SELECT 
         user_id,

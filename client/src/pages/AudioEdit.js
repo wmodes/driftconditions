@@ -7,7 +7,7 @@ import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { audioInfo, audioUpdate } from '../store/audioSlice';
 import { initWaveSurfer, destroyWaveSurfer } from '../utils/waveUtils';
-import { formatDateForDisplay, formatListForDB, formatListForDisplay } from '../utils/formatUtils';
+import { formatDateForDisplay, formatTagStrForDB, formatTagsForDisplay } from '../utils/formatUtils';
 import FeatherIcon from 'feather-icons-react';
 
 // Import the config object from the config.js file
@@ -64,7 +64,7 @@ function AudioEdit() {
         setAudioDetails(prevState => ({
           ...prevState,
           ...response,
-          tags: formatListForDisplay(response.tags),
+          tags: formatTagsForDisplay(response.tags),
           upload_date: formatDateForDisplay(response.upload_date),
           classification: response.classification.reduce((acc, curr) => ({
             ...acc,
@@ -96,7 +96,7 @@ function AudioEdit() {
   const handleSubmit = (e) => {
     e.preventDefault();
     // Normalize tags before submitting
-    const normalizedTags = formatListForDB(audioDetails.tags);
+    const normalizedTags = formatTagStrForDB(audioDetails.tags);
     const updatedDetails = {
       ...audioDetails,
       tags: normalizedTags,
@@ -110,7 +110,7 @@ function AudioEdit() {
         setAudioDetails(prevDetails => ({
           ...prevDetails,
           // Convert array back to string for input field
-          tags: formatListForDisplay(normalizedTags) 
+          tags: formatTagsForDisplay(normalizedTags) 
         }));
       })
       .catch(err => {

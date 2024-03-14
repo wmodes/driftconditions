@@ -455,6 +455,11 @@ svg {
   width: 4rem;
 }
 
+.role-table .perms,
+.role-table .comments {
+  width:50%;
+}
+
 .role-table .form-textarea {
   border: 1px solid var(--table-border-color);
 }
@@ -466,6 +471,11 @@ svg {
 /*
  *  Form Elements
  */
+
+ .required {
+  color: var(--error-text-color);
+  font-weight: bold;
+}
 
 .form-group {
   margin-bottom: 1rem;
@@ -524,10 +534,26 @@ svg {
   margin-left: 0.5rem;
 }
 
-.required {
-  color: var(--error-text-color);
-  font-weight: bold;
+.form-select .select-results {
+  background-color: white;
+  border: 1px solid var(--table-border-color);
+  padding: 0.25rem;
+  height: 5rem;
 }
+
+.form-select .select-results .react-tags__input {
+  display: none;
+}
+
+.form-select .select-results .react-tags__selected-tag {
+  margin-right: 0.5rem;
+}
+
+.form-select .select-results .react-tags__selected-tag button {
+  margin-left: 0.1rem;
+}
+
+/* Success and error messages */
 
 .message-box {
   padding-top: 0.5rem; /* 8px */
