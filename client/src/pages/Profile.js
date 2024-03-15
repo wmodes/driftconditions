@@ -5,16 +5,18 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 // Assuming you have an action or function to fetch user profile
 import { profileInfo } from '../store/userSlice';
+import { useCheckAuth } from '../utils/authUtils';
 // For redirecting the user in case they are not logged in
 import { Link, Navigate, useParams, useNavigate } from 'react-router-dom';
 // feather icons
 import FeatherIcon from 'feather-icons-react';
 
 function Profile() {
+  const results = useCheckAuth('profile');
+  const userData = results.user;
+  console.log("userData:", userData);
   // Accessing the username from the URL
   const { username: targetUsername } = useParams();
-  // Accessing Redux state for user (to check if logged in)
-  const { isAuthenticated } = useSelector(state => state.auth);
   // State hooks to store error message
   const [error, setError] = useState('');
   // State hooks to store user profile information
@@ -43,38 +45,31 @@ function Profile() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (isAuthenticated) {
-      dispatch(profileInfo(targetUsername)) // Dispatching with potentially undefined username
-        .then((res) => {
-          if (res.payload && res.payload.data) {
-            let newProfile = {};
-            for (const [key, value] of Object.entries(res.payload.data)) {
-              newProfile[key] = value;
-            }
-            setProfile(newProfile);
-            if (!targetUsername) {
-              // Modify URL to include the user's username
-              navigate(`/profile/${newProfile.username}`, { replace: true });
-            }
-            setError('');
-          } else if (res.error) {
-            // Handle the case where the user is not found
-            setError('User not found');
-            setProfile(notFoundUser); // Set the profile information to a notFoundUser
+    dispatch(profileInfo(targetUsername)) // Dispatching with potentially undefined username
+      .then((res) => {
+        if (res.payload && res.payload.data) {
+          let newProfile = {};
+          for (const [key, value] of Object.entries(res.payload.data)) {
+            newProfile[key] = value;
           }
-        })
-        .catch((error) => {
-          console.error("Failed to fetch profile:", error);
-          setError(error.toString());
-          setProfile(notFoundUser); // Fallback to notFoundUser in case of any error
-        });
-    }
-  }, [dispatch, isAuthenticated, targetUsername, navigate]);
-
-  // If not logged in, redirect to sign-in page
-  if (isAuthenticated === false) {
-    return <Navigate to='/signin' replace={true} />;
-  }
+          setProfile(newProfile);
+          if (!targetUsername) {
+            // Modify URL to include the user's username
+            navigate(`/profile/${newProfile.username}`, { replace: true });
+          }
+          setError('');
+        } else if (res.error) {
+          // Handle the case where the user is not found
+          setError('User not found');
+          setProfile(notFoundUser); // Set the profile information to a notFoundUser
+        }
+      })
+      .catch((error) => {
+        console.error("Failed to fetch profile:", error);
+        setError(error.toString());
+        setProfile(notFoundUser); // Fallback to notFoundUser in case of any error
+      });
+  }, [dispatch, targetUsername, navigate]);
 
   //
   // RENDERING HELPERS

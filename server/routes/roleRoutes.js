@@ -49,8 +49,8 @@ router.post('/update', verifyToken, async (req, res) => {
     // SQL query to update role information
     const query = `
       UPDATE roles 
-      SET role_name = ?, permissions = ?, comments = ?
-      WHERE role_id = ?
+      SET role_name = ?, permissions = ?, comments = ?, edit_date = NOW()
+      WHERE role_id = ?;
     `;
     const values = [role_name, permissionsStr, comments, role_id];
 

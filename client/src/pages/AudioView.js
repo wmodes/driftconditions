@@ -4,6 +4,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { audioInfo } from '../store/audioSlice';
+import { useCheckAuth } from '../utils/authUtils';
 import { initWaveSurfer, destroyWaveSurfer } from '../utils/waveUtils';
 
 import { formatDateForDisplay, formatListForDisplay } from '../utils/formatUtils';
@@ -15,10 +16,10 @@ const config = require('../config/config');
 const audioBaseURL = config.server.audioBaseURL;
 
 function AudioView() {
+  useCheckAuth('audioView');
   const { audioID } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
 
   const [isDomReady, setIsDomReady] = useState(false);
   const waveSurferRef = useRef(null);
@@ -42,7 +43,7 @@ function AudioView() {
   });
 
   useEffect(() => {
-    if (!audioID || !isAuthenticated) return;
+    if (!audioID) return;
     setIsLoading(true); // Start loading
 
     dispatch(audioInfo(audioID))
@@ -61,7 +62,7 @@ function AudioView() {
         setError('Failed to fetch audio details.');
         setIsLoading(false); // Stop loading on error
       });
-  }, [audioID, dispatch, isAuthenticated]);
+  }, [audioID, dispatch]);
 
   // This useEffect ensures the component is mounted before initializing WaveSurfer
   useEffect(() => {
@@ -90,12 +91,7 @@ function AudioView() {
         destroyWaveSurfer();
       }
     };
-  }, [isDomReady, audioDetails.filename]);  
-
-  // Redirect to signin page if not authenticated
-  if (isAuthenticated === false) {
-    return <Navigate to='/signin' replace={true} />;
-  }
+  }, [isDomReady, audioDetails.filename]);
 
   // Function to render advanced pagination buttons with navigation controls
   const renderBreadcrumbs = () => {

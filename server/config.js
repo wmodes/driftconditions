@@ -18,6 +18,7 @@ module.exports = {
   authToken: {
     jwtSecretKey: process.env.JWT_SECRET_KEY,
     tokenExpires: '7d',
+    tokenRefresh: 3600 * 1000,
   },
   authCookie: {
     cookieExpires: 7 * 24 * 60 * 60 * 1000, // 7 days in

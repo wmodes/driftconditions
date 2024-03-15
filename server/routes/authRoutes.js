@@ -26,6 +26,7 @@ const config = require('../config');
 const jwtSecretKey = config.authToken.jwtSecretKey;
 const tokenExpires = config.authToken.tokenExpires;
 const cookieExpires = config.authCookie.cookieExpires;
+const tokenRefresh = config.authToken.tokenRefresh;
 const saltRounds = config.bcrypt.saltRounds;
 
 //
@@ -83,24 +84,30 @@ router.post('/signin', async (req, res) => {
     // Execute query to find user by username
     const [users] = await db.query(query, values);
 
+    // no user found
     if (users.length < 1) {
       return res.status(418).send(`Username or password doesn't match any records`);
     }
 
-    const user = users[0];
+    // get data from user db query
+    const user = {
+      userID: users[0].user_id,
+      username: users[0].username,
+      roleName: users[0].role_name,
+      hashedPassword: users[0].password
+    }
+
+    // get role permissions
+    const roleQuery = 'SELECT permissions FROM roles WHERE role_name = ?';
+    const roleValues = [user.roleName];
+    const [roles] = await db.query(roleQuery, roleValues);
+    user.permissions = roles[0].permissions;
     
     // Compare the provided password with the stored hashed password
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = await bcrypt.compare(password, user.hashedPassword);
     if (isMatch) {
       // If the passwords match, generate a JWT token for the user.
-      const token = jwt.sign({ userID: user.user_id, username: username }, jwtSecretKey, { expiresIn: tokenExpires });
-      res.cookie('token', token, { 
-        httpOnly: true, 
-        expires: new Date(Date.now() + cookieExpires),
-        path: '/',
-        sameSite: 'Lax', // or 'Strict' based on your requirements
-        // secure: true, // Uncomment if your site is served over HTTPS
-      });
+      issueNewToken(res, user);
       res.status(200).send({ message: "Authentication successful" });
     } else {
       // If the passwords do not match, respond with an error.
@@ -111,6 +118,32 @@ router.post('/signin', async (req, res) => {
     res.status(500).send('Error during the signin process');
   }
 });
+
+// helper: issue a new token
+// expects:
+//   res: the response object
+//   user: an object with user data: {userID, username, permissions}
+const issueNewToken = (res, user) => {
+  const token = jwt.sign(
+    { 
+      userID: user.userID, 
+      username: user.username, 
+      permissions: user.permissions 
+    },
+    jwtSecretKey, 
+    { expiresIn: tokenExpires } // jwt.sign expects seconds
+  );
+  
+  res.cookie('token', token, {
+    httpOnly: true,
+    expires: new Date(Date.now() + cookieExpires),
+    path: '/',
+    sameSite: 'Lax', // or 'Strict' based on your requirements
+    // secure: true, // Uncomment if your site is served over HTTPS
+  });
+
+  return token; // Return the token if needed elsewhere, otherwise, this line can be omitted
+};
 
 // Route for user logout. It expires the token cookie to invalidate the user session.
 router.post('/logout', async (req, res) => {
@@ -125,11 +158,117 @@ router.post('/logout', async (req, res) => {
   res.status(200).send({ message: 'Logged out successfully' });
 });
 
-// helper function for /check route
+// Route for checking if the user is authenticated. 
+router.post('/check', async (req, res) => {
+  try {
+    // check if the user is authenticated 
+    // (if not, return error 403 and status: "not authenticated")
+    // console.log("starting auth check");
+    if (!req.cookies.token) {
+      return res.status(403).json({ 
+        error: {
+          code: 403,
+          reason: "not_authenticated",
+          message: "No token found in cookie"
+        }
+      });
+    }
+    // console.log("existence of cookie confirmed");
+    // extract the logged in user's role from the http-only cookie
+    tokenData = await decodeToken(req.cookies.token);
+    // console.log("cookie verified, userID:", userID);
+    // fetch the row in the "roles" table matching the role
+    const user = await getRolePermissions(tokenData.userID);
+    if (!user) {
+      return res.status(403).json({ 
+        error: {
+          code: 403,
+          reason: "not_authorized",
+          message: "Role not found"
+        }
+      });
+    }
+    // console.log("permissions for role fetched");
+
+    // if user.editDate (which is really the role permisssions edit date) 
+    // is after the token's issuedAt date, then issue a new token 
+    // with the updated permissions
+    // console.log(
+    //   "user.editDate:", user.editDate, 
+    //   "tokenData.issuedAt:", tokenData.issuedAt,
+    //   "tokenData.expiresAt:", tokenData.expiresAt
+    // );
+    const oneHourFromNow = new Date(Date.now() + tokenRefresh); // 1 hour from now
+    if (user.editDate > tokenData.issuedAt || tokenData.expiresAt <= oneHourFromNow) {
+      // console.log("role permissions have been updated or token expires within 1 hour");
+      const token = issueNewToken(res, user);
+      // console.log("new token issued");
+    }
+
+    // check if the context is included in the "permissions" field
+    // (if not, return error 403 and status: "not authorized")
+    const pageContext = req.body.context;
+    if (!user.permissions.includes(pageContext)) {
+      return res.status(403).json({ 
+        error: {
+          code: 403,
+          reason: "not_authorized",
+          message: "Access denied to this page"
+        }
+      });
+    }
+    // console.log("context and permission matched");
+    // if all checks are okay, return 200
+    res.status(200).json({ 
+      isAuthenticated: true, 
+      authorized: true,
+      user: {
+        userID: user.userID,
+        username: user.username,
+        permissions: user.permissions
+      }
+    });
+  } catch (error) {
+    if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
+      return res.status(403).json({ 
+        error: {
+          code: 403,
+          reason: "not_authenticated",
+          message: "Invalid or expired token"
+        }
+      });
+    }
+    // console.error('Server error during auth check:', error);
+    res.status(500).send('Server error');
+  }
+});
+
+// helper for /check route
+// Decode the token and return the user data
+async function decodeToken(token) {
+  try {
+    // This will throw an error if the token is invalid or expired
+    const decoded = jwt.verify(token, jwtSecretKey); 
+    const { userID, username, permissions, iat, exp } = decoded;
+    return {
+      userID,
+      username,
+      permissions,
+      issuedAt: new Date(iat * 1000), // Convert Unix timestamp to JavaScript Date object
+      expiresAt: new Date(exp * 1000),
+    };
+  } catch (error) {
+    console.error('Error decoding token:', error);
+    throw error; // Rethrow the error to be caught by the surrounding try-catch block
+  }
+}
+
+// helper for /check route
+// Fetch the role_name and permissions for the user
 async function getRolePermissions(userID) {
   try {
     // First, fetch the role_name of the user
-    const userQuery = `SELECT role_name FROM users WHERE user_id = ? LIMIT 1;`;
+    const userQuery = `SELECT * FROM users WHERE user_id = ? LIMIT 1;`;
     const userValues = [userID];
     // console.log('Fetching user role:', userID);
     const [userRows] = await db.query(userQuery, userValues);
@@ -139,11 +278,15 @@ async function getRolePermissions(userID) {
       return null; // User or role not found
     }
 
-    const roleName = userRows[0].role_name;
+    const user = {
+      userID: userRows[0].user_id,
+      username: userRows[0].username,
+      roleName: userRows[0].role_name,
+    }
 
     // Next, fetch the permissions for the fetched role_name
-    const roleQuery = `SELECT permissions FROM roles WHERE role_name = ? LIMIT 1;`;
-    const roleValues = [roleName];
+    const roleQuery = `SELECT * FROM roles WHERE role_name = ? LIMIT 1;`;
+    const roleValues = [user.roleName];
     // console.log('Fetching role permissions for role:', roleName);
     const [roleRows] = await db.query(roleQuery, roleValues);
 
@@ -151,57 +294,18 @@ async function getRolePermissions(userID) {
       // console.log('Role not found:', roleName);
       return null; // Role not found
     }
-
-    const permissions = roleRows[0].permissions; // Assuming permissions are stored as JSON
+    // console.log("roleRows[0]:", roleRows[0])
+    user.permissions = roleRows[0].permissions;
+    user.editDate = roleRows[0].edit_date;
+    // console.log("getRolePermissions user:", user);
     // console.log('Role permissions:', roleName, permissions);
 
-    return {
-      roleName,
-      permissions,
-    };
+    return user;
   } catch (error) {
     console.error('Error fetching role permissions:', error);
     throw error; // Rethrow to handle it in the calling function
   }
 }
-
-// Route for checking if the user is authenticated. 
-router.post('/check', async (req, res) => {
-  try {
-    // check if the user is authenticated 
-    // (if not, return error 403 and status: "not authenticated")
-    // console.log("starting auth check");
-    if (!req.cookies.token) {
-      return res.status(403).json({ status: "not authenticated" });
-    }
-    // console.log("existence of cookie confirmed");
-    // extract the logged in user's role from the http-only cookie
-    const decoded = jwt.verify(req.cookies.token, jwtSecretKey);
-    const userID = decoded.userID; 
-    // console.log("cookie verified, userID:", userID);
-    // fetch the row in the "roles" table matching the role
-    const rolePermissions = await getRolePermissions(userID);
-    if (!rolePermissions) {
-      return res.status(403).json({ status: "not authorized", message: "Role not found" });
-    }
-    // console.log("permissions for role fetched");
-    // check if the context is included in the "permissions" field
-    // (if not, return error 403 and status: "not authorized")
-    const pageContext = req.body.context;
-    if (!rolePermissions.permissions.includes(pageContext)) {
-      return res.status(403).json({ status: "not authorized", message: "Access denied to this page" });
-    }
-    // console.log("context and permission matched");
-    // if all checks are okay, return 200
-    res.status(200).json({ isAuthenticated: true, authorized: true });
-  } catch (error) {
-    if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
-      return res.status(403).json({ status: "not authenticated", message: "Invalid or expired token" });
-    }
-    // console.error('Server error during auth check:', error);
-    res.status(500).send('Server error');
-  }
-});
 
 
 module.exports = router;

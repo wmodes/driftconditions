@@ -5,6 +5,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
+import { useCheckAuth } from '../utils/authUtils';
 import { audioInfo, audioUpdate } from '../store/audioSlice';
 import { initWaveSurfer, destroyWaveSurfer } from '../utils/waveUtils';
 import { formatDateForDisplay, formatTagStrForDB, formatTagsForDisplay } from '../utils/formatUtils';
@@ -16,10 +17,10 @@ const config = require('../config/config');
 const audioBaseURL = config.server.audioBaseURL;
 
 function AudioEdit() {
+  useCheckAuth('audioEdit');
   const { audioID } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
 
   const [isDomReady, setIsDomReady] = useState(false);
   const waveSurferRef = useRef(null);
@@ -54,7 +55,7 @@ function AudioEdit() {
   });
 
   useEffect(() => {
-    if (!audioID || !isAuthenticated) return;
+    if (!audioID) return;
     setIsLoading(true); // Start loading
 
     dispatch(audioInfo(audioID))
@@ -78,7 +79,7 @@ function AudioEdit() {
         setError('Failed to fetch audio details.');
         setIsLoading(false); // Stop loading on error
       });
-  }, [audioID, dispatch, isAuthenticated]);
+  }, [audioID, dispatch]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -147,11 +148,6 @@ function AudioEdit() {
       }
     };
   }, [isDomReady, audioDetails.filename]); 
-
-  // Redirect to signin page if not authenticated
-  if (isAuthenticated === false) {
-    return <Navigate to='/signin' replace={true} />;
-  }
 
   const Required = () => <span className="required">*</span>;
 

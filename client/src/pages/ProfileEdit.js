@@ -5,10 +5,12 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 // Assuming you have an action or function to fetch user profile
 import { profileInfo, profileEdit } from '../store/userSlice';
+import { useCheckAuth } from '../utils/authUtils';
 // For redirecting the user in case they are not logged in
 import { Navigate } from 'react-router-dom';  
 
 function ProfileEdit() {
+  useCheckAuth('profileEdit');
 
   // These fields: firstname, lastname, email, bio, location, and url are mutable.
   const mutableFields = [
@@ -33,8 +35,6 @@ function ProfileEdit() {
   // State hooks to store input values from the form.
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  // Accessing Redux state for user (to check if logged in)
-  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
   const dispatch = useDispatch();
 
   // Success and error handling
@@ -42,24 +42,16 @@ function ProfileEdit() {
   const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
-    // console.log("isAuthenticated:", isAuthenticated);
-    if (isAuthenticated) {
-      dispatch(profileInfo())
-        .then((res) => {
-          if (res.payload && res.payload.data) {
-            setProfile(res.payload.data);
-          }
-        })
-        .catch((error) => {
-          console.error("Failed to fetch profile:", error);
-        });
-    }
-  }, [dispatch, isAuthenticated]);
-
-  // If not logged in, redirect to sign-in page
-  if (isAuthenticated === false) { 
-    return <Navigate to='/signin' replace />;
-  }
+    dispatch(profileInfo())
+      .then((res) => {
+        if (res.payload && res.payload.data) {
+          setProfile(res.payload.data);
+        }
+      })
+      .catch((error) => {
+        console.error("Failed to fetch profile:", error);
+      });
+  }, [dispatch]);
 
   // Keep values in sync with form values
   const handleChange = (e) => {

@@ -19,7 +19,7 @@ export function formatDateForDisplay(dateString) {
 
 // format list for database with normalization
 export function formatListStrForDB(tagStr) {
-  console.log('formatListForDB tagStr:', tagStr);
+  // console.log('formatListForDB tagStr:', tagStr);
   if (!tagStr) return '';
   return tagStr.split(',')
     .map(tag =>

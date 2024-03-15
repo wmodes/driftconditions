@@ -6,6 +6,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { Navigate, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { audioList as audioListAction, audioTrash as audioTrashAction } from '../store/audioSlice';
+import { useCheckAuth } from '../utils/authUtils';
 import { parseQuery, stringifyQuery } from '../utils/queryUtils';
 import { renderPagination } from '../utils/listUtils'; 
 import { formatDateForDisplay, formatListForDisplay } from '../utils/formatUtils';
@@ -19,10 +20,10 @@ const retryLimit = config.server.retryLimit;
 const audioBaseURL = config.server.audioBaseURL;
 
 function AudioList() {
+  useCheckAuth('audioList');
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAuthenticated, userRole } = useSelector((state) => state.auth); 
 
   // Local state for managing audio list and pagination
   const [audioList, setAudioList] = useState([]);
@@ -43,7 +44,7 @@ function AudioList() {
   const audioRef = useRef(null);
 
   useEffect(() => {
-    if (!isAuthenticated || retryAttempt >= retryLimit) return;
+    if (retryAttempt >= retryLimit) return;
     setIsLoading(true); // Start loading
   
     // Directly extract params from URL each time the effect runs
@@ -76,17 +77,12 @@ function AudioList() {
         setRetryAttempt(prevAttempt => prevAttempt + 1); // Increment retry attempt
       });
   // Only dependency is location.search to react to changes in search parameters
-  }, [dispatch, location.search, isAuthenticated, retryAttempt]);
+  }, [dispatch, location.search, retryAttempt]);
 
   // Placeholder for roles check function
   // const hasPermission = (action) => {
   //   return ['editor', 'mod', 'admin'].includes(userRole); // Simplified, adjust as needed
   // };
-
-  // Redirect to signin if not authenticated
-  if (isAuthenticated === false) {
-    return <Navigate to='/signin' replace={true} />;
-  }
 
   const audioTrash = (audioID) => {
     dispatch(audioTrashAction({ audioID }))

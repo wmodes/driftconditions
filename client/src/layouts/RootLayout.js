@@ -1,58 +1,42 @@
 import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import axios from 'axios';
-import Navigation from '../components.js/Navigation'; 
-import { Outlet } from 'react-router-dom';
-import { setAuthState } from '../store/authSlice'; 
+import { useLocation } from 'react-router-dom';
 import { setProjectName } from '../store/appSlice';
+import { useCheckAuth } from '../utils/authUtils';
 import { getProjectName } from '../utils/textUtils';
+import Navigation from '../components.js/Navigation'; // Assuming you have this component
+import { Outlet } from 'react-router-dom'; // Assuming you're using react-router
 
-export default function RootLayout() {
+// Import the config object from the config.js file
+const config = require('../config/config');
+// pull variables from the config object
+const pagePaths = config.client.pages;
+
+const RootLayout = () => {
+  const location = useLocation();
   const dispatch = useDispatch();
-  // Access projectName from the global state
+  const currentPath = location.pathname;
   const projectName = useSelector(state => state.app.projectName);
+  const isAuthenticated = useSelector(state => state.auth.isAuthenticated);
+  const userID = useSelector(state => state.auth.userID);
+  const username = useSelector(state => state.auth.username);
+
+  // Find the corresponding page context
+  const pageContext = Object.keys(pagePaths).find(key => pagePaths[key] === currentPath) || 'homepage';
+
+  // Call useCheckAuth with the determined context
+  useCheckAuth(pageContext);
 
   useEffect(() => {
-    const checkAuthStatus = async () => {
-      try {
-        // Use Axios to make a POST request
-        const response = await axios.post('http://localhost:8080/api/auth/check', {}, {
-          withCredentials: true, // Ensure credentials are sent with the request
-        });
-        // console.log('RootLayout: userID:', response.data.userID);
-        // console.log('RootLayout: username:', response.data.username);
-        // Update your Redux store or component state with authentication status, userID, and username
-        dispatch(setAuthState({
-          isAuthenticated: response.data.isAuthenticated,
-          userID: response.data.userID,
-          username: response.data.username
-        }));
-      } catch (error) {
-        console.error('Error checking authentication status:', error);
-        // Set isAuthenticated to false in case of error, and clear userID and username
-        dispatch(setAuthState({
-          isAuthenticated: false,
-          userID: null,
-          username: null
-        }));
-      }
-    };
-
-    // Check the authentication status on app initialization
-    checkAuthStatus();
-    
     // Ensure a project name is set or retrieved on app initialization
     if (!projectName) {
       const name = getProjectName();
       dispatch(setProjectName(name));
     }
-
   }, [dispatch, projectName]);
 
+  console.log("Auth state in RootLayout:", { isAuthenticated, userID, username });
 
-
-  // Renders the Navigation bar at the top and an Outlet for nested routes
-  // The Outlet component will render the component for the currently matched route as defined in the routing setup
   return (
     <div>
       <Navigation />
@@ -60,3 +44,5 @@ export default function RootLayout() {
     </div>
   );
 }
+
+export default RootLayout;

@@ -2,21 +2,22 @@
 
 // React's useState hook for managing form inputs.
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 // Hooks for dispatching actions and accessing Redux state.
 import { useDispatch, useSelector } from 'react-redux';
 // signin async thunk for authentication.
 import { signin } from '../store/authSlice';
+import { useCheckAuth } from '../utils/authUtils';
 // Navigate component for redirecting the user upon successful login.
 import { Navigate } from 'react-router-dom';
 
 function Signin() {
+  useCheckAuth('signin');
+  const navigate = useNavigate();
   // Local state for managing form inputs.
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
-  // Accessing the global state to check for current user and any authentication errors.
-  // Instead of selecting `user`, select the authentication status flag
-  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
   const [error, setError] = useState('');
   
   // Hook to dispatch authentication action.
@@ -31,6 +32,7 @@ function Signin() {
       // Proceed with resetting form fields or redirecting the user
       setUsername('');
       setPassword('');
+      navigate(`/profile/${username}`);
     })
     .catch((error) => {
         // Handle any error here
@@ -57,7 +59,6 @@ function Signin() {
             <div className='message-box'>
               {error && <p className="error">{error}</p>}
             </div>
-            {isAuthenticated ? <Navigate to='/profile' replace={true} /> : null}
           </form>
         </div>
       </div>

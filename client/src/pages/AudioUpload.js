@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, Navigate } from 'react-router-dom';
 import { audioUpload } from '../store/audioSlice';
+import { useCheckAuth } from '../utils/authUtils';
 import { formatListStrForDB, formatListForDisplay } from '../utils/formatUtils';
 
 // Import the config object from the config.js file
@@ -12,6 +13,7 @@ const config = require('../config/config');
 const allowedFileTypes = config.audio.allowedFileTypes;
 
 function AudioUpload() {
+  useCheckAuth('audioUpload');
   // Local state for managing form inputs
   const [title, setTitle] = useState('');
   const [tags, setTags] = useState('');
@@ -20,8 +22,6 @@ function AudioUpload() {
   const [isCertified, setIsCertified] = useState(false);
   const [uploadedAudioID, setUploadedAudioID] = useState(null);
 
-  // Accessing the authentication state to check if the user is logged in
-  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
   const dispatch = useDispatch();  
 
   // Success and error handling
@@ -92,11 +92,6 @@ function AudioUpload() {
         setError(error.message || 'Failed to upload audio.');
       });
   };  
-
-  // Redirect to signin page if not authenticated
-  if (isAuthenticated === false) {
-    return <Navigate to='/signin' replace={true} />;
-  }
 
   // Check if required fields are filled
   const isFormValid = title && file && isCertified;

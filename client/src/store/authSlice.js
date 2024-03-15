@@ -65,8 +65,9 @@ export const checkPageAuth = createAsyncThunk(
   async (pageContext, { rejectWithValue }) => {
     try {
       const response = await axios.post(checkRoute, { context: pageContext }, { withCredentials: true });
-      return response.data;
-    } catch (error) {
+      return response;
+    } 
+    catch (error) {
       if (!error.response) {
         // Network or other axios-specific error
         throw error;

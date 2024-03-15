@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react';
 import { Navigate, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { userList as userListAction } from '../store/userSlice'; 
+import { useCheckAuth } from '../utils/authUtils';
 import { parseQuery, stringifyQuery } from '../utils/queryUtils';
 import { renderPagination } from '../utils/listUtils';
 import { formatDateForDisplay } from '../utils/formatUtils';
@@ -16,11 +17,11 @@ const recordsPerPage = config.user.recordsPerPage;
 const retryLimit = config.server.retryLimit;
 
 function UserList() {
+  useCheckAuth('userList');
   // Use existing hooks and state setup
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAuthenticated } = useSelector((state) => state.auth);
 
   const [isLoading, setIsLoading] = useState(true);
   const [userList, setUserList] = useState([]); // Adapted for user data
@@ -37,7 +38,7 @@ function UserList() {
 
   useEffect(() => {
     // Adapt useEffect for loading user data
-    if (!isAuthenticated || retryAttempt >= retryLimit) return;
+    if (retryAttempt >= retryLimit) return;
     setIsLoading(true);
 
     const searchParams = new URLSearchParams(location.search);
@@ -65,15 +66,10 @@ function UserList() {
         setIsLoading(false);
         setRetryAttempt(prevAttempt => prevAttempt + 1);
       });
-  }, [dispatch, location.search, isAuthenticated, retryAttempt]);
+  }, [dispatch, location.search, retryAttempt]);
 
   // Adapt handlePageChange, handleSort, and handleFilter for user data
   // These functions can largely remain the same, just ensure they work with your user data and API endpoints
-
-  // Redirect if not authenticated
-  if (isAuthenticated === false) {
-    return <Navigate to='/signin' replace={true} />;
-  }
 
   const handleSort = (newSort, newOrder) => {
     const searchParams = new URLSearchParams(location.search);

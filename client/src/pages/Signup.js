@@ -6,10 +6,12 @@ import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 // Importing the signup action from authSlice.
 import { signup } from '../store/authSlice';
+import { useCheckAuth } from '../utils/authUtils';
 // For redirecting the user after successful registration.
 import { Navigate } from 'react-router-dom';
 
 function Signup() {    
+  useCheckAuth('signup');
   // State hooks to store input values from the form.
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');

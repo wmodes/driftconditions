@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { roleList, roleUpdate } from '../store/userSlice';
+import { useCheckAuth } from '../utils/authUtils';
 import { formatListForDisplay, formatListStrForDB } from '../utils/formatUtils';
 import { TagSelect } from '../utils/formUtils';
 
@@ -13,8 +14,8 @@ const config = require('../config/config');
 const routeList = Object.keys(config.client.pages); 
 
 function RolesList() {
+  useCheckAuth('roleList');
   const dispatch = useDispatch();
-  const { isAuthenticated } = useSelector((state) => state.auth);
   const [roles, setRoles] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   // which role is being edited
@@ -34,7 +35,6 @@ function RolesList() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    if (!isAuthenticated) return;
     dispatch(roleList())
       .unwrap()
       .then(response => {
@@ -47,7 +47,7 @@ function RolesList() {
         setError(error.message || 'Failed to fetch roles');
         setIsLoading(false);
       });
-  }, [dispatch, isAuthenticated, updateTrigger]);
+  }, [dispatch, updateTrigger]);
 
   // reveal the edit form for the roles
   const openEditRow = (role) => {
@@ -80,10 +80,6 @@ function RolesList() {
         setError(error.message || 'Failed to update role');
       });
 };
-
-  if (isAuthenticated === false) {
-    return <Navigate to='/signin' replace={true} />;
-  }
 
   function oddOrEvenRow(num) {
     return num % 2 === 0 ? "row-even" : "row-odd";

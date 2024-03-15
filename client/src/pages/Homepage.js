@@ -2,12 +2,14 @@
 
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
+import { useCheckAuth } from '../utils/authUtils';
 // feather icons
 import FeatherIcon from 'feather-icons-react';
 // tracery text
 import { generateRandomTexts } from '../utils/textUtils'; 
 
 const Homepage = () => {
+  useCheckAuth('homepage');
   // Access projectName from the global state
   const projectName = useSelector(state => state.app.projectName); 
   const [generatedText, setGeneratedText] = useState([]);
