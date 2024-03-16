@@ -1,10 +1,9 @@
 // AudioView - View details of an audio file
 
 import React, { useEffect, useState, useRef } from 'react';
-import { useParams, useNavigate, Navigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
 import { audioInfo } from '../store/audioSlice';
-import { useCheckAuth } from '../utils/authUtils';
 import { initWaveSurfer, destroyWaveSurfer } from '../utils/waveUtils';
 
 import { formatDateForDisplay, formatListForDisplay } from '../utils/formatUtils';
@@ -16,7 +15,6 @@ const config = require('../config/config');
 const audioBaseURL = config.server.audioBaseURL;
 
 function AudioView() {
-  useCheckAuth('audioView');
   const { audioID } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();

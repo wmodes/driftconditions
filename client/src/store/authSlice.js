@@ -39,7 +39,6 @@ export const signin = createAsyncThunk(
   try {
     // Send a POST request to the server with the user's credentials
     await axios.post(signinRoute, {username, password}, { withCredentials: true });
-    return { isAuthenticated: true };
   } catch (error) {
     console.error(error);
     return thunkAPI.rejectWithValue(error.message);  
@@ -61,53 +60,45 @@ export const logout = createAsyncThunk(
 });
 
 export const checkPageAuth = createAsyncThunk(
-  checkRoute,
-  async (pageContext, { rejectWithValue }) => {
+  checkRoute, // Ensure a unique action type
+  async (pageContext, thunkAPI) => {
     try {
       const response = await axios.post(checkRoute, { context: pageContext }, { withCredentials: true });
-      return response;
-    } 
-    catch (error) {
-      if (!error.response) {
-        // Network or other axios-specific error
-        throw error;
-      }
-      // Return custom error payload if we have a response (which could be 403 or other HTTP status)
-      return rejectWithValue({
-        status: error.response.status,
-        data: error.response.data,
-      });
+      // Assuming successful response returns a structure {status: 'success', data: {...}}
+      return response.data; // Directly return the data if successful
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.response);
     }
   }
 );
 
 // Initial state for the auth slice, setting up default values for user authentication status.
 const initialState = {  
-  token: null,
-  userID: null,
-  // TODO: Remove user param after implementing token and userID in state
-  user: '',
-  isAuthenticated: false,
+  // token: null,
+  // userID: null,
+  user: {},
   loading: false,
-  error: null
+  error: null,
+  authChecked: false,
 };
 
 // authSlice defines the Redux slice for authentication, including reducers for state changes
 // and extraReducers for handling the lifecycle of async actions defined above.
 export const authSlice = createSlice({
   name: 'auth',
+  user: {},
   initialState,
   reducers: {
-    setAuthState: (state, action) => {
-      state.isAuthenticated = action.payload.isAuthenticated;
-      state.userID = action.payload.userID;
-      state.username = action.payload.username;
+    setUserAttributes: (state, action) => {
+      state.user = action.payload;
+    },  
+    setAuthChecked: (state, action) => {
+      state.authChecked = action.payload;
     },
   },
   extraReducers: (builder) => {
     builder
-      // Handling the pending, fulfilled, and rejected states of signup and signin thunks,
-      // adjusting the auth state based on the outcome of these asynchronous operations.
+      // signup
       .addCase(signup.pending, (state, action) => {
         state.loading = true; 
         state.error = null;
@@ -115,39 +106,44 @@ export const authSlice = createSlice({
       .addCase(signup.fulfilled, (state, action) => {
         state.loading = false;  
         state.user = action.payload.username;
-        state.isAuthenticated = true;
         state.error = null;
       })
       .addCase(signup.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
+      // signin
       .addCase(signin.pending, (state, action) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(signin.fulfilled, (state, action) => {
-        state.loading = false;  
-        state.isAuthenticated = action.payload.isAuthenticated; 
-        state.userID = action.payload.userID;
-        state.username = action.payload.username;
+        state.loading = false;   
         state.error = null;
       })
       .addCase(signin.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
+      // logout
       .addCase(logout.fulfilled, (state) => {
         // console.log('Executing logout.fulfilled reducer');
         // Reset the authentication state
-        state.token = null;
-        state.isAuthenticated = false;
         state.loading = false;
         state.error = null;
       })
+      // checkPageAuth
+      .addCase(checkPageAuth.fulfilled, (state, action) => {
+        state.user = action.payload.user;
+        // console.log('Authentication check successful:', action.payload);
+      })
+      .addCase(checkPageAuth.rejected, (state, action) => {
+        // Handle rejected state. You might set an error state or flag the user as not authenticated
+        console.error('Authentication check failed:', action.payload);
+      });
   }
 });
 
 // Exports the logout action for use in components and the reducer function for the Redux store.
-export const { setUser, setToken, setLoading, setError, setAuthState } = authSlice.actions;
+export const { setUserAttributes, setAuthChecked, setLoading, setError } = authSlice.actions;
 export default authSlice.reducer;

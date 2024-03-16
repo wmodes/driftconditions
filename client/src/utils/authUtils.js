@@ -1,47 +1,65 @@
 // authUtils - a custom hook to check the user's authentication status
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { checkPageAuth } from '../store/authSlice'; // Import your thunk action creator
+import { checkPageAuth, setAuthChecked } from '../store/authSlice';
 
-export const useCheckAuth = (context) => {
+// Import the config object from the config.js file
+const config = require('../config/config');
+// pull variables from the config object
+const pagePaths = config.client.pages;
+
+export const getPageContext = (URLpath) => {
+  let matchedKey //= 'homepage'; // Default to 'homepage' if no matches are found
+  
+  Object.entries(pagePaths).forEach(([key, path]) => {
+    if (URLpath === path || URLpath.startsWith(path + '/') || (path === '/' && URLpath === '')) {
+      matchedKey = key;
+      console.log("Matched key:", matchedKey, "for path:", URLpath);
+    }
+  });
+  if (!matchedKey) {
+    matchedKey = 'error';
+  }
+  
+  return matchedKey;
+};
+
+export const useAuthCheckAndNavigate = (context) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const [authData, setAuthData] = useState(null);
-
   useEffect(() => {
     const performAuthCheck = async () => {
-      try {
-        // Dispatch the thunk, passing the context
-        const result = await dispatch(checkPageAuth(context)).unwrap();
-        console.log("\nresult:", result);
-        console.log("\nresult.status:", result.status, "result.error:", result.error); 
+      // No need to check auth for error pages
+      const noAuthPages = ['error', 'notauth'];
+      // Immediately set authChecked to true for no-auth pages and return
+      if (noAuthPages.includes(context.toLowerCase())) {
+        dispatch(setAuthChecked(true)); 
+        console.log("No auth check needed for this page:", context);
+        return;
+      }
 
-        // Based on the thunk's resolved result, navigate accordingly
-        if (result.status === 403 && result.error.reason === "not_authenticated") {
+      try {
+        const actionResult = await dispatch(checkPageAuth(context));
+        const result = actionResult.payload;
+        console.log("Auth check result:", result);
+        dispatch(setAuthChecked(true));
+
+        // Based on the result, navigate accordingly
+        if (result.status === 403 && result.data.error.reason === "not_authenticated") {
           navigate('/signin');
-        } else if (result.status === 403 && result.error.reason === "not_authorized") {
-          navigate('/notauth');
-        } else if (result.status === 200) {
-          // If status 200, no action needed as the user is authenticated and authorized
-          console.log("authenticated result:", result.data);
-          setAuthData(result.data);
-        } else {
-          // Handle any other unexpected results here
+        } else if (result.status === 403 && result.data.error.reason === "not_authorized") {
           navigate('/notauth');
         }
-        // If status 200, no action needed as the user is authenticated and authorized
       } catch (error) {
-        console.error("Auth check failed", error);
-        // Handle any unexpected errors here. For example, navigate to an error page or display a message.
-        navigate('/signin');
+        dispatch(setAuthChecked(true));
+        console.error("Auth check failed:", error);
+        navigate('/signin'); // Fallback navigation in case of error
       }
     };
 
     performAuthCheck();
-  }, [context, dispatch, navigate]); // Re-run the effect if the context changes
-
-  return authData;
+  }, [context, dispatch, navigate]);
 };

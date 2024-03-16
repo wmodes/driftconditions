@@ -1,10 +1,8 @@
 // RolesList - component to display and edit the list of roles
 
 import React, { useEffect, useState } from 'react';
-import { Navigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { roleList, roleUpdate } from '../store/userSlice';
-import { useCheckAuth } from '../utils/authUtils';
 import { formatListForDisplay, formatListStrForDB } from '../utils/formatUtils';
 import { TagSelect } from '../utils/formUtils';
 
@@ -14,7 +12,6 @@ const config = require('../config/config');
 const routeList = Object.keys(config.client.pages); 
 
 function RolesList() {
-  useCheckAuth('roleList');
   const dispatch = useDispatch();
   const [roles, setRoles] = useState([]);
   const [isLoading, setIsLoading] = useState(true);

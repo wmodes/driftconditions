@@ -2,16 +2,11 @@
 
 import React, { useEffect, useState } from 'react';
 // Hooks for Redux state management and action dispatching, if needed.
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 // Assuming you have an action or function to fetch user profile
 import { profileInfo, profileEdit } from '../store/userSlice';
-import { useCheckAuth } from '../utils/authUtils';
-// For redirecting the user in case they are not logged in
-import { Navigate } from 'react-router-dom';  
 
 function ProfileEdit() {
-  useCheckAuth('profileEdit');
-
   // These fields: firstname, lastname, email, bio, location, and url are mutable.
   const mutableFields = [
     { key: 'firstname', label: 'First Name' },
@@ -95,10 +90,6 @@ function ProfileEdit() {
               <span className='mb-1 pr-4'>Username:</span>
               <span className='pb-1 text-xl'>{profile.username}</span>
             </p>
-            <label className="form-label" htmlFor="password">New Password:</label>
-            <input className="form-field" type="password" id="newPassword" value={newPassword} onChange={e => setNewPassword(e.target.value)} />
-            <label className="form-label" htmlFor="password">Confirm Password:</label>
-            <input className="form-field" type="password" id="confirmPassword" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />
             {mutableFields.map(({ key, label }) => (
               <div key={key}>
                 <label className="form-label" htmlFor={key}>
@@ -124,6 +115,10 @@ function ProfileEdit() {
                 )}
               </div>
             ))}
+            <label className="form-label" htmlFor="password">New Password:</label>
+            <input className="form-field" type="password" id="newPassword" value={newPassword} onChange={e => setNewPassword(e.target.value)} />
+            <label className="form-label" htmlFor="password">Confirm Password:</label>
+            <input className="form-field" type="password" id="confirmPassword" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />
             <div className='button-box'>
               <button className='button cancel' type="button">Cancel</button>
               <button className='button submit' type="submit" disabled={!isFormValid}>Save Changes</button>

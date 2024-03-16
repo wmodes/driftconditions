@@ -2,10 +2,9 @@
 
 // Import necessary hooks and utilities
 import React, { useEffect, useState } from 'react';
-import { Navigate, Link, useNavigate, useLocation } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
 import { userList as userListAction } from '../store/userSlice'; 
-import { useCheckAuth } from '../utils/authUtils';
 import { parseQuery, stringifyQuery } from '../utils/queryUtils';
 import { renderPagination } from '../utils/listUtils';
 import { formatDateForDisplay } from '../utils/formatUtils';
@@ -17,7 +16,6 @@ const recordsPerPage = config.user.recordsPerPage;
 const retryLimit = config.server.retryLimit;
 
 function UserList() {
-  useCheckAuth('userList');
   // Use existing hooks and state setup
   const dispatch = useDispatch();
   const navigate = useNavigate();

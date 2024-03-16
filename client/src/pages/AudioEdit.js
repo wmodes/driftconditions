@@ -3,9 +3,8 @@
 // TODO: Link back to List at top of form 
 
 import React, { useEffect, useState, useRef } from 'react';
-import { useParams, useNavigate, Navigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import { useCheckAuth } from '../utils/authUtils';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
 import { audioInfo, audioUpdate } from '../store/audioSlice';
 import { initWaveSurfer, destroyWaveSurfer } from '../utils/waveUtils';
 import { formatDateForDisplay, formatTagStrForDB, formatTagsForDisplay } from '../utils/formatUtils';
@@ -17,7 +16,6 @@ const config = require('../config/config');
 const audioBaseURL = config.server.audioBaseURL;
 
 function AudioEdit() {
-  useCheckAuth('audioEdit');
   const { audioID } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();

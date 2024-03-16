@@ -39,6 +39,8 @@ const config = {
       audioList: '/audio/list',
       audioView: '/audio/view',
       audioEdit: '/audio/edit',
+      notauth: '/notauth',
+      error: '/error',
     },
   },
   audio: {

@@ -2,19 +2,15 @@
 
 import React, { useEffect, useState } from 'react';
 // Hooks for Redux state management and action dispatching, if needed.
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 // Assuming you have an action or function to fetch user profile
 import { profileInfo } from '../store/userSlice';
-import { useCheckAuth } from '../utils/authUtils';
 // For redirecting the user in case they are not logged in
-import { Link, Navigate, useParams, useNavigate } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 // feather icons
 import FeatherIcon from 'feather-icons-react';
 
 function Profile() {
-  const results = useCheckAuth('profile');
-  const userData = results.user;
-  console.log("userData:", userData);
   // Accessing the username from the URL
   const { username: targetUsername } = useParams();
   // State hooks to store error message

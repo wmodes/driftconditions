@@ -2,25 +2,23 @@
 
 // useState hook for form input management.
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 // Hooks for Redux state management and action dispatching.
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 // Importing the signup action from authSlice.
 import { signup } from '../store/authSlice';
-import { useCheckAuth } from '../utils/authUtils';
-// For redirecting the user after successful registration.
-import { Navigate } from 'react-router-dom';
 
-function Signup() {    
-  useCheckAuth('signup');
+function Signup() {
+  const navigate = useNavigate();
   // State hooks to store input values from the form.
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [firstname, setFirstname] = useState('');
   const [lastname, setLastname] = useState('');
   const [email, setEmail] = useState('');
-  // Accessing Redux state for user and error handling.
-  const user = useSelector((state) => state.auth.user);
-  const error = useSelector((state) => state.auth.error);
+
+  // Accessing Redux state for error handling.
+  const [error, setError] = useState('');
   // useDispatch hook to dispatch the signup action.
   const dispatch = useDispatch();
 
@@ -38,7 +36,13 @@ function Signup() {
       setFirstname('');
       setLastname('');
       setEmail('');
-    } )
+      navigate('/sigin');
+    })
+    .catch((error) => {
+        // Handle any error here
+        console.error("Signup error:", error);
+        setError('Error signing up. Please try again.');
+    });
   } 
 
   // Check if required fields are filled
@@ -69,7 +73,6 @@ function Signup() {
             <div className='message-box'>
               {error && <p className="error">{error}</p>}
             </div>
-            {user ? <Navigate to='/signin' replace={true} /> : null}
           </form>
         </div>
       </div>

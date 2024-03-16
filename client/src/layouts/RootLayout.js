@@ -1,31 +1,30 @@
+
+
 import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 import { setProjectName } from '../store/appSlice';
-import { useCheckAuth } from '../utils/authUtils';
+import { getPageContext, useAuthCheckAndNavigate } from '../utils/authUtils';
 import { getProjectName } from '../utils/textUtils';
-import Navigation from '../components.js/Navigation'; // Assuming you have this component
-import { Outlet } from 'react-router-dom'; // Assuming you're using react-router
-
-// Import the config object from the config.js file
-const config = require('../config/config');
-// pull variables from the config object
-const pagePaths = config.client.pages;
+import Navigation from '../components/Navigation';
+import { Outlet } from 'react-router-dom';
+import { tailChase } from 'ldrs'
 
 const RootLayout = () => {
   const location = useLocation();
   const dispatch = useDispatch();
-  const currentPath = location.pathname;
   const projectName = useSelector(state => state.app.projectName);
-  const isAuthenticated = useSelector(state => state.auth.isAuthenticated);
-  const userID = useSelector(state => state.auth.userID);
-  const username = useSelector(state => state.auth.username);
+  const authChecked = useSelector(state => state.auth.authChecked);
+  const currentPath = location.pathname;
 
-  // Find the corresponding page context
-  const pageContext = Object.keys(pagePaths).find(key => pagePaths[key] === currentPath) || 'homepage';
-
-  // Call useCheckAuth with the determined context
-  useCheckAuth(pageContext);
+  tailChase.register()
+  
+  // Get the page context based on the current path
+  const pageContext = getPageContext(currentPath);
+  console.log('pageContext:', pageContext);
+  // check user authentication and authorization
+  useAuthCheckAndNavigate(pageContext);
+  console.log('RootLayout authChecked:', authChecked);
 
   useEffect(() => {
     // Ensure a project name is set or retrieved on app initialization
@@ -35,7 +34,14 @@ const RootLayout = () => {
     }
   }, [dispatch, projectName]);
 
-  console.log("Auth state in RootLayout:", { isAuthenticated, userID, username });
+  if (!authChecked) {
+    // Render nothing or a loading component until isAuthenticated is true
+    return (
+      <div className="flex justify-center items-center h-screen">
+          <l-tail-chase size="75" speed="1.75" color="#336699" />
+      </div>
+    );
+  }
 
   return (
     <div>

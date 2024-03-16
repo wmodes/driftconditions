@@ -3,10 +3,9 @@
 // TODO: Add search field
 
 import React, { useEffect, useState, useRef } from 'react';
-import { Navigate, Link, useNavigate, useLocation } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
 import { audioList as audioListAction, audioTrash as audioTrashAction } from '../store/audioSlice';
-import { useCheckAuth } from '../utils/authUtils';
 import { parseQuery, stringifyQuery } from '../utils/queryUtils';
 import { renderPagination } from '../utils/listUtils'; 
 import { formatDateForDisplay, formatListForDisplay } from '../utils/formatUtils';
@@ -20,7 +19,6 @@ const retryLimit = config.server.retryLimit;
 const audioBaseURL = config.server.audioBaseURL;
 
 function AudioList() {
-  useCheckAuth('audioList');
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();

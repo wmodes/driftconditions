@@ -160,25 +160,16 @@ router.post('/logout', async (req, res) => {
 
 // Route for checking if the user is authenticated. 
 router.post('/check', async (req, res) => {
+  let tokenData = null;
   try {
     // check if the user is authenticated 
-    // (if not, return error 403 and status: "not authenticated")
-    // console.log("starting auth check");
-    if (!req.cookies.token) {
-      return res.status(403).json({ 
-        error: {
-          code: 403,
-          reason: "not_authenticated",
-          message: "No token found in cookie"
-        }
-      });
+    if (req.cookies.token) {
+      tokenData = await decodeToken(req.cookies.token);
+    } else {
+      console.log("no token found");
     }
-    // console.log("existence of cookie confirmed");
-    // extract the logged in user's role from the http-only cookie
-    tokenData = await decodeToken(req.cookies.token);
-    // console.log("cookie verified, userID:", userID);
     // fetch the row in the "roles" table matching the role
-    const user = await getRolePermissions(tokenData.userID);
+    const user = await getRolePermissions(tokenData ? tokenData.userID : null);
     if (!user) {
       return res.status(403).json({ 
         error: {
@@ -188,21 +179,18 @@ router.post('/check', async (req, res) => {
         }
       });
     }
-    // console.log("permissions for role fetched");
+    console.log("user:", user);
 
     // if user.editDate (which is really the role permisssions edit date) 
     // is after the token's issuedAt date, then issue a new token 
     // with the updated permissions
-    // console.log(
-    //   "user.editDate:", user.editDate, 
-    //   "tokenData.issuedAt:", tokenData.issuedAt,
-    //   "tokenData.expiresAt:", tokenData.expiresAt
-    // );
-    const oneHourFromNow = new Date(Date.now() + tokenRefresh); // 1 hour from now
-    if (user.editDate > tokenData.issuedAt || tokenData.expiresAt <= oneHourFromNow) {
-      // console.log("role permissions have been updated or token expires within 1 hour");
-      const token = issueNewToken(res, user);
-      // console.log("new token issued");
+    if (tokenData) {
+      const oneHourFromNow = new Date(Date.now() + tokenRefresh); // 1 hour from now
+      if (user.editDate > tokenData.issuedAt || tokenData.expiresAt <= oneHourFromNow) {
+        // console.log("role permissions have been updated or token expires within 1 hour");
+        const token = issueNewToken(res, user);
+        // console.log("new token issued");
+      }
     }
 
     // check if the context is included in the "permissions" field
@@ -210,6 +198,7 @@ router.post('/check', async (req, res) => {
     const pageContext = req.body.context;
     if (!user.permissions.includes(pageContext)) {
       return res.status(403).json({ 
+        user: user,
         error: {
           code: 403,
           reason: "not_authorized",
@@ -220,17 +209,13 @@ router.post('/check', async (req, res) => {
     // console.log("context and permission matched");
     // if all checks are okay, return 200
     res.status(200).json({ 
-      isAuthenticated: true, 
       authorized: true,
-      user: {
-        userID: user.userID,
-        username: user.username,
-        permissions: user.permissions
-      }
+      user: user,
     });
   } catch (error) {
     if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
       return res.status(403).json({ 
+        user: user,
         error: {
           code: 403,
           reason: "not_authenticated",
@@ -267,6 +252,26 @@ async function decodeToken(token) {
 // Fetch the role_name and permissions for the user
 async function getRolePermissions(userID) {
   try {
+    if (!userID) {
+      // Handle 'noauth' permissions logic here
+      // Example:
+      const roleQuery = `SELECT * FROM roles WHERE role_name = ? LIMIT 1;`;
+      const roleValues = 'noauth';
+      const [roleRows] = await db.query(roleQuery, roleValues);
+      // console.log("roleRows:", roleRows);
+      if (roleRows.length === 0) {
+        // console.log('Role not found:', roleName);
+        return null; // Role not found
+      }
+      const user = {
+        userID: null,
+        username: null,
+        roleName: roleRows[0].role_name,
+        permissions: roleRows[0].permissions,
+        editDate: roleRows[0].edit_date
+      }
+      return user;
+    }
     // First, fetch the role_name of the user
     const userQuery = `SELECT * FROM users WHERE user_id = ? LIMIT 1;`;
     const userValues = [userID];

@@ -1,10 +1,9 @@
 // AudioUpload.js - A page for uploading audio files
 
 import { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { Link, Navigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { Link } from 'react-router-dom';
 import { audioUpload } from '../store/audioSlice';
-import { useCheckAuth } from '../utils/authUtils';
 import { formatListStrForDB, formatListForDisplay } from '../utils/formatUtils';
 
 // Import the config object from the config.js file
@@ -13,7 +12,6 @@ const config = require('../config/config');
 const allowedFileTypes = config.audio.allowedFileTypes;
 
 function AudioUpload() {
-  useCheckAuth('audioUpload');
   // Local state for managing form inputs
   const [title, setTitle] = useState('');
   const [tags, setTags] = useState('');

@@ -4,15 +4,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 // Hooks for dispatching actions and accessing Redux state.
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 // signin async thunk for authentication.
 import { signin } from '../store/authSlice';
-import { useCheckAuth } from '../utils/authUtils';
-// Navigate component for redirecting the user upon successful login.
-import { Navigate } from 'react-router-dom';
 
 function Signin() {
-  useCheckAuth('signin');
   const navigate = useNavigate();
   // Local state for managing form inputs.
   const [username, setUsername] = useState('');
@@ -47,7 +43,7 @@ function Signin() {
       <div className="display-box-wrapper">
         <div className="display-box">
           <form onSubmit={submitHandler}>
-            <h2 className='title'>Sign In</h2>
+            <h2 className='title'>Login</h2>
             <label className="form-label" htmlFor="username">Username:</label>
             <input className="form-field" type="text" id="username" value={username} onChange={e => setUsername(e.target.value)} />
             <label className="form-label"  htmlFor="password">Password:</label>
