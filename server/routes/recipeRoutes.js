@@ -17,13 +17,17 @@ router.post('/create', verifyToken, async (req, res) => {
     const decoded = jwt.verify(req.cookies.token, jwtSecretKey);
     const creator_id = decoded.userID;
 
-    // massage incoming data
-    const tagsJSON = JSON.stringify(normalizeTags(tags));
-    const classificationJSON = JSON.stringify(classification);
-    const recipeDataJSON = JSON.stringify(recipe_data);
-
     const query = `INSERT INTO recipes (title, creator_id, description, recipe_data, status, classification, tags, comments) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
-    const values = [title, creator_id, description, recipeDataJSON, status, classificationJSON, tagsJSON, comments];
+    const values = [
+      title, 
+      creator_id, 
+      description, 
+      JSON.stringify(recipe_data), 
+      status, 
+      JSON.stringify(classification), 
+      JSON.stringify(normalizeTagArray(tags)), 
+      comments
+    ];
     const [result] = await db.query(query, values);
     const recipeID = result.insertId;
     res.status(200).json({
@@ -145,14 +149,10 @@ router.post('/list', verifyToken, async (req, res) => {
 // Route to update recipe information
 router.post('/update', verifyToken, async (req, res) => {
   const { recipeID, title, description, recipe_data, status, classification, tags, comments } = req.body;
+  console.log('req.body:', req.body);
   if (!recipeID) {
     return res.status(400).send('Recipe ID is required for update.');
   }
-
-  // massage incoming data
-  const tagsJSON = JSON.stringify(normalizeTags(tags));
-  const classificationJSON = JSON.stringify(classification);
-  const recipeDataJSON = JSON.stringify(recipe_data);
 
   try {
     const query = `UPDATE recipes SET
@@ -164,7 +164,16 @@ router.post('/update', verifyToken, async (req, res) => {
       tags = ?,
       comments = ?
     WHERE recipe_id = ?`;
-    const values = [title, description, recipeDataJSON, status, classificationJSON, tagsJSON, comments, recipeID];
+    const values = [
+      title, 
+      description, 
+      JSON.stringify(recipe_data), 
+      status, 
+      JSON.stringify(classification), 
+      JSON.stringify(normalizeTagArray(tags)), 
+      comments, 
+      recipeID
+    ];
 
     const [result] = await db.query(query, values);
     if (result.affectedRows === 0) {
@@ -202,19 +211,16 @@ router.post('/delete', verifyToken, async (req, res) => {
 //
 
 // Normalizes a string of tags
-const normalizeTags = (tagsString) => {
+const normalizeTagArray = (tagsArray) => {
+  if (!tagsArray) return [];
   // Split the string into an array by commas, then process each tag
-  const tagsArray = tagsString.split(',')
-    .map(tag =>
+  return tagsArray.map(tag =>
       // Convert to lowercase, trim whitespace, and then replace special characters and spaces with dashes
       // Finally, trim any leading or trailing dashes that might have been added
       tag.toLowerCase().trim().replace(/[\W_]+/g, '-').replace(/^-+|-+$/g, '')
     )
     // Remove duplicate tags
-    .filter((value, index, self) => self.indexOf(value) === index);
-
-  // Return the processed tags as an array
-  return tagsArray;
+    .filter((value, index, self) => self.indexOf(value) === index)
 };
 
 module.exports = router;

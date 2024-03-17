@@ -182,13 +182,19 @@ router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
     const file_type = path.extname(req.file.originalname).toLowerCase().substring(1);
     // console.log('File type:', file_type);
 
-    // massage incoming data
-    const tagsJSON = JSON.stringify(normalizeTags(tags));
-    const classificationJSON = JSON.stringify(classification);
-
     // Prep db params
     const query = `INSERT INTO audio (title, filename, creator_id, duration, file_type, classification, tags, comments, copyright_cert) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-    const values = [req.body.title, filePathForDB, creator_id, duration, file_type, classificationJSON, tagsJSON, req.body.comments, req.body.copyright_cert];
+    const values = [
+      req.body.title, 
+      filePathForDB, 
+      creator_id, 
+      duration, 
+      file_type, 
+      JSON.stringify(classification), 
+      JSON.stringify(normalizeTagArray(tags)), 
+      req.body.comments, 
+      req.body.copyright_cert
+    ];
 
     // Execute the query
     const [result] = await db.query(query, values);
@@ -248,11 +254,6 @@ router.post('/update', verifyToken, async (req, res) => {
   }
   
   try {
-
-    // massage incoming data
-    const tagsJSON = JSON.stringify(normalizeTags(tagsJSON));
-    const classificationJSON = JSON.stringify(classificationJSON);
-
     const query = `UPDATE audio SET
         title = ?,
         status = ?,
@@ -260,7 +261,14 @@ router.post('/update', verifyToken, async (req, res) => {
         tags = ?,
         comments = ?
       WHERE audio_id = ?`;
-    const values = [title, status, classificationJSON, tagsJSON, comments, audioID];
+    const values = [
+      title, 
+      status, 
+      JSON.stringify(classification), 
+      JSON.stringify(normalizeTagArray(tags)), 
+      comments, 
+      audioID
+    ];
 
     // Execute the query
     const [result] = await db.query(query, values);
@@ -357,19 +365,16 @@ const getAudioDuration = (filePath) => {
 };
 
 // Normalizes a string of tags
-const normalizeTags = (tagsString) => {
+const normalizeTagArray = (tagsArray) => {
+  if (!tagsArray) return [];
   // Split the string into an array by commas, then process each tag
-  const tagsArray = tagsString.split(',')
-    .map(tag =>
+  return tagsArray.map(tag =>
       // Convert to lowercase, trim whitespace, and then replace special characters and spaces with dashes
       // Finally, trim any leading or trailing dashes that might have been added
       tag.toLowerCase().trim().replace(/[\W_]+/g, '-').replace(/^-+|-+$/g, '')
     )
     // Remove duplicate tags
-    .filter((value, index, self) => self.indexOf(value) === index);
-
-  // Return the processed tags as an array
-  return tagsArray;
+    .filter((value, index, self) => self.indexOf(value) === index)
 };
 
 module.exports = router;

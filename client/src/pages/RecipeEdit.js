@@ -3,8 +3,11 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { recipeInfo, recipeUpdate } from '../store/recipeSlice';
 import RecipeForm from '../components/RecipeForm'; // Adjust the import path as needed
+import { formatDateForDisplay, formatTagStrForDB, formatTagsForDisplay } from '../utils/formatUtils';
 import FeatherIcon from 'feather-icons-react';
 import Waiting from '../utils/appUtils';
+
+// TODO: Install JSON5 and render recipe_data as JSON. Also in RecipeCreate
 
 function RecipeEdit() {
   const { recipeID } = useParams();
@@ -23,7 +26,7 @@ function RecipeEdit() {
     recipe_data: '',
     status: '',
     classification: '',
-    tags: "",
+    tags: '',
     comments: '',
   });
 
@@ -48,26 +51,37 @@ function RecipeEdit() {
     setRecipeDetails(updatedRecord);
   };
 
-  const handleSave = (updatedDetails) => {
+  const handleSave = (updatedRecord) => {
     setIsLoading(true); // Start loading on save
-    dispatch(recipeUpdate({ recipeID, ...updatedDetails }))
+    // Normalize tags before submitting
+    const normalizedTags = formatTagStrForDB(updatedRecord.tags);
+    const adjustedRecord = {
+      ...updatedRecord,
+      tags: normalizedTags,
+    };
+    dispatch(recipeUpdate({ recipeID, ...adjustedRecord }))
       .unwrap()
       .then(() => {
         setSuccessMessage('Update successful!');
-        setIsLoading(false); // Stop loading once update is successful
-        navigate(`/recipe/view/${recipeID}`);
+        setError('');
+        setIsLoading(false); // Stop loading once update is successful        // Update recipeDetails state with normalized tags to reflect in the input field
+        setRecipeDetails(prevDetails => ({
+          ...prevDetails,
+          // Convert array back to string for input field
+          tags: formatTagsForDisplay(normalizedTags) 
+        }));
       })
       .catch((err) => {
         console.error('Update error:', err);
         setError('Failed to update recipe.');
         setIsLoading(false); // Stop loading on error
         // Retain the current form state on error to allow for corrections
-        setRecipeDetails(updatedDetails);
+        setRecipeDetails(updatedRecord);
       });
   };
 
   const handleCancel = () => {
-    navigate('/recipe/list');
+    navigate(`/recipe/view/${recipeID}`);
   };
 
   const renderBreadcrumbs = () => {

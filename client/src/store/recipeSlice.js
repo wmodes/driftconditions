@@ -60,10 +60,11 @@ export const recipeUpdate = createAsyncThunk(
   recipeUpdateRoute,
   async (recipeData, { rejectWithValue }) => {
     try {
-      const { recipeID, recipe_name, description, recipe_data, status, classification, tags, comments } = recipeData;
+      console.log('recipeUpdate thunk: recipeData:', recipeData);
+      const { recipeID, title, description, recipe_data, status, classification, tags, comments } = recipeData;
       const response = await axios.post(recipeUpdateRoute, {
         recipeID,
-        recipe_name,
+        title,
         description,
         recipe_data,
         status,

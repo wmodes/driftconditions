@@ -38,9 +38,15 @@ export function formatListForDisplay(input) {
 }
 
 // format tags for database with normalization
-export function formatTagStrForDB(tagStr) {
-  return tagStr.split(',')
-    .map(tag =>
+export function formatTagStrForDB(tags) {
+  if (!tags) return [];
+  var tagArray;
+  if (typeof tags === 'string') {
+    tagArray = tags.split(',');
+  } else if (Array.isArray(tags)) {
+    tagArray = tags;
+  }
+  return tagArray.map(tag =>
       // Convert to lowercase, trim whitespace, then replace special characters and spaces with dashes
       tag.toLowerCase().trim().replace(/[\W_]+/g, '-').replace(/^-+|-+$/g, '')
     )

@@ -105,6 +105,7 @@ function AudioEdit() {
       .unwrap()
       .then(() => {
         setSuccessMessage('Update successful!');
+        setError('');
         // Update audioDetails state with normalized tags to reflect in the input field
         setAudioDetails(prevDetails => ({
           ...prevDetails,
@@ -221,7 +222,7 @@ function AudioEdit() {
             </div>
 
             <div className='button-box'>
-              <button className='button cancel' type="button" onClick={() => navigate('/audio/list')}>Cancel</button>
+              <button className='button cancel' type="button" onClick={() => navigate(`/audio/view/${audioID}`)}>Cancel</button>
               <button className='button submit' type="submit">Save Changes</button>
             </div>
 

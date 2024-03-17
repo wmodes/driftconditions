@@ -50,3 +50,5 @@ Other names I considered, giving you a flavor of the project, like a Tom Waits s
 - The Moonlit Streambed
 - The Unseen Choirs
 - The Night's Orphans
+
+In the end, I figured fuck it: The project name is chosen on the fly.

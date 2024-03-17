@@ -1,6 +1,11 @@
 
 
 import React, { useState, useEffect } from 'react';
+import AceEditor from 'react-ace';
+
+// Import the mode and theme you want to use
+import 'ace-builds/src-noconflict/mode-json';
+import 'ace-builds/src-noconflict/theme-github';
 
 function RecipeForm({ action, initialRecipe, onSave, onCancel, onChange }) {
   // State to hold the form data
@@ -27,11 +32,21 @@ function RecipeForm({ action, initialRecipe, onSave, onCancel, onChange }) {
   // Submit form
   const handleSubmit = (event) => {
     event.preventDefault();
-    // Prepare the tags for submission if necessary (e.g., converting from string to array)
     const submissionData = {
       ...recipeRecord,
     };
     onSave(submissionData);
+  };
+
+  const handleAceChange = (newValue) => {
+    // Update recipe_data directly within the local state
+    const updatedRecord = { ...recipeRecord, recipe_data: newValue };
+    setRecipeRecord(updatedRecord);
+
+    // Then call the onChange callback provided by the parent, if available
+    if (onChange) {
+      onChange(updatedRecord);
+    }
   };
 
   const Required = () => <span className="required">*</span>;
@@ -54,9 +69,27 @@ function RecipeForm({ action, initialRecipe, onSave, onCancel, onChange }) {
         </select>
       </div>
   
-      <div className="form-group">
+      {/* <div className="form-group">
         <label className="form-label" htmlFor="recipe_data">Recipe Data: <Required /></label>
         <textarea className="form-textarea" id="recipe_data" name="recipe_data" value={recipeRecord.recipe_data} onChange={handleChange}></textarea>
+      </div> */}
+
+      <div className="form-group">
+        <label className="form-label" htmlFor="recipe_data">Recipe Data: <Required /></label>
+        <AceEditor
+          mode="json"
+          theme="github"
+          name="recipe_data"
+          value={recipeRecord.recipe_data}
+          onChange={handleAceChange}
+          editorProps={{ $blockScrolling: true }}
+          setOptions={{
+            useWorker: false, // Use the worker for syntax checking
+            // enableBasicAutocompletion: true,
+            // enableLiveAutocompletion: true,
+          }}
+        />
+        <p className="form-note mt-3">Data will be converted to valid JSON, so comments will be removed.</p>  
       </div>
   
       <div className="form-group">
