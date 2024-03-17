@@ -13,7 +13,7 @@ const jwtSecretKey = config.authToken.jwtSecretKey;
 // Route to create a new recipe
 router.post('/create', verifyToken, async (req, res) => {
   try {
-    const { recipe_name, description, recipe_data, status, classification, tags, comments } = req.body;
+    const { title, description, recipe_data, status, classification, tags, comments } = req.body;
     const decoded = jwt.verify(req.cookies.token, jwtSecretKey);
     const creator_id = decoded.userID;
 
@@ -22,8 +22,8 @@ router.post('/create', verifyToken, async (req, res) => {
     const classificationJSON = JSON.stringify(classification);
     const recipeDataJSON = JSON.stringify(recipe_data);
 
-    const query = `INSERT INTO recipes (recipe_name, creator_id, description, recipe_data, status, classification, tags, comments) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
-    const values = [recipe_name, creator_id, description, recipeDataJSON, status, classificationJSON, tagsJSON, comments];
+    const query = `INSERT INTO recipes (title, creator_id, description, recipe_data, status, classification, tags, comments) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+    const values = [title, creator_id, description, recipeDataJSON, status, classificationJSON, tagsJSON, comments];
     const [result] = await db.query(query, values);
     const recipeID = result.insertId;
     res.status(200).json({
@@ -59,42 +59,79 @@ router.post('/info', verifyToken, async (req, res) => {
 // Route to list recipes
 router.post('/list', verifyToken, async (req, res) => {
   try {
-    const sort = req.body.sort || 'create_date';
+    const sort = req.body.sort || 'date';
     const order = req.body.order === 'ASC' ? 'ASC' : 'DESC';
     const filter = req.body.filter || 'all';
+    const targetID = req.body.targetID || req.user.userID;
     const page = parseInt(req.body.page || 1, 10);
     const recordsPerPage = parseInt(req.body.recordsPerPage || 20, 10);
     const offset = (page - 1) * recordsPerPage;
 
-    const sortColumn = {
-      recipe_name: 'LOWER(recipe_name)',
-      create_date: 'create_date',
-      status: 'LOWER(status)'
-    }[sort] || 'create_date';
+    const sortOptions = {
+      id: 'recipe_id',
+      title: 'LOWER(title)',
+      status: 'LOWER(status)',
+      author: 'creator_id', 
+      date: 'create_date',
+    };
+    const sortColumn = sortOptions[sort] || 'create_date';
 
-    let filterQuery = '';
-    let filterValues = [];
+    // Define filter options
+    const filterOptions = {
+      all : {
+        query: 'AND a.status != ?', 
+        values: ['Trashed']
+      },
+      user: {
+        query: 'AND a.creator_id = ? AND a.status != ?',
+        values: [targetID, 'Trashed'] 
+      },
+      trash: {
+        query: 'AND a.status = ?',
+        values: ['Trashed']
+      },
+      review: {
+        query: 'AND a.status = ?',
+        values: ['Review']
+      },
+      approved: {
+        query: 'AND a.status = ?',
+        values: ['Approved']
+      },
+      disapproved: {
+        query: 'AND a.status = ?',
+        values: ['Disapproved']
+      }
+    };
+    // Determine filter condition from provided filter parameter
+    let filterCondition = filterOptions[filter] || filterOptions['all'];
+    let filterQuery = filterCondition.query;
+    let filterValues = filterCondition.values;
 
-    switch (filter) {
-      case 'all':
-        filterQuery = ''; // No additional filtering
-        break;
-      // Additional filters can be implemented similarly
-      default:
-        filterQuery = '';
-    }
+    // Execute countQuery to get the total number of records
+    const [countResult] = await db.query(`
+      SELECT COUNT(*) AS totalRecords
+      FROM recipes a
+      WHERE 1=1 ${filterQuery};
+    `, filterValues);
+    
+    const totalRecords = countResult[0].totalRecords;
 
-    const totalRecordsQuery = `
-      SELECT COUNT(*) AS totalRecords FROM recipes WHERE 1=1 ${filterQuery};
-    `;
-    const [totalResult] = await db.query(totalRecordsQuery, filterValues);
-    const totalRecords = totalResult[0].totalRecords;
+    // Get the audio list with filter, sort, and pagination
+    const [recipeList] = await db.query(`
+      SELECT 
+        a.*,
+        u1.username AS creator_username,
+        u2.username AS editor_username
+      FROM recipes a
+      LEFT JOIN users u1 ON a.creator_id = u1.user_id
+      LEFT JOIN users u2 ON a.editor_id = u2.user_id
+      WHERE 1=1 ${filterQuery}
+      ORDER BY ${sortColumn} ${order}
+      LIMIT ? OFFSET ?;
+    `, [...filterValues, recordsPerPage, offset]);
 
-    const recipesQuery = `
-      SELECT * FROM recipes WHERE 1=1 ${filterQuery} ORDER BY ${sortColumn} ${order} LIMIT ? OFFSET ?;
-    `;
-    const [recipeList] = await db.query(recipesQuery, [...filterValues, recordsPerPage, offset]);
-
+    // Respond with the fetched data
     res.status(200).json({
       totalRecords,
       recipeList,
@@ -107,7 +144,7 @@ router.post('/list', verifyToken, async (req, res) => {
 
 // Route to update recipe information
 router.post('/update', verifyToken, async (req, res) => {
-  const { recipeID, recipe_name, description, recipe_data, status, classification, tags, comments } = req.body;
+  const { recipeID, title, description, recipe_data, status, classification, tags, comments } = req.body;
   if (!recipeID) {
     return res.status(400).send('Recipe ID is required for update.');
   }
@@ -119,7 +156,7 @@ router.post('/update', verifyToken, async (req, res) => {
 
   try {
     const query = `UPDATE recipes SET
-      recipe_name = ?,
+      title = ?,
       description = ?,
       recipe_data = ?,
       status = ?,
@@ -127,7 +164,7 @@ router.post('/update', verifyToken, async (req, res) => {
       tags = ?,
       comments = ?
     WHERE recipe_id = ?`;
-    const values = [recipe_name, description, recipeDataJSON, status, classificationJSON, tagsJSON, comments, recipeID];
+    const values = [title, description, recipeDataJSON, status, classificationJSON, tagsJSON, comments, recipeID];
 
     const [result] = await db.query(query, values);
     if (result.affectedRows === 0) {

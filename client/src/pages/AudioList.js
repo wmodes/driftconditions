@@ -104,7 +104,6 @@ function AudioList() {
   
   const handleFilter = (newFilter, targetID = null) => {
     const searchParams = new URLSearchParams(location.search);
-  
     if (newFilter === 'all') {
       searchParams.delete('filter');
     } else {
@@ -251,10 +250,10 @@ function AudioList() {
                         <div className="authorline">
                           Upload:&nbsp;
                           <button className="link" 
-                            onClick={() => handleFilter('user', audio.uploader_username)}>
-                            {audio.uploader_username}
+                            onClick={() => handleFilter('user', audio.creator_username)}>
+                            {audio.creator_username}
                           </button> 
-                          &nbsp;on {formatDateForDisplay(audio.upload_date)}
+                          &nbsp;on {formatDateForDisplay(audio.create_date)}
                         </div>
                         {audio.editor_username && (
                           <div className="authorline">

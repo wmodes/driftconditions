@@ -41,7 +41,7 @@ router.post('/list', verifyToken, async (req, res) => {
   try {
 
     // Construct sort and filter parameters
-    const sort = req.body.sort || 'upload_date';
+    const sort = req.body.sort || 'date';
     const order = req.body.order === 'ASC' ? 'ASC' : 'DESC';
     const filter = req.body.filter;
     const targetID = req.body.targetID || req.user.userID;
@@ -54,10 +54,10 @@ router.post('/list', verifyToken, async (req, res) => {
       id: 'audio_id',
       title: 'LOWER(title)',
       status: 'LOWER(status)',
-      author: 'uploader_id', 
-      date: 'upload_date',
+      author: 'creator_id', 
+      date: 'create_date',
     };
-    const sortColumn = sortOptions[sort] || 'upload_date';
+    const sortColumn = sortOptions[sort] || 'create_date';
 
     // Define filter options
     const filterOptions = {
@@ -66,7 +66,7 @@ router.post('/list', verifyToken, async (req, res) => {
         values: ['Trashed']
       },
       user: {
-        query: 'AND a.uploader_id = ? AND a.status != ?',
+        query: 'AND a.creator_id = ? AND a.status != ?',
         values: [targetID, 'Trashed'] 
       },
       trash: {
@@ -100,14 +100,14 @@ router.post('/list', verifyToken, async (req, res) => {
     
     const totalRecords = countResult[0].totalRecords;
 
-    // Execute paginatedQuery to get the records for the current page
+    // Get the audio list with filter, sort, and pagination
     const [audioList] = await db.query(`
       SELECT 
         a.*,
-        u1.username AS uploader_username,
+        u1.username AS creator_username,
         u2.username AS editor_username
       FROM audio a
-      LEFT JOIN users u1 ON a.uploader_id = u1.user_id
+      LEFT JOIN users u1 ON a.creator_id = u1.user_id
       LEFT JOIN users u2 ON a.editor_id = u2.user_id
       WHERE 1=1 ${filterQuery}
       ORDER BY ${sortColumn} ${order}
@@ -169,8 +169,8 @@ router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
     // console.log("orig file name: ", req.file.originalname)
     // Verify token and get userID (sync)
     const decoded = jwt.verify(req.cookies.token, jwtSecretKey);
-    const uploader_id = decoded.userID;
-    // console.log('Uploader ID:', uploader_id);
+    const creator_id = decoded.userID;
+    // console.log('Uploader ID:', creator_id);
     // Rename file and move into place (async)
     const filePathForDB = await renameAndStore(req.file.path, req.file.originalname, req.body.title);
     const fullFilePath = path.join(uploadFileDir, filePathForDB);
@@ -187,8 +187,8 @@ router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
     const classificationJSON = JSON.stringify(classification);
 
     // Prep db params
-    const query = `INSERT INTO audio (title, filename, uploader_id, duration, file_type, classification, tags, comments, copyright_cert) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-    const values = [req.body.title, filePathForDB, uploader_id, duration, file_type, classificationJSON, tagsJSON, req.body.comments, req.body.copyright_cert];
+    const query = `INSERT INTO audio (title, filename, creator_id, duration, file_type, classification, tags, comments, copyright_cert) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+    const values = [req.body.title, filePathForDB, creator_id, duration, file_type, classificationJSON, tagsJSON, req.body.comments, req.body.copyright_cert];
 
     // Execute the query
     const [result] = await db.query(query, values);

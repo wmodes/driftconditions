@@ -18,7 +18,7 @@ function RecipeEdit() {
 
   // Manage recipe details state similar to RecipeCreate's recipeData
   const [recipeDetails, setRecipeDetails] = useState({
-    recipe_name: '',
+    title: '',
     description: '',
     recipe_data: '',
     status: '',

@@ -45,8 +45,8 @@ function AudioEdit() {
     tags: '',
     comments: '',
     // Non-editable details
-    uploader_id: '',
-    upload_date: '',
+    creator_id: '',
+    create_date: '',
     duration: '',
     file_type: '',
     copyright_cert: 0,
@@ -64,7 +64,7 @@ function AudioEdit() {
           ...prevState,
           ...response,
           tags: formatTagsForDisplay(response.tags),
-          upload_date: formatDateForDisplay(response.upload_date),
+          create_date: formatDateForDisplay(response.create_date),
           classification: response.classification.reduce((acc, curr) => ({
             ...acc,
             [curr]: true

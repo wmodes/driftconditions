@@ -93,11 +93,15 @@ function RecipeList() {
   
   const handleFilter = (newFilter, targetID = null) => {
     const searchParams = new URLSearchParams(location.search);
-  
     if (newFilter === 'all') {
       searchParams.delete('filter');
     } else {
       searchParams.set('filter', newFilter);
+      if (newFilter === 'user' && targetID) {
+        searchParams.set('targetID', targetID);
+      } else {
+        searchParams.delete('targetID');
+      }
     }
     navigate(`${location.pathname}?${searchParams.toString()}`);
   };
@@ -146,8 +150,8 @@ function RecipeList() {
                       </button>
                     </li>
                     <li>
-                      <button className="link" onClick={() => handleFilter('deleted')}>
-                        Deleted
+                      <button className="link" onClick={() => handleFilter('trash')}>
+                        Trash
                       </button>
                     </li>
                   </ul>
@@ -158,20 +162,20 @@ function RecipeList() {
                 <thead>
                   <tr>
                     <th className="id">
-                      <button className="link" onClick={() => handleSort('recipe_id', 'ASC')}>
+                      <button className="link" onClick={() => handleSort('id', 'ASC')}>
                         ID
                       </button>
                     </th>
                     <th className="name">
-                      <button className="link" onClick={() => handleSort('recipe_name', 'ASC')}>
-                        Name
+                      <button className="link" onClick={() => handleSort('title', 'ASC')}>
+                        Title
                       </button>
                     </th>
                     <th className="creator">
-                      <button className="link" onClick={() => handleSort('creator_id', 'ASC')}>
+                      <button className="link" onClick={() => handleSort('author', 'ASC')}>
                         Author
                       </button> / 
-                      <button className="link" onClick={() => handleSort('create_date', 'DESC')}>
+                      <button className="link" onClick={() => handleSort('date', 'DESC')}>
                          Date
                       </button>
                     </th>
@@ -183,26 +187,47 @@ function RecipeList() {
                     </th>
                     <th className="classification">Classification</th>
                     <th className="tags">Tags</th>
-                    <th className="actions">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {recipeList.map(recipe => (
                     <tr key={recipe.recipe_id}>
                       <td className="id">{recipe.recipe_id}</td>
-                      <td className="name">{recipe.recipe_name}</td>
-                      <td className="creator">{formatDateForDisplay(recipe.create_date)}</td>
+                      <td className="name">
+                        {recipe.title}
+                        <div>
+                          <ul className="action-list">
+                            <li><Link to={`/recipe/view/${recipe.recipe_id}`}>View</Link></li>
+                            <li><Link to={`/recipe/edit/${recipe.recipe_id}`}>Edit</Link></li>
+                            <li><button className="link" onClick={() => recipeTrash(recipe.recipe_id)}>Trash</button></li>
+                          </ul>
+                        </div>
+                      </td>
+                      <td className="author">
+                        <div className="authorline">
+                          Upload:&nbsp;
+                          <button className="link" 
+                            onClick={() => handleFilter('user', recipe.creator_username)}>
+                            {recipe.creator_username}
+                          </button> 
+                          &nbsp;on {formatDateForDisplay(recipe.create_date)}
+                        </div>
+                        {recipe.editor_username && (
+                          <div className="authorline">
+                            Edit:&nbsp;
+                            <button className="link" 
+                              onClick={() => handleFilter('user', recipe.editor_username)}>
+                              {recipe.editor_username}
+                            </button> 
+                            &nbsp;on {formatDateForDisplay(recipe.edit_date)}
+                          </div>
+                        )}
+                      </td>
                       <td className="description">{recipe.description}</td>
                       <td className="status">{recipe.status}</td>
                       <td className="classification">{formatListForDisplay(recipe.classification)}</td>
                       <td className="tags">{formatListForDisplay(recipe.tags)}</td>
-                      <td className="actions">
-                        <ul className="action-list">
-                          <li><Link to={`/recipe/view/${recipe.recipe_id}`}>View</Link></li>
-                          <li><Link to={`/recipe/edit/${recipe.recipe_id}`}>Edit</Link></li>
-                          <li><button className="link" onClick={() => recipeTrash(recipe.recipe_id)}>Delete</button></li>
-                        </ul>
-                      </td>
+
                     </tr>
                   ))}
                 </tbody>

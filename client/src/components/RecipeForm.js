@@ -39,8 +39,8 @@ function RecipeForm({ action, initialRecipe, onSave, onCancel, onChange }) {
   return (
     <form onSubmit={handleSubmit}>
       <div className="form-group">
-        <label className="form-label" htmlFor="recipe_name">Recipe Name: <Required /></label>
-        <input className="form-field" type="text" id="recipe_name" name="recipe_name" value={recipeRecord.recipe_name} onChange={handleChange} />
+        <label className="form-label" htmlFor="title">Recipe Name: <Required /></label>
+        <input className="form-field" type="text" id="title" name="title" value={recipeRecord.title} onChange={handleChange} />
 
         <label className="form-label" htmlFor="description">Description: <Required /></label>
         <textarea className="form-textarea" id="description" name="description" value={recipeRecord.description} onChange={handleChange}></textarea>

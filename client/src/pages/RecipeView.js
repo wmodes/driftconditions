@@ -16,7 +16,7 @@ function RecipeView() {
   const [error, setError] = useState('');
 
   const [recipeDetails, setRecipeDetails] = useState({
-    recipe_name: '',
+    title: '',
     creator_id: '',
     create_date: '',
     description: '',
@@ -71,7 +71,7 @@ function RecipeView() {
           <div className="form-group">
             <div className="form-row">
               <span className="form-label">Name:</span>
-              <span className="form-value">{recipeDetails.recipe_name}</span>
+              <span className="form-value">{recipeDetails.title}</span>
             </div>
             <div className="form-row">
               <span className="form-label">Description:</span>

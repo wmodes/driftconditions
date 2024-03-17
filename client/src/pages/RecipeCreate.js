@@ -17,7 +17,7 @@ function RecipeCreate() {
 
   // Instead of re-initializing the form upon error, maintain its current state
   const [recipeRecord, setRecipeRecord] = useState({
-    recipe_name: '',
+    title: '',
     description: '',
     recipe_data: '',
     status: 'Review',

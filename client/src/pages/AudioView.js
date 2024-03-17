@@ -33,8 +33,8 @@ function AudioView() {
     classification: '',
     tags: '',
     comments: '',
-    uploader_id: '',
-    upload_date: '',
+    creator_id: '',
+    create_date: '',
     duration: '',
     file_type: '',
     copyright_cert: 0,
@@ -51,7 +51,7 @@ function AudioView() {
           ...response,
           classification: formatListForDisplay(response.classification),
           tags: formatListForDisplay(response.tags),
-          upload_date: formatDateForDisplay(response.upload_date),
+          create_date: formatDateForDisplay(response.create_date),
         });
         setIsLoading(false); // Stop loading once data is fetched
       })
