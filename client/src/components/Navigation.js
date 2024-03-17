@@ -39,6 +39,14 @@ export default function Navigation() {
       ],
     },
     {
+      category: "Recipes",
+      icon: <FeatherIcon icon="list" />,
+      items: [
+        { text: "All Recipes", link: "/recipe/list", permission: "recipeList" },
+        { text: "Add New Recipe", link: "/recipe/create", permission: "recipeCreate" },
+      ],
+    },
+    {
       category: "User",
       icon: <FeatherIcon icon="user" />,
       items: [

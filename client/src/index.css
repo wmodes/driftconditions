@@ -99,7 +99,7 @@ svg {
   padding-right: 1.5rem; /* px-6 */
   position: absolute; /* absolute */
   right: 0; /* right-0 */
-  width: 12rem; /* w-48 */
+  width: 14rem; /* w-48 */
   background-color: var(--nav-background-color); /* bg-cornflower */
   color: var(--nav-text-color); /* text-white */
 }

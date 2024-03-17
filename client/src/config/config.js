@@ -23,6 +23,13 @@ const config = {
       audioUpdate: '/api/audio/update',
       audioList: '/api/audio/list',
       audioTrash: '/api/audio/trash',
+      // recipes
+      recipeCreate: '/api/recipe/create',
+      recipeInfo: '/api/recipe/info',
+      recipeUpdate: '/api/recipe/update',
+      recipeList: '/api/recipe/list',
+      recipeTrash: '/api/recipe/trash',
+
     },
     audioBaseURL: 'http://localhost:8080/api/audio/sample',
   },
@@ -39,16 +46,19 @@ const config = {
       audioList: '/audio/list',
       audioView: '/audio/view',
       audioEdit: '/audio/edit',
+      recipeCreate: '/recipe/create',
+      recipeList: '/recipe/list',
+      recipeView: '/recipe/view',
+      recipeEdit: '/recipe/edit',
       notauth: '/notauth',
       error: '/error',
     },
   },
-  audio: {
-    allowedFileTypes: ['audio/mpeg', 'audio/wav', 'audio/ogg', 'audio/flac'],
+  list: {
     recordsPerPage: 15,
   },
-  user: {
-    recordsPerPage: 15,
+  audio: {
+    allowedFileTypes: ['audio/mpeg', 'audio/wav', 'audio/ogg', 'audio/flac'],
   },
   wavesurfer: {
     container: '#waveform',

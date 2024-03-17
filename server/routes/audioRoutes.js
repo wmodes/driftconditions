@@ -181,21 +181,14 @@ router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
     // Get file type from file name in lowercase (sync)
     const file_type = path.extname(req.file.originalname).toLowerCase().substring(1);
     // console.log('File type:', file_type);
-    // Normalize and deduplicate tags (sync)
-    const tags = normalizeTags(req.body.tags);
+
+    // massage incoming data
+    const tagsJSON = JSON.stringify(normalizeTags(tags));
+    const classificationJSON = JSON.stringify(classification);
+
     // Prep db params
     const query = `INSERT INTO audio (title, filename, uploader_id, duration, file_type, classification, tags, comments, copyright_cert) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-    const values = [
-      req.body.title, // From request body
-      filePathForDB,       // Calculated in route
-      uploader_id,    // Derived from token or request
-      duration,       // Calculated from the file
-      file_type,      // Determined from the file
-      req.body.classification, // If calculated or from request
-      JSON.stringify(tags), // Processed in route
-      req.body.comments,    // From request body
-      req.body.copyright_cert // From request body
-    ];
+    const values = [req.body.title, filePathForDB, uploader_id, duration, file_type, classificationJSON, tagsJSON, req.body.comments, req.body.copyright_cert];
 
     // Execute the query
     const [result] = await db.query(query, values);
@@ -211,18 +204,106 @@ router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
   }
 });
 
+// Route to fetch audio file
+router.get('/sample/:year/:month/:filename', verifyToken, async (req, res) => {
+  // Extract parameters from the request
+  const { year, month, filename } = req.params;
+
+  // Construct the file path
+  // Adjust the path according to your actual files location
+  const filePath = path.join(uploadFileDir, year, month, filename);
+  // console.log('File path:', filePath);
+
+  try {
+    // Use fs.promises.access to check if the file exists. 
+    // Note: fs.promises.access does not directly return a value, but it will reject if the file does not exist
+    await fs.access(filePath, fs.constants.F_OK);
+    // console.log('File exists:', filePath);
+
+    // If the file exists, send it
+    res.sendFile(filePath, (err) => {
+      if (err) {
+        // console.error('Error sending file:', err);
+        // Handle error, but don't expose internal details
+        res.status(500).send('Error serving the file');
+      }
+    });
+  } catch (err) {
+    // console.error('File does not exist:', filePath);
+    res.status(404).send('File not found');
+  }
+});
+
+//
+// UPDATING AUDIO
+//
+//
+
+// Route to update audio information
+router.post('/update', verifyToken, async (req, res) => {
+  const { audioID, title, status, classification, tags, comments } = req.body;
+  
+  if (!audioID) {
+    return res.status(400).send('Audio ID is required for update.');
+  }
+  
+  try {
+
+    // massage incoming data
+    const tagsJSON = JSON.stringify(normalizeTags(tagsJSON));
+    const classificationJSON = JSON.stringify(classificationJSON);
+
+    const query = `UPDATE audio SET
+        title = ?,
+        status = ?,
+        classification = ?,
+        tags = ?,
+        comments = ?
+      WHERE audio_id = ?`;
+    const values = [title, status, classificationJSON, tagsJSON, comments, audioID];
+
+    // Execute the query
+    const [result] = await db.query(query, values);
+    if (result.affectedRows === 0) {
+      // This means the audio ID was not found or no fields were changed.
+      return res.status(404).send('Audio not found or no update was made');
+    }
+    res.status(200).send({ message: 'Audio updated successfully' });
+  } catch (error) {
+    console.error('Server error during audio update:', error);
+    res.status(500).send('Server error');
+  }
+});
+
+// Route to trash an audio file
+router.post('/trash', verifyToken, async (req, res) => {
+  const audioID = req.body.audioID;
+  if (!audioID) {
+    return res.status(400).send('Audio ID is required');
+  }
+  try {
+    // Verify the token to get user ID
+    const decoded = jwt.verify(req.cookies.token, jwtSecretKey);
+    const userID = decoded.userID;
+    // construct query and values
+    const query = `UPDATE audio SET status = 'Trashed' WHERE audio_id = ?`;
+    const values = [audioID];
+    const [result] = await db.query(query, values);
+    if (result.affectedRows === 0) {
+      return res.status(404).send('Audio not found');
+    }
+    res.status(200).send({ message: 'Audio trashed successfully' });    
+  } catch (error) {
+    console.error('Error trashing audio file:', error);
+    res.status(500).send('Server error during audio trashing');
+  }
+});
+
+//
+// HELPERS
+//
+
 // Renames the file and moves it to the final upload directory
-//   - the upload dir is "../uploads" at the root of the project
-//   - final dir will be upload/year/monthnum/filename, and these dirs may have to be created
-//   - filename will be the title in lowercase, punctuation removed, and spaces replaced with dashes
-//   - extensions will be preserved but changed to lowercase. ex: eavesdropping-in-a-cafe.mp3
-//   - check to see if file already exists, if so, add a number to the end of the filename
-//   - move/rename file into the final directory
-//   - the filename returned will be the full filepath minus the "../uploads" root
-// @param tempPath - the temporary path where multer stored the file
-// @param origFilename - the original filename of the file
-// @param title - the title of the file
-// @returns the relative path of the file in the "../uploads" directory
 async function renameAndStore(tempPath, origFilename, title) {
 
   // get date info for the directory structure
@@ -275,12 +356,7 @@ const getAudioDuration = (filePath) => {
   return getAudioDurationInSeconds(filePath);
 };
 
-// Normalizes a string of tags:
-// - Splits by commas into individual tags.
-// - Converts to lowercase, trims whitespace.
-// - Replaces special characters and spaces with dashes.
-// - Removes duplicate tags.
-// Returns processed tags as a JSON string for database storage.
+// Normalizes a string of tags
 const normalizeTags = (tagsString) => {
   // Split the string into an array by commas, then process each tag
   const tagsArray = tagsString.split(',')
@@ -295,99 +371,5 @@ const normalizeTags = (tagsString) => {
   // Return the processed tags as an array
   return tagsArray;
 };
-
-// Route to fetch audio info
-router.get('/sample/:year/:month/:filename', verifyToken, async (req, res) => {
-  // Extract parameters from the request
-  const { year, month, filename } = req.params;
-
-  // Construct the file path
-  // Adjust the path according to your actual files location
-  const filePath = path.join(uploadFileDir, year, month, filename);
-  // console.log('File path:', filePath);
-
-  try {
-    // Use fs.promises.access to check if the file exists. 
-    // Note: fs.promises.access does not directly return a value, but it will reject if the file does not exist
-    await fs.access(filePath, fs.constants.F_OK);
-    // console.log('File exists:', filePath);
-
-    // If the file exists, send it
-    res.sendFile(filePath, (err) => {
-      if (err) {
-        // console.error('Error sending file:', err);
-        // Handle error, but don't expose internal details
-        res.status(500).send('Error serving the file');
-      }
-    });
-  } catch (err) {
-    // console.error('File does not exist:', filePath);
-    res.status(404).send('File not found');
-  }
-});
-
-//
-// UPDATING AUDIO
-//
-//
-
-// Route to update audio information
-router.post('/update', verifyToken, async (req, res) => {
-  const { audioID, title, status, classification, tags, comments } = req.body;
-  
-  if (!audioID) {
-    return res.status(400).send('Audio ID is required for update.');
-  }
-  
-  try {
-    // Optional: Validate the input data for safety
-
-    // Construct the SQL query for update. This is a basic example; you might need to adjust it.
-    // This assumes your 'classification' and 'tags' are stored in a manner that directly accepts the provided format.
-    const query = `UPDATE audio SET
-        title = ?,
-        status = ?,
-        classification = ?,
-        tags = ?,
-        comments = ?
-      WHERE audio_id = ?`;
-    const values = [title, status, JSON.stringify(classification), JSON.stringify(tags), comments, audioID];
-
-    // Execute the query
-    const [result] = await db.query(query, values);
-    if (result.affectedRows === 0) {
-      // This means the audio ID was not found or no fields were changed.
-      return res.status(404).send('Audio not found or no update was made');
-    }
-    res.status(200).send({ message: 'Audio updated successfully' });
-  } catch (error) {
-    console.error('Server error during audio update:', error);
-    res.status(500).send('Server error');
-  }
-});
-
-// Route to trash an audio file
-router.post('/trash', verifyToken, async (req, res) => {
-  const audioID = req.body.audioID;
-  if (!audioID) {
-    return res.status(400).send('Audio ID is required');
-  }
-  try {
-    // Verify the token to get user ID
-    const decoded = jwt.verify(req.cookies.token, jwtSecretKey);
-    const userID = decoded.userID;
-    // construct query and values
-    const query = `UPDATE audio SET status = 'Trashed' WHERE audio_id = ?`;
-    const values = [audioID];
-    const [result] = await db.query(query, values);
-    if (result.affectedRows === 0) {
-      return res.status(404).send('Audio not found');
-    }
-    res.status(200).send({ message: 'Audio trashed successfully' });    
-  } catch (error) {
-    console.error('Error trashing audio file:', error);
-    res.status(500).send('Server error during audio trashing');
-  }
-});
 
 module.exports = router;

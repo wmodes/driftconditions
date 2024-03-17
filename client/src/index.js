@@ -22,6 +22,10 @@
   import AudioList from './pages/AudioList';
   import AudioView from './pages/AudioView';
   import AudioEdit from './pages/AudioEdit';
+  import RecipeCreate from './pages/RecipeCreate';
+  import RecipeList from './pages/RecipeList';
+  import RecipeView from './pages/RecipeView';
+  import RecipeEdit from './pages/RecipeEdit';
   import NotAuth from './pages/NotAuth';
   import Error from './pages/Error';
   import RootLayout from './layouts/RootLayout';
@@ -58,6 +62,10 @@
         <Route path='/audio/list' element={<AudioList />} /> 
         <Route path='/audio/view/:audioID' element={<AudioView />} />
         <Route path='/audio/edit/:audioID' element={<AudioEdit />} />
+        <Route path='/recipe/create' element={<RecipeCreate />} />
+        <Route path='/recipe/list' element={<RecipeList />} /> 
+        <Route path='/recipe/view/:recipeID' element={<RecipeView />} />
+        <Route path='/recipe/edit/:recipeID' element={<RecipeEdit />} />
         <Route path='/notauth' element={<NotAuth />} />
         <Route path='*' element={<Error />} /> 
       </Route>

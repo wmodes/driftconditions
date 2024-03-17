@@ -12,7 +12,7 @@ import { formatDateForDisplay } from '../utils/formatUtils';
 // Import the config object
 const config = require('../config/config');
 // Pull variables from the config object
-const recordsPerPage = config.user.recordsPerPage;
+const recordsPerPage = config.list.recordsPerPage;
 const retryLimit = config.server.retryLimit;
 
 function UserList() {

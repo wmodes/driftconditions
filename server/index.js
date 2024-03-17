@@ -33,12 +33,14 @@ app.use((req, res, next) => {
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const audioRoutes = require('./routes/audioRoutes');
+const recipeRoutes = require('./routes/recipeRoutes');
 const roleRoutes = require('./routes/roleRoutes');
 
 // Use routes
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/audio', audioRoutes);
+app.use('/api/recipe', recipeRoutes);
 app.use('/api/role', roleRoutes);
 
 // Use the notFound middleware

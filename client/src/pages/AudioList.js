@@ -14,7 +14,7 @@ import { ReactComponent as AudioOn } from '../images/volume-animate.svg';
 // Import the config object from the config.js file
 const config = require('../config/config');
 // pull variables from the config object
-const recordsPerPage = config.audio.recordsPerPage;
+const recordsPerPage = config.list.recordsPerPage;
 const retryLimit = config.server.retryLimit;
 const audioBaseURL = config.server.audioBaseURL;
 
@@ -63,7 +63,7 @@ function AudioList() {
     dispatch(audioListAction(queryParams))
       .unwrap()
       .then(response => {
-        setAudioList(response.audioList);
+        setAudioList(response.audioList || []);
         setTotalRecords(response.totalRecords);
         setIsLoading(false); // Stop loading once data is fetched
       })
