@@ -169,9 +169,9 @@ function RecipeList() {
                     </th>
                     <th className="creator">
                       <button className="link" onClick={() => handleSort('creator_id', 'ASC')}>
-                        Creator
+                        Author
                       </button> / 
-                      <button className="link" onClick={() => handleSort('create_date', 'ASC')}>
+                      <button className="link" onClick={() => handleSort('create_date', 'DESC')}>
                          Date
                       </button>
                     </th>

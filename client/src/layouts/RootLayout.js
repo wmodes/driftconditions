@@ -8,7 +8,7 @@ import { getPageContext, useAuthCheckAndNavigate } from '../utils/authUtils';
 import { getProjectName } from '../utils/textUtils';
 import Navigation from '../components/Navigation';
 import { Outlet } from 'react-router-dom';
-import { tailChase } from 'ldrs'
+import Waiting from '../utils/appUtils';
 
 const RootLayout = () => {
   const location = useLocation();
@@ -16,8 +16,6 @@ const RootLayout = () => {
   const projectName = useSelector(state => state.app.projectName);
   const authChecked = useSelector(state => state.auth.authChecked);
   const currentPath = location.pathname;
-
-  tailChase.register()
   
   // Get the page context based on the current path
   const pageContext = getPageContext(currentPath);
@@ -35,12 +33,7 @@ const RootLayout = () => {
   }, [dispatch, projectName]);
 
   if (!authChecked) {
-    // Render nothing or a loading component until isAuthenticated is true
-    return (
-      <div className="flex justify-center items-center h-screen">
-          <l-tail-chase size="75" speed="1.75" color="#336699" />
-      </div>
-    );
+    return (<Waiting />);
   }
 
   return (

@@ -2,19 +2,30 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { recipeInfo, recipeUpdate } from '../store/recipeSlice';
-import RecipeForm from '../components/RecipeForm'; 
+import RecipeForm from '../components/RecipeForm'; // Adjust the import path as needed
 import FeatherIcon from 'feather-icons-react';
+import Waiting from '../utils/appUtils';
 
 function RecipeEdit() {
   const { recipeID } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
+  // State for handling loading, success, and error feedback
   const [isLoading, setIsLoading] = useState(true);
   const [successMessage, setSuccessMessage] = useState('');
   const [error, setError] = useState('');
 
-  const [recipeDetails, setRecipeDetails] = useState(null);
+  // Manage recipe details state similar to RecipeCreate's recipeData
+  const [recipeDetails, setRecipeDetails] = useState({
+    recipe_name: '',
+    description: '',
+    recipe_data: '',
+    status: '',
+    classification: '',
+    tags: "",
+    comments: '',
+  });
 
   useEffect(() => {
     if (!recipeID) return;
@@ -33,6 +44,10 @@ function RecipeEdit() {
       });
   }, [recipeID, dispatch]);
 
+  const handleChange = (updatedRecord) => {
+    setRecipeDetails(updatedRecord);
+  };
+
   const handleSave = (updatedDetails) => {
     setIsLoading(true); // Start loading on save
     dispatch(recipeUpdate({ recipeID, ...updatedDetails }))
@@ -40,26 +55,28 @@ function RecipeEdit() {
       .then(() => {
         setSuccessMessage('Update successful!');
         setIsLoading(false); // Stop loading once update is successful
-        navigate(`/recipes/view/${recipeID}`);
+        navigate(`/recipe/view/${recipeID}`);
       })
       .catch((err) => {
         console.error('Update error:', err);
         setError('Failed to update recipe.');
         setIsLoading(false); // Stop loading on error
+        // Retain the current form state on error to allow for corrections
+        setRecipeDetails(updatedDetails);
       });
   };
 
   const handleCancel = () => {
-    navigate('/recipes/list');
+    navigate('/recipe/list');
   };
 
   const renderBreadcrumbs = () => {
     return (
       <div className="breadcrumb-box">
-        <span className="link" onClick={() => navigate('/recipes/list')}>
+        <span className="link" onClick={() => navigate('/recipe/list')}>
           <FeatherIcon icon="arrow-left" /> List
         </span>
-        <span className="link" onClick={() => navigate(`/recipes/view/${recipeID}`)}>
+        <span className="link" onClick={() => navigate(`/recipe/view/${recipeID}`)}>
           View
         </span>
       </div>
@@ -67,7 +84,7 @@ function RecipeEdit() {
   };
 
   if (isLoading) {
-    return <div>Loading...</div>; // or any loading indicator
+    return (<Waiting />);
   }
 
   return (
@@ -80,6 +97,7 @@ function RecipeEdit() {
             initialRecipe={recipeDetails}
             onSave={handleSave}
             onCancel={handleCancel}
+            onChange={handleChange} // Ensure RecipeForm calls this function with updated state
           />
           <div className='message-box'>
             {successMessage && <p className="success">{successMessage}</p>}

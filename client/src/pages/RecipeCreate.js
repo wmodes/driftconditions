@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { recipeCreate } from '../store/recipeSlice';
 import RecipeForm from '../components/RecipeForm'; // Adjust the import path as needed
 import FeatherIcon from 'feather-icons-react';
+import Waiting from '../utils/appUtils';
 
 function RecipeCreate() {
   const dispatch = useDispatch();
@@ -60,7 +61,7 @@ function RecipeCreate() {
   };
 
   if (isLoading) {
-    return <div>Loading...</div>; // or any loading indicator
+    return (<Waiting />);
   }
 
   return (

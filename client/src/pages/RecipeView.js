@@ -53,10 +53,10 @@ function RecipeView() {
   const renderBreadcrumbs = () => {
     return (
       <div className="breadcrumb-box">
-        <span className="link" onClick={() => navigate('/recipes/list')}>
+        <span className="link" onClick={() => navigate('/recipe/list')}>
           <FeatherIcon icon="arrow-left" /> List
         </span>
-        <span className="link" onClick={() => navigate(`/recipes/edit/${recipeID}`)}>
+        <span className="link" onClick={() => navigate(`/recipe/edit/${recipeID}`)}>
           Edit
         </span>
       </div>

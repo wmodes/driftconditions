@@ -93,11 +93,11 @@ router.post('/list', verifyToken, async (req, res) => {
     const recipesQuery = `
       SELECT * FROM recipes WHERE 1=1 ${filterQuery} ORDER BY ${sortColumn} ${order} LIMIT ? OFFSET ?;
     `;
-    const [recipes] = await db.query(recipesQuery, [...filterValues, recordsPerPage, offset]);
+    const [recipeList] = await db.query(recipesQuery, [...filterValues, recordsPerPage, offset]);
 
     res.status(200).json({
       totalRecords,
-      recipes,
+      recipeList,
     });
   } catch (error) {
     console.error('Error listing recipes:', error);
