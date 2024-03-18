@@ -11,6 +11,8 @@ import { renderPagination } from '../utils/listUtils';
 import { formatDateForDisplay, formatListForDisplay } from '../utils/formatUtils';
 import { ReactComponent as AudioOn } from '../images/volume-animate.svg';
 
+// TODO: test and debug user filter
+
 // Import the config object from the config.js file
 const config = require('../config/config');
 // pull variables from the config object

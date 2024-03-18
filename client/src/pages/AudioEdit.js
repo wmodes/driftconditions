@@ -182,6 +182,15 @@ function AudioEdit() {
               <div className="mb-2">
                 <label className="form-label">Filename:</label> <span className="non-editable">{audioDetails.filename}</span>
               </div>
+              
+              <div className="mb-2">
+                <label className="form-label">Author:</label> <span className="non-editable">{audioDetails.creator_username}</span>
+              </div>
+              
+              <div className="mb-2">
+                <label className="form-label">Date:</label> <span className="non-editable">{audioDetails.create_date}</span>
+              </div>
+
 
               <label className="form-label" htmlFor="status">Status:</label>
               <select name="status" value={audioDetails.status} onChange={handleChange} className="form-select">

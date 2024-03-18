@@ -7,7 +7,7 @@
   --nav-background-color: #336699;
   --nav-text-color: #fff;
   --content-box-color: #E5E7EB;
-  --content-box-border-color: #D1D5DB;
+  --content-box-border-color: #ccc;
   --text-wingding-color: #303030;
   --table-background-color: #fff;
   --table-background-2-color: #f2f2f2;
@@ -102,6 +102,7 @@ svg {
   width: 14rem; /* w-48 */
   background-color: var(--nav-background-color); /* bg-cornflower */
   color: var(--nav-text-color); /* text-white */
+  z-index: 100;
 }
 
 .nav-level1 {
@@ -212,9 +213,9 @@ svg {
 }
 
 .display-box {
-  max-width: 32rem;
-  min-width: min-content;
-  padding: 3rem; 
+  /* max-width: 42rem; */
+  min-width: 32rem;
+  padding: 1rem 3rem; 
   margin-left: auto;
   margin-right: auto;
   border: 2px solid var(--content-box-border-color); /* border-gray-400 */
@@ -469,6 +470,18 @@ svg {
 }
 
 /*
+ * Code Editor
+ */
+
+ .ace_editor {
+  width: 650px !important;
+  height: auto;
+  resize: vertical;
+  overflow-x: hidden; 
+  overflow-y: auto;
+}
+
+/*
  *  Form Elements
  */
 
@@ -479,8 +492,9 @@ svg {
 
 .form-group {
   margin-bottom: 1rem;
-  border: solid 1px var(--content-box-border-color);
+  border: solid 2px var(--content-box-border-color);
   padding: 1rem;
+  border-radius: 0.5rem;
 }
 
 .form-row {

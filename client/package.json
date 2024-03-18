@@ -10,6 +10,7 @@
     "ace-builds": "^1.32.7",
     "axios": "^1.6.7",
     "feather-icons-react": "^0.7.0",
+    "json5": "^2.2.3",
     "ldrs": "^1.0.1",
     "react": "^18.2.0",
     "react-ace": "^10.1.0",

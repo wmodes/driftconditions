@@ -1,11 +1,12 @@
 
 
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import AceEditor from 'react-ace';
-
-// Import the mode and theme you want to use
 import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-github';
+import config from '../config/config';
+const aceOptions = config.aceEditor;
 
 function RecipeForm({ action, initialRecipe, onSave, onCancel, onChange }) {
   // State to hold the form data
@@ -38,7 +39,7 @@ function RecipeForm({ action, initialRecipe, onSave, onCancel, onChange }) {
     onSave(submissionData);
   };
 
-  const handleAceChange = (newValue) => {
+  const handleAceChanges = (newValue) => {
     // Update recipe_data directly within the local state
     const updatedRecord = { ...recipeRecord, recipe_data: newValue };
     setRecipeRecord(updatedRecord);
@@ -59,6 +60,33 @@ function RecipeForm({ action, initialRecipe, onSave, onCancel, onChange }) {
 
         <label className="form-label" htmlFor="description">Description: <Required /></label>
         <textarea className="form-textarea" id="description" name="description" value={recipeRecord.description} onChange={handleChange}></textarea>
+        
+        {action!=="create" && (
+          <>
+            <div className="form-row">
+              <span className="form-label">Created:</span>
+              <span className="form-value">
+                <Link to={`/recipe/list?filter=user&targetID=${recipeRecord.creator_username}`}>
+                  {recipeRecord.creator_username}
+                </Link>
+                {" on " + recipeRecord.create_date}
+              </span>
+            </div>
+
+            {recipeRecord.editor_username && (
+                <div className="form-row">
+                  <span className="form-label">Edited:</span>
+                  <span className="form-value">
+                    <Link to={`/recipe/list?filter=user&targetID=${recipeRecord.editor_username}`}>
+                      {recipeRecord.editor_username}
+                    </Link>
+                    {" on " + recipeRecord.edit_date}
+                  </span>
+                </div>
+              )
+            }
+          </>
+        )}
   
         <label className="form-label" htmlFor="status">Status:</label>
         <select name="status" value={recipeRecord.status} onChange={handleChange} className="form-select">
@@ -68,28 +96,21 @@ function RecipeForm({ action, initialRecipe, onSave, onCancel, onChange }) {
           <option value="Trashed" disabled={action === "create"}>Trashed</option>
         </select>
       </div>
-  
-      {/* <div className="form-group">
-        <label className="form-label" htmlFor="recipe_data">Recipe Data: <Required /></label>
-        <textarea className="form-textarea" id="recipe_data" name="recipe_data" value={recipeRecord.recipe_data} onChange={handleChange}></textarea>
-      </div> */}
 
       <div className="form-group">
         <label className="form-label" htmlFor="recipe_data">Recipe Data: <Required /></label>
+
         <AceEditor
           mode="json"
           theme="github"
           name="recipe_data"
           value={recipeRecord.recipe_data}
-          onChange={handleAceChange}
+          onChange={handleAceChanges}
           editorProps={{ $blockScrolling: true }}
-          setOptions={{
-            useWorker: false, // Use the worker for syntax checking
-            // enableBasicAutocompletion: true,
-            // enableLiveAutocompletion: true,
-          }}
+          setOptions={aceOptions}
+          style={{ width: '', height: 'auto' }}
         />
-        <p className="form-note mt-3">Data will be converted to valid JSON, so comments will be removed.</p>  
+        <div className="form-note mt-3 mb-0">Data will be converted to valid JSON, so comments will be removed.</div>  
       </div>
   
       <div className="form-group">

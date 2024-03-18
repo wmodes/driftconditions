@@ -6,6 +6,14 @@ import RecipeForm from '../components/RecipeForm'; // Adjust the import path as 
 import FeatherIcon from 'feather-icons-react';
 import Waiting from '../utils/appUtils';
 
+import { 
+  formatDateForDisplay, formatListForDisplay, 
+  formatTagStrForDB, formatTagsForDisplay, 
+  formatJSONForDisplay, formatJSONStrForDB } from '../utils/formatUtils';
+
+// get config from config.js
+import config from '../config/config';
+
 function RecipeCreate() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -15,11 +23,12 @@ function RecipeCreate() {
   const [successMessage, setSuccessMessage] = useState('');
   const [error, setError] = useState('');
 
+  // TODO: Does this really do what it says?
   // Instead of re-initializing the form upon error, maintain its current state
   const [recipeRecord, setRecipeRecord] = useState({
     title: '',
     description: '',
-    recipe_data: '',
+    recipe_data: formatJSONForDisplay(config.recipe.example),
     status: 'Review',
     classification: '',
     tags: "",
@@ -30,9 +39,14 @@ function RecipeCreate() {
     setRecipeRecord(updatedRecord);
   };
 
-  const handleSave = (recipeDetails) => {
+  const handleSave = (updatedRecord) => {
     setIsLoading(true); // Start loading
-    dispatch(recipeCreate(recipeDetails))
+    const adjustedRecord = {
+      ...updatedRecord,
+      recipe_data: formatJSONStrForDB(updatedRecord.recipe_data),
+      tags: formatTagStrForDB(updatedRecord.tags),
+    };
+    dispatch(recipeCreate(adjustedRecord))
       .unwrap()
       .then(response => {
         setIsLoading(false); // Stop loading

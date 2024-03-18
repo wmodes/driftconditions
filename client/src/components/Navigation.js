@@ -8,7 +8,7 @@ import FeatherIcon from 'feather-icons-react';
 
 export default function Navigation() {
   const { user } = useSelector((state) => state.auth);
-  console.log("nav: user", user)
+  // console.log("nav: user", user)
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);

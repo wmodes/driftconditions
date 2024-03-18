@@ -3,9 +3,15 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { recipeInfo, recipeUpdate } from '../store/recipeSlice';
 import RecipeForm from '../components/RecipeForm'; // Adjust the import path as needed
-import { formatDateForDisplay, formatTagStrForDB, formatTagsForDisplay } from '../utils/formatUtils';
+
+import { 
+  formatDateForDisplay, formatListForDisplay, 
+  formatTagStrForDB, formatTagsForDisplay, 
+  formatJSONForDisplay, formatJSONStrForDB } from '../utils/formatUtils';
 import FeatherIcon from 'feather-icons-react';
 import Waiting from '../utils/appUtils';
+
+const JSON5 = require('json5');
 
 // TODO: Install JSON5 and render recipe_data as JSON. Also in RecipeCreate
 
@@ -37,7 +43,14 @@ function RecipeEdit() {
     dispatch(recipeInfo(recipeID))
       .unwrap()
       .then((response) => {
-        setRecipeDetails(response);
+        setRecipeDetails(prevState => ({
+          ...recipeDetails,
+          ...response,
+          recipe_data: formatJSONForDisplay(response.recipe_data),
+          classification: formatListForDisplay(response.classification),
+          tags: formatTagsForDisplay(response.tags),
+          create_date: formatDateForDisplay(response.create_date),
+        }));
         setIsLoading(false); // Stop loading once data is fetched
       })
       .catch((err) => {
@@ -53,22 +66,23 @@ function RecipeEdit() {
 
   const handleSave = (updatedRecord) => {
     setIsLoading(true); // Start loading on save
-    // Normalize tags before submitting
-    const normalizedTags = formatTagStrForDB(updatedRecord.tags);
     const adjustedRecord = {
       ...updatedRecord,
-      tags: normalizedTags,
+      recipe_data: formatJSONStrForDB(updatedRecord.recipe_data),
+      tags: formatTagStrForDB(updatedRecord.tags),
     };
     dispatch(recipeUpdate({ recipeID, ...adjustedRecord }))
       .unwrap()
       .then(() => {
         setSuccessMessage('Update successful!');
         setError('');
-        setIsLoading(false); // Stop loading once update is successful        // Update recipeDetails state with normalized tags to reflect in the input field
+        setIsLoading(false); // Stop loading once update is successful        
+        // Update recipeDetails state with normalized tags to reflect in the input field
         setRecipeDetails(prevDetails => ({
           ...prevDetails,
-          // Convert array back to string for input field
-          tags: formatTagsForDisplay(normalizedTags) 
+          // Convert stuff back to strings for input fields
+          recipe_data: formatJSONForDisplay(adjustedRecord.recipe_data),
+          tags: formatTagsForDisplay(adjustedRecord.tags), 
         }));
       })
       .catch((err) => {

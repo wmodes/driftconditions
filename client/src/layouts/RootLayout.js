@@ -19,10 +19,10 @@ const RootLayout = () => {
   
   // Get the page context based on the current path
   const pageContext = getPageContext(currentPath);
-  console.log('pageContext:', pageContext);
+  // console.log('pageContext:', pageContext);
   // check user authentication and authorization
   useAuthCheckAndNavigate(pageContext);
-  console.log('RootLayout authChecked:', authChecked);
+  // console.log('RootLayout authChecked:', authChecked);
 
   useEffect(() => {
     // Ensure a project name is set or retrieved on app initialization

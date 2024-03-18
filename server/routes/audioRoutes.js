@@ -137,7 +137,11 @@ router.post('/info', verifyToken, async (req, res) => {
     // You might not need the userID here unless you're checking if the user has the right to view this audio's info
 
     // Construct query to fetch audio info from the database
-    const query = `SELECT * FROM audio WHERE audio_id = ?`;
+    const query = `
+    SELECT audio.*, users.username AS creator_username
+    FROM audio
+    JOIN users ON audio.creator_id = users.user_id
+    WHERE audio.audio_id = ?;`;
     const values = [audioID];
 
     const [result] = await db.query(query, values);

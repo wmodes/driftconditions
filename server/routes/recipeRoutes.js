@@ -47,7 +47,15 @@ router.post('/info', verifyToken, async (req, res) => {
     return res.status(400).send('Recipe ID is required');
   }
   try {
-    const query = `SELECT * FROM recipes WHERE recipe_id = ?`;
+    const query = `
+    SELECT 
+      recipes.*, 
+      creator.username AS creator_username,
+      editor.username AS editor_username
+    FROM recipes
+    JOIN users AS creator ON recipes.creator_id = creator.user_id
+    LEFT JOIN users AS editor ON recipes.editor_id = editor.user_id
+    WHERE recipes.recipe_id = ?;`;
     const values = [recipeID];
     const [result] = await db.query(query, values);
     if (result.length === 0) {

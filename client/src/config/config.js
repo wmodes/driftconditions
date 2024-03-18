@@ -78,7 +78,60 @@ const config = {
         },
       },
     }
-  }
+  },
+  aceEditor: {
+    useWorker: false, // Use the worker for syntax checking
+    // enableBasicAutocompletion: true,
+    // enableLiveAutocompletion: true,
+    minLines: 12,
+    maxLines: 32,
+    tabSize: 2,
+    wrap: true,
+  },
+  recipe: {
+    example: [
+      {
+        notes: [
+          "This configures a basic recipe.",
+          "Tracks are played simultaneously like a multi-track recording. You can have between up to 5 tracks, and there must be at least one.",
+          "Clips are individual audio files within the tracks. Clips are picked randomly based on criteria you can set.",
+          "Tracks and clips have various options that can influence the random selection, length, volume, or dynamics of the audio element.",
+          "The system ignores any tags it doesn't recognize, like 'notes' 😀. But the recipe has to be valid JSON-like code."
+        ]
+      },
+      {
+        track:0,
+        notes:"background track, e.g., a music bed",
+        volume:{
+          default:50
+        },
+        clips:[
+          {
+            note: "here we specify tagss or classificaton or both that will be used to randomly pick an audio clip",
+            classification:"music",
+            tag: "ambient",
+            length: "long"
+          }
+        ]
+      },
+      {
+        track:1,
+        notes:"foreground track, e.g, narrative or spoken word",
+        volume:{
+          default:100
+        },
+        clips:[
+          {
+            classification:"story",
+            length: ["long", "medium"]
+          }
+        ]
+      },
+      {
+        notes: "additional tracks can be added"
+      }
+    ]    
+  },
 };
 
 module.exports = config;

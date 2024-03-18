@@ -16,7 +16,7 @@ export const getPageContext = (URLpath) => {
   Object.entries(pagePaths).forEach(([key, path]) => {
     if (URLpath === path || URLpath.startsWith(path + '/') || (path === '/' && URLpath === '')) {
       matchedKey = key;
-      console.log("Matched key:", matchedKey, "for path:", URLpath);
+      // console.log("Matched key:", matchedKey, "for path:", URLpath);
     }
   });
   if (!matchedKey) {
@@ -37,14 +37,14 @@ export const useAuthCheckAndNavigate = (context) => {
       // Immediately set authChecked to true for no-auth pages and return
       if (noAuthPages.includes(context.toLowerCase())) {
         dispatch(setAuthChecked(true)); 
-        console.log("No auth check needed for this page:", context);
+        // console.log("No auth check needed for this page:", context);
         return;
       }
 
       try {
         const actionResult = await dispatch(checkPageAuth(context));
         const result = actionResult.payload;
-        console.log("Auth check result:", result);
+        // console.log("Auth check result:", result);
         dispatch(setAuthChecked(true));
 
         // Based on the result, navigate accordingly

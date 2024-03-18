@@ -1,5 +1,7 @@
 // formatUtil - utilities for formatting data
 
+const JSON5 = require('json5');
+
 // format loose date for database
 export function formatDateForDB(dateStr) {
   return new Date(dateStr).toISOString().split('T')[0];
@@ -53,5 +55,21 @@ export function formatTagStrForDB(tags) {
     // Remove duplicate tags
     .filter((value, index, self) => self.indexOf(value) === index);
 }
+
+// Takes a JSON object and pretty prints it as a string using JSON5 with indentation.
+export const formatJSONForDisplay = (jsonObj) => {
+  // JSON5.stringify(value, replacer, space)
+  // space - A String or Number that allows you to control spacing in the final string.
+  // Using a tab character mimics standard pretty-print appearance.
+  return JSON5.stringify(jsonObj, null, '\t'); // Use '\t' for tab-indented pretty-print
+};
+
+
+// Takes a JSON string, parses it as JSON5 (which is more lenient than standard JSON),
+// and returns the equivalent JavaScript object.
+export const formatJSONStrForDB = (jsonStr) => {
+  // Parse the JSON5 string to an object
+  return JSON5.parse(jsonStr);
+};
 
 export const formatTagsForDisplay = formatListForDisplay;

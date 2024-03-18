@@ -20,7 +20,7 @@ export const recipeCreate = createAsyncThunk(
   recipeCreateRoute,
   async (recipeData, thunkAPI) => {
     // console.log('recipeCreate thunk: recipeData:', recipeData);
-    console.log('recipeCreate thunk: recipeCreateRoute:', recipeCreateRoute);
+    // console.log('recipeCreate thunk: recipeCreateRoute:', recipeCreateRoute);
     try {
       const response = await axios.post(recipeCreateRoute, recipeData, {
         headers: {
@@ -60,18 +60,7 @@ export const recipeUpdate = createAsyncThunk(
   recipeUpdateRoute,
   async (recipeData, { rejectWithValue }) => {
     try {
-      console.log('recipeUpdate thunk: recipeData:', recipeData);
-      const { recipeID, title, description, recipe_data, status, classification, tags, comments } = recipeData;
-      const response = await axios.post(recipeUpdateRoute, {
-        recipeID,
-        title,
-        description,
-        recipe_data,
-        status,
-        classification,
-        tags,
-        comments
-      }, {
+      const response = await axios.post(recipeUpdateRoute, recipeData, {
         headers: {
           'Content-Type': 'application/json',
         },
