@@ -56,6 +56,8 @@ export function formatTagStrForDB(tags) {
     .filter((value, index, self) => self.indexOf(value) === index);
 }
 
+export const formatTagsForDisplay = formatListForDisplay;
+
 // Takes a JSON object and pretty prints it as a string using JSON5 with indentation.
 export const formatJSONForDisplay = (jsonObj) => {
   // JSON5.stringify(value, replacer, space)
@@ -71,5 +73,3 @@ export const formatJSONStrForDB = (jsonStr) => {
   // Parse the JSON5 string to an object
   return JSON5.parse(jsonStr);
 };
-
-export const formatTagsForDisplay = formatListForDisplay;

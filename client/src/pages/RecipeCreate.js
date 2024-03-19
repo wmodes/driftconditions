@@ -11,8 +11,10 @@ import {
   formatTagStrForDB, formatTagsForDisplay, 
   formatJSONForDisplay, formatJSONStrForDB } from '../utils/formatUtils';
 
-// get config from config.js
+// Import the config object from the config.js file
 import config from '../config/config';
+// pull variables from the config object
+const classificationOptions = config.recipe.classification;
 
 function RecipeCreate() {
   const dispatch = useDispatch();
@@ -26,16 +28,17 @@ function RecipeCreate() {
   // TODO: Does this really do what it says?
   // Instead of re-initializing the form upon error, maintain its current state
   const [recipeRecord, setRecipeRecord] = useState({
-    title: '',
-    description: '',
     recipe_data: formatJSONForDisplay(config.recipe.example),
     status: 'Review',
-    classification: '',
-    tags: "",
-    comments: '',
+    // turn classificationOptions into an object with keys for each option (set to false)
+    classification: classificationOptions.reduce((acc, option) => {
+      acc[option] = false;
+      return acc;
+    }, {}),
   });
 
-  const handleChange = (updatedRecord) => {
+  // we don't need to massage the data because RecipeForm will handle that
+  const handleChange = (updatedRecord) => { 
     setRecipeRecord(updatedRecord);
   };
 
@@ -45,6 +48,7 @@ function RecipeCreate() {
       ...updatedRecord,
       recipe_data: formatJSONStrForDB(updatedRecord.recipe_data),
       tags: formatTagStrForDB(updatedRecord.tags),
+      classification: Object.keys(updatedRecord.classification).filter(key => updatedRecord.classification[key]),
     };
     dispatch(recipeCreate(adjustedRecord))
       .unwrap()

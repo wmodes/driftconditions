@@ -136,7 +136,7 @@ router.post('/info', verifyToken, async (req, res) => {
     const decoded = jwt.verify(req.cookies.token, jwtSecretKey);
     // You might not need the userID here unless you're checking if the user has the right to view this audio's info
 
-    // Construct query to fetch audio info from the database
+    // Construct query to fetch audio info from the database 
     const query = `
     SELECT audio.*, users.username AS creator_username
     FROM audio
@@ -148,7 +148,11 @@ router.post('/info', verifyToken, async (req, res) => {
     if (result.length === 0) {
       return res.status(404).send('Audio not found');
     }
-    res.status(200).json(result[0]);
+    // Repair broken JSON fields
+    record = result[0];
+    record.classification = repairBrokenJSON(record.classification);
+    record.tags = repairBrokenJSON(record.tags);
+    res.status(200).json(record);
   } catch (error) {
     console.error('Error verifying token or fetching audio info:', error);
     res.status(500).send('Server error during audio info retrieval');
@@ -379,6 +383,13 @@ const normalizeTagArray = (tagsArray) => {
     )
     // Remove duplicate tags
     .filter((value, index, self) => self.indexOf(value) === index)
+};
+
+const repairBrokenJSON = (jsonField) => {
+  if (typeof jsonField === 'string') {
+    return [];
+  }
+  return jsonField;
 };
 
 module.exports = router;

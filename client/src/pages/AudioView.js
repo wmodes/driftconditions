@@ -27,16 +27,6 @@ function AudioView() {
   const [error, setError] = useState('');
 
   const [audioDetails, setAudioDetails] = useState({
-    title: '',
-    filename: '',
-    status: '',
-    classification: '',
-    tags: '',
-    comments: '',
-    creator_id: '',
-    create_date: '',
-    duration: '',
-    file_type: '',
     copyright_cert: 0,
   });
 
@@ -105,7 +95,7 @@ function AudioView() {
     );
   };
 
-  return (
+  return ( 
     <div className="edit-wrapper">
       <div className="display-box-wrapper">
         <div className="display-box">

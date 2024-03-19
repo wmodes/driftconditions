@@ -229,7 +229,7 @@ function AudioList() {
                         Status
                       </button>
                     </th>
-                    <th className="classification">Classification</th>
+                    <th className="classification">Type</th>
                     <th className="tags">Tags</th>
                     <th className="listen">Listen</th>
                   </tr>

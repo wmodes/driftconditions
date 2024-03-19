@@ -513,6 +513,7 @@ svg {
   margin-bottom: 4px;
   font-size: 16px;
   font-weight: bold;
+  margin-right: 0.5rem;
 }
 
 .form-field {
@@ -520,6 +521,7 @@ svg {
   height: 2rem;
   padding: 0.25rem;
   margin-bottom: 0.75rem;
+  text-wrap: nowrap;
 }
 
 .form-upload {
@@ -544,8 +546,13 @@ svg {
 }
 
 .form-checkbox {
-  columns: 6rem;
+  columns: 7rem;
   margin-left: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.form-checkbox .checkbox-field {
+  text-wrap: nowrap;
 }
 
 .form-select .select-results {

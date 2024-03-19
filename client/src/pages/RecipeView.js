@@ -13,9 +13,10 @@ import AceEditor from 'react-ace';
 import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-github';
 
-// get config object from config.js file
+// get config object from config.js file 
 import config from '../config/config';
 const aceOptions = config.aceEditor;
+const classificationOptions = config.recipe.classification;
 
 function RecipeView() {
   const { recipeID } = useParams();
@@ -26,19 +27,7 @@ function RecipeView() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const [recipeDetails, setRecipeDetails] = useState({
-    title: '',
-    creator_id: '',
-    create_date: '',
-    editor_id: '',
-    edit_date: '',
-    description: '',
-    recipe_data: '',
-    status: '',
-    classification: '',
-    tags: '',
-    comments: '',
-  });
+  const [recipeDetails, setRecipeDetails] = useState({});
 
   useEffect(() => {
     if (!recipeID) return;

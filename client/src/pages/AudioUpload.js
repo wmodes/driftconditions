@@ -4,12 +4,14 @@ import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { audioUpload } from '../store/audioSlice';
-import { formatListStrForDB, formatListForDisplay } from '../utils/formatUtils';
+import { formatTagsForDisplay, formatTagStrForDB } from '../utils/formatUtils';
 
 // Import the config object from the config.js file
-const config = require('../config/config');
+const config = require('../config/config'); 
 // pull variables from the config object
 const allowedFileTypes = config.audio.allowedFileTypes;
+const classificationOptions = config.audio.classification;
+const fieldNotes = config.audio.fieldNotes;
 
 function AudioUpload() {
   // Local state for managing form inputs
@@ -26,21 +28,27 @@ function AudioUpload() {
   const [successMessage, setSuccessMessage] = useState(''); // New state for success message
   const [error, setError] = useState('');
 
-  // Local state for managing classification checkboxes
-  const [classification, setClassification] = useState({
-    ambient: false,
-    background: false,
-    foreground: false,
-    spoken: false,
-    music: false,
-    effect: false,
-    other: false,
+  // State for managing form inputs
+  const [audioRecord, setAudioRecord] = useState({
+    // turn classificationOptions into an object with keys for each option (set to false)
+    classification: classificationOptions.reduce((acc, option) => {
+      acc[option] = false;
+      return acc;
+    }, {}),
+    copyright_cert: 0,
   });
   
-  // Handle classification checkbox change
-  const handleClassificationChange = (e) => {
-    const { name, checked } = e.target;
-    setClassification(prev => ({ ...prev, [name]: checked }));
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    if (type === 'checkbox') {
+      // Handle classification checkbox change
+      setAudioRecord(prevState => ({
+        ...prevState,
+        classification: { ...prevState.classification, [name]: checked }
+      }));
+    } else {
+      setAudioRecord(prevState => ({ ...prevState, [name]: value }));
+    }
   };
 
   const handleFileChange = (e) => {
@@ -61,29 +69,26 @@ function AudioUpload() {
 
   const submitHandler = e => {
     e.preventDefault();
-    
-    // Normalize tags before converting them to array for submission
-    const normalizedTags = formatListStrForDB(tags);
+
+    // Prep fields before submitting
+    const updatedRecord = {
+      ...audioRecord,
+      tags: formatTagStrForDB(audioRecord.tags),
+      classification: Object.keys(audioRecord.classification).filter(key => audioRecord.classification[key])
+    };
   
-    // Create a FormData object to submit the file and other form data
-    const formData = new FormData();
-    formData.append('title', title);
-    formData.append('tags', JSON.stringify(normalizedTags)); // Use normalized tags
-    formData.append('comments', comments);
-    formData.append('file', file);
-    formData.append('copyright_cert', isCertified ? 1 : 0);
-    // Convert classification object to an array of keys where the value is true
-    const classificationArray = Object.entries(classification).filter(([_, value]) => value).map(([key, _]) => key);
-    formData.append('classification', JSON.stringify(classificationArray));
-  
-    dispatch(audioUpload(formData))
+    dispatch(audioUpload(updatedRecord))
       .unwrap()
       .then(response => {
         setSuccessMessage('Upload successful!');
         setError('');
         setUploadedAudioID(response.audioID);
-        // Update tags input with normalized tags
-        setTags(formatListForDisplay(normalizedTags));
+        // Update audioDetails state with normalized tags to reflect in the input field
+        setAudioRecord(prevDetails => ({
+          ...prevDetails,
+          // Convert array back to string for input field
+          tags: formatTagsForDisplay(updatedRecord.tags) 
+        }));
       })
       .catch(error => {
         console.error("Upload error:", error);
@@ -106,26 +111,30 @@ function AudioUpload() {
         <div className="display-box">
           <form onSubmit={submitHandler}>
             <h2 className='title'>Upload Audio</h2>
+
             <label className="form-label" htmlFor="title">Title: <Required /></label>
             <input className="form-field" type="text" id="title" value={title} onChange={e => setTitle(e.target.value)} />
-            <label className="form-label" htmlFor="title">Category:</label>
+
+            <label className="form-label" htmlFor="title">Type:</label>
             <div className="form-checkbox">
-              {Object.entries(classification).map(([key, value]) => (
-                <div key={key}>
+              {Object.entries(audioRecord.classification).map(([key, value]) => (
+                <div className="checkbox-field" key={key}>
                   <input
                     type="checkbox"
                     id={key}
                     name={key}
                     checked={value}
-                    onChange={handleClassificationChange}
+                    onChange={handleChange}
                   />
                   <label htmlFor={key}> {prepLabel(key)}</label>
                 </div>
               ))}
-            </div>            
+            </div>
+            <p className="form-note">{fieldNotes.classification}</p>
+
             <label className="form-label" htmlFor="tags">Tags:</label>
             <input className="form-field" type="text" id="tags" value={tags} onChange={e => setTags(e.target.value)} />
-            <p className="form-note">Separated with commas</p>
+              <p className="form-note">{fieldNotes.tags}</p>
             
             <label className="form-label" htmlFor="comments">Comments:</label>
             <textarea className="form-textarea" id="comments" value={comments} onChange={e => setComments(e.target.value)}></textarea>

@@ -18,25 +18,26 @@ function RecipeForm({ action, initialRecipe, onSave, onCancel, onChange }) {
   }, [initialRecipe]);
 
   // Local handleChange function updates local state and calls parent callback
-  const handleChange = (event) => {
-    const { name, value } = event.target;
-    // Update the local state first
-    const updatedRecord = { ...recipeRecord, [name]: value };
-    setRecipeRecord(updatedRecord);
-
-    // Then call the onChange callback provided by the parent, if available
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    if (type === 'checkbox') {
+      // Handle classification checkbox change
+      setRecipeRecord(prevState => ({
+        ...prevState,
+        classification: { ...prevState.classification, [name]: checked }
+      }));
+    } else {
+      setRecipeRecord(prevState => ({ ...prevState, [name]: value }));
+    }    // Then call the onChange callback provided by the parent, if available
     if (onChange) {
-      onChange(updatedRecord);
+      onChange(recipeRecord);
     }
   };
 
-  // Submit form
+  // Submit form - handle data massage in the calling component
   const handleSubmit = (event) => {
     event.preventDefault();
-    const submissionData = {
-      ...recipeRecord,
-    };
-    onSave(submissionData);
+    onSave(recipeRecord);
   };
 
   const handleAceChanges = (newValue) => {
@@ -51,6 +52,11 @@ function RecipeForm({ action, initialRecipe, onSave, onCancel, onChange }) {
   };
 
   const Required = () => <span className="required">*</span>;
+
+  const prepLabel = (text) => text
+  .replace(/([A-Z])/g, ' $1')
+  .replace(/^./, match => match.toUpperCase())
+  .trim();
 
   return (
     <form onSubmit={handleSubmit}>
@@ -114,6 +120,23 @@ function RecipeForm({ action, initialRecipe, onSave, onCancel, onChange }) {
       </div>
   
       <div className="form-group">
+
+        <label className="form-label" htmlFor="title">Category:</label>
+        <div className="form-checkbox">
+          {Object.entries(recipeRecord.classification).map(([key, value]) => (
+            <div className="checkbox-field" key={key}>
+              <input
+                type="checkbox"
+                id={key}
+                name={key}
+                checked={value}
+                onChange={handleChange}
+              />
+              <label htmlFor={key}> {prepLabel(key)}</label>
+            </div>
+          ))}
+        </div>
+
         <label className="form-label" htmlFor="tags">Tags (comma-separated):</label>
         <input className="form-field" type="text" id="tags" name="tags" value={recipeRecord.tags} onChange={handleChange} />
         <p className="form-note">Separated with commas</p>

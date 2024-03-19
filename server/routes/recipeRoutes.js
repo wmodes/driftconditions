@@ -51,17 +51,24 @@ router.post('/info', verifyToken, async (req, res) => {
     SELECT 
       recipes.*, 
       creator.username AS creator_username,
-      editor.username AS editor_username
+      editor.username AS editor_username 
     FROM recipes
     JOIN users AS creator ON recipes.creator_id = creator.user_id
     LEFT JOIN users AS editor ON recipes.editor_id = editor.user_id
     WHERE recipes.recipe_id = ?;`;
     const values = [recipeID];
+    
     const [result] = await db.query(query, values);
     if (result.length === 0) {
       return res.status(404).send('Recipe not found');
     }
-    res.status(200).json(result[0]);
+    record = result[0];
+    // Attempt to repair broken JSON fields (recipe_data, classification, tags)
+    record.recipe_data = repairBrokenJSON(record.recipe_data);
+    record.classification = repairBrokenJSON(record.classification);
+    record.tags = repairBrokenJSON(record.tags);
+    // Respond with the fetched data
+    res.status(200).json(record);
   } catch (error) {
     console.error('Error fetching recipe info:', error);
     res.status(500).send('Server error during recipe info retrieval');
@@ -229,6 +236,13 @@ const normalizeTagArray = (tagsArray) => {
     )
     // Remove duplicate tags
     .filter((value, index, self) => self.indexOf(value) === index)
+};
+
+const repairBrokenJSON = (jsonField) => {
+  if (typeof jsonField === 'string') {
+    return [];
+  }
+  return jsonField;
 };
 
 module.exports = router;

@@ -59,6 +59,11 @@ const config = {
   },
   audio: {
     allowedFileTypes: ['audio/mpeg', 'audio/wav', 'audio/ogg', 'audio/flac'],
+    classification: ["ambient", "background", "foreground", "spoken", "music", "effect", "other"],
+    fieldNotes: {
+      tags: "Describe the topic, theme, or texture of the audio, such as 'rainy night', 'jazz', or 'whispering'. Use tags to highlight specific elements or moods in your audio. Separate tags with commas.",
+      classification: "A broad category that describes the broad type of audio.",
+    }
   },
   wavesurfer: {
     container: '#waveform',
@@ -89,6 +94,14 @@ const config = {
     wrap: true,
   },
   recipe: {
+    classification: [
+      "music", 
+      "spoken word", 
+      "foreground", 
+      "spoken", 
+      "music", 
+      "effect", 
+      "other"],
     example: [
       {
         notes: [
@@ -107,7 +120,7 @@ const config = {
         },
         clips:[
           {
-            note: "here we specify tagss or classificaton or both that will be used to randomly pick an audio clip",
+            note: "here we specify tags or classificaton or both that will be used to randomly pick an audio clip",
             classification:"music",
             tag: "ambient",
             length: "long"

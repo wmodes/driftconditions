@@ -6,7 +6,7 @@ import { useDispatch } from 'react-redux';
 // Assuming you have an action or function to fetch user profile
 import { profileInfo, profileEdit } from '../store/userSlice';
 
-function ProfileEdit() {
+function ProfileEdit() { 
   // These fields: firstname, lastname, email, bio, location, and url are mutable.
   const mutableFields = [
     { key: 'firstname', label: 'First Name' },
