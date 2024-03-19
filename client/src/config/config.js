@@ -59,7 +59,19 @@ const config = {
   },
   audio: {
     allowedFileTypes: ['audio/mpeg', 'audio/wav', 'audio/ogg', 'audio/flac'],
-    classification: ["ambient", "background", "foreground", "spoken", "music", "effect", "other"],
+    classification: [
+      "Ambient/Atmospheric",
+      "Field Recording",
+      "Sound Effect",
+      "Premixed/Soundscape",
+      "Historical/Archival",
+      "Spoken Word/Narrative",
+      "Educational/Instructional",
+      "Vocal Music",
+      "Instrumental",
+      "Experimental/Digital",
+      "Other"
+    ],
     fieldNotes: {
       tags: "Describe the topic, theme, or texture of the audio, such as 'rainy night', 'jazz', or 'whispering'. Use tags to highlight specific elements or moods in your audio. Separate tags with commas.",
       classification: "A broad category that describes the broad type of audio.",

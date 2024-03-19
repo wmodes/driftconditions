@@ -119,6 +119,7 @@ function RecipeView() {
               mode="json"
               theme="github"
               name="recipe_data"
+              className="code-editor"
               value={recipeDetails.recipe_data}
               readOnly={true}
               editorProps={{ $blockScrolling: true }}

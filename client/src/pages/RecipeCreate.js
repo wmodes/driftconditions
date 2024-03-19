@@ -83,7 +83,7 @@ function RecipeCreate() {
   }
 
   return (
-    <div className="create-wrapper">
+    <div className="edit-wrapper">
       <div className="display-box-wrapper">
         <div className="display-box">
           <h2 className='title'>Create New Recipe</h2>

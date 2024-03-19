@@ -1,6 +1,6 @@
 // formatUtil - utilities for formatting data
 
-const JSON5 = require('json5');
+import JSON5 from 'json5';
 
 // format loose date for database
 export function formatDateForDB(dateStr) {
@@ -60,10 +60,14 @@ export const formatTagsForDisplay = formatListForDisplay;
 
 // Takes a JSON object and pretty prints it as a string using JSON5 with indentation.
 export const formatJSONForDisplay = (jsonObj) => {
-  // JSON5.stringify(value, replacer, space)
-  // space - A String or Number that allows you to control spacing in the final string.
-  // Using a tab character mimics standard pretty-print appearance.
-  return JSON5.stringify(jsonObj, null, '\t'); // Use '\t' for tab-indented pretty-print
+  // const  formattedStr = prettier.format(JSON.stringify(jsonObj),{
+  //   parser: "json5",
+  //   plugins: [parserBabel],
+  //   singleQuote: false,
+  // });
+  // const formattedStr = prettyFormat(jsonObj, {});
+  const formattedStr = JSON5.stringify(jsonObj, null, '\t');
+  return formattedStr;
 };
 
 

@@ -110,6 +110,7 @@ function RecipeForm({ action, initialRecipe, onSave, onCancel, onChange }) {
           mode="json"
           theme="github"
           name="recipe_data"
+          className="code-editor"
           value={recipeRecord.recipe_data}
           onChange={handleAceChanges}
           editorProps={{ $blockScrolling: true }}
@@ -132,7 +133,7 @@ function RecipeForm({ action, initialRecipe, onSave, onCancel, onChange }) {
                 checked={value}
                 onChange={handleChange}
               />
-              <label htmlFor={key}> {prepLabel(key)}</label>
+              <label htmlFor={key}> {key}</label>
             </div>
           ))}
         </div>

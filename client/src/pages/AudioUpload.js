@@ -106,7 +106,7 @@ function AudioUpload() {
   .trim();
 
   return (
-    <div className="upload-wrapper">
+    <div className="edit-wrapper">
       <div className="display-box-wrapper">
         <div className="display-box">
           <form onSubmit={submitHandler}>
@@ -126,7 +126,7 @@ function AudioUpload() {
                     checked={value}
                     onChange={handleChange}
                   />
-                  <label htmlFor={key}> {prepLabel(key)}</label>
+                  <label htmlFor={key}> {key}</label>
                 </div>
               ))}
             </div>

@@ -195,7 +195,7 @@ function AudioEdit() {
 
             <div className="form-group">
 
-              <label className="form-label" htmlFor="title">Category:</label>
+              <label className="form-label" htmlFor="title">Type:</label>
               <div className="form-checkbox">
                 {Object.entries(audioRecord.classification).map(([key, value]) => (
                   <div className="checkbox-field" key={key}>
@@ -206,7 +206,7 @@ function AudioEdit() {
                       checked={value}
                       onChange={handleChange}
                     />
-                    <label htmlFor={key}> {prepLabel(key)}</label>
+                    <label htmlFor={key}> {key}</label>
                   </div>
                 ))}
               </div>

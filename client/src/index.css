@@ -223,6 +223,10 @@ svg {
   background-color: var(--content-box-color); /* bg-gray-200 */
 }
 
+.edit-wrapper .display-box {
+  width: 720px;
+}
+
 .display-box h2.title {
   padding-bottom: 1rem; 
   font-size: 1.75rem; 
@@ -473,8 +477,7 @@ svg {
  * Code Editor
  */
 
- .ace_editor {
-  width: 650px !important;
+ .code-editor {
   height: auto;
   resize: vertical;
   overflow-x: hidden; 
@@ -545,9 +548,9 @@ svg {
   margin-bottom: 0.25rem;
 }
 
-.form-checkbox {
-  columns: 7rem;
-  margin-left: 0.5rem;
+.form-checkbox {    
+  columns: 12em;
+  column-gap: 1em;
   margin-bottom: 1rem;
 }
 
