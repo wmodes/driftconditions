@@ -114,49 +114,51 @@ const config = {
       "music", 
       "effect", 
       "other"],
+    
+    // starting pattern for creating a new recipe
     example: [
-      {
-        notes: [
+      { notes: [
           "This configures a basic recipe.",
-          "Tracks are played simultaneously like a multi-track recording. You can have between up to 5 tracks, and there must be at least one.",
-          "Clips are individual audio files within the tracks. Clips are picked randomly based on criteria you can set.",
+          ,
           "Tracks and clips have various options that can influence the random selection, length, volume, or dynamics of the audio element.",
           "The system ignores any tags it doesn't recognize, like 'notes' 😀. But the recipe has to be valid JSON-like code."
         ]
       },
-      {
-        track:0,
-        notes:"background track, e.g., a music bed",
-        volume:{
-          default:50
-        },
+      { track:0,
+        notes: "Tracks are played simultaneously like a multi-track recording. You can have  up to 5 tracks, and there must be at least one.",
+        volume:{ default: 100 },
         clips:[
           {
-            note: "here we specify tags or classificaton or both that will be used to randomly pick an audio clip",
-            classification:"music",
-            tag: "ambient",
-            length: "long"
+            note: ["Clips are individual audio files within the tracks. Clips are picked randomly based on criteria you can set.",
+            "We can specify classification and/or tags that will be used to randomly pick an audio clip. They can be single values or an array of values. Length can be 'short', 'medium', or 'long'. (This note can be safely deleted.)",
+            ],
+            classification:"Vocal Music",
+            tag: "ambient", length: "long"
           }
         ]
       },
-      {
-        track:1,
-        notes:"foreground track, e.g, narrative or spoken word",
-        volume:{
-          default:100
-        },
-        clips:[
-          {
-            classification:"story",
-            length: ["long", "medium"]
+    ],
+
+    // starting pattern for adding a new track
+    newTrack: 
+      { track: 0,
+        note: "NEW TRACK: Add up to 5 tracks.",
+        volume: { default: 100 },
+        clips: [
+          { classification: "Instrumental", tag: "ambient", length: "long"
           }
         ]
       },
-      {
-        notes: "additional tracks can be added"
-      }
-    ]    
+
+    // starting pattern for adding a new clip
+    newClip:
+      { 
+        note: "NEW CLIP: Add as many clips as you like to a track.",
+        classification: [ "Ambient/Atmospheric",  "Field Recording"],
+        tag: "ambient", length: "long"
+      }  
   },
+
 };
 
 module.exports = config;

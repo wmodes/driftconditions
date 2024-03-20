@@ -4,9 +4,8 @@ import { useDispatch } from 'react-redux';
 import { recipeInfo } from '../store/recipeSlice';
 
 import { 
-  formatDateForDisplay, formatListForDisplay, 
-  formatTagStrForDB, formatTagsForDisplay, 
-  formatJSONForDisplay, formatJSONStrForDB } from '../utils/formatUtils';
+  formatDateForDisplay, formatListForDisplay, formatTagsForDisplay, 
+  formatJSONForDisplay } from '../utils/formatUtils';
 import FeatherIcon from 'feather-icons-react';
 
 import AceEditor from 'react-ace';
@@ -16,7 +15,6 @@ import 'ace-builds/src-noconflict/theme-github';
 // get config object from config.js file 
 import config from '../config/config';
 const aceOptions = config.aceEditor;
-const classificationOptions = config.recipe.classification;
 
 function RecipeView() {
   const { recipeID } = useParams();
@@ -68,7 +66,7 @@ function RecipeView() {
   };
 
   return (
-    <div className="edit-wrapper">
+    <div className="view-wrapper">
       <div className="display-box-wrapper">
         <div className="display-box">
           <h2 className='title'>View Recipe Details</h2>

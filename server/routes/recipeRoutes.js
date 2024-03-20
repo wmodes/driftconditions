@@ -16,13 +16,16 @@ router.post('/create', verifyToken, async (req, res) => {
     const { title, description, recipe_data, status, classification, tags, comments } = req.body;
     const decoded = jwt.verify(req.cookies.token, jwtSecretKey);
     const creator_id = decoded.userID;
+    // console.log('recipeCreate: recipe_data:', recipe_data);
+    const recipeData = JSON.stringify(recipe_data);
+    // console.log('recipeCreate: stringified recipeData:', recipeData);
 
     const query = `INSERT INTO recipes (title, creator_id, description, recipe_data, status, classification, tags, comments) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
     const values = [
       title, 
       creator_id, 
       description, 
-      JSON.stringify(recipe_data), 
+      recipeData, 
       status, 
       JSON.stringify(classification), 
       JSON.stringify(normalizeTagArray(tags)), 
@@ -64,7 +67,7 @@ router.post('/info', verifyToken, async (req, res) => {
     }
     record = result[0];
     // Attempt to repair broken JSON fields (recipe_data, classification, tags)
-    record.recipe_data = repairBrokenJSON(record.recipe_data);
+    // record.recipe_data = repairBrokenJSON(record.recipe_data);
     record.classification = repairBrokenJSON(record.classification);
     record.tags = repairBrokenJSON(record.tags);
     // Respond with the fetched data

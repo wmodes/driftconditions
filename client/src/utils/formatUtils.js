@@ -59,21 +59,18 @@ export function formatTagStrForDB(tags) {
 export const formatTagsForDisplay = formatListForDisplay;
 
 // Takes a JSON object and pretty prints it as a string using JSON5 with indentation.
-export const formatJSONForDisplay = (jsonObj) => {
-  // const  formattedStr = prettier.format(JSON.stringify(jsonObj),{
-  //   parser: "json5",
-  //   plugins: [parserBabel],
-  //   singleQuote: false,
-  // });
-  // const formattedStr = prettyFormat(jsonObj, {});
-  const formattedStr = JSON5.stringify(jsonObj, null, '\t');
-  return formattedStr;
+export const formatJSONForDisplay = (json) => {
+  if (typeof json === 'string') {
+    return JSON5.stringify(JSON5.parse(json), null, '\t');
+  } else {
+    return JSON5.stringify(json, null, '\t');
+  }
 };
-
 
 // Takes a JSON string, parses it as JSON5 (which is more lenient than standard JSON),
 // and returns the equivalent JavaScript object.
 export const formatJSONStrForDB = (jsonStr) => {
+  console.log('formatJSONStrForDB jsonStr:', jsonStr);
   // Parse the JSON5 string to an object
   return JSON5.parse(jsonStr);
 };

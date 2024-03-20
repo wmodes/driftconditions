@@ -1,4 +1,12 @@
 
+@font-face {
+  font-family: 'Rubik Distressed';
+  src: url('./fonts/Rubik_Distressed.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
+}
+
 :root {
   --body-color: #f5f5f5;
   --default-text-color: #222;
@@ -21,6 +29,9 @@
   --button-submit-text-color: #fff;
   --button-disabled-background-color: #cccccc;
   --button-disabled-text-color: #666666;
+  --button-form-background-color: #849FBA;
+  --button-form-reset-background-color: #BA8884;
+  --button-form-text-color: white;
   --avatar-background-color: #9fbfdf;
   --avatar-color: white;
 }
@@ -78,7 +89,7 @@ svg {
 
 .logo-wrapper .logo {
   font-size: 35px;
-  font-family: "Rubik Distressed", system-ui;
+  font-family: "Rubik Distressed", sans-serif;
   /* font-weight: 800; */
   font-style: normal;
   text-transform: lowercase;
@@ -224,7 +235,19 @@ svg {
 }
 
 .edit-wrapper .display-box {
-  width: 720px;
+  width: 850px;
+}
+
+.view-wrapper .display-box {
+  width: 640px;
+}
+
+.profile-wrapper .display-box {
+  width: 480px;
+}
+
+.signin-wrapper .display-box {
+  width: 320px;
 }
 
 .display-box h2.title {
@@ -575,6 +598,27 @@ svg {
 
 .form-select .select-results .react-tags__selected-tag button {
   margin-left: 0.1rem;
+}
+
+.form-button-box {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 0.5rem;
+}
+
+.form-button-box button {
+  background-color: var(--button-form-background-color) !important;
+  color: var(--button-form-text-color) !important;
+}
+
+.form-button-box button.reset {
+  background-color: var(--button-form-reset-background-color) !important;
+}
+
+.form-button-right {
+  display: flex;
+  gap: 10px; 
 }
 
 /* Success and error messages */

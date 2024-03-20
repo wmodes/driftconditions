@@ -51,11 +51,11 @@ function Signup() {
 
   // Renders the signup form with input fields for user details and conditional rendering for feedback.
   return (
-    <div className="signup-wrapper">
+    <div className="signin-wrapper">
       <div className="display-box-wrapper">
         <div className="display-box">
           <form onSubmit={submitHandler}>
-            <h2 className='title'>Sign Up</h2>
+            <h2 className='title'>Sign up</h2>
             <label className="form-label" htmlFor="username">Username: <Required /></label>
             <input className="form-field" type="text" id="username" value={username} onChange={e => setUsername(e.target.value)} />
             <label className="form-label"  htmlFor="password">Password: <Required /></label>

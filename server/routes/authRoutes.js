@@ -179,7 +179,7 @@ router.post('/check', async (req, res) => {
         }
       });
     }
-    console.log("user:", user);
+    // console.log("user:", user);
 
     // if user.editDate (which is really the role permisssions edit date) 
     // is after the token's issuedAt date, then issue a new token 

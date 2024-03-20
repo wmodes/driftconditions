@@ -5,17 +5,36 @@ import { Link } from 'react-router-dom';
 import AceEditor from 'react-ace';
 import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/theme-github';
+import JSON5 from 'json5';
+import { insertNewClipIntoJsonStr } from '../utils/recipeUtils';
+
 import config from '../config/config';
 const aceOptions = config.aceEditor;
+const newTrackPattern = config.recipe.newTrack;
+const newClipPattern = config.recipe.newClip;
 
 function RecipeForm({ action, initialRecipe, onSave, onCancel, onChange }) {
   // State to hold the form data
   const [recipeRecord, setRecipeRecord] = useState(initialRecipe);
+  const [resetRecord, setResetRecord] = useState(
+    JSON.parse(JSON.stringify(initialRecipe))
+  );
+  // store a ref to the editor API
+  const [editorRef, setEditorRef] = useState(null);
+
+  console.log("RecipeForm: recipeRecord", recipeRecord)
+
+  // State for handling loading, success, and error feedback
+  const [successMessage, setSuccessMessage] = useState('');
+  const [error, setError] = useState('');
 
   // Effect to initialize form with initialRecipe data when editing
-  useEffect(() => {
-    setRecipeRecord(initialRecipe);
-  }, [initialRecipe]);
+  // useEffect(() => {
+  //   // unnecessary
+  //   // setRecipeRecord(initialRecipe);
+  //   // make a copy for a form reset
+  //   setResetRecord(JSON.parse(JSON.stringify(initialRecipe)))
+  // }, [initialRecipe]);
 
   // Local handleChange function updates local state and calls parent callback
   const handleChange = (e) => {
@@ -51,12 +70,67 @@ function RecipeForm({ action, initialRecipe, onSave, onCancel, onChange }) {
     }
   };
 
-  const Required = () => <span className="required">*</span>;
+  const reset = () => {
+    console.log("RecipeForm: resetRecord", resetRecord)
+    setRecipeRecord(resetRecord);
+  }
 
-  const prepLabel = (text) => text
-  .replace(/([A-Z])/g, ' $1')
-  .replace(/^./, match => match.toUpperCase())
-  .trim();
+  const validate = () => {}
+
+  // helper to parse JSON5 content
+  function parseContent(content) {
+    try {
+      return JSON5.parse(content);
+    } catch (error) {
+      console.error('Failed to parse content:', error);
+      setError('Failed to parse content. Error in your JSON5 syntax.'); 
+      return null; // Handle this error appropriately in your application
+    }
+  }
+
+  const addTrack = () => {
+    setError(''); // Clear any previous error
+    const data = parseContent(recipeRecord.recipe_data);
+    console.log("data", data);
+    console.log("typeof data", typeof data);
+    if (!data || !Array.isArray(data)) return; // Error parsing content  
+    
+    // Find the highest existing track number
+    const maxTrackNumber = data.reduce((max, item) => {
+      return item.track && item.track > max ? item.track : max;
+    }, 0);
+
+    // Clone the newTrackPattern and update the track number
+    const newTrack = {
+      ...newTrackPattern,
+      track: maxTrackNumber + 1
+    };
+  
+    data.push(newTrack); // Assuming data is an array
+    const updatedRecipeData = JSON5.stringify(data, null, 2);
+    handleAceChanges(updatedRecipeData);
+  }
+
+  const addClip = () => {
+    setError(''); // Clear any previous error
+    try {
+      const { row, column } = editorRef.editor.getCursorPosition();
+      const modifiedRecord = insertNewClipIntoJsonStr(
+        recipeRecord.recipe_data, 
+        row, 
+        newClipPattern
+      );
+      console.log("addClip modifiedRecord", modifiedRecord);
+      // Handle the success case, such as updating state or UI with modifiedRecord
+      handleAceChanges(modifiedRecord);
+    } catch (error) {
+      console.error("Error adding new clip:", error);
+      // Handle the error, such as displaying an error message to the user
+      setError("Error adding new clip:", error.message);
+    }
+  }
+
+  const Required = () => <span className="required">*</span>;
 
   return (
     <form onSubmit={handleSubmit}>
@@ -65,7 +139,7 @@ function RecipeForm({ action, initialRecipe, onSave, onCancel, onChange }) {
         <input className="form-field" type="text" id="title" name="title" value={recipeRecord.title} onChange={handleChange} />
 
         <label className="form-label" htmlFor="description">Description: <Required /></label>
-        <textarea className="form-textarea" id="description" name="description" value={recipeRecord.description} onChange={handleChange}></textarea>
+        <textarea className="form-textarea" id="description" name="description" value={recipeRecord.description || ''} onChange={handleChange}></textarea>
         
         {action!=="create" && (
           <>
@@ -103,13 +177,14 @@ function RecipeForm({ action, initialRecipe, onSave, onCancel, onChange }) {
         </select>
       </div>
 
-      <div className="form-group">
+      <div className="form-group pb-1">
         <label className="form-label" htmlFor="recipe_data">Recipe Data: <Required /></label>
 
         <AceEditor
           mode="json"
           theme="github"
           name="recipe_data"
+          ref={(editor) => setEditorRef(editor)}
           className="code-editor"
           value={recipeRecord.recipe_data}
           onChange={handleAceChanges}
@@ -117,7 +192,17 @@ function RecipeForm({ action, initialRecipe, onSave, onCancel, onChange }) {
           setOptions={aceOptions}
           style={{ width: '', height: 'auto' }}
         />
-        <div className="form-note mt-3 mb-0">Data will be converted to valid JSON, so comments will be removed.</div>  
+        <div className="form-button-box">
+          <button className="button left reset" type="button" onClick={reset}>Reset</button>
+          <div className="form-button-right">
+            <button className="button right" type="button" onClick={validate}>Validate</button>
+            <button className="button right" type="button" onClick={addTrack}>Add Track</button>
+            <button className="button right mr-0" type="button" onClick={addClip}>Add Clip</button>
+          </div>
+          </div><div className='message-box h-5 pt-0'>
+            {successMessage && <div className="success">{successMessage}</div>}
+            {error && <div className="error">{error}</div>}
+          </div>
       </div>
   
       <div className="form-group">
@@ -143,7 +228,7 @@ function RecipeForm({ action, initialRecipe, onSave, onCancel, onChange }) {
         <p className="form-note">Separated with commas</p>
         
         <label className="form-label" htmlFor="comments">Comments:</label>
-        <textarea className="form-textarea" id="comments" name="comments" value={recipeRecord.comments} onChange={handleChange}></textarea>
+        <textarea className="form-textarea" id="comments" name="comments" value={recipeRecord.comments || ''} onChange={handleChange}></textarea>
       </div>
   
       <div className='button-box'>

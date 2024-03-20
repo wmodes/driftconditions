@@ -15,6 +15,7 @@ import {
 import config from '../config/config';
 // pull variables from the config object
 const classificationOptions = config.recipe.classification;
+const newRecipePattern = config.recipe.example;
 
 function RecipeCreate() {
   const dispatch = useDispatch();
@@ -28,7 +29,7 @@ function RecipeCreate() {
   // TODO: Does this really do what it says?
   // Instead of re-initializing the form upon error, maintain its current state
   const [recipeRecord, setRecipeRecord] = useState({
-    recipe_data: formatJSONForDisplay(config.recipe.example),
+    recipe_data: formatJSONForDisplay(newRecipePattern),
     status: 'Review',
     // turn classificationOptions into an object with keys for each option (set to false)
     classification: classificationOptions.reduce((acc, option) => {
@@ -50,6 +51,7 @@ function RecipeCreate() {
       tags: formatTagStrForDB(updatedRecord.tags),
       classification: Object.keys(updatedRecord.classification).filter(key => updatedRecord.classification[key]),
     };
+    console.log('handleSave: adjustedRecord:', adjustedRecord);  
     dispatch(recipeCreate(adjustedRecord))
       .unwrap()
       .then(response => {

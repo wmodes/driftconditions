@@ -47,13 +47,21 @@ export default function Navigation() {
       ],
     },
     {
+      category: "Admin",
+      icon: <FeatherIcon icon="clipboard" />,
+      items: [
+        { text: "All Users", link: "/user/list", permission: "userList" },
+        { text: "Roles", link: "/role/list", permission: "roleList" },
+      ],
+    },
+    {
       category: "User",
       icon: <FeatherIcon icon="user" />,
       items: [
-        { text: "Log In", link: "/signin", auth: "signin", 
+        { text: "Log in", link: "/signin", auth: "signin", 
           condition: !Boolean(user?.userID)
         },
-        { text: "Signup", link: "/signup", auth: "signup", 
+        { text: "Sign up", link: "/signup", auth: "signup", 
           condition: !Boolean(user?.userID)
         },
         { text: user?.username ?? 'Guest', link: "/profile", permission: "profile" },
@@ -61,14 +69,6 @@ export default function Navigation() {
         { text: "Logout", link: "/", action: handleLogout, permission: "", 
           condition: Boolean(user?.userID) 
         },
-      ],
-    },
-    {
-      category: "Admin",
-      icon: <FeatherIcon icon="clipboard" />,
-      items: [
-        { text: "All Users", link: "/user/list", permission: "userList" },
-        { text: "Roles", link: "/role/list", permission: "roleList" },
       ],
     },
   ];

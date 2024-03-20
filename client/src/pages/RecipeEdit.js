@@ -16,7 +16,7 @@ import config from '../config/config';
 // pull variables from the config object
 const classificationOptions = config.recipe.classification;
 
-// TODO: Install JSON5 and render recipe_data as JSON. Also in RecipeCreate
+// TODO: Install  5 and render recipe_data as JSON. Also in RecipeCreate
 
 function RecipeEdit() {
   const { recipeID } = useParams();
@@ -44,7 +44,7 @@ function RecipeEdit() {
     dispatch(recipeInfo(recipeID))
       .unwrap()
       .then((response) => {
-        console.log('response:', response)
+        // console.log('response:', response)
         // Parse and transform the response as needed
         setRecipeRecord(prevState => ({
           ...prevState,

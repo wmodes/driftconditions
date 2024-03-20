@@ -39,11 +39,11 @@ function Signin() {
 
   // Renders the sign-in form. Uses conditional rendering for displaying errors and redirecting on successful login.
   return (
-    <div className="sigin-wrapper">
+    <div className="signin-wrapper">
       <div className="display-box-wrapper">
         <div className="display-box">
           <form onSubmit={submitHandler}>
-            <h2 className='title'>Login</h2>
+            <h2 className='title'>Log in</h2>
             <label className="form-label" htmlFor="username">Username:</label>
             <input className="form-field" type="text" id="username" value={username} onChange={e => setUsername(e.target.value)} />
             <label className="form-label"  htmlFor="password">Password:</label>

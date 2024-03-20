@@ -31,7 +31,7 @@ router.post('/list',  verifyToken, async (req, res) => {
     const pageArg = parseInt(req.body.page || 1, 10);
     const recordsPerPage = parseInt(req.body.recordsPerPage || 15, 10);
     const offset = (pageArg - 1) * recordsPerPage;
-    console.log('req.body:',req.body);
+    // console.log('req.body:',req.body);
 
     // Adjusted for user fields
     const sortOptions = {
@@ -174,9 +174,9 @@ router.post('/profile', verifyToken, async (req, res) => {
 // This is a protected route, only accessible to authenticated users.
 // TODO: Deal with password updates
 router.post('/profile/edit', verifyToken, async (req, res) => {
-  console.log('update profile');
+  // console.log('update profile');
   const { firstname, lastname, email, bio, location, url } = req.body;
-  console.log('Request to update profile:', { firstname, lastname, email, bio, location, url });
+  // console.log('Request to update profile:', { firstname, lastname, email, bio, location, url });
   try {
     // Verify the token to get user ID
     const decoded = jwt.verify(req.cookies.token, jwtSecretKey);

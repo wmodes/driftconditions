@@ -81,7 +81,7 @@ function ProfileEdit() {
 
   // Renders the user's profile information
   return (
-    <div className="profile-edit-wrapper">
+    <div className="profile-wrapper">
       <div className="display-box-wrapper">
         <div className="display-box">
           <form onSubmit={handleSubmit}>

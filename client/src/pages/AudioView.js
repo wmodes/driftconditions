@@ -96,7 +96,7 @@ function AudioView() {
   };
 
   return ( 
-    <div className="edit-wrapper">
+    <div className="view-wrapper">
       <div className="display-box-wrapper">
         <div className="display-box">
           <h2 className='title'>View Audio Details</h2>
