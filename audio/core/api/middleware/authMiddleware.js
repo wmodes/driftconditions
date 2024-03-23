@@ -2,8 +2,7 @@
 // This middleware is responsible for verifying the JWT token in incoming requests.
 // It ensures that the token is valid. It should not return the userID because we will use the token in the future to get the user's identity.
 
-const config = require('../config/config');
-
+const config = require('../../../config/config');
 // pull these out of the config object
 const jwtSecretKey = config.authToken.jwtSecretKey;
 
