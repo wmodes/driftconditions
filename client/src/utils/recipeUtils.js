@@ -117,7 +117,7 @@ const insertClipIntoTrack = (jsonData, trackIndex, clipIndex, newClipPattern) =>
   // note there may be other objects/arrays in the top level
   // so here we have the absolute index of the track object 
   const targetTrack = trackArray[index];
-  console.log('targetTrack', targetTrack);
+  // console.log('targetTrack', targetTrack);
   // are there clips in the target track?
   if (targetTrack.clips === undefined) {
     // if not, create the clips array
@@ -137,6 +137,7 @@ export const insertNewClipIntoJsonStr = (jsonStr, row, newClipPattern) => {
     const jsonDestruct = splitJsonElements(jsonStr);
     const position = trackPositionInJson(jsonDestruct, row);
     const { track: trackIndex, clip: clipIndex } = position;
+    console.log('position', position);
     const parsedJsonData = JSON5.parse(jsonStr); 
     const updatedJsonData = insertClipIntoTrack(parsedJsonData, trackIndex, clipIndex, newClipPattern);
     return JSON5.stringify(updatedJsonData, null, 2); // Stringifying the updated JSON

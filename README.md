@@ -30,6 +30,17 @@ Here is a list of technologies we are relying on:
 - bcrypt: For hashing and securing user passwords.
 - multer: Middleware for handling multipart/form-data, used for uploading files.
 
+**Audio Server**
+
+- Express: Web framework for building APIs and web applications.
+- ffprobe-static: Provides path to ffprobe binary for media analysis.
+- fluent-ffmpeg: Simplifies running FFmpeg commands in Node.js.
+- JSON5: Enables parsing and outputting JSON with added syntax features.
+- dotenv: Loads environment variables from a .env file.
+- mysql2: MySQL client for database interactions.
+- fs-extra: Enhanced file operations, extending the native fs module.
+- winston: Versatile logging library for application diagnostics.
+
 **Other Technologies:**
 
 - get-audio-duration: A package used to determine the duration of audio files.

@@ -97,9 +97,11 @@ const config = {
     }
   },
   aceEditor: {
-    useWorker: false, // Use the worker for syntax checking
-    // enableBasicAutocompletion: true,
-    // enableLiveAutocompletion: true,
+    useWorker: true, // Use the worker for syntax checking
+    enableBasicAutocompletion: false,
+    enableLiveAutocompletion: true,
+    enableSnippets: false,
+    highlightSelectedWord: true,
     minLines: 12,
     maxLines: 32,
     tabSize: 2,
@@ -120,12 +122,14 @@ const config = {
       { notes: [
           "This configures a basic recipe.",
           ,
-          "Tracks and clips have various options that can influence the random selection, length, volume, or dynamics of the audio element.",
+          "Tracks and clips have options that influence the random selection, length, volume, or dynamics of the audio element.",
           "The system ignores any tags it doesn't recognize, like 'notes' 😀. But the recipe has to be valid JSON-like code."
         ]
       },
       { track:0,
-        notes: "Tracks are played simultaneously like a multi-track recording. You can have  up to 5 tracks, and there must be at least one.",
+        notes: [
+          "Tracks are played simultaneously like a multi-track recording.",
+          "You can have up to 5 tracks, and there must be at least one."],
         volume:{ default: 100 },
         clips:[
           {

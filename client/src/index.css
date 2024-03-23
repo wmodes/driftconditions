@@ -12,17 +12,23 @@
   --default-text-color: #222;
   --link-color: #135394;
   --logo-color: #fff;
+
   --nav-background-color: #336699;
   --nav-text-color: #fff;
+
   --content-box-color: #E5E7EB;
   --content-box-border-color: #ccc;
+
   --text-wingding-color: #303030;
+
   --table-background-color: #fff;
   --table-background-2-color: #f2f2f2;
   --table-background-hover-color: #e3e5e8;
   --table-border-color: #D1D5DB;
+
   --error-text-color: #dc2626;
   --success-text-color: #2d5b89;
+
   --button-cancel-background-color: #9CA3AF;
   --button-cancel-text-color: #fff;
   --button-submit-background-color: #336699;
@@ -32,8 +38,13 @@
   --button-form-background-color: #849FBA;
   --button-form-reset-background-color: #BA8884;
   --button-form-text-color: white;
+
   --avatar-background-color: #9fbfdf;
   --avatar-color: white;
+
+  --editor-string-color: rgb(68, 127, 68);
+  --editor-track-color: rgb(204, 27, 27);
+  --editor-clip-color: rgb(213, 101, 26);
 }
 
 body {
@@ -505,6 +516,21 @@ svg {
   resize: vertical;
   overflow-x: hidden; 
   overflow-y: auto;
+}
+
+.ace_quoted-string {
+  color: var(--editor-string-color);
+  font-weight: normal;
+}
+
+.ace_editor-highlight-track {
+  color: var(--editor-track-color);
+  font-weight: bold;
+}
+
+.ace_editor-highlight-clip {
+  color: var(--editor-clip-color);
+  font-weight: bold;
 }
 
 /*
