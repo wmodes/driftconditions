@@ -29,8 +29,8 @@ router.post('/info', verifyToken, async (req, res) => {
       creator.username AS creatorUsername,
       editor.username AS editorUsername 
     FROM recipes
-    JOIN users AS creator ON recipes.creatorID = creator.user_id
-    LEFT JOIN users AS editor ON recipes.editorID = editor.user_id
+    JOIN users AS creator ON recipes.creatorID = creator.userID
+    LEFT JOIN users AS editor ON recipes.editorID = editor.userID
     WHERE recipes.recipeID = ?;`;
     const values = [recipeID];
     
@@ -120,8 +120,8 @@ router.post('/list', verifyToken, async (req, res) => {
         u1.username AS creatorUsername,
         u2.username AS editorUsername
       FROM recipes a
-      LEFT JOIN users u1 ON a.creatorID = u1.user_id
-      LEFT JOIN users u2 ON a.editorID = u2.user_id
+      LEFT JOIN users u1 ON a.creatorID = u1.userID
+      LEFT JOIN users u2 ON a.editorID = u2.userID
       WHERE 1=1 ${filterQuery}
       ORDER BY ${sortColumn} ${order}
       LIMIT ? OFFSET ?;

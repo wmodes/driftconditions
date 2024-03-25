@@ -21,8 +21,8 @@ function Profile() {
     firstname: '',
     lastname: '',
     email: '',
-    role_name: '',
-    added_on: '',
+    roleName: '',
+    addedOn: '',
   });
 
   const notFoundUser = {
@@ -33,8 +33,8 @@ function Profile() {
     url: 'https://unavoidabledisaster.com',
     location: "Nowhere",
     bio: "An enigmatic figure vanishing in digital shadows, leaving a trail of 404 errors, and enjoying unresolvable DNS queries. A true internet mystery.", 
-    role_name: 'A mystery wrapped in an enigma',
-    added_on: 'January 1, 1970',
+    roleName: 'A mystery wrapped in an enigma',
+    addedOn: 'January 1, 1970',
   }
 
   const dispatch = useDispatch();
@@ -117,8 +117,8 @@ function Profile() {
               </a>
             </p>
           )}
-          <p className="my-5 text-center">Member since {formatDate(profile.added_on)}<br></br>
-          Current role: <span className="italic capitalize">{profile.role_name}</span>
+          <p className="my-5 text-center">Member since {formatDate(profile.addedOn)}<br></br>
+          Current role: <span className="italic capitalize">{profile.roleName}</span>
           </p>
           {profile.edit && (
             <div className="edit-box">

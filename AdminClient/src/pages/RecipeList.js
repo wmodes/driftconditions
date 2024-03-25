@@ -8,7 +8,7 @@ import { useDispatch } from 'react-redux';
 import { recipeList as recipeListAction, recipeTrash as recipeTrashAction } from '../store/recipeSlice';
 import { parseQuery, stringifyQuery } from '../utils/queryUtils';
 import { renderPagination } from '../utils/listUtils'; 
-import { formatDateForDisplay, formatListForDisplay } from '../utils/formatUtils';
+import { formatDateAsFriendlyDate, formatListAsString } from '../utils/formatUtils';
 
 // TODO: test and debug user filter
 
@@ -224,7 +224,7 @@ function RecipeList() {
                             onClick={() => handleFilter('user', recipe.creatorUsername)}>
                             {recipe.creatorUsername}
                           </button> 
-                          &nbsp;on {formatDateForDisplay(recipe.createDate)}
+                          &nbsp;on {formatDateAsFriendlyDate(recipe.createDate)}
                         </div>
                         {recipe.editorUsername && (
                           <div className="authorline">
@@ -233,14 +233,14 @@ function RecipeList() {
                               onClick={() => handleFilter('user', recipe.editorUsername)}>
                               {recipe.editorUsername}
                             </button> 
-                            &nbsp;on {formatDateForDisplay(recipe.editDate)}
+                            &nbsp;on {formatDateAsFriendlyDate(recipe.editDate)}
                           </div>
                         )}
                       </td>
                       <td className="description">{recipe.description}</td>
                       <td className="status">{recipe.status}</td>
-                      <td className="classification">{formatListForDisplay(recipe.classification)}</td>
-                      <td className="tags">{formatListForDisplay(recipe.tags)}</td>
+                      <td className="classification">{formatListAsString(recipe.classification)}</td>
+                      <td className="tags">{formatListAsString(recipe.tags)}</td>
 
                     </tr>
                   ))}

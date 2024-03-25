@@ -112,8 +112,8 @@ router.post('/list', verifyToken, async (req, res) => {
         u1.username AS creatorUsername,
         u2.username AS editorUsername
       FROM audio a
-      LEFT JOIN users u1 ON a.creatorID = u1.user_id
-      LEFT JOIN users u2 ON a.editorID = u2.user_id
+      LEFT JOIN users u1 ON a.creatorID = u1.userID
+      LEFT JOIN users u2 ON a.editorID = u2.userID
       WHERE 1=1 ${filterQuery}
       ORDER BY ${sortColumn} ${order}
       LIMIT ? OFFSET ?;
@@ -149,8 +149,8 @@ router.post('/info', verifyToken, async (req, res) => {
       creator.username AS creatorUsername,
       editor.username AS editorUsername 
     FROM audio
-    JOIN users AS creator ON audio.creatorID = creator.user_id
-    LEFT JOIN users AS editor ON audio.editorID = editor.user_id
+    JOIN users AS creator ON audio.creatorID = creator.userID
+    LEFT JOIN users AS editor ON audio.editorID = editor.userID
     WHERE audio.audioID = ?;`;
     const values = [audioID];
 

@@ -111,13 +111,13 @@ async function decodeToken(token) {
 }
 
 // helper for /check route
-// Fetch the role_name and permissions for the user
+// Fetch the roleName and permissions for the user
 async function getRolePermissions(userID) {
   try {
     if (!userID) {
       // Handle 'noauth' permissions logic here
       // Example:
-      const roleQuery = `SELECT * FROM roles WHERE role_name = ? LIMIT 1;`;
+      const roleQuery = `SELECT * FROM roles WHERE roleName = ? LIMIT 1;`;
       const roleValues = 'noauth';
       const [roleRows] = await db.query(roleQuery, roleValues);
       // console.log("roleRows:", roleRows);
@@ -128,14 +128,14 @@ async function getRolePermissions(userID) {
       const user = {
         userID: null,
         username: null,
-        roleName: roleRows[0].role_name,
+        roleName: roleRows[0].roleName,
         permissions: roleRows[0].permissions,
-        editDate: roleRows[0].edit_date
+        editDate: roleRows[0].editDate
       }
       return user;
     }
-    // First, fetch the role_name of the user
-    const userQuery = `SELECT * FROM users WHERE user_id = ? LIMIT 1;`;
+    // First, fetch the roleName of the user
+    const userQuery = `SELECT * FROM users WHERE userID = ? LIMIT 1;`;
     const userValues = [userID];
     // console.log('Fetching user role:', userID);
     const [userRows] = await db.query(userQuery, userValues);
@@ -146,13 +146,13 @@ async function getRolePermissions(userID) {
     }
 
     const user = {
-      userID: userRows[0].user_id,
+      userID: userRows[0].userID,
       username: userRows[0].username,
-      roleName: userRows[0].role_name,
+      roleName: userRows[0].roleName,
     }
 
-    // Next, fetch the permissions for the fetched role_name
-    const roleQuery = `SELECT * FROM roles WHERE role_name = ? LIMIT 1;`;
+    // Next, fetch the permissions for the fetched roleName
+    const roleQuery = `SELECT * FROM roles WHERE roleName = ? LIMIT 1;`;
     const roleValues = [user.roleName];
     // console.log('Fetching role permissions for role:', roleName);
     const [roleRows] = await db.query(roleQuery, roleValues);
@@ -163,7 +163,7 @@ async function getRolePermissions(userID) {
     }
     // console.log("roleRows[0]:", roleRows[0])
     user.permissions = roleRows[0].permissions;
-    user.editDate = roleRows[0].edit_date;
+    user.editDate = roleRows[0].editDate;
     // console.log("getRolePermissions user:", user);
     // console.log('Role permissions:', roleName, permissions);
 

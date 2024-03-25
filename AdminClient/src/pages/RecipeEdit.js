@@ -5,11 +5,10 @@ import { recipeInfo, recipeUpdate } from '../store/recipeSlice';
 import RecipeForm from '../components/RecipeForm'; // Adjust the import path as needed
 
 import { 
-  formatDateForDisplay, formatListForDisplay, 
-  formatTagStrForDB, formatTagsForDisplay, 
+  formatDateAsFriendlyDate, 
   formatJSONForDisplay, formatJSONStrForDB, 
   setClassificationFormOptions, formatClassificationForDB } from '../utils/formatUtils';
-  import { ClassificationCheckboxes } from '../utils/formUtils';
+import { ClassificationCheckboxes } from '../utils/formUtils';
 import FeatherIcon from 'feather-icons-react';
 import Waiting from '../utils/appUtils';
 
@@ -31,7 +30,7 @@ function RecipeEdit() {
   const [error, setError] = useState('');
 
   // State repository for managing form inputs
-  const [recipeRecord, setRecipeRecord] = useState({
+  const [record, setRecord] = useState({
     // turn classificationOptions into an object with keys for each option (set to false)
     classification: setClassificationFormOptions(classificationOptions, false),
   });
@@ -43,15 +42,14 @@ function RecipeEdit() {
     dispatch(recipeInfo({recipeID}))
       .unwrap()
       .then((response) => {
-        // console.log('response:', response)
+        console.log('response:', response)
         // Parse and transform the response as needed
-        setRecipeRecord(prevState => ({
+        setRecord(prevState => ({
           ...prevState,
           ...response,
           recipeData: formatJSONForDisplay(response.recipeData),
-          tags: formatTagsForDisplay(response.tags),
-          createDate: formatDateForDisplay(response.createDate),
-          editDate: formatDateForDisplay(response.editDate),
+          createDate: formatDateAsFriendlyDate(response.createDate),
+          editDate: formatDateAsFriendlyDate(response.editDate),
           classification: setClassificationFormOptions(classificationOptions, response.classification),
         }));
         // console.log('recipeRecord:', recipeRecord);
@@ -66,7 +64,7 @@ function RecipeEdit() {
 
   // we don't need to massage the data because RecipeForm will handle that
   const handleChange = (updatedRecord) => {
-    setRecipeRecord(updatedRecord);
+    setRecord(updatedRecord);
   };
 
   const handleSubmit = (updatedRecord) => {
@@ -74,10 +72,10 @@ function RecipeEdit() {
     const adjustedRecord = {
       ...updatedRecord,
       recipeData: formatJSONStrForDB(updatedRecord.recipeData),
-      tags: formatTagStrForDB(updatedRecord.tags),
+      tags: updatedRecord.tags,
       classification: formatClassificationForDB(updatedRecord.classification),
     };
-    console.log('handleSubmit: adjustedRecord:', adjustedRecord);
+    // console.log('handleSubmit: adjustedRecord:', adjustedRecord);
     dispatch(recipeUpdate({ recipeRecord: adjustedRecord }))
       .unwrap()
       .then(() => {
@@ -85,11 +83,10 @@ function RecipeEdit() {
         setError('');
         setIsLoading(false); // Stop loading once update is successful        
         // Update recipeDetails state with normalized tags to reflect in the input field
-        setRecipeRecord(prevDetails => ({
+        setRecord(prevDetails => ({
           ...prevDetails,
           // Convert stuff back to strings for input fields
           recipeData: formatJSONForDisplay(adjustedRecord.recipeData),
-          tags: formatTagsForDisplay(adjustedRecord.tags), 
         }));
       })
       .catch((err) => {
@@ -97,7 +94,7 @@ function RecipeEdit() {
         setError('Failed to update recipe.');
         setIsLoading(false); // Stop loading on error
         // Retain the current form state on error to allow for corrections
-        setRecipeRecord(updatedRecord);
+        setRecord(updatedRecord);
       });
   };
 
@@ -129,7 +126,7 @@ function RecipeEdit() {
           <h2 className='title'>Edit Recipe</h2>
           <RecipeForm
             action="update"
-            initialRecipe={recipeRecord}
+            initialRecord={record}
             onSave={handleSubmit}
             onCancel={handleCancel}
             onChange={handleChange} // Ensure RecipeForm calls this function with updated state

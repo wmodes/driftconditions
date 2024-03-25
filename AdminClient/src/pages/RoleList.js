@@ -18,9 +18,9 @@ function RolesList() {
   // which role is being edited
   const [editRoleID, setEditRoleID] = useState(null);
   // editing values for the role
-  const [editedValues, setEditedValues] = useState({
-    role_id: null,
-    role_name: '',
+  const [editedRecord, setEditedRecord] = useState({
+    roleID: null,
+    roleName: '',
     permissions: '',
     comments: ''
   });
@@ -48,22 +48,20 @@ function RolesList() {
 
   // reveal the edit form for the roles
   const openEditRow = (role) => {
-    setEditRoleID(editRoleID === role.role_id ? null : role.role_id);
+    setEditRoleID(editRoleID === role.roleID ? null : role.roleID);
     // Update the editingValues state with the role's current values
-    setEditedValues(role);
+    setEditedRecord(role);
+  };
+
+  const handlePermisssionChange = (newPermissions) => {
+    setEditedRecord(prevState => ({ ...prevState, permissions:newPermissions }));
   };
 
   const handleSubmit = async (e, roleId) => {
     e.preventDefault(); // Prevent form from causing a page reload
-    const updatedRole = editedValues;
-    // const formData = new FormData(e.target);
-    // const updatedRole = Object.fromEntries(formData.entries());
-    // Adjusted to include role_id explicitly if not already part of formData
-    // updatedRole.role_id = roleId || updatedRole.role_id;
-    console.log('Updated role:', updatedRole);
-    updatedRole.permissions = formatListStrAsArray(updatedRole.permissions);
+    console.log('Updated role:', editedRecord);
     // console.log('Updated role:', updatedRole);
-    await dispatch(roleUpdate({updatedRole}))
+    await dispatch(roleUpdate({roleRecord: editedRecord}))
       .unwrap()
       .then(response => {
         setSuccessMessage('Role updated successfully');
@@ -104,11 +102,11 @@ function RolesList() {
               </thead>
               <tbody>
               {roles.map(role => (
-                <React.Fragment key={role.role_id}>
-                  <tr className={`data-row ${oddOrEvenRow(role.role_id)}`} onClick={() => openEditRow(role)}>
-                    <td className="role-id">{role.role_id}</td>
+                <React.Fragment key={role.roleID}>
+                  <tr className={`data-row ${oddOrEvenRow(role.roleID)}`} onClick={() => openEditRow(role)}>
+                    <td className="role-id">{role.roleID}</td>
                     <td className="role-name">
-                      {role.role_name}
+                      {role.roleName}
                       <div>
                           <ul className="action-list">
                             <li><button className="link" onClick={() => openEditRow(role)}>edit</button></li>
@@ -118,24 +116,15 @@ function RolesList() {
                     <td className="perms">{formatListAsString(role.permissions)}</td>
                     <td className="comments">{role.comments}</td>
                   </tr>
-                  {editRoleID === role.role_id && (
-                    <tr className={`edit-row ${oddOrEvenRow(role.role_id)}`}>
+                  {editRoleID === role.roleID && (
+                    <tr className={`edit-row ${oddOrEvenRow(role.roleID)}`}>
                       <td colSpan="5">
                       <div className="form-group">
-                          <form onSubmit={(e) => handleSubmit(e, role.role_id)}>
-                            <input type="hidden" name="role_id" value={role.role_id} />
-                            <input type="hidden" name="role_name" value={role.role_name} />
-                            <input type="hidden" name="permissions" value={role.permissions} />
-                          
+                          <form onSubmit={(e) => handleSubmit(e, role.roleID)}>
                             <TagSelect
                               options={routeList} // Your options array
                               initialValues={role.permissions}
-                              onTagChange={(newTags) => {
-                                setEditedValues(prevState => ({
-                                  ...prevState,
-                                  permissions: formatListAsString(newTags)
-                                }));
-                              }}
+                              onTagChange={handlePermisssionChange}
                             />
                             
                             <label className="form-label" htmlFor="comments">Comments:</label>
@@ -143,7 +132,7 @@ function RolesList() {
                               className="form-textarea"
                               name="comments"
                               defaultValue={role.comments || ''}
-                              onChange={(e) => setEditedValues(prevState => ({
+                              onChange={(e) => setEditedRecord(prevState => ({
                                 ...prevState,
                                 comments: e.target.value
                               }))}

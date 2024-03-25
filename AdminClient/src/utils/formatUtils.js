@@ -39,21 +39,29 @@ export function formatListAsString(input) {
   return arrayInput.join(', ');
 }
 
-// format tags for database with normalization
+// Normalize a single tag string
+export function normalizeTag(tag) {
+  return tag
+    .toLowerCase()
+    .trim()
+    .replace(/[\W_]+/g, '-') // Replace special characters and spaces with dashes
+    .replace(/^-+|-+$/g, ''); // Remove leading and trailing dashes
+}
+
+// Format tags for database with normalization
 export function formatTagStrAsArray(tags) {
   if (!tags) return [];
-  var tagArray;
+  let tagArray;
   if (typeof tags === 'string') {
     tagArray = tags.split(',');
   } else if (Array.isArray(tags)) {
     tagArray = tags;
+  } else {
+    return []; // Handle unexpected types gracefully
   }
-  return tagArray.map(tag =>
-      // Convert to lowercase, trim whitespace, then replace special characters and spaces with dashes
-      tag.toLowerCase().trim().replace(/[\W_]+/g, '-').replace(/^-+|-+$/g, '')
-    )
-    // Remove duplicate tags
-    .filter((value, index, self) => self.indexOf(value) === index);
+  return tagArray
+    .map(normalizeTag) // Apply normalization to each tag
+    .filter((value, index, self) => self.indexOf(value) === index); // Remove duplicate tags
 }
 
 export const formatTagsAsString = formatListAsString;

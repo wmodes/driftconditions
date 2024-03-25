@@ -99,11 +99,11 @@ export const roleList = createAsyncThunk(
 
 export const roleUpdate = createAsyncThunk(
   roleUpdateRoute, 
-  async ({roleData}, thunkAPI) => {
+  async ({roleRecord}, thunkAPI) => {
   try {
     const response = await axios.post(
       roleUpdateRoute, 
-      roleData, 
+      roleRecord, 
       {withCredentials: true}
     );
     return response.data;
@@ -176,7 +176,7 @@ export const userSlice = createSlice({
       .addCase(roleUpdate.fulfilled, (state, action) => {
         state.isLoading = false;
         // Assuming payload contains the updated role, find and update it in the state
-        const index = state.roles.findIndex(role => role.role_id === action.payload.role_id);
+        const index = state.roles.findIndex(role => role.roleID === action.payload.roleID);
         if (index !== -1) {
           state.roles[index] = action.payload;
         }

@@ -7,8 +7,11 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { audioInfo, audioUpdate } from '../store/audioSlice';
 import { initWaveSurfer, destroyWaveSurfer } from '../utils/waveUtils';
-import { formatDateForDisplay, formatTagStrForDB, formatTagsForDisplay, setClassificationFormOptions, formatClassificationForDB } from '../utils/formatUtils';
-import { ClassificationCheckboxes } from '../utils/formUtils';
+
+import { formatDateAsFriendlyDate, setClassificationFormOptions, 
+  formatClassificationForDB } from '../utils/formatUtils';
+import { ClassificationCheckboxes, TagInput } from '../utils/formUtils';
+
 import FeatherIcon from 'feather-icons-react';
 
 // Import the config object from the config.js file
@@ -32,7 +35,7 @@ function AudioEdit() {
   const [error, setError] = useState('');
 
   // State for managing form inputs
-  const [audioRecord, setAudioRecord] = useState({
+  const [record, setRecord] = useState({
     // turn classificationOptions into an object with keys for each option (set to false)
     classification: setClassificationFormOptions(classificationOptions, false),
     copyrightCert: 0,
@@ -47,13 +50,13 @@ function AudioEdit() {
       .then(response => {
         // Parse and transform the response as needed
         console.log('Fetched audio details:', response);
-        console.log('Classification:', response.classification, 'type:', typeof response.classification);
-        setAudioRecord(prevState => ({
+        // console.log('Classification:', response.classification, 'type:', typeof response.classification);
+        setRecord(prevState => ({
           ...prevState,
           ...response,
-          tags: formatTagsForDisplay(response.tags),
-          createDate: formatDateForDisplay(response.createDate),
-          editDate: formatDateForDisplay(response.editDate),
+          // tags: formatTagsAsString(response.tags),
+          createDate: formatDateAsFriendlyDate(response.createDate),
+          editDate: formatDateAsFriendlyDate(response.editDate),
           classification: setClassificationFormOptions(classificationOptions, response.classification),
         }));
         setIsLoading(false); // Stop loading once data is fetched
@@ -69,22 +72,27 @@ function AudioEdit() {
     const { name, value, type, checked } = e.target;
     if (type === 'checkbox') {
       // Handle classification checkbox change
-      setAudioRecord(prevState => ({
+      setRecord(prevState => ({
         ...prevState,
         classification: { ...prevState.classification, [name]: checked }
       }));
     } else {
-      setAudioRecord(prevState => ({ ...prevState, [name]: value }));
+      setRecord(prevState => ({ ...prevState, [name]: value }));
     }
+  };
+
+  const handleTagChange = (newTags) => {
+    setRecord(prevState => ({ ...prevState, tags:newTags }));
+    console.log('AudioEdit new tags:', newTags);
   };
 
   const handleSubmit = (e) => { 
     e.preventDefault();
     // Prep fields before submitting
     const adjustedRecord = {
-      ...audioRecord,
-      tags: formatTagStrForDB(audioRecord.tags),
-      classification: formatClassificationForDB(audioRecord.classification),
+      ...record,
+      // tags: formatTagStrAsArray(record.tags),
+      classification: formatClassificationForDB(record.classification),
     };
     dispatch(audioUpdate({audioRecord: adjustedRecord}))
       .unwrap()
@@ -92,11 +100,11 @@ function AudioEdit() {
         setSuccessMessage('Update successful!');
         setError('');
         // Update audioDetails state with normalized values to reflect in the input field
-        setAudioRecord(prevState => ({
-          ...prevState,
-          // Convert array back to string for input field
-          tags: formatTagsForDisplay(adjustedRecord.tags) 
-        }));
+        // setRecord(prevState => ({
+        //   ...prevState,
+        //   // Convert array back to string for input field
+        //   tags: formatTagsAsString(adjustedRecord.tags) 
+        // }));
       })
       .catch(err => {
         console.error('Update error:', err);
@@ -107,13 +115,12 @@ function AudioEdit() {
   // This useEffect ensures the component is mounted before initializing WaveSurfer
   useEffect(() => {
     setIsDomReady(true);
-    // s('Component mounted');
   }, []);
 
   // initialize WaveSurfer once the component is mounted and audioDetails.filename is available
   useEffect(() => {  //
-    if (isDomReady && audioRecord.filename) {
-      const audioURL = `${audioBaseURL}/${audioRecord.filename}`;
+    if (isDomReady && record.filename) {
+      const audioURL = `${audioBaseURL}/${record.filename}`;
       // check if waveSurferRef.current is already initialized
       if (waveSurferRef.current) {
         destroyWaveSurfer();
@@ -131,7 +138,7 @@ function AudioEdit() {
         destroyWaveSurfer();
       }
     };
-  }, [isDomReady, audioRecord.filename]); 
+  }, [isDomReady, record.filename]); 
 
   const Required = () => <span className="required">*</span>;
 
@@ -162,23 +169,23 @@ function AudioEdit() {
             <h2 className='title'>Edit Audio</h2>
             <div className="form-group">
               <label className="form-label" htmlFor="title">Title: <Required /></label>
-              <input className="form-field" type="text" id="title" name="title" value={audioRecord.title || ""} onChange={handleChange} />
+              <input className="form-field" type="text" id="title" name="title" value={record.title || ""} onChange={handleChange} />
               
               <div className="mb-2">
-                <label className="form-label">Filename:</label> <span className="non-editable">{audioRecord.filename}</span>
+                <label className="form-label">Filename:</label> <span className="non-editable">{record.filename}</span>
               </div>
               
               <div className="mb-2">
-                <label className="form-label">Author:</label> <span className="non-editable">{audioRecord.creatorUsername}</span>
+                <label className="form-label">Author:</label> <span className="non-editable">{record.creatorUsername}</span>
               </div>
               
               <div className="mb-2">
-                <label className="form-label">Date:</label> <span className="non-editable">{audioRecord.createDate}</span>
+                <label className="form-label">Date:</label> <span className="non-editable">{record.createDate}</span>
               </div>
 
 
               <label className="form-label" htmlFor="status">Status:</label>
-              <select name="status" value={audioRecord.status} onChange={handleChange} className="form-select">
+              <select name="status" value={record.status} onChange={handleChange} className="form-select">
                 <option value="Review">Under Review</option>
                 <option value="Approved">Approved</option>
                 <option value="Disapproved">Disapproved</option>
@@ -186,25 +193,31 @@ function AudioEdit() {
               </select>
             </div>
 
-            <div className="form-group">
+            <div className="form-group pb-2">
               <div id="waveform"></div>
+              <div className="text-sm mt-1">Duration: {record.duration}s</div>
             </div>
 
             <div className="form-group">
 
               <label className="form-label" htmlFor="title">Classification:</label>
               <ClassificationCheckboxes
-                classification={audioRecord.classification}
+                classification={record.classification}
                 handleChange={handleChange}
               />
               <p className="form-note">{fieldNotes.classification}</p>
 
               <label className="form-label" htmlFor="tags">Tags:</label>
-              <input className="form-field" type="text" id="tags" name="tags" value={audioRecord.tags} onChange={handleChange} />
-              <p className="form-note">{fieldNotes.tags || ""}</p>
+              {record?.tags !== undefined && (        
+                <TagInput
+                  initialTags={record.tags}
+                  onTagChange={handleTagChange}
+                />
+              )}
+              <p className="form-note mt-1">{fieldNotes.tags || ""}</p>
 
               <label className="form-label" htmlFor="comments">Comments:</label>
-              <textarea className="form-textarea" id="comments" name="comments" value={audioRecord.comments || ""} onChange={handleChange}></textarea>
+              <textarea className="form-textarea" id="comments" name="comments" value={record.comments || ""} onChange={handleChange}></textarea>
             </div>
 
             <div className='button-box'>

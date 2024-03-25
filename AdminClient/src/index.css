@@ -615,8 +615,13 @@ svg {
   background-color: white;
   border: 1px solid var(--table-border-color);
   padding: 0.25rem;
-  height: 5rem;
+  min-height: 5rem;
   line-height: 1.5rem;
+}
+
+.form-tags .react-tags-input-field {
+  padding: 0 0.25em;
+  margin-top: 0.25em;
 }
 
 .form-tags .tag-wrapper {

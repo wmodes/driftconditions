@@ -36,7 +36,7 @@ router.post('/list',  verifyToken, async (req, res) => {
     // Adjusted for user fields
     const sortOptions = {
       user: {
-        field: 'user_id',
+        field: 'userID',
         order: orderArg || 'ASC'
       },
       username: {
@@ -44,11 +44,11 @@ router.post('/list',  verifyToken, async (req, res) => {
         order: orderArg || 'ASC'
       },
       role: {
-        field: 'LOWER(role_name)',
+        field: 'LOWER(roleName)',
         order: orderArg || 'ASC'
       },
       date: {
-        field: 'added_on',
+        field: 'addedOn',
         order: orderArg || 'DESC'
       }
     };
@@ -65,7 +65,7 @@ router.post('/list',  verifyToken, async (req, res) => {
         values: []
       },
       role: {
-        query: 'AND role_name = ?', 
+        query: 'AND roleName = ?', 
         values: [rolenameArg] 
       }
     };
@@ -86,15 +86,15 @@ router.post('/list',  verifyToken, async (req, res) => {
 
     const [userList] = await db.query(`
       SELECT 
-        user_id,
+        userID,
         username,
         firstname,
         lastname,
         email,
         url,
         location,
-        role_name,
-        added_on
+        roleName,
+        addedOn
       FROM users
       WHERE 1=1 ${filterQuery}
       ORDER BY ${sortColumn} ${sortOrder}
@@ -116,7 +116,7 @@ router.post('/list',  verifyToken, async (req, res) => {
 // otherwise it extracts the user ID from the token, and returns the user's information.
 // This is a protected route, only accessible to authenticated users.
 router.post('/profile', verifyToken, async (req, res) => {
-  const fields = ['username', 'firstname', 'lastname', 'email', 'url', 'bio', 'location', 'role_name', 'added_on'];
+  const fields = ['username', 'firstname', 'lastname', 'email', 'url', 'bio', 'location', 'roleName', 'addedOn'];
 
   try {
     // get userID and username from token
@@ -186,7 +186,7 @@ router.post('/profile/edit', verifyToken, async (req, res) => {
     const query = `
       UPDATE users 
       SET firstname = ?, lastname = ?, email = ?, bio = ?, location = ?, url = ?
-      WHERE user_id = ?
+      WHERE userID = ?
     `;
     const values = [firstname, lastname, email, bio, location, url, userID];
 
@@ -209,7 +209,7 @@ async function getUserInfo({ userID = null, username = null } = {}) {
   let query = '';
   let values = [];
   if (userID) {
-    query = `SELECT * FROM users WHERE user_id = ?`;
+    query = `SELECT * FROM users WHERE userID = ?`;
     values = [userID];
   } else if (username) {
     query = `SELECT * FROM users WHERE username = ?`;
@@ -231,12 +231,12 @@ async function getUserInfo({ userID = null, username = null } = {}) {
 // Adjusted hasPermission function with added console.log statements
 async function hasPermission(requestingUserInfo, callingRoute) {
   // Early exit if requestingUserInfo is not provided or invalid
-  if (!requestingUserInfo || !requestingUserInfo.role_name) {
+  if (!requestingUserInfo || !requestingUserInfo.roleName) {
     throw new Error('Invalid or missing requesting user info.');
   }
   // Prep db params
-  const query = 'SELECT permissions FROM roles WHERE role_name = ?';
-  const values = [requestingUserInfo.role_name];
+  const query = 'SELECT permissions FROM roles WHERE roleName = ?';
+  const values = [requestingUserInfo.roleName];
   // Run db query
   const [results] = await db.query(query, values);
   if (results.length > 0 && results[0].permissions) {
@@ -254,7 +254,7 @@ async function hasPermission(requestingUserInfo, callingRoute) {
 // Route for showing another user's profile. It extracts the user ID from the token, and returns the target user's information.
 // This is a protected route, only accessible to authenticated users.
 router.post('/user', verifyToken, async (req, res) => {
-  fields = ['username', 'firstname', 'lastname', 'email', 'url', 'bio', 'location', 'role_name', 'validated', 'added_on'];
+  fields = ['username', 'firstname', 'lastname', 'email', 'url', 'bio', 'location', 'roleName', 'validated', 'addedOn'];
   try {
     const { username } = req.body; // Extracting username from the request body
     // console.log('Request for userlookup received', { username });

@@ -8,7 +8,7 @@ import { useDispatch } from 'react-redux';
 import { audioList as audioListAction, audioTrash as audioTrashAction } from '../store/audioSlice';
 import { parseQuery, stringifyQuery } from '../utils/queryUtils';
 import { renderPagination } from '../utils/listUtils'; 
-import { formatDateForDisplay, formatListForDisplay } from '../utils/formatUtils';
+import { formatDateAsFriendlyDate, formatListAsString } from '../utils/formatUtils';
 import { ReactComponent as AudioOn } from '../images/volume-animate.svg';
 
 // TODO: test and debug user filter
@@ -267,7 +267,7 @@ function AudioList() {
                             onClick={() => handleFilter('user', audio.creatorUsername)}>
                             {audio.creatorUsername}
                           </button> 
-                          &nbsp;on {formatDateForDisplay(audio.createDate)}
+                          &nbsp;on {formatDateAsFriendlyDate(audio.createDate)}
                         </div>
                         {audio.editorUsername && (
                           <div className="authorline">
@@ -276,14 +276,14 @@ function AudioList() {
                               onClick={() => handleFilter('user', audio.editorUsername)}>
                               {audio.editorUsername}
                             </button> 
-                            &nbsp;on {formatDateForDisplay(audio.editDate)}
+                            &nbsp;on {formatDateAsFriendlyDate(audio.editDate)}
                           </div>
                         )}
                       </td>
                       <td className="duration">{parseFloat(audio.duration).toFixed(2)}s</td>
                       <td className="status">{audio.status}</td>
-                      <td className="classification">{formatListForDisplay(audio.classification)}</td>
-                      <td className="tags">{formatListForDisplay(audio.tags)}</td>
+                      <td className="classification">{formatListAsString(audio.classification)}</td>
+                      <td className="tags">{formatListAsString(audio.tags)}</td>
                       <td className="listen">
                         <button className="icon" onClick={(e) => togglePlayAudio(audio.filename, e)}>
                           {/* <FeatherIcon className="icon default" icon="volume" /> */}

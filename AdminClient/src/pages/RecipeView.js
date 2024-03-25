@@ -4,7 +4,7 @@ import { useDispatch } from 'react-redux';
 import { recipeInfo } from '../store/recipeSlice';
 
 import { 
-  formatDateForDisplay, formatListForDisplay, formatTagsForDisplay, 
+  formatDateAsFriendlyDate, formatListAsString, formatTagsAsString, 
   formatJSONForDisplay } from '../utils/formatUtils';
 import FeatherIcon from 'feather-icons-react';
 
@@ -39,10 +39,10 @@ function RecipeView() {
           ...recipeRecord,
           ...response,
           recipeData: formatJSONForDisplay(response.recipeData),
-          classification: formatListForDisplay(response.classification),
-          tags: formatTagsForDisplay(response.tags),
-          createDate: formatDateForDisplay(response.createDate),
-          editDate: formatDateForDisplay(response.editDate),
+          classification: formatListAsString(response.classification),
+          tags: formatTagsAsString(response.tags),
+          createDate: formatDateAsFriendlyDate(response.createDate),
+          editDate: formatDateAsFriendlyDate(response.editDate),
         }));
         setIsLoading(false); // Stop loading once data is fetched
       })

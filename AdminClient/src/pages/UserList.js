@@ -7,7 +7,7 @@ import { useDispatch } from 'react-redux';
 import { userList as userListAction } from '../store/userSlice'; 
 import { parseQuery, stringifyQuery } from '../utils/queryUtils';
 import { renderPagination } from '../utils/listUtils';
-import { formatDateForDisplay } from '../utils/formatUtils';
+import { formatDateAsFriendlyDate } from '../utils/formatUtils';
 
 // Import the config object
 const config = require('../config/config');
@@ -201,7 +201,7 @@ function UserList() {
                   {userList.map(user => (
                     <tr key={user.userID}>
                       {/* Adapt table cells for user data */}
-                      <td>{user.user_id}</td>
+                      <td>{user.userID}</td>
                       <td>
                         <Link to={`/profile/${user.username}`} className="link-button">
                           {user.username}
@@ -212,8 +212,8 @@ function UserList() {
                       <td>{user.email}</td>
                       <td>{user.url}</td>
                       <td>{user.location}</td>
-                      <td>{user.role_name}</td>
-                      <td>{formatDateForDisplay(user.added_on)}</td>
+                      <td>{user.roleName}</td>
+                      <td>{formatDateAsFriendlyDate(user.addedOn)}</td>
                     </tr>
                   ))}
                 </tbody>

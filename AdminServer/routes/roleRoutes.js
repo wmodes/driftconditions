@@ -19,8 +19,8 @@ router.post('/list', verifyToken, async (req, res) => {
     // Since there's no sorting or pagination, the query is straightforward
     const query = `
       SELECT 
-        role_id,
-        role_name,
+        roleID,
+        roleName,
         permissions,
         comments
       FROM roles;
@@ -38,21 +38,24 @@ router.post('/list', verifyToken, async (req, res) => {
 });
 
 router.post('/update', verifyToken, async (req, res) => {
-  const { role_id, role_name, permissions, comments } = req.body;
-  // console.log('Request to update role:', { role_id, role_name, permissions, comments });
-
+  const record = req.body;
   try {
-    // Convert permissions back to a string if it's not already, assuming your database expects a JSON string
-    // This conversion is necessary only if your database expects a stringified JSON for the permissions field
-    const permissionsStr = typeof permissions === 'string' ? permissions : JSON.stringify(permissions);
-
     // SQL query to update role information
     const query = `
       UPDATE roles 
-      SET role_name = ?, permissions = ?, comments = ?, edit_date = NOW()
-      WHERE role_id = ?;
+      SET 
+        roleName = ?, 
+        permissions = ?, 
+        comments = ?, 
+        editDate = NOW()
+      WHERE roleID = ?;
     `;
-    const values = [role_name, permissionsStr, comments, role_id];
+    const values = [
+      record.roleName,
+      JSON.stringify(record.permissions),
+      record.comments,
+      record.roleID
+    ];
 
     // Execute the query
     const [result] = await db.query(query, values);
@@ -60,7 +63,7 @@ router.post('/update', verifyToken, async (req, res) => {
       console.error('Error updating role: No rows affected');
       res.status(404).send('Role not found or no changes made');
     } else {
-      res.status(200).json({ message: 'Role updated successfully', role_id, role_name, permissions: permissionsStr, comments });
+      res.status(200).json({ message: 'Role updated successfully' });
     }
   } catch (error) {
     console.error('Error in /role/update route:', error);

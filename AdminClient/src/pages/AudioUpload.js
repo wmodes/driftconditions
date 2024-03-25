@@ -4,8 +4,9 @@ import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { audioUpload } from '../store/audioSlice';
-import { formatTagsForDisplay, formatTagStrForDB, setClassificationFormOptions, formatClassificationForDB } from '../utils/formatUtils';
-import { ClassificationCheckboxes } from '../utils/formUtils';
+
+import { setClassificationFormOptions, formatClassificationForDB } from '../utils/formatUtils';
+import { ClassificationCheckboxes, TagInput } from '../utils/formUtils';
 
 // Import the config object from the config.js file
 const config = require('../config/config'); 
@@ -32,7 +33,7 @@ function AudioUpload() {
   const [error, setError] = useState('');
 
   // State for managing form inputs
-  const [audioRecord, setAudioRecord] = useState({
+  const [record, setRecord] = useState({
     status: 'Review',
     // turn classificationOptions into an object with keys for each option (set to false)
     classification: setClassificationFormOptions(classificationOptions, false),
@@ -44,21 +45,21 @@ function AudioUpload() {
     if (type === 'checkbox') {
       if (name === 'copyrightCert') {
         // Specifically handle the copyrightCert checkbox
-        setAudioRecord(prevState => ({
+        setRecord(prevState => ({
           ...prevState,
           [name]: checked // Directly set copyrightCert based on checked value
         }));
       } else {
         // Handle classification checkbox change
         // Assuming this part remains as it's specifically for handling multiple classification checkboxes
-        setAudioRecord(prevState => ({
+        setRecord(prevState => ({
           ...prevState,
           classification: { ...prevState.classification, [name]: checked }
         }));
       }
     } else {
       // Handle changes for inputs other than checkboxes
-      setAudioRecord(prevState => ({ ...prevState, [name]: value }));
+      setRecord(prevState => ({ ...prevState, [name]: value }));
     }
   };
 
@@ -77,15 +78,18 @@ function AudioUpload() {
     }
   };
 
+  const handleTagChange = (newTags) => {
+    setRecord(prevState => ({ ...prevState, tags:newTags }));
+  };
+
   const handleSubmit = e => {
     e.preventDefault();
     setIsLoading(true); // Start loading
     // Prep fields before submitting
     const adjustedRecord = {
-      ...audioRecord,
-      tags: formatTagStrForDB(audioRecord.tags),
-      classification: formatClassificationForDB(audioRecord.classification),
-      copyrightCert: audioRecord.copyrightCert ? 1 : 0
+      ...record,
+      classification: formatClassificationForDB(record.classification),
+      copyrightCert: record.copyrightCert ? 1 : 0
     };
     dispatch(audioUpload({audioRecord: adjustedRecord, file: file}))
       .unwrap()
@@ -94,12 +98,6 @@ function AudioUpload() {
         setSuccessMessage('Upload successful!');
         setError('');
         setUploadedAudioID(response.audioID);
-        // Update audioDetails state with normalized tags to reflect in the input field
-        setAudioRecord(prevDetails => ({
-          ...prevDetails,
-          // Convert array back to string for input field
-          tags: formatTagsForDisplay(adjustedRecord.tags) 
-        }));
         // Redirect to the edit page for the newly uploaded audio
         navigate(`/audio/edit/${response.audioID}`);
       })
@@ -111,7 +109,7 @@ function AudioUpload() {
   };  
 
   // Check if required fields are filled
-  const isFormValid = audioRecord.title && file && audioRecord.copyrightCert;
+  const isFormValid = record.title && file && record.copyrightCert;
   const Required = () => <span className="required">*</span>;
 
   const prepLabel = (text) => text
@@ -128,10 +126,10 @@ function AudioUpload() {
 
             <div className="form-group">
               <label className="form-label" htmlFor="title">Title: <Required /></label>
-              <input name="title" className="form-field" type="text" id="title" value={audioRecord.title} onChange={handleChange} />
+              <input name="title" className="form-field" type="text" id="title" value={record.title} onChange={handleChange} />
 
               <label className="form-label" htmlFor="status">Status:</label>
-              <select name="status" value={audioRecord.status} onChange={handleChange} className="form-select">
+              <select name="status" value={record.status} onChange={handleChange} className="form-select">
                 <option value="Review">Under Review</option>
                 <option value="Approved" disabled>Approved</option>
                 <option value="Disapproved" disabled>Disapproved</option>
@@ -148,24 +146,28 @@ function AudioUpload() {
             <div className="form-group">
               <label className="form-label" htmlFor="title">Classification:</label>
               <ClassificationCheckboxes
-                classification={audioRecord.classification}
+                classification={record.classification}
                 handleChange={handleChange}
               />
               <p className="form-note">{fieldNotes.classification}</p>
 
               <label className="form-label" htmlFor="tags">Tags:</label>
-              <input className="form-field" type="text" id="tags" name="tags" value={audioRecord.tags || ''} onChange={handleChange} />
-              <p className="form-note">{fieldNotes.tags}</p>
+              {/* <input className="form-field" type="text" id="tags" name="tags" value={record.tags || ''} onChange={handleChange} /> */}      
+              <TagInput
+                initialRecord={record.tags}
+                onTagChange={handleTagChange}
+              />
+              <p className="form-note mt-1">{fieldNotes.tags}</p>
 
               <label className="form-label" htmlFor="comments">Comments:</label>
-              <textarea className="form-textarea" id="comments" name="comments" value={audioRecord.comments || ''} onChange={handleChange}></textarea>
+              <textarea className="form-textarea" id="comments" name="comments" value={record.comments || ''} onChange={handleChange}></textarea>
 
               <div className='checkbox-wrapper'>
                 <input 
                   type="checkbox" 
                   id="copyrightCert" 
                   name="copyrightCert" 
-                  checked={audioRecord.copyrightCert === true} 
+                  checked={record.copyrightCert === true} 
                   onChange={handleChange} 
                 />
                 <label htmlFor="copyrightCert"> Please certify that this contains no copyrighted works for which you do not hold the copyright. <Required /></label>

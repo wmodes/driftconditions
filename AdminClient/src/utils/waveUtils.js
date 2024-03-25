@@ -76,7 +76,7 @@ function waveSurferEvents (ws) {
   });
   // Add spacebar play/pause listener
   document.addEventListener('keydown', (event) => {
-    if (event.code === "Space" && !isFocusInsideForm()) {
+    if (event.code === "Space" && !isFocusInsideInputOrTextarea()) {
       event.preventDefault(); // Prevent the default spacebar action (scrolling)
       ws.playPause()
         .then(() => {
@@ -89,9 +89,9 @@ function waveSurferEvents (ws) {
   });
 }
 
-function isFocusInsideForm() {
+function isFocusInsideInputOrTextarea() {
   const activeElement = document.activeElement;
-  return activeElement && (activeElement.classList.contains('form-field') || activeElement.classList.contains('form-textarea'));
+  return activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA');
 }
 
 function initRegions(ws) {

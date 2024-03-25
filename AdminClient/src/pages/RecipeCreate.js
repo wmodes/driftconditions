@@ -3,10 +3,7 @@ import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { recipeCreate } from '../store/recipeSlice';
 import RecipeForm from '../components/RecipeForm'; // Adjust the import path as needed
-import { 
-  formatDateForDisplay, formatListForDisplay, 
-  formatTagStrForDB, formatTagsForDisplay, 
-  formatJSONForDisplay, formatJSONStrForDB, 
+import { formatJSONForDisplay, formatJSONStrForDB, 
   setClassificationFormOptions, formatClassificationForDB } from '../utils/formatUtils';
 import FeatherIcon from 'feather-icons-react';
 import Waiting from '../utils/appUtils';
@@ -27,7 +24,7 @@ function RecipeCreate() {
   const [error, setError] = useState('');
 
   // Instead of re-initializing the form upon error, maintain its current state
-  const [recipeRecord, setRecipeRecord] = useState({
+  const [record, setRecord] = useState({
     recipeData: formatJSONForDisplay(newRecipePattern),
     status: 'Review',
     // turn classificationOptions into an object with keys for each option (set to false)
@@ -36,7 +33,7 @@ function RecipeCreate() {
 
   // we don't need to massage the data because RecipeForm will handle that
   const handleChange = (updatedRecord) => { 
-    setRecipeRecord(updatedRecord);
+    setRecord(updatedRecord);
   };
 
   const handleSave = (updatedRecord) => {
@@ -44,7 +41,6 @@ function RecipeCreate() {
     const adjustedRecord = {
       ...updatedRecord,
       recipeData: formatJSONStrForDB(updatedRecord.recipeData),
-      tags: formatTagStrForDB(updatedRecord.tags),
       classification: formatClassificationForDB(updatedRecord.classification),
     };
     dispatch(recipeCreate({recipeRecord: adjustedRecord}))
@@ -86,7 +82,7 @@ function RecipeCreate() {
           <h2 className='title'>Create New Recipe</h2>
           <RecipeForm
             action="create"
-            initialRecipe={recipeRecord}
+            initialRecipe={record}
             onSave={handleSave}
             onCancel={handleCancel}
             onChange={handleChange}

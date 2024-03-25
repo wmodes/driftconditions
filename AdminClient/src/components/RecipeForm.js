@@ -24,11 +24,12 @@ const newTrackPattern = config.recipes.newTrack;
 const newClipPattern = config.recipes.newClip;
 const newSilencePattern = config.recipes.newSilence;
 
-function RecipeForm({ action, initialRecipe, onSave, onCancel, onChange }) {
+function RecipeForm({ action, initialRecord, onSave, onCancel, onChange }) {
   // State to hold the form data
-  const [recipeRecord, setRecipeRecord] = useState(initialRecipe);
+  const [record, setRecord] = useState(initialRecord);
+  // console.log("RecipeForm: initialRecord", initialRecord);
   const [resetRecord, setResetRecord] = useState(
-    JSON.parse(JSON.stringify(initialRecipe))
+    JSON.parse(JSON.stringify(initialRecord))
   );
   // store a ref to the editor API
   const [editorRef, setEditorRef] = useState(null);
@@ -56,34 +57,47 @@ function RecipeForm({ action, initialRecipe, onSave, onCancel, onChange }) {
   // Local handleChange function updates local state and calls parent callback
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
+    // Construct the updatedRecord based on input type
+    let updatedRecord;
     if (type === 'checkbox') {
-      // Handle classification checkbox change
-      setRecipeRecord(prevState => ({
-        ...prevState,
-        classification: { ...prevState.classification, [name]: checked }
-      }));
+      // Specifically handle classification checkboxes
+      updatedRecord = {
+        ...record,
+        classification: { ...record.classification, [name]: checked },
+      };
     } else {
-      setRecipeRecord(prevState => ({ ...prevState, [name]: value }));
-    }    // Then call the onChange callback provided by the parent, if available
+      // Handle all other input types
+      updatedRecord = { ...record, [name]: value };
+    }
+    // Update the record state with updatedRecord
+    setRecord(updatedRecord);
+    // Then call the onChange callback provided by the parent, if available
     if (onChange) {
-      onChange(recipeRecord);
+      onChange(updatedRecord);
     }
   };
 
   const handleTagChange = (newTags) => {
-    setRecipeRecord(prevState => ({ ...prevState, tags:formatTagsAsString(newTags) }));
+    // Update recipeData directly within the local state
+    const updatedRecord = { ...record, tags:newTags };
+    setRecord(updatedRecord);
+
+    // Then call the onChange callback provided by the parent, if available
+    if (onChange) {
+      onChange(updatedRecord);
+    }
   };
 
   // Submit form - handle data massage in the calling component
   const handleSubmit = (event) => {
     event.preventDefault();
-    onSave(recipeRecord);
+    onSave(record);
   };
 
   const handleAceChanges = (newValue) => {
     // Update recipeData directly within the local state
-    const updatedRecord = { ...recipeRecord, recipeData: newValue };
-    setRecipeRecord(updatedRecord);
+    const updatedRecord = { ...record, recipeData: newValue };
+    setRecord(updatedRecord);
 
     // Then call the onChange callback provided by the parent, if available
     if (onChange) {
@@ -97,11 +111,11 @@ function RecipeForm({ action, initialRecipe, onSave, onCancel, onChange }) {
 
   const reset = () => {
     // console.log("RecipeForm: resetRecord", resetRecord)
-    setRecipeRecord(resetRecord);
+    setRecord(resetRecord);
   }
 
   const validate = () => {
-    console.log("recipeRecord", recipeRecord);
+    console.log("record", record);
   }
 
   // helper to parse JSON5 content
@@ -117,7 +131,7 @@ function RecipeForm({ action, initialRecipe, onSave, onCancel, onChange }) {
 
   const addTrack = () => {
     setError(''); // Clear any previous error
-    const data = parseContent(recipeRecord.recipeData);
+    const data = parseContent(record.recipeData);
     if (!data || !Array.isArray(data)) return; // Error parsing content  
     
     // Find the highest existing track number
@@ -149,7 +163,7 @@ function RecipeForm({ action, initialRecipe, onSave, onCancel, onChange }) {
     try {
       const { row } = editorRef.editor.getCursorPosition();
       const modifiedRecord = insertNewClipIntoJsonStr(
-        recipeRecord.recipeData, 
+        record.recipeData, 
         row, 
         newPattern
       );
@@ -173,31 +187,31 @@ function RecipeForm({ action, initialRecipe, onSave, onCancel, onChange }) {
     <form onSubmit={handleSubmit}>
       <div className="form-group">
         <label className="form-label" htmlFor="title">Recipe Name: <Required /></label>
-        <input className="form-field" type="text" id="title" name="title" value={recipeRecord.title} onChange={handleChange} />
+        <input className="form-field" type="text" id="title" name="title" value={record.title} onChange={handleChange} />
 
         <label className="form-label" htmlFor="description">Description: <Required /></label>
-        <textarea className="form-textarea" id="description" name="description" value={recipeRecord.description || ''} onChange={handleChange}></textarea>
+        <textarea className="form-textarea" id="description" name="description" value={record.description || ''} onChange={handleChange}></textarea>
         
         {action!=="create" && (
           <>
             <div className="form-row">
               <span className="form-label">Created:</span>
               <span className="form-value">
-                <Link to={`/recipe/list?filter=user&targetID=${recipeRecord.creatorUsername}`}>
-                  {recipeRecord.creatorUsername}
+                <Link to={`/recipe/list?filter=user&targetID=${record.creatorUsername}`}>
+                  {record.creatorUsername}
                 </Link>
-                {" on " + recipeRecord.createDate}
+                {" on " + record.createDate}
               </span>
             </div>
 
-            {recipeRecord.editorUsername && (
+            {record.editorUsername && (
                 <div className="form-row">
                   <span className="form-label">Edited:</span>
                   <span className="form-value">
-                    <Link to={`/recipe/list?filter=user&targetID=${recipeRecord.editorUsername}`}>
-                      {recipeRecord.editorUsername}
+                    <Link to={`/recipe/list?filter=user&targetID=${record.editorUsername}`}>
+                      {record.editorUsername}
                     </Link>
-                    {" on " + recipeRecord.editDate}
+                    {" on " + record.editDate}
                   </span>
                 </div>
               )
@@ -206,7 +220,7 @@ function RecipeForm({ action, initialRecipe, onSave, onCancel, onChange }) {
         )}
   
         <label className="form-label" htmlFor="status">Status:</label>
-        <select name="status" value={recipeRecord.status} onChange={handleChange} className="form-select">
+        <select name="status" value={record.status} onChange={handleChange} className="form-select">
           <option value="Review">Under Review</option>
           <option value="Approved" disabled={action === "create"}>Approved</option>
           <option value="Disapproved" disabled={action === "create"}>Disapproved</option>
@@ -223,7 +237,7 @@ function RecipeForm({ action, initialRecipe, onSave, onCancel, onChange }) {
           name="recipeData"
           ref={(editor) => setEditorRef(editor)}
           className="code-editor"
-          value={recipeRecord.recipeData}
+          value={record.recipeData}
           onChange={handleAceChanges}
           onValidate={handleValidation}
           onChangeAnnotation={handleValidation}
@@ -250,20 +264,20 @@ function RecipeForm({ action, initialRecipe, onSave, onCancel, onChange }) {
 
         <label className="form-label" htmlFor="title">Category:</label>
         <ClassificationCheckboxes
-          classification={recipeRecord.classification}
+          classification={record.classification}
           handleChange={handleChange}
         />
 
-        <label className="form-label" htmlFor="tags">Tags (comma-separated):</label>
-        {/* <input className="form-field" type="text" id="tags" name="tags" value={recipeRecord.tags} onChange={handleChange} /> */}                     
-        <TagInput
-          initialValues={formatTagStrAsArray(recipeRecord.tags)}
-          onTagChange={handleTagChange}
-        />
-        <p className="form-note">Separated with commas</p>
+        <label className="form-label" htmlFor="tags">Tags:</label>
+        {record?.tags !== undefined && (        
+          <TagInput
+            initialTags={record.tags}
+            onTagChange={handleTagChange}
+          />
+        )}
         
         <label className="form-label" htmlFor="comments">Comments:</label>
-        <textarea className="form-textarea" id="comments" name="comments" value={recipeRecord.comments || ''} onChange={handleChange}></textarea>
+        <textarea className="form-textarea" id="comments" name="comments" value={record.comments || ''} onChange={handleChange}></textarea>
       </div>
   
       <div className='button-box'>

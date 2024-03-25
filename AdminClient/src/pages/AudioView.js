@@ -6,7 +6,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { audioInfo } from '../store/audioSlice';
 import { initWaveSurfer, destroyWaveSurfer } from '../utils/waveUtils';
 
-import { formatDateForDisplay, formatListForDisplay } from '../utils/formatUtils';
+import { formatDateAsFriendlyDate, formatListAsString } from '../utils/formatUtils';
 import FeatherIcon from 'feather-icons-react';
 
 // Import the config object from the config.js file
@@ -26,7 +26,7 @@ function AudioView() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const [audioRecord, setAudioRecord] = useState({
+  const [record, setRecord] = useState({
     copyrightCert: 0,
   });
 
@@ -37,12 +37,12 @@ function AudioView() {
     dispatch(audioInfo({audioID}))
       .unwrap()
       .then(response => {
-        setAudioRecord({
+        setRecord({
           ...response,
-          classification: formatListForDisplay(response.classification),
-          tags: formatListForDisplay(response.tags),
-          createDate: formatDateForDisplay(response.createDate),
-          editDate: formatDateForDisplay(response.editDate),
+          classification: formatListAsString(response.classification),
+          tags: formatListAsString(response.tags),
+          createDate: formatDateAsFriendlyDate(response.createDate),
+          editDate: formatDateAsFriendlyDate(response.editDate),
         });
         setIsLoading(false); // Stop loading once data is fetched
       })
@@ -61,8 +61,8 @@ function AudioView() {
 
   // initialize WaveSurfer once the component is mounted and audioDetails.filename is available
   useEffect(() => {  //
-    if (isDomReady && audioRecord.filename) {
-      const audioURL = `${audioBaseURL}/${audioRecord.filename}`;
+    if (isDomReady && record.filename) {
+      const audioURL = `${audioBaseURL}/${record.filename}`;
       // check if waveSurferRef.current is already initialized
       if (waveSurferRef.current) {
         destroyWaveSurfer();
@@ -80,7 +80,7 @@ function AudioView() {
         destroyWaveSurfer();
       }
     };
-  }, [isDomReady, audioRecord.filename]);
+  }, [isDomReady, record.filename]);
 
   // Function to render advanced pagination buttons with navigation controls
   const renderBreadcrumbs = () => {
@@ -104,32 +104,32 @@ function AudioView() {
           <div className="form-group">
             <div className="form-row">
               <span className="form-label">Title:</span>
-              <span className="form-value">{audioRecord.title}</span>
+              <span className="form-value">{record.title}</span>
             </div>
 
             <div className="form-row">
               <span className="form-label">Filename:</span>
-              <span className="form-value">{audioRecord.filename}</span>
+              <span className="form-value">{record.filename}</span>
             </div>
 
             <div className="form-row">
               <span className="form-label">Created:</span>
               <span className="form-value">
-                <Link to={`/recipe/list?filter=user&targetID=${audioRecord.creatorUsername}`}>
-                  {audioRecord.creatorUsername}
+                <Link to={`/recipe/list?filter=user&targetID=${record.creatorUsername}`}>
+                  {record.creatorUsername}
                 </Link>
-                {" on " + audioRecord.createDate}
+                {" on " + record.createDate}
               </span>
             </div>
 
-            {audioRecord.editorUsername && (
+            {record.editorUsername && (
                 <div className="form-row">
                   <span className="form-label">Edited:</span>
                   <span className="form-value">
-                    <Link to={`/recipe/list?filter=user&targetID=${audioRecord.editorUsername}`}>
-                      {audioRecord.editorUsername}
+                    <Link to={`/recipe/list?filter=user&targetID=${record.editorUsername}`}>
+                      {record.editorUsername}
                     </Link>
-                    {" on " + audioRecord.editDate}
+                    {" on " + record.editDate}
                   </span>
                 </div>
               )
@@ -137,28 +137,29 @@ function AudioView() {
             
             <div className="form-row">
               <span className="form-label">Status:</span>
-              <span className="form-value">{audioRecord.status}</span>
+              <span className="form-value">{record.status}</span>
             </div>
           </div>
 
-          <div className="form-group">
+          <div className="form-group pb-2">
             <div id="waveform"></div>
+            <div className="text-sm mt-1">Duration: {record.duration}s</div>
           </div>
   
           <div className="form-group">
             <div className="form-col">
               <div className="form-label">Classification:</div>
               <div className="form-value">
-                {audioRecord.classification}
+                {record.classification}
               </div>
             </div>
             <div className="form-col">
               <div className="form-label">Tags:</div>
-              <div className="form-value">{audioRecord.tags}</div>
+              <div className="form-value">{record.tags}</div>
             </div>
             <div className="form-col">
               <div className="form-label">Comments:</div>
-              <div className="form-value">{audioRecord.comments}</div>
+              <div className="form-value">{record.comments}</div>
             </div>
           </div>
 
