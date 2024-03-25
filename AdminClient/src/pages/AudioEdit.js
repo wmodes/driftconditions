@@ -49,7 +49,7 @@ function AudioEdit() {
       .unwrap()
       .then(response => {
         // Parse and transform the response as needed
-        console.log('Fetched audio details:', response);
+        // console.log('Fetched audio details:', response);
         // console.log('Classification:', response.classification, 'type:', typeof response.classification);
         setRecord(prevState => ({
           ...prevState,
@@ -83,7 +83,7 @@ function AudioEdit() {
 
   const handleTagChange = (newTags) => {
     setRecord(prevState => ({ ...prevState, tags:newTags }));
-    console.log('AudioEdit new tags:', newTags);
+    // console.log('AudioEdit new tags:', newTags);
   };
 
   const handleSubmit = (e) => { 

@@ -3,12 +3,12 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import AceEditor from 'react-ace';
-import 'ace-builds/src-noconflict/mode-json5';
+// import 'ace-builds/src-noconflict/mode-json5';
+import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/worker-json';
 // import 'ace-builds/src-noconflict/theme-github';
 import 'ace-builds/src-noconflict/theme-tomorrow';
 import "ace-builds/src-noconflict/ext-language_tools";
-import "ace-builds/src-noconflict/worker-json.js";
 import JSON5 from 'json5';
 
 import { insertNewClipIntoJsonStr } from '../utils/recipeUtils';
@@ -29,7 +29,7 @@ function RecipeForm({ action, initialRecord, onSave, onCancel, onChange }) {
   const [record, setRecord] = useState(initialRecord);
   // console.log("RecipeForm: initialRecord", initialRecord);
   const [resetRecord, setResetRecord] = useState(
-    JSON.parse(JSON.stringify(initialRecord))
+    JSON.parse(JSON.stringify(initialRecord || {}))
   );
   // store a ref to the editor API
   const [editorRef, setEditorRef] = useState(null);
@@ -94,7 +94,7 @@ function RecipeForm({ action, initialRecord, onSave, onCancel, onChange }) {
     onSave(record);
   };
 
-  const handleAceChanges = (newValue) => {
+  const handleRecipeChanges = (newValue) => {
     // Update recipeData directly within the local state
     const updatedRecord = { ...record, recipeData: newValue };
     setRecord(updatedRecord);
@@ -106,7 +106,7 @@ function RecipeForm({ action, initialRecord, onSave, onCancel, onChange }) {
   };
 
   const handleValidation = (annotations) => {
-    // console.log("handleValidation", annotations);
+    console.log("handleValidation", annotations);
   }
 
   const reset = () => {
@@ -147,7 +147,7 @@ function RecipeForm({ action, initialRecord, onSave, onCancel, onChange }) {
   
     data.push(newTrack); // Assuming data is an array
     const updatedRecipeData = JSON5.stringify(data, null, 2);
-    handleAceChanges(updatedRecipeData);
+    handleRecipeChanges(updatedRecipeData);
   }
 
   const addClip = (type=null) => {
@@ -169,7 +169,7 @@ function RecipeForm({ action, initialRecord, onSave, onCancel, onChange }) {
       );
       // console.log("addClip modifiedRecord", modifiedRecord);
       // Handle the success case, such as updating state or UI with modifiedRecord
-      handleAceChanges(modifiedRecord);
+      handleRecipeChanges(modifiedRecord);
     } catch (error) {
       console.error(`Error adding new ${type}:`, error);
       // Handle the error, such as displaying an error message to the user
@@ -232,15 +232,14 @@ function RecipeForm({ action, initialRecord, onSave, onCancel, onChange }) {
         <label className="form-label" htmlFor="recipeData">Recipe Data: <Required /></label>
 
         <AceEditor
-          mode="json5"
+          mode="json"
           theme="tomorrow"
           name="recipeData"
           ref={(editor) => setEditorRef(editor)}
           className="code-editor"
           value={record.recipeData}
-          onChange={handleAceChanges}
+          onChange={handleRecipeChanges}
           onValidate={handleValidation}
-          onChangeAnnotation={handleValidation}
           editorProps={{ $blockScrolling: true }}
           setOptions={aceOptions}
           style={{ width: '', height: 'auto' }}
@@ -249,7 +248,7 @@ function RecipeForm({ action, initialRecord, onSave, onCancel, onChange }) {
         <div className="form-button-box">
           <button className="button left reset" type="button" onClick={reset}>Reset</button>
           <div className="form-button-right">
-            <button className="button right" type="button" onClick={validate}>Validate</button>
+            <button className="button right" type="button" onClick={handleValidation}>Validate</button>
             <button className="button right" type="button" onClick={addTrack}>Add Track</button>
             <button className="button right mr-0" type="button" onClick={addClip}>Insert Clip</button>
             <button className="button right mr-0" type="button" onClick={addSilence}>Insert Silence</button>
@@ -263,10 +262,12 @@ function RecipeForm({ action, initialRecord, onSave, onCancel, onChange }) {
       <div className="form-group">
 
         <label className="form-label" htmlFor="title">Category:</label>
-        <ClassificationCheckboxes
-          classification={record.classification}
-          handleChange={handleChange}
-        />
+        {record?.classification !== undefined && (     
+          <ClassificationCheckboxes
+            classification={record.classification}
+            handleChange={handleChange}
+          />
+        )}
 
         <label className="form-label" htmlFor="tags">Tags:</label>
         {record?.tags !== undefined && (        

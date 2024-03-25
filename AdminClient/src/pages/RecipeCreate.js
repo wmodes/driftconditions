@@ -82,7 +82,7 @@ function RecipeCreate() {
           <h2 className='title'>Create New Recipe</h2>
           <RecipeForm
             action="create"
-            initialRecipe={record}
+            initialRecord={record}
             onSave={handleSave}
             onCancel={handleCancel}
             onChange={handleChange}
