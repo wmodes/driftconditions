@@ -33,6 +33,7 @@ function RecipeForm({ action, initialRecord, onSave, onCancel, onChange }) {
   // store a ref to the editor API
   const [editorRef, setEditorRef] = useState(null);
   const [isEditorReady, setIsEditorReady] = useState(false);
+  const [isJSONValid, setIsJSONValid] = useState(false);
 
   // State for handling loading, success, and error feedback
   const [successMessage, setSuccessMessage] = useState('');
@@ -50,6 +51,7 @@ function RecipeForm({ action, initialRecord, onSave, onCancel, onChange }) {
       const editor = editorRef.editor;
       defineCustomEditorMode(); // Ensure this function is correctly setting up the mode
       editor.session.setMode('ace/mode/custom_json'); // Apply the custom mode
+      validationOnCall();
     }
   }, [isEditorReady]);
 
@@ -105,48 +107,39 @@ function RecipeForm({ action, initialRecord, onSave, onCancel, onChange }) {
     validateOnTheFly(newValue);
   };
 
-  // Debounce the validation function
-  const validateOnTheFly = useCallback(_.debounce((newValue) => {
-    console.log("validateOnTheFly newValue", newValue)
+  // Function to perform JSON5 validation and update UI accordingly
+  const performValidation = (jsonData, updateSuccessMessage = false) => {
     try {
-      JSON5.parse(newValue);
+      JSON5.parse(jsonData);
+      setIsJSONValid(true);
       setError('');
+      if (updateSuccessMessage) setSuccessMessage('JSON5 is valid!');
       editorRef.editor.session.clearAnnotations();
     } catch (error) {
-      setSuccessMessage(''); 
-      const lineNumber = error.lineNumber - 1;
-      const columnNumber = error.columnNumber - 1; 
-      const errorAnnotation = {
-        row: lineNumber,
-        column: 0,
-        text: error.message,
-        type: "error",
-      };
-      editorRef.editor.session.setAnnotations([errorAnnotation]);
+      setIsJSONValid(false);
       setError(`${error.message}`);
-    }
-  }, 500));
-
-  const handleValidateButton = () => {
-    try {
-      JSON5.parse(record.recipeData);
-      setError(''); 
-      setSuccessMessage('JSON5 is valid!'); 
-      editorRef.editor.session.clearAnnotations();
-    } catch (error) {
-      setError(`${error.message}`); 
-      setSuccessMessage(''); 
+      setSuccessMessage('');
+      
       const lineNumber = error.lineNumber - 1;
-      const columnNumber = error.columnNumber - 1; 
       const errorAnnotation = {
         row: lineNumber,
-        column: columnNumber,
+        column: 0, // Assuming all errors to be at the start of the line for simplicity
         text: error.message,
         type: "error",
       };
       editorRef.editor.session.setAnnotations([errorAnnotation]);
     }
-  }
+  };
+
+  // Debounce the on-the-fly validation function
+  const validateOnTheFly = useCallback(_.debounce((newValue) => {
+    performValidation(newValue);
+  }, 500), [editorRef]); // Assuming editorRef is stable and included if needed
+
+  // Perform validation on specific call
+  const validationOnCall = () => {
+    performValidation(record.recipeData, true);
+  };
 
   const reset = () => {
     // console.log("RecipeForm: resetRecord", resetRecord)
@@ -279,7 +272,7 @@ function RecipeForm({ action, initialRecord, onSave, onCancel, onChange }) {
         <div className="form-button-box">
           <button className="button left reset" type="button" onClick={reset}>Reset</button>
           <div className="form-button-right">
-            <button className="button right" type="button" onClick={handleValidateButton}>Validate</button>
+            <button className="button right" type="button" onClick={validationOnCall}>Validate</button>
             <button className="button right" type="button" onClick={addTrack}>Add Track</button>
             <button className="button right mr-0" type="button" onClick={addClip}>Insert Clip</button>
             <button className="button right mr-0" type="button" onClick={addSilence}>Insert Silence</button>
@@ -314,7 +307,7 @@ function RecipeForm({ action, initialRecord, onSave, onCancel, onChange }) {
   
       <div className='button-box'>
         <button className='button cancel' type="button" onClick={onCancel}>Cancel</button>
-        <button className='button submit' type="submit">Save Recipe</button>
+        <button className='button submit' type="submit" disabled={!isJSONValid}>Save Recipe</button>
       </div>
     </form>
   );
