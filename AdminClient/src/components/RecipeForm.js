@@ -1,24 +1,23 @@
 
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import AceEditor from 'react-ace';
-// import 'ace-builds/src-noconflict/mode-json5';
-import 'ace-builds/src-noconflict/mode-json';
+import 'ace-builds/src-noconflict/mode-json5';
+// import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/worker-json';
 // import 'ace-builds/src-noconflict/theme-github';
 import 'ace-builds/src-noconflict/theme-tomorrow';
 import "ace-builds/src-noconflict/ext-language_tools";
 import JSON5 from 'json5';
+import _ from 'lodash';
 
 import { insertNewClipIntoJsonStr } from '../utils/recipeUtils';
 import { defineCustomEditorMode } from '../utils/editorUtils';
 import { ClassificationCheckboxes, TagInput } from '../utils/formUtils';
-import { formatTagsAsString, formatTagStrAsArray } from '../utils/formatUtils';
-
-import ace from 'ace-builds/src-noconflict/ace';
 
 import config from '../config/config';
+import { set } from 'ace-builds/src-noconflict/ace';
 const aceOptions = config.aceEditor;
 const newTrackPattern = config.recipes.newTrack;
 const newClipPattern = config.recipes.newClip;
@@ -92,30 +91,66 @@ function RecipeForm({ action, initialRecord, onSave, onCancel, onChange }) {
   const handleSubmit = (event) => {
     event.preventDefault();
     onSave(record);
+    // TODO: get the success message from the parent
   };
 
   const handleRecipeChanges = (newValue) => {
     // Update recipeData directly within the local state
     const updatedRecord = { ...record, recipeData: newValue };
     setRecord(updatedRecord);
-
     // Then call the onChange callback provided by the parent, if available
     if (onChange) {
       onChange(updatedRecord);
     }
+    validateOnTheFly(newValue);
   };
 
-  const handleValidation = (annotations) => {
-    console.log("handleValidation", annotations);
+  // Debounce the validation function
+  const validateOnTheFly = useCallback(_.debounce((newValue) => {
+    console.log("validateOnTheFly newValue", newValue)
+    try {
+      JSON5.parse(newValue);
+      setError('');
+      editorRef.editor.session.clearAnnotations();
+    } catch (error) {
+      setSuccessMessage(''); 
+      const lineNumber = error.lineNumber - 1;
+      const columnNumber = error.columnNumber - 1; 
+      const errorAnnotation = {
+        row: lineNumber,
+        column: 0,
+        text: error.message,
+        type: "error",
+      };
+      editorRef.editor.session.setAnnotations([errorAnnotation]);
+      setError(`${error.message}`);
+    }
+  }, 500));
+
+  const handleValidateButton = () => {
+    try {
+      JSON5.parse(record.recipeData);
+      setError(''); 
+      setSuccessMessage('JSON5 is valid!'); 
+      editorRef.editor.session.clearAnnotations();
+    } catch (error) {
+      setError(`${error.message}`); 
+      setSuccessMessage(''); 
+      const lineNumber = error.lineNumber - 1;
+      const columnNumber = error.columnNumber - 1; 
+      const errorAnnotation = {
+        row: lineNumber,
+        column: columnNumber,
+        text: error.message,
+        type: "error",
+      };
+      editorRef.editor.session.setAnnotations([errorAnnotation]);
+    }
   }
 
   const reset = () => {
     // console.log("RecipeForm: resetRecord", resetRecord)
     setRecord(resetRecord);
-  }
-
-  const validate = () => {
-    console.log("record", record);
   }
 
   // helper to parse JSON5 content
@@ -133,18 +168,15 @@ function RecipeForm({ action, initialRecord, onSave, onCancel, onChange }) {
     setError(''); // Clear any previous error
     const data = parseContent(record.recipeData);
     if (!data || !Array.isArray(data)) return; // Error parsing content  
-    
     // Find the highest existing track number
     const maxTrackNumber = data.reduce((max, item) => {
       return item.track && item.track > max ? item.track : max;
     }, 0);
-
     // Clone the newTrackPattern and update the track number
     const newTrack = {
       ...newTrackPattern,
       track: maxTrackNumber + 1
     };
-  
     data.push(newTrack); // Assuming data is an array
     const updatedRecipeData = JSON5.stringify(data, null, 2);
     handleRecipeChanges(updatedRecipeData);
@@ -239,7 +271,6 @@ function RecipeForm({ action, initialRecord, onSave, onCancel, onChange }) {
           className="code-editor"
           value={record.recipeData}
           onChange={handleRecipeChanges}
-          onValidate={handleValidation}
           editorProps={{ $blockScrolling: true }}
           setOptions={aceOptions}
           style={{ width: '', height: 'auto' }}
@@ -248,7 +279,7 @@ function RecipeForm({ action, initialRecord, onSave, onCancel, onChange }) {
         <div className="form-button-box">
           <button className="button left reset" type="button" onClick={reset}>Reset</button>
           <div className="form-button-right">
-            <button className="button right" type="button" onClick={handleValidation}>Validate</button>
+            <button className="button right" type="button" onClick={handleValidateButton}>Validate</button>
             <button className="button right" type="button" onClick={addTrack}>Add Track</button>
             <button className="button right mr-0" type="button" onClick={addClip}>Insert Clip</button>
             <button className="button right mr-0" type="button" onClick={addSilence}>Insert Silence</button>

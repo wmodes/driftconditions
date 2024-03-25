@@ -77,7 +77,7 @@ const config = {
     }
   },
   aceEditor: {
-    useWorker: true, // Use the worker for syntax checking
+    useWorker: false, // Use the worker for syntax checking
     enableBasicAutocompletion: false,
     enableLiveAutocompletion: true,
     enableSnippets: false,
