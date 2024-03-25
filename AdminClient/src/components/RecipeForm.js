@@ -51,7 +51,7 @@ function RecipeForm({ action, initialRecord, onSave, onCancel, onChange }) {
       const editor = editorRef.editor;
       defineCustomEditorMode(); // Ensure this function is correctly setting up the mode
       editor.session.setMode('ace/mode/custom_json'); // Apply the custom mode
-      validationOnCall();
+      validateOnTheFly(record.recipeData); // Validate the initial content
     }
   }, [isEditorReady]);
 
@@ -137,7 +137,7 @@ function RecipeForm({ action, initialRecord, onSave, onCancel, onChange }) {
   }, 500), [editorRef]); // Assuming editorRef is stable and included if needed
 
   // Perform validation on specific call
-  const validationOnCall = () => {
+  const validateOnCall = () => {
     performValidation(record.recipeData, true);
   };
 
@@ -272,7 +272,7 @@ function RecipeForm({ action, initialRecord, onSave, onCancel, onChange }) {
         <div className="form-button-box">
           <button className="button left reset" type="button" onClick={reset}>Reset</button>
           <div className="form-button-right">
-            <button className="button right" type="button" onClick={validationOnCall}>Validate</button>
+            <button className="button right" type="button" onClick={validateOnCall}>Validate</button>
             <button className="button right" type="button" onClick={addTrack}>Add Track</button>
             <button className="button right mr-0" type="button" onClick={addClip}>Insert Clip</button>
             <button className="button right mr-0" type="button" onClick={addSilence}>Insert Silence</button>
