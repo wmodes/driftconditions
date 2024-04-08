@@ -112,20 +112,21 @@ export const generateRandomTexts = (projectName) => {
 //
 
 const projectNames = [
-  "Static Drift",
-  "Radio Chatter",
-  "Radio Nocturne",
-  "Whiskey Murmur",
-  "Toxic Event",
-  "Drift Condition",
-  "Radio Interference",
-  "Dusk Variations",
-  "Drift Frequency",
-  "Radio Halcyon",
-  "Radio Mirage",
-  "Radio Elegy",
-  "Radio Diaspora",
-  "Project Aether",
+  "StaticDrift",
+  "RadioNocturne",
+  "ToxicEvent",
+  "DriftConditions",
+  "RadioInterference",
+  "DuskVariations",
+  "DriftFrequency",
+  "RadioHalcyon",
+  "RadioElegy",
+  "RadioDiaspora",
+  "ProjectAether",
+  "FlowSchema",
+  "SafetyProtocol",
+  "ShutdownMatrix",
+  "FeedstockFidelity",
 ];
 
 export const getProjectName = () => {

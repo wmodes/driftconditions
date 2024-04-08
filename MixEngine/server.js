@@ -9,14 +9,17 @@
 //   - Error handling and logging
 //   - CORS and cookie management
 
+require('module-alias/register');
 const express = require('express');
 const app = express();
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
-const { notFound, errorHandler } = require('./core/api/middleware/errorHandler');
-const logger = require('./config/logger');
 
-const config = require('./config/config');
+// Refactored requires using defined aliases
+const { notFound, errorHandler } = require('@middleware/errorHandler');
+const logger = require('@config/logger');
+
+const config = require('@config/config');
 const corsOptions = config.corsOptions;
 const audioServer = config.audioServer;
 
