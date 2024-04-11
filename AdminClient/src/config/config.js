@@ -112,7 +112,8 @@ const config = {
     }
   },
   recipes: {
-    selectionPoolSize: 5,
+    selectPoolPercentSize: 25,
+    selectPoolMinSize: 5,
     classification: [
       'Ambient', 
       'Atmospheric', 

@@ -1,13 +1,4 @@
 // server.js - primary server code including:
-//   - User registration and authentication
-//   - User profiles and modifying user information
-//   - Audio upload and management
-//   - Protected routes and middleware
-//   - Database connection and queries
-//   - File upload and processing
-//   - JWT token generation and verification
-//   - Error handling and logging
-//   - CORS and cookie management
 
 require('module-alias/register');
 const express = require('express');
@@ -18,6 +9,8 @@ const cookieParser = require('cookie-parser');
 // Refactored requires using defined aliases
 const { notFound, errorHandler } = require('@middleware/errorHandler');
 const logger = require('@config/logger');
+
+const Conductor = require('@services/Conductor');
 
 const config = require('@config/config');
 const corsOptions = config.corsOptions;
@@ -41,10 +34,17 @@ const authRoutes = require('./core/api/routes/authRoutes');
 // Use routes
 app.use('/api/auth', authRoutes);
 
-// Use the notFound middleware
+// Error handling middleware
 app.use(notFound);
-// Use the errorHandler middleware
 app.use(errorHandler);
+
+// Instantiate and start the Conductor
+const conductor = new Conductor();
+conductor.start().then(() => {
+  logger.info('Conductor has started.');
+}).catch(error => {
+  logger.error(`Conductor failed to start: ${error.message}`);
+});
 
 // Starts the server, highlighting the use of a specific port for listening to incoming requests.
 app.listen(audioServer.port, () => {

@@ -1,7 +1,7 @@
 // config.js
 // This file contains the configuration for the server
 
-// WARNNG: This file is hardlinked to server/config.js and audio/config/config.js
+// WARNNG: This file is hardlinked to ../AdminServer/config/config.js
 
 // Load environment variables from .env file
 require('dotenv').config();
@@ -66,6 +66,8 @@ module.exports = {
     ],
   },
   recipes: {
+    selectPoolPercentSize: 25,
+    selectPoolMinSize: 2,
     classification: [
       'Ambient', 
       'Atmospheric', 
