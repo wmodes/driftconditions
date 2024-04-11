@@ -19,7 +19,7 @@ const { notFound, errorHandler } = require('./middleware/errorHandler');
 const logger = require('./config/logger');
 
 const config = require('./config/config');
-const server = config.server;
+const server = config.adminServer;
 
 // Middleware setup
 // app.use(bodyParser.urlencoded({extended: false}));

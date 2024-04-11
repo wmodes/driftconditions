@@ -14,7 +14,7 @@ const Conductor = require('@services/Conductor');
 
 const config = require('@config/config');
 const corsOptions = config.corsOptions;
-const audioServer = config.audioServer;
+const mixEngineServer = config.mixEngineServer;
 
 // Middleware setup
 app.use(express.urlencoded({extended: true}));
@@ -47,6 +47,6 @@ conductor.start().then(() => {
 });
 
 // Starts the server, highlighting the use of a specific port for listening to incoming requests.
-app.listen(audioServer.port, () => {
-  logger.info(`Server listening at ${audioServer.protocol}://${audioServer.host}:${audioServer.port}`);
+app.listen(mixEngineServer.port, () => {
+  logger.info(`Server listening at ${mixEngineServer.protocol}://${mixEngineServer.host}:${mixEngineServer.port}`);
 });

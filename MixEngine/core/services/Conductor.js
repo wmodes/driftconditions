@@ -17,7 +17,7 @@ class Conductor {
       try {
         // Perform an operation, such as selecting the next recipe
         const selectedRecipe = await this.recipeSelector.getNextRecipe();
-        logger.info(`Selected Recipe: ${JSON.stringify(selectedRecipe)}`);
+        // logger.info(`Selected Recipe: ${JSON.stringify(selectedRecipe)}`);
         
         // Implement any additional logic
 

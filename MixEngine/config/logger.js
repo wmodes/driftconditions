@@ -3,7 +3,7 @@ const winston = require('winston');
 const config = require('./config');
 
 const logger = winston.createLogger({
-  level: 'info',
+  level: 'debug',
   format: winston.format.combine(
     winston.format.timestamp({
       format: 'YYYY-MM-DD HH:mm:ss',
@@ -22,7 +22,7 @@ const logger = winston.createLogger({
       ),
     }),
     // File transport using logfile from config
-    new winston.transports.File({ filename: config.audioServer.logfile }),
+    new winston.transports.File({ filename: config.mixEngineServer.logfile }),
   ],
 });
 

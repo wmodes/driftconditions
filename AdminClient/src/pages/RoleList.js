@@ -9,7 +9,7 @@ import { TagSelect } from '../utils/formUtils';
 // Import the config object from the config.js file
 const config = require('../config/config');
 // pull variables from the config object
-const routeList = Object.keys(config.client.pages); 
+const routeList = Object.keys(config.adminClient.pages); 
 
 function RolesList() {
   const dispatch = useDispatch();

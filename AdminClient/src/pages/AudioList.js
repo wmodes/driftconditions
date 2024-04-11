@@ -17,8 +17,8 @@ import { ReactComponent as AudioOn } from '../images/volume-animate.svg';
 const config = require('../config/config');
 // pull variables from the config object
 const recordsPerPage = config.list.recordsPerPage;
-const retryLimit = config.server.retryLimit;
-const audioBaseURL = config.server.audioBaseURL;
+const retryLimit = config.adminServer.retryLimit;
+const audioBaseURL = config.adminServer.audioBaseURL;
 
 function AudioList() {
   const dispatch = useDispatch();

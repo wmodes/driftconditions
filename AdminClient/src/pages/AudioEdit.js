@@ -17,7 +17,7 @@ import FeatherIcon from 'feather-icons-react';
 // Import the config object from the config.js file
 import config from '../config/config';
 // pull variables from the config object
-const audioBaseURL = config.server.audioBaseURL;
+const audioBaseURL = config.adminServer.audioBaseURL;
 const classificationOptions = config.audio.classification;
 const fieldNotes = config.audio.fieldNotes;
 

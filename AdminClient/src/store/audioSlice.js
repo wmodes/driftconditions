@@ -4,14 +4,14 @@ import axios from 'axios'; // Assuming axios for HTTP requests
 // Import the config object from the config.js file
 const config = require('../config/config');
 // pull variables from the config object
-const serverBaseURL = config.server.baseURL; 
+const serverBaseURL = config.adminServer.baseURL; 
 
 // Routes
-const audioUploadRoute = serverBaseURL + config.server.routes.audioUpload;
-const audioInfoRoute = serverBaseURL + config.server.routes.audioInfo;
-const audioUpdateRoute = serverBaseURL + config.server.routes.audioUpdate;
-const audioListRoute = serverBaseURL + config.server.routes.audioList;
-const audioTrashRoute = serverBaseURL + config.server.routes.audioTrash;
+const audioUploadRoute = serverBaseURL + config.adminServer.routes.audioUpload;
+const audioInfoRoute = serverBaseURL + config.adminServer.routes.audioInfo;
+const audioUpdateRoute = serverBaseURL + config.adminServer.routes.audioUpdate;
+const audioListRoute = serverBaseURL + config.adminServer.routes.audioList;
+const audioTrashRoute = serverBaseURL + config.adminServer.routes.audioTrash;
 
 export const audioUpload = createAsyncThunk(
   audioUploadRoute,

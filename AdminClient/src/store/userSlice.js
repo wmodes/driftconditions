@@ -9,14 +9,14 @@ import axios from 'axios';
 const config = require('../config/config');
 
 // pull variables from the config object
-const serverBaseURL = config.server.baseURL;
+const serverBaseURL = config.adminServer.baseURL;
 
 // Routes
-const profileRoute = serverBaseURL + config.server.routes.profile;
-const profileEditRoute = serverBaseURL + config.server.routes.profileEdit;
-const userListRoute = serverBaseURL + config.server.routes.userList;
-const roleListRoute = serverBaseURL + config.server.routes.roleList;
-const roleUpdateRoute = serverBaseURL + config.server.routes.roleUpdate;
+const profileRoute = serverBaseURL + config.adminServer.routes.profile;
+const profileEditRoute = serverBaseURL + config.adminServer.routes.profileEdit;
+const userListRoute = serverBaseURL + config.adminServer.routes.userList;
+const roleListRoute = serverBaseURL + config.adminServer.routes.roleList;
+const roleUpdateRoute = serverBaseURL + config.adminServer.routes.roleUpdate;
 
 export const profileInfo = createAsyncThunk(
   'user/profileInfo', 

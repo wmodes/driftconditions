@@ -16,7 +16,7 @@ import { formatDateAsFriendlyDate, formatListAsString } from '../utils/formatUti
 const config = require('../config/config');
 // pull variables from the config object
 const recordsPerPage = config.list.recordsPerPage;
-const retryLimit = config.server.retryLimit;
+const retryLimit = config.adminServer.retryLimit;
 
 function RecipeList() {
   const dispatch = useDispatch();

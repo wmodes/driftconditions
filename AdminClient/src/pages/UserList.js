@@ -13,7 +13,7 @@ import { formatDateAsFriendlyDate } from '../utils/formatUtils';
 const config = require('../config/config');
 // Pull variables from the config object
 const recordsPerPage = config.list.recordsPerPage;
-const retryLimit = config.server.retryLimit;
+const retryLimit = config.adminServer.retryLimit;
 
 function UserList() {
   // Use existing hooks and state setup

@@ -8,7 +8,7 @@ import { checkPageAuth, setAuthChecked } from '../store/authSlice';
 // Import the config object from the config.js file
 const config = require('../config/config');
 // pull variables from the config object
-const pagePaths = config.client.pages;
+const pagePaths = config.adminClient.pages;
 
 export const getPageContext = (URLpath) => {
   let matchedKey //= 'homepage'; // Default to 'homepage' if no matches are found

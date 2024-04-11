@@ -22,7 +22,7 @@ const logger = winston.createLogger({
       ),
     }),
     // File transport using logfile from config
-    new winston.transports.File({ filename: config.server.logfile }),
+    new winston.transports.File({ filename: config.adminServer.logfile }),
   ],
 });
 

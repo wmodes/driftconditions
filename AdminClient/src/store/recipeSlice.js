@@ -6,14 +6,14 @@ import axios from 'axios'; // Assuming axios for HTTP requests
 // Import the config object from the config.js file
 const config = require('../config/config');
 // Pull variables from the config object
-const serverBaseURL = config.server.baseURL;
+const serverBaseURL = config.adminServer.baseURL;
 
 // Define the routes for Recipe actions
-const recipeCreateRoute = serverBaseURL + config.server.routes.recipeCreate;
-const recipeInfoRoute = serverBaseURL + config.server.routes.recipeInfo;
-const recipeUpdateRoute = serverBaseURL + config.server.routes.recipeUpdate;
-const recipeListRoute = serverBaseURL + config.server.routes.recipeList;
-const recipeTrashRoute = serverBaseURL + config.server.routes.recipeTrash;
+const recipeCreateRoute = serverBaseURL + config.adminServer.routes.recipeCreate;
+const recipeInfoRoute = serverBaseURL + config.adminServer.routes.recipeInfo;
+const recipeUpdateRoute = serverBaseURL + config.adminServer.routes.recipeUpdate;
+const recipeListRoute = serverBaseURL + config.adminServer.routes.recipeList;
+const recipeTrashRoute = serverBaseURL + config.adminServer.routes.recipeTrash;
 
 // Async thunk for creating a recipe
 export const recipeCreate = createAsyncThunk( 
