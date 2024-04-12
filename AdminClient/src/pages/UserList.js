@@ -10,7 +10,7 @@ import { renderPagination } from '../utils/listUtils';
 import { formatDateAsFriendlyDate } from '../utils/formatUtils';
 
 // Import the config object
-const config = require('../config/config');
+import config from '../config/config';
 // Pull variables from the config object
 const recordsPerPage = config.list.recordsPerPage;
 const retryLimit = config.adminServer.retryLimit;

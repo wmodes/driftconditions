@@ -14,14 +14,14 @@
 // foundational imports
 const express = require('express');
 const router = express.Router();
-const db = require('../config/database');
+const { database: db } = require('config');
 
 // authentication imports
 const bcrypt = require('bcrypt-promise');
 const jwt = require('jsonwebtoken');
 
 // configuration import
-const config = require('../config/config');
+const { config } = require('config');
 // pull these out of the config object
 const jwtSecretKey = config.authToken.jwtSecretKey;
 const tokenExpires = config.authToken.tokenExpires;

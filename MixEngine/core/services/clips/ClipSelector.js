@@ -1,23 +1,25 @@
 // clipSelector.js - A class module for fetching and selecting audio clips based on certain criteria
 
-const db = require('@config/database');
-const logger = require('@config/logger');
-const config = require('@config/config');
-// You might have specific configuration for clips selection, similar to recipes
+const { database: db } = require('config');
+const { logger } = require('config');
+const { config } = require('config');
+const clipLength = config.recipes.length;
 
 class ClipSelector {
   constructor() {
     // Initialize properties
     // Consider what properties would be useful for selecting clips. Examples might include:
-    this.clips = [];
+    this.clipPool = [];
     this.selectedClips = []; // For storing selected clips during operations
     // Add more properties as needed based on your selection criteria
   }
 
   // Main method to get clips based on your criteria
-  async getClips(criteria) {
+  async getClip(criteria) {
     // Fetch clips from the database based on the provided criteria
-    await this._fetchClips(criteria);
+    await this._fillClipPool(criteria);
+    // TODO: If the clips array is empty, return an error to the caller
+    return this.clipPool;
     // Further processing or filtering based on additional criteria
     // Example: this._filterClipsByLength(minLength, maxLength);
     // Example: this._sortClipsByLastUsed();
@@ -28,51 +30,78 @@ class ClipSelector {
   }
 
   // Fetch clips from the database
-  async _fetchClips(criteria) {
+  async _fillClipPool(criteria) {
     try {
-      let queryParts = [];
+      logger.debug(`criteria: ${JSON.stringify(criteria)}`);
+      let classificationQueryParts = [];
+      let lengthQueryParts = [];
       let values = [];
-  
       // Handle classification criteria
       if (criteria.classification) {
+        // Ensure classification criteria is an array
         const classifications = Array.isArray(criteria.classification) ? criteria.classification : [criteria.classification];
-        queryParts.push(`(classification IN (?${', ?'.repeat(classifications.length - 1)}))`);
-        values.push(...classifications);
+
+        // For each classification, create a JSON_CONTAINS condition and add it to the queryParts array
+        classifications.forEach((classification) => {
+          // Format the classification as a JSON array string for the query
+          const classificationJson = JSON.stringify([classification]);
+          classificationQueryParts.push(`JSON_CONTAINS(classification, ?)`);
+          values.push(classificationJson);
+        });
       }
-  
-      // Handle tag criteria
-      if (criteria.tag) {
-        const tags = Array.isArray(criteria.tag) ? criteria.tag : [criteria.tag];
-        queryParts.push(`(tag IN (?${', ?'.repeat(tags.length - 1)}))`);
-        values.push(...tags);
-      }
-  
       // Handle length criteria
       if (criteria.length) {
-        const lengths = Array.isArray(criteria.length) ? criteria.length : [criteria.length];
-        queryParts.push(`(length IN (?${', ?'.repeat(lengths.length - 1)}))`);
-        values.push(...lengths);
+        // Normalize criteria.length to an array and lowercase for case-insensitive matching
+        const lengths = Array.isArray(criteria.length) ? criteria.length.map(l => l.toLowerCase()) : [criteria.length.toLowerCase()];
+        // Iterate over each length criteria
+        lengths.forEach((lengthCategory) => {
+          // Attempt to find a matching length category in the config, normalized to lowercase keys
+          const matchingLengthCategory = Object.keys(clipLength).find(key => key.toLowerCase() === lengthCategory);
+          if (matchingLengthCategory) {
+            // Retrieve the min and max duration for the matching length category from the configuration
+            const { min, max } = clipLength[matchingLengthCategory];
+            if (min !== undefined && max !== undefined) {
+              lengthQueryParts.push(`(duration >= ? AND duration <= ?)`);
+              values.push(min, max); // Add both min and max values to the values array
+            }
+          }
+        });
       }
-  
       // Build the complete query string with additional conditions
-      let query;
-      if (queryParts.length > 0) {
-        const queryConditions = queryParts.join(' OR ');
-        query = `
-          SELECT * 
-          FROM clips 
-          WHERE (${queryConditions}) AND editLock = 0 AND status = 'Approved'`;
-      } else {
-        query = `
-          SELECT * 
-          FROM clips 
-          WHERE editLock = 0 AND status = 'Approved'`;
+      // Join classification parts and length parts with OR
+      let classificationQueryStr = classificationQueryParts.join(' OR ');
+      let lengthQueryStr = lengthQueryParts.join(' OR ');
+      // Add parentheses around classification and length conditions if they are not empty
+      if (classificationQueryStr) {
+        classificationQueryStr = `(${classificationQueryStr})`;
       }
-  
+      if (lengthQueryStr) {
+        lengthQueryStr = `(${lengthQueryStr})`;
+      }
+      // Join classificationQueryStr and lengthQueryStr with AND in queryPartsStr
+      // or alone if one of them is empty
+      const queryParts = [];
+      if (classificationQueryStr) {
+        queryParts.push(classificationQueryStr);
+      }
+      if (lengthQueryStr) {
+        queryParts.push(lengthQueryStr);
+      }
+      queryParts.push('editLock = 0');
+      queryParts.push('status = "Approved"');
+      const queryPartsStr = queryParts.join(' AND ');
+
+      const query = `
+        SELECT * 
+        FROM audio 
+        WHERE ${queryPartsStr}`;
+
+      logger.debug(`Query: ${query}`);
+      logger.debug(`Values: ${values}`);
       // Execute the query
       const [clips] = await db.execute(query, values);
-      this.clips = clips;
-      logger.info(`Clips fetched successfully: ${clips.length} clips`);
+      this.clipPool = clips;
+      // logger.info(`Clips fetched successfully: ${clips.length} clips`);
     } catch (error) {
       logger.error(`Error fetching clips: ${error.message}`);
       throw error; // or handle accordingly
@@ -84,7 +113,7 @@ class ClipSelector {
 
   // Example method for filtering clips by length
   _filterClipsByLength(minLength, maxLength) {
-    this.selectedClips = this.clips.filter(clip => 
+    this.selectedClips = this.clipPool.filter(clip => 
       clip.length >= minLength && clip.length <= maxLength);
   }
 

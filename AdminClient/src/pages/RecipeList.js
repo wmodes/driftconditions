@@ -13,7 +13,7 @@ import { formatDateAsFriendlyDate, formatListAsString } from '../utils/formatUti
 // TODO: test and debug user filter
 
 // Import the config object from the config.js file
-const config = require('../config/config');
+import config from '../config/config';
 // pull variables from the config object
 const recordsPerPage = config.list.recordsPerPage;
 const retryLimit = config.adminServer.retryLimit;

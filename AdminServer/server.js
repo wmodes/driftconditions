@@ -14,12 +14,12 @@ const app = express();
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
-const { corsOptions } = require('./config/config');
 const { notFound, errorHandler } = require('./middleware/errorHandler');
-const logger = require('./config/logger');
+const { logger } = require('config');
 
-const config = require('./config/config');
+const { config } = require('config');
 const server = config.adminServer;
+const corsOptions = config.corsOptions;
 
 // Middleware setup
 // app.use(bodyParser.urlencoded({extended: false}));

@@ -2,12 +2,12 @@
 
 const express = require('express');
 const router = express.Router();
-const db = require('../config/database');
+const { database: db } = require('config');
 
 const jwt = require('jsonwebtoken');
 const verifyToken = require('../middleware/authMiddleware');
 
-const config = require('../config/config');
+const { config } = require('config');
 const jwtSecretKey = config.authToken.jwtSecretKey;
 
 //

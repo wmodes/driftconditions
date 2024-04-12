@@ -7,7 +7,7 @@ import { formatListAsString, formatListStrAsArray } from '../utils/formatUtils';
 import { TagSelect } from '../utils/formUtils';
 
 // Import the config object from the config.js file
-const config = require('../config/config');
+import config from '../config/config';
 // pull variables from the config object
 const routeList = Object.keys(config.adminClient.pages); 
 

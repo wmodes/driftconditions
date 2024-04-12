@@ -8,11 +8,11 @@ const cookieParser = require('cookie-parser');
 
 // Refactored requires using defined aliases
 const { notFound, errorHandler } = require('@middleware/errorHandler');
-const logger = require('@config/logger');
+const { logger } = require('config');
 
 const Conductor = require('@services/Conductor');
 
-const config = require('@config/config');
+const { config } = require('config');
 const corsOptions = config.corsOptions;
 const mixEngineServer = config.mixEngineServer;
 

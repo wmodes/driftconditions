@@ -6,7 +6,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
 // Import the config object from the config.js file
-const config = require('../config/config');
+import config from '../config/config';
 
 // pull variables from the config object
 const serverBaseURL = config.adminServer.baseURL;

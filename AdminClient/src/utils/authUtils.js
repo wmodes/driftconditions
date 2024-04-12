@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { checkPageAuth, setAuthChecked } from '../store/authSlice';
 
 // Import the config object from the config.js file
-const config = require('../config/config');
+import config from '../config/config';
 // pull variables from the config object
 const pagePaths = config.adminClient.pages;
 

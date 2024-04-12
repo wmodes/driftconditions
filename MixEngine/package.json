@@ -2,20 +2,16 @@
   "dependencies": {
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
     "express": "^4.19.1",
     "ffprobe-static": "^3.1.0",
     "fluent-ffmpeg": "^2.1.2",
     "fs-extra": "^11.2.0",
     "json5": "^2.2.3",
     "jsonwebtoken": "^9.0.2",
-    "module-alias": "^2.2.3",
-    "mysql2": "^3.9.2",
-    "winston": "^3.12.0"
+    "module-alias": "^2.2.3"
   },
   "_moduleAliases": {
     "@root": ".",
-    "@config": "./config",
     "@core": "./core",
     "@services": "./core/services",
     "@middleware": "./core/api/middleware",
@@ -24,7 +20,6 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3.0.2",
     "@eslint/js": "^9.0.0",
-    "eslint": "^8.57.0",
     "eslint-config-standard": "^17.1.0",
     "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-n": "^16.6.2",

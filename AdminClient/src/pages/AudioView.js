@@ -10,7 +10,7 @@ import { formatDateAsFriendlyDate, formatListAsString } from '../utils/formatUti
 import FeatherIcon from 'feather-icons-react';
 
 // Import the config object from the config.js file
-const config = require('../config/config');
+import config from '../config/config';
 // pull variables from the config object
 const audioBaseURL = config.adminServer.audioBaseURL;
 

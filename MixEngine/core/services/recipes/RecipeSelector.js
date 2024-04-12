@@ -1,8 +1,8 @@
 // recipeSelector.js - A class module for fetching and selecting recipes based on certain criteria
 
-const db = require('@config/database');
-const logger = require('@config/logger');
-const config = require('@config/config');
+const { database: db } = require('config');
+const { logger } = require('config');
+const { config } = require('config');
 // Utilize any needed configuration values here
 const { selectPoolPercentSize, selectPoolMinSize } = config.recipes;
 
