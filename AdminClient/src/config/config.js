@@ -109,6 +109,9 @@ const config = {
     fieldNotes: {
       tags: "Describe the topic, theme, or texture of the audio, such as 'rainy night', 'jazz', or 'whispering'. Use tags to highlight specific elements or moods in your audio. Separate tags with commas.",
       classification: "A broad category that describes the broad type of audio.",
+      filetypes: "Supported file types: mp3, wav, ogg, flac",
+      status: "New uploads will be marked as 'Pending Review' until approved by a moderator.",
+      copyright: "Please certify that this contains no copyrighted works for which you do not have a right to use.",
     }
   },
   recipes: {

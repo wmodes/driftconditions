@@ -63,11 +63,25 @@ function AudioUpload() {
     }
   };
 
+  const generateAndSetTitle = (file) => {
+    if (!record.title) {
+      // Generate a title based on the file name
+      const fileName = file.name;
+      let title = fileName.replace(/\.[^/.]+$/, ''); // Remove file extension
+      // replace any number of punctuation characters with a single space
+      title = title.replace(/[^a-zA-Z0-9\s'()]+/g, ' ');
+      // make Title Case
+      title = title.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
+      setRecord(prevState => ({ ...prevState, title }));
+    }
+  };
+
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];    
     if (selectedFile && allowedFileTypes.includes(selectedFile.type)) {
       // Set the file if it's one of the allowed types
       setFile(selectedFile);
+      generateAndSetTitle(selectedFile);
       setError(''); // Clear any previous error message
     } else {
       // Clear the file input and show an error if the file type is not allowed
@@ -135,12 +149,13 @@ function AudioUpload() {
                 <option value="Disapproved" disabled>Disapproved</option>
                 <option value="Trashed" disabled>Trashed</option>
               </select>
+              <p className="form-note mt-1">{fieldNotes.status}</p>
             </div>
 
             <div className="form-group">
               <label className="form-label" htmlFor="file">Audio File: <Required /></label>
               <input className="form-upload" type="file" id="file" onChange={handleFileChange} />
-              <p className="form-note">Supported file types: mp3, wav, ogg, flac</p>
+              <p className="form-note">{fieldNotes.filetypes}</p>
             </div>
 
             <div className="form-group">
@@ -170,7 +185,7 @@ function AudioUpload() {
                   checked={record.copyrightCert === true} 
                   onChange={handleChange} 
                 />
-                <label htmlFor="copyrightCert"> Please certify that this contains no copyrighted works for which you do not hold the copyright. <Required /></label>
+                <label htmlFor="copyrightCert"> {fieldNotes.copyright} <Required /></label>
               </div>
 
             </div>

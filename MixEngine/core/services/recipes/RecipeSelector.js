@@ -1,9 +1,10 @@
 // recipeSelector.js - A class module for fetching and selecting recipes based on certain criteria
 
 const { database: db } = require('config');
-const { logger } = require('config');
+const logger = require('config/logger').custom('RecipeSelector', 'info');
+
 const { config } = require('config');
-// Utilize any needed configuration values here
+// Extract values from the config object
 const { selectPoolPercentSize, selectPoolMinSize } = config.recipes;
 
 class RecipeSelector {
@@ -27,7 +28,7 @@ class RecipeSelector {
     this._getEarliestAndLatestDates();
     // Set the recent classifications and tags
     this._setRecentClassificationAndTags();
-    // Score the recipes based on certain criteria
+    // Score the recipes
     this._scoreRecipes();
     // Select the next recipe
     const selectedRecipe = this._selectNextRecipe();
@@ -52,7 +53,7 @@ class RecipeSelector {
       const [recipes] = await db.execute(query);
       this.recipes = recipes;
     } catch (error) {
-      logger.error(`Error fetching recipes: ${error.message}`);
+      logger.error(new Error(`Error fetching recipes: ${error.message}`));
       // Handling the error similarly, you may choose to throw it, 
       // or handle it in a way that the rest of your class can deal with (e.g., setting this._recipes to an empty array)
       throw error; // or this._recipes = [];
@@ -168,6 +169,7 @@ class RecipeSelector {
   }
 
   // Iterate over the classifications in a recipe and calculate a score
+  //  lower scores are more recent classifications, higher scores are older
   //  check status: confirmed working
   _calculateClassificationScore(recipe) {
     // Ensure the recipe has classifications
@@ -212,6 +214,36 @@ class RecipeSelector {
     return subscore;
   }
 
+  // Select the next recipe based on the calculated scores
+  //  check status: confirmed working
+  _selectNextRecipe() {
+    // Sort the recipes for selection based on score
+    this._sortRecipesByScore();
+    // create our pool
+    //   how many? selectPoolPercentSize or selectPoolMinSize, whichever is greater
+    const totalRecipes = this.recipes.length;
+    // Calculate the intended size of the selection pool based on a percentage of the total recipes
+    const poolSizeByPercent = Math.ceil(totalRecipes * (selectPoolPercentSize / 100));
+    // Determine the actual size of the selection pool, choosing the larger between poolSizeByPercent and selectPoolMinSize
+    const poolSize = Math.max(poolSizeByPercent, selectPoolMinSize);
+    // Ensure that the actualPoolSize does not exceed the number of available recipes
+    const adjustedPoolSize = Math.min(poolSize, totalRecipes);
+    // logger.debug(`totalRecipes: ${totalRecipes}, poolSizeByPercent: ${poolSizeByPercent}, selectPoolMinSize: ${selectPoolMinSize}, adjustedPoolSize: ${adjustedPoolSize}`);
+    // Create the selection pool from the top N recipes, according to the calculated pool size
+    const selectionPool = this.recipes.slice(0, adjustedPoolSize);
+
+    // If the selection pool is empty (e.g., no recipes available), handle accordingly
+    if (selectionPool.length === 0) {
+      logger.error(new Error('No recipes available for selection.'));
+      return null; // Adjust based on your error handling strategy
+    }
+    // Select a random recipe from the selection pool
+    const randomIndex = Math.floor(Math.random() * selectionPool.length);
+    const selectedRecipe = selectionPool[randomIndex];
+    // logger.debug(`Selected recipe: ${selectedRecipe.title}, score: ${selectedRecipe.score}`);
+    return selectedRecipe;
+  }
+
   // Fetch the full recipe based on the recipeID after selection
   // check status: confirmed working
   async _fetchSelectedRecipe(recipeID) {
@@ -225,45 +257,11 @@ class RecipeSelector {
       const [recipe] = await db.execute(query, values);
       return recipe;
     } catch (error) {
-      logger.error(`Error fetching selected recipe with ID ${recipeID}: ${error.message}`);
+      logger.error(new Error(`Error fetching selected recipe with ID ${recipeID}: ${error.message}`));
       // Depending on your error handling strategy, you might want to rethrow the error
       // or return null/undefined/a default value
       throw error; // or return null; 
     }
-  }
-
-  // Select the next recipe based on the calculated scores
-  //  check status: confirmed working
-  _selectNextRecipe() {
-    // Sort the recipes for selection based on score
-    this._sortRecipesForSelection();
-
-    // create our pool
-    //   how many? selectPoolPercentSize or selectPoolMinSize, whichever is greater
-    const totalRecipes = this.recipes.length;
-    // Calculate the intended size of the selection pool based on a percentage of the total recipes
-    const poolSizeByPercent = Math.ceil(totalRecipes * (selectPoolPercentSize / 100));
-    // Determine the actual size of the selection pool, choosing the larger between poolSizeByPercent and selectPoolMinSize
-    const poolSize = Math.max(poolSizeByPercent, selectPoolMinSize);
-    // Ensure that the actualPoolSize does not exceed the number of available recipes
-    const adjustedPoolSize = Math.min(poolSize, totalRecipes);
-    // logger.debug(`totalRecipes: ${totalRecipes}, poolSizeByPercent: ${poolSizeByPercent}, selectPoolMinSize: ${selectPoolMinSize}, adjustedPoolSize: ${adjustedPoolSize}`);
-
-    // Create the selection pool from the top N recipes, according to the calculated pool size
-    const selectionPool = this.recipes.slice(0, adjustedPoolSize);
-
-    // If the selection pool is empty (e.g., no recipes available), handle accordingly
-    if (selectionPool.length === 0) {
-      logger.error('No recipes available for selection.');
-      return null; // Adjust based on your error handling strategy
-    }
-
-    // Select a random recipe from the selection pool
-    const randomIndex = Math.floor(Math.random() * selectionPool.length);
-    const selectedRecipe = selectionPool[randomIndex];
-  
-    // logger.debug(`Selected recipe: ${selectedRecipe.title}, score: ${selectedRecipe.score}`);
-    return selectedRecipe;
   }
 
   // Sort recipes based on lastUsed timestamp, from most recent to earliest
@@ -284,7 +282,7 @@ class RecipeSelector {
 
   // Sort recipes based on score
   //  check status: confirmed working
-  _sortRecipesForSelection() {
+  _sortRecipesByScore() {
     this.recipes.sort((a, b) => b.score - a.score);
   }
 
@@ -300,7 +298,7 @@ class RecipeSelector {
       const values = [new Date(), recipeID];
       await db.execute(query, values);
     } catch (error) {
-      logger.error(`Error updating lastUsed timestamp for recipe with ID ${recipeID}: ${error.message}`);
+      logger.error(new Error(`Error updating lastUsed timestamp for recipe with ID ${recipeID}: ${error.message}`));
       // Depending on your error handling strategy, you might want to rethrow the error
       // or handle it in a way that the rest of your class can deal with
       throw error; // or return null;

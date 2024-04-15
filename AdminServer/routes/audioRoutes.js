@@ -28,8 +28,8 @@ const { config } = require('config');
 
 // pull these out of the config object
 const jwtSecretKey = config.authToken.jwtSecretKey;
-const uploadFileDir = config.upload.uploadFileDir;
-const tmpFileDir = config.upload.tmpFileDir;
+const contentFileDir = config.content.contentFileDir;
+const tmpFileDir = config.content.tmpFileDir;
 
 // Multer configuration for temporary upload
 const upload = multer({ dest: tmpFileDir });
@@ -177,7 +177,7 @@ router.get('/sample/:year/:month/:filename', verifyToken, async (req, res) => {
 
   // Construct the file path
   // Adjust the path according to your actual files location
-  const filePath = path.join(uploadFileDir, year, month, filename);
+  const filePath = path.join(contentFileDir, year, month, filename);
   // console.log('File path:', filePath);
 
   try {
@@ -221,7 +221,7 @@ router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
     // console.log('Uploader ID:', creatorID);
     // Rename file and move into place (async)
     const filePathForDB = await renameAndStore(req.file.path, req.file.originalname, record.title);
-    const fullFilePath = path.join(uploadFileDir, filePathForDB);
+    const fullFilePath = path.join(contentFileDir, filePathForDB);
     // console.log('relFilePath:', fullFilePath, 'file path for db:', filePathForDB);
     // Get audio duration (async)
     const duration = await getAudioDuration(fullFilePath);
@@ -348,7 +348,7 @@ async function renameAndStore(tempPath, origFilename, title) {
   const month = (now.getMonth() + 1).toString().padStart(2, '0');
 
   // create the directory if it doesn't exist
-  const uploadDir = path.join(uploadFileDir, year, month);
+  const uploadDir = path.join(contentFileDir, year, month);
   // console.log('Upload dir:', uploadDir);
   await mkdirp(uploadDir);
 
@@ -381,7 +381,7 @@ async function renameAndStore(tempPath, origFilename, title) {
   // console.log('File moved to:', fullFilepath);
   
   // Calculate the relative path without hardcoding
-  const relativePath = path.relative(path.join(uploadFileDir), fullFilepath);
+  const relativePath = path.relative(path.join(contentFileDir), fullFilepath);
   // console.log('Relative path:', relativePath);
 
   return relativePath;
