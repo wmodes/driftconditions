@@ -1,10 +1,10 @@
 // clipSelector.js - A class module for fetching and selecting audio clips based on certain criteria
 
 const { database: db } = require('config');
-const { logger } = require('config');
+const logger = require('config/logger').custom('ClipSelector', 'debug');
 
 const { config } = require('config');
-const clipLength = config.audio.length;
+const clipLengthRanges = config.audio.clipLength;
 const selectPoolPercentSize = config.audio.selectPoolPercentSize;
 const selectPoolMinSize = config.audio.selectPoolMinSize;
 
@@ -12,76 +12,114 @@ class ClipSelector {
   constructor() {
     // Initialize properties
     this.clipPool = [];
-    this.selectedClips = []; // For storing selected clips during operations
     this.earliestDate = null;
     this.latestDate = null;
     this.dateRange = null;
     this.recentTags = [];
   }
 
-  // given list of criteria, get clips
-  async selectClips(criteriaList) {
-    let selectedClips = [];
-    // iterate through clipsNeeded to get the criteria for each clip
-    for (let i = 0; i < criteriaList.length; i++) {
-      let criteria = criteriaList[i];
-      // Try to get a clip with the current criteria
-      let selectedClip = null;
-      // check for classification includes "silence"
-      if (criteria.classification.includes('silence')) {
-        continue;
-      }
-      // keep trying until we get a clip
-      let oneLastTime = false;
-      while (!selectedClip) {
-        // get our clip
-        selectedClip = await this.getClip(criteria);
-        // did we find a clip?
-        if (selectedClip) {
-          // yay! we found a clip
-          break;
-        } 
-        // uh oh, no clip found, we need to loosen our criteria
-        else if (criteria.classification.length > 0) {
-          // (we got here if no selectedClip & we still have classifications to try)  
-          // remove a classification to try less restrictive criteria
-          criteria.classification.pop();
-          logger.debug(`Adjusted criteria after removing the last classification: ${JSON.stringify(criteria)}`);
-          // now try again
+  // given recipe which includes clip criteria, get audio clips from db
+  //  nomenclature here (since things can get confusing):
+  //    "clip" is the part of the recipe file that specifies criteria for a clip
+  //    "audioClip" is a record from the database audio table representing a clip file
+  async selectAudioClips(recipe) {
+    // Iterate over each track in the recipe
+    for (const track of recipe.recipeObj) {
+      // Iterate over each clip in the track
+      for (const clip of track.clips) {
+        //check for classification includes "silence"
+        if (clip.classification.includes('silence')) {
+          this._setSilenceBasics(clip);
+          // go to next iteration of loop
+          continue;
         }
-        // if we've removed all classifications, we need to try something else
-        else if (oneLastTime) {
-          // (we got here if no selectedClip & we have no classifications and oneLastTime is set)
-          logger.error('No clip found after loosening all criteria. Reject this recipe.');
-          return null;
-        } 
-        // this is our last chance, try without classification
-        else {
-          // (we got here if no selectedClip & no classifications and oneLastTime is not set)
-          // try one more time with no classification
-          oneLastTime = true;
-          // now try one last time
+        // we treat the clip as the search criteria
+        let selectedAudioClip = null;
+        let oneLastTime = false;
+        // loop until we either get an audio clip or we run out of options
+        while (!selectedAudioClip) {
+          // get our audio clip
+          selectedAudioClip = await this._getAudioClip(clip);
+          // did we find a clip?
+          if (selectedAudioClip) {
+            // yay! we found a clip
+            break;
+          }
+          // uh oh, no clip found, we need to loosen our criteria
+          else if (clip.classification.length > 0) {
+            // (we got here if no selectedClip & we still have classifications to try)
+            // remove a classification to try less restrictive criteria
+            clip.classification.pop();
+            logger.debug(`Adjusted criteria after removing the last classification: ${JSON.stringify(clip)}`);
+            // now try again
+          }
+          // if we've removed all classifications, we need to try something else
+          else if (oneLastTime) {
+            // (we got here if no selectedClip & we have no classifications and oneLastTime is set)
+            logger.error('No audio clip found after loosening all criteria. Reject this recipe.');
+            return false;
+          }
+          // this is our last chance, try without classification
+          else {
+            // (we got here if no selectedClip & no classifications and oneLastTime is not set)
+            // try one more time with no classification
+            oneLastTime = true;
+            // now try one last time
+          }
         }
-      }
-      // add the selected clip to our list
-      selectedClips.push(selectedClip);
-    }
-    return selectedClips;
+        // add the details from the selected audio clip to the clip portion of our recipeObj
+        clip.audioID = selectedAudioClip.audioID;
+        clip.title = selectedAudioClip.title;
+        clip.filename = selectedAudioClip.filename;
+        clip.duration = selectedAudioClip.duration;
+      };
+    };
+    return true;
   }
 
-  // get clip based on your criteria
-  async getClip(criteria) {
+// Set the basic parameters for a silence clip
+_setSilenceBasics(clip) {
+  // Extract clip length ranges from the configuration
+  const clipLengthRanges = config.audio.clipLength;
+  // Initialize variables to store the minimum and maximum durations possible for the clip
+  let minLength = Infinity;
+  let maxLength = 0;
+  // Process each clip length designation in the clip's clipLength array
+  clip.clipLength.forEach(lengthKey => {
+    if (clipLengthRanges[lengthKey]) {
+      const range = clipLengthRanges[lengthKey];
+      // Update the minimum length if the current range's min is lower
+      if (range.min < minLength) {
+        minLength = range.min;
+      }
+      // Update the maximum length if the current range's max is higher
+      if (range.max > maxLength) {
+        maxLength = range.max;
+      }
+    } else {
+      logger.debug(`No range found for clip length key: ${lengthKey}`);
+    }
+  });
+  // Set the calculated minLength and maxLength to the clip
+  clip.minLength = minLength;
+  clip.maxLength = maxLength;
+  logger.debug(`Set silence clip lengths: min=${minLength} seconds, max=${maxLength} seconds`);
+}
+
+
+  // get audio clip based on your criteria
+  async _getAudioClip(criteria) {
     // Fetch clips from the database based on the provided criteria
     await this._fillClipPool(criteria);
     // TODO: If the clips array is empty, return an error to the caller
     if (this.clipPool.length === 0) {
-      logger.error('No clips found for the provided criteria.');
+      // logger.error('No clips found for the provided criteria.');
       return null;
     }
     // Set the date range for the clips
     this._getEarliestAndLatestDates();
     // Add tags from the criteria
-    this.addTags(criteria);
+    this.addTags(criteria.tags);
     // Score the clips
     this._scoreClips();
     // Select the next clip
@@ -123,7 +161,7 @@ class ClipSelector {
       logger.debug(`queryValues: ${queryValues}`);
       const [clips] = await db.execute(queryStr, queryValues);
       this.clipPool = clips;
-      logger.info(`ClipSelector:_fillClipPool: Clips fetched: ${clips.length} clips`);
+      logger.debug(`ClipSelector:_fillClipPool: Clips fetched: ${clips.length} clips`);
     } catch (error) {
       logger.error(new Error(`ClipSelector:_fillClipPool: Error fetching clips: ${error.message}`));
       throw error; // or handle accordingly
@@ -155,13 +193,13 @@ class ClipSelector {
   _constructLengthQuery(criteria) {
     let querySubParts = [];
     let querySubValues = [];
-    // Handle length criteria
-    if (criteria.length) {
-      const lengths = Array.isArray(criteria.length) ? criteria.length.map(l => l.toLowerCase()) : [criteria.length.toLowerCase()];
-      lengths.forEach(lengthCategory => {
-        const matchingLengthCategory = Object.keys(clipLength).find(key => key.toLowerCase() === lengthCategory);
+    // Handle clipLength criteria
+    if (criteria.clipLength) {
+      const clipLengths = criteria.clipLength.map(l => l.toLowerCase());
+      clipLengths.forEach(lengthCategory => {
+        const matchingLengthCategory = Object.keys(clipLengthRanges).find(key => key.toLowerCase() === lengthCategory);
         if (matchingLengthCategory) {
-          const { min, max } = clipLength[matchingLengthCategory];
+          const { min, max } = clipLengthRanges[matchingLengthCategory];
           querySubParts.push(`(duration >= ? AND duration <= ?)`);
           querySubValues.push(min, max);
         }
@@ -208,11 +246,9 @@ class ClipSelector {
 
   // Add the tags from criteria (or similar object)
   //  check status: 
-  addTags(criteria) {
-    // Handle tags criteria
-    if (criteria.tags) {
-      const tags = Array.isArray(criteria.tags) ? criteria.tags : [criteria.tags];
-      this.recentTags = [...this.recentTags, ...tags];
+  addTags(tags) {
+    if (tags) {
+      this.recentTags.push(...tags);
     }
   }
 

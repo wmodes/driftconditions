@@ -154,7 +154,7 @@ const config = {
             ],
             classificationNote: "Classification can be 'Ambient', 'Atmospheric', 'Environmental', 'Premixed', 'Soundscape', 'Archival', 'Spoken', 'Narrative', 'Instructional', 'Vocal', 'Instrumental', 'Experimental', 'Digital', or 'Other'.",
             classification:"Vocal Music",
-            tag: ["vintage", "jazz"],
+            tags: ["vintage", "jazz"],
             lengthNote: "Length can be 'tiny', 'short', 'medium', 'long', or 'huge'.",
             length: "long",
             volumeNote: "Volume can be a number from 0 to 100. This overrides the track volume.",
@@ -179,7 +179,7 @@ const config = {
     newClip: {
       note: "NEW CLIP: Add as many clips as you like to a track.",
       classification: [ "Ambient/Atmospheric",  "Field Recording"],
-      tag: "ambient", length: "long"
+      tags: "ambient", length: "long"
     },
 
     // starting pattern for adding a new clip

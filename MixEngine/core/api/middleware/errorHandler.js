@@ -1,6 +1,6 @@
 // errorHandler.js - This middleware is responsible for handling errors that occur during request processing.
 
-const { logger } = require('config/logger');
+const { logger } = require('config');
 
 
 const notFound = (req, res, next) => {

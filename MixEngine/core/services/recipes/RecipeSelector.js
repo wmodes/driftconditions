@@ -90,7 +90,7 @@ class RecipeSelector {
     // Ensure dateRange is non-negative. It will be 0 if no valid dates were found.
     this.dateRange = Math.max(0, latest - earliest);
 
-    // logger.debug(`Date range set: earliest: ${this.earliestDate.toISOString()}, latest: ${this.latestDate.toISOString()}, range: ${this.dateRange}`);
+    logger.debug(`Date range set: earliest: ${this.earliestDate.toISOString()}, latest: ${this.latestDate.toISOString()}, range: ${this.dateRange}`);
     return true;
   }
 
@@ -121,7 +121,7 @@ class RecipeSelector {
         });
       }
     });
-    // logger.debug(`recentClassifications: ${this.recentClassifications.length}, recentTags: ${this.recentTags.length}`);
+    logger.debug(`recentClassifications: ${this.recentClassifications.length}, recentTags: ${this.recentTags.length}`);
   }
 
   // Iterate over the recipes and score each one
@@ -131,7 +131,7 @@ class RecipeSelector {
         // Calculate the score for the current recipe
         const score = this._calculateScore(recipe);       
         // Log the recipe's identifiable property (e.g., title) and its score
-        // logger.debug(`Recipe scored: ${recipe.title}, score: ${score}`);        
+        logger.debug(`Recipe scored: ${recipe.title}, score: ${score}`);        
         // Return the recipe object with the updated score
         return { ...recipe, score: score };
     });
@@ -164,7 +164,7 @@ class RecipeSelector {
     let newnessSubscore = 1 - (lastUsedTime - earliestTime) / this.dateRange;
     // Ensure the newness score is within the 0 to 1 range.
     const normalizedNewness = Math.min(Math.max(newnessSubscore, 0), 1);
-    // logger.debug(`Recipe "${recipe.title}" scored. Newness: ${normalizedNewness}`);
+    logger.debug(`Recipe "${recipe.title}" scored. Newness: ${normalizedNewness}`);
     return normalizedNewness;
   }
 
@@ -205,12 +205,12 @@ class RecipeSelector {
     const index = this.recentClassifications.findIndex(c => c.toLowerCase() === normalizedClassification);
     // If the classification is not found, return 1
     if (index === -1) {
-      // logger.debug(`Classification "${classification}" not found, scored: ${subscore}`)
+      logger.debug(`Classification "${classification}" not found, scored: ${subscore}`)
       return 1;
     }
     // Scale the value based on the index position
     const subscore = index / (this.recentClassifications.length - 1);
-    // logger.debug(`Classification "${classification}" index: ${index}, scored: ${subscore}`)
+    logger.debug(`Classification "${classification}" index: ${index}, scored: ${subscore}`)
     return subscore;
   }
 
@@ -228,7 +228,7 @@ class RecipeSelector {
     const poolSize = Math.max(poolSizeByPercent, selectPoolMinSize);
     // Ensure that the actualPoolSize does not exceed the number of available recipes
     const adjustedPoolSize = Math.min(poolSize, totalRecipes);
-    // logger.debug(`totalRecipes: ${totalRecipes}, poolSizeByPercent: ${poolSizeByPercent}, selectPoolMinSize: ${selectPoolMinSize}, adjustedPoolSize: ${adjustedPoolSize}`);
+    logger.debug(`totalRecipes: ${totalRecipes}, poolSizeByPercent: ${poolSizeByPercent}, selectPoolMinSize: ${selectPoolMinSize}, adjustedPoolSize: ${adjustedPoolSize}`);
     // Create the selection pool from the top N recipes, according to the calculated pool size
     const selectionPool = this.recipes.slice(0, adjustedPoolSize);
 
@@ -240,7 +240,7 @@ class RecipeSelector {
     // Select a random recipe from the selection pool
     const randomIndex = Math.floor(Math.random() * selectionPool.length);
     const selectedRecipe = selectionPool[randomIndex];
-    // logger.debug(`Selected recipe: ${selectedRecipe.title}, score: ${selectedRecipe.score}`);
+    logger.debug(`Selected recipe: ${selectedRecipe.title}, score: ${selectedRecipe.score}`);
     return selectedRecipe;
   }
 
