@@ -1,7 +1,7 @@
 // clipSelector.js - A class module for fetching and selecting audio clips based on certain criteria
 
 const { database: db } = require('config');
-const logger = require('config/logger').custom('ClipSelector', 'debug');
+const logger = require('config/logger').custom('ClipSelector', 'info');
 
 const { config } = require('config');
 const clipLengthRanges = config.audio.clipLength;
@@ -177,7 +177,7 @@ _setSilenceBasics(clip) {
     if (criteria.classification) {
       const classifications = Array.isArray(criteria.classification) ? criteria.classification : [criteria.classification];
       classifications.forEach(classification => {
-        const classificationJson = JSON.stringify([classification]);
+        const classificationJson = JSON.stringify([classification.toLowerCase()]);
         querySubParts.push(`JSON_CONTAINS(LOWER(classification), ?)`);
         querySubValues.push(classificationJson);
       });

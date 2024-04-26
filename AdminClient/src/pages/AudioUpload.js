@@ -1,7 +1,7 @@
 // AudioUpload.js - A page for uploading audio files
 
-import { useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { audioUpload } from '../store/audioSlice';
 
@@ -18,6 +18,19 @@ const fieldNotes = config.audio.fieldNotes;
 function AudioUpload() {
   const dispatch = useDispatch();  
   const navigate = useNavigate();
+
+  // get auth state from Redux store
+  const { user: userAuth } = useSelector((state) => state.auth);
+  const [audioEditPerm, setAudioEditPerm] = useState(false);
+
+  // Check if the user has permission to edit audio
+  useEffect(() => {
+    // Check if the user has permission to edit audio
+    if (userAuth.permissions.indexOf('audioEdit') !== -1) {
+      console.log('User has permission to edit audio');
+      setAudioEditPerm(true);
+    }
+  }, [userAuth.permissions]);
 
   // Local state for managing form inputs
   const [title, setTitle] = useState('');
@@ -145,9 +158,9 @@ function AudioUpload() {
               <label className="form-label" htmlFor="status">Status:</label>
               <select name="status" value={record.status} onChange={handleChange} className="form-select">
                 <option value="Review">Under Review</option>
-                <option value="Approved" disabled>Approved</option>
-                <option value="Disapproved" disabled>Disapproved</option>
-                <option value="Trashed" disabled>Trashed</option>
+                <option value="Approved" disabled={!audioEditPerm}>Approved</option>
+                <option value="Disapproved" disabled={!audioEditPerm}>Disapproved</option>
+                <option value="Trashed" disabled={!audioEditPerm}>Trashed</option>
               </select>
               <p className="form-note mt-1">{fieldNotes.status}</p>
             </div>

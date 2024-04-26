@@ -1,6 +1,7 @@
 
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import AceEditor from 'react-ace';
 import 'ace-builds/src-noconflict/mode-json5';
@@ -24,6 +25,19 @@ const newClipPattern = config.recipes.newClip;
 const newSilencePattern = config.recipes.newSilence;
 
 function RecipeForm({ action, initialRecord, onSave, onCancel, onChange }) {
+  // get auth state from Redux store
+  const { user: userAuth } = useSelector((state) => state.auth);
+  const [editPerm, setEditPerm] = useState(false);
+
+  // Check if the user has permission to edit recipes
+  useEffect(() => {
+    // Check if the user has permission to edit audio
+    if (userAuth.permissions.indexOf('recipeEdit') !== -1) {
+      console.log('User has permission to edit recipes');
+      setEditPerm(true);
+    }
+  }, [userAuth.permissions]);
+
   // State to hold the form data
   const [record, setRecord] = useState(initialRecord);
   // console.log("RecipeForm: initialRecord", initialRecord);
@@ -247,9 +261,9 @@ function RecipeForm({ action, initialRecord, onSave, onCancel, onChange }) {
         <label className="form-label" htmlFor="status">Status:</label>
         <select name="status" value={record.status} onChange={handleChange} className="form-select">
           <option value="Review">Under Review</option>
-          <option value="Approved" disabled={action === "create"}>Approved</option>
-          <option value="Disapproved" disabled={action === "create"}>Disapproved</option>
-          <option value="Trashed" disabled={action === "create"}>Trashed</option>
+          <option value="Approved"  disabled={!editPerm}>Approved</option>
+          <option value="Disapproved"  disabled={!editPerm}>Disapproved</option>
+          <option value="Trashed"  disabled={!editPerm}>Trashed</option>
         </select>
       </div>
 

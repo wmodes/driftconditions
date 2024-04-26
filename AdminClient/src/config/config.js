@@ -99,7 +99,7 @@ const config = {
       'Spoken', 
       'Narrative', 
       'Instructional', 
-      'Vocal', 
+      'VocalMusic', 
       'Instrumental', 
       'Experimental', 
       'Digital', 
@@ -125,7 +125,7 @@ const config = {
       'Spoken', 
       'Narrative', 
       'Instructional', 
-      'Vocal', 
+      'VocalMusic', 
       'Instrumental', 
       'Experimental', 
       'Digital', 
@@ -144,7 +144,7 @@ const config = {
         notes: [
           "Tracks are played simultaneously like a multi-track recording.",
           "You can have up to 5 tracks, and there must be at least one."],
-        volume:{ default: 100 },
+        volume: 100,
         clips:[
           {
             generalNote: ["Clips are individual audio files within the tracks.",
@@ -152,7 +152,7 @@ const config = {
             "They can be single values or an array of values.",
             "(Notes can be safely deleted.)",
             ],
-            classificationNote: "Classification can be 'Ambient', 'Atmospheric', 'Environmental', 'Premixed', 'Soundscape', 'Archival', 'Spoken', 'Narrative', 'Instructional', 'Vocal', 'Instrumental', 'Experimental', 'Digital', or 'Other'.",
+            classificationNote: "Classification can be 'Ambient', 'Atmospheric', 'Environmental', 'Premixed', 'Soundscape', 'Archival', 'Spoken', 'Narrative', 'Instructional', 'VocalMusic', 'Instrumental', 'Experimental', 'Digital', or 'Other'.",
             classification:"Vocal Music",
             tags: ["vintage", "jazz"],
             lengthNote: "Length can be 'tiny', 'short', 'medium', 'long', or 'huge'.",
@@ -168,7 +168,7 @@ const config = {
     newTrack: {
       track: 0,
       note: "NEW TRACK: Add up to 5 tracks.",
-      volume: { default: 100 },
+      volume: 100,
       clips: [
         { classification: "Instrumental", tag: "ambient", length: "long"
         }

@@ -24,7 +24,7 @@ const config = {
       'Spoken', 
       'Narrative', 
       'Instructional', 
-      'Vocal', 
+      'VocalMusic', 
       'Instrumental', 
       'Experimental', 
       'Digital', 
@@ -72,7 +72,7 @@ const config = {
       'Spoken', 
       'Narrative', 
       'Instructional', 
-      'Vocal', 
+      'VocalMusic', 
       'Instrumental', 
       'Experimental', 
       'Digital', 
@@ -115,7 +115,26 @@ const config = {
   content: {
     contentFileDir: '/Users/wmodes/dev/interference/content',
     tmpFileDir: '/Users/wmodes/dev/interference/content/tmp',
+    mixFileDir: '/Users/wmodes/dev/interference/content/mixes',
   },
+  ffmpeg: {
+    output: {
+      format: 'mp3',
+      codec: 'libmp3lame',
+      bitrate: '128k',
+      channels: 2,
+      sampleRate: 44100,
+    },
+  },
+  filters: {
+    noise: {
+      presets: {
+        default: {f: [13, 7, 3], a: [1, 0.5, 0.25], n: 1, s: 3, p: 1, o: -0.5, q: 0.5},
+        main: {f: [13, 7, 3], a: [1, 0.5, 0.25], n: 1, s: 3, p: -1, o: -0.5, q: 0.5},
+        interference: {f: [13, 7, 3], a: [1, 0.5, 0.25], n: 1, s: 3, p: 1, o: -0.5, q: 0.5},
+      },
+    },
+  }
 };
 
 module.exports = config;

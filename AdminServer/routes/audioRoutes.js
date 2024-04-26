@@ -203,7 +203,6 @@ router.get('/sample/:year/:month/:filename', verifyToken, async (req, res) => {
 //
 // UPLOADING AUDIO
 //
-//
 
 // Route to create an audio element including uploading the file
 //
@@ -231,14 +230,15 @@ router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
     // console.log('File type:', filetype);
 
     // Prep db params
-    const query = `INSERT INTO audio (title, filename, creatorID, duration, filetype, classification, tags, comments, copyrightCert) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+    const query = `INSERT INTO audio (title, status, filename, creatorID, duration, filetype, classification, tags, comments, copyrightCert) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
     const values = [
       record.title, 
+      record.status,
       filePathForDB, 
       creatorID, 
       duration, 
       filetype, 
-      JSON.stringify(record.classification), 
+      record.classification, 
       JSON.stringify(normalizeTagArray(record.tags)), 
       record.comments, 
       record.copyrightCert
@@ -260,7 +260,6 @@ router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
 
 //
 // UPDATING AUDIO
-//
 //
 
 // Route to update audio information

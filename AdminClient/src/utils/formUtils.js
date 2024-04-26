@@ -66,7 +66,7 @@ export const TagSelect = ({ options, onTagChange, initialValues }) => {
           tags={tags}
           handleDelete={handleDelete}
           handleAddition={handleAddition}
-          delimiters={[188, 13]} // Enter and comma keys as delimiters
+          delimiters={[188, 13, ',']} // Enter and comma keys as delimiters
           placeholder=""
           autofocus={false}
           classNames={{

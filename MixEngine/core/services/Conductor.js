@@ -59,17 +59,16 @@ class Conductor {
         // Did we find clips for this recipe?
         if (!clipResults) {
           logger.error(`Clips not found for recipe: ${selectedRecipe.title} (${selectedRecipe.recipeID})`);
-          // start new loop iteration
+          // start new loop iteration and get new recipe
           continue;
         }
         //
         // Adjust timings for clips
-        this.clipAdjustor.adjustClipTimings(selectedRecipe);
+        const duration = this.clipAdjustor.adjustClipTimings(selectedRecipe);
         logger.debug(`recipe after clip timing adjustment: ${JSON.stringify(selectedRecipe.recipeObj, null, 2)}`);
-        return;
         //
         // Make the mix
-        this.mixEngine.makeMix(selectedRecipe);
+        this.mixEngine.makeMix(selectedRecipe, duration);
 
       } catch (error) {
         logger.error(new Error(`Conductor error: ${error.message}, ${error.stack}`));
