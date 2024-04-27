@@ -8,6 +8,10 @@ import { useDispatch, useSelector } from 'react-redux';
 import { audioInfo, audioUpdate } from '../store/audioSlice';
 import { initWaveSurfer, destroyWaveSurfer } from '../utils/waveUtils';
 
+// unsavedChanges: global state, listeners, and handlers
+import { setUnsavedChanges } from '../store/formSlice';
+import { useUnsavedChangesEvents, SafeLink, useSafeNavigate } from '../utils/formUtils';
+
 import { formatDateAsFriendlyDate, setClassificationFormOptions, 
   formatClassificationForDB } from '../utils/formatUtils';
 import { ClassificationCheckboxes, TagInput } from '../utils/formUtils';
@@ -23,8 +27,12 @@ const fieldNotes = config.audio.fieldNotes;
 
 function AudioEdit() {
   const { audioID } = useParams();
-  const navigate = useNavigate();
   const dispatch = useDispatch();
+  // const navigate = useNavigate();
+  const navigate = useSafeNavigate();
+
+  // Call the useUnsavedChangesEvents hook to create event listeners
+  useUnsavedChangesEvents();
 
   const [isDomReady, setIsDomReady] = useState(false);
   const waveSurferRef = useRef(null);
@@ -69,6 +77,7 @@ function AudioEdit() {
   }, [audioID, dispatch]);
 
   const handleChange = (e) => {
+    dispatch(setUnsavedChanges(true));
     const { name, value, type, checked } = e.target;
     if (type === 'checkbox') {
       // Handle classification checkbox change
@@ -82,6 +91,7 @@ function AudioEdit() {
   };
 
   const handleTagChange = (newTags) => {
+    dispatch(setUnsavedChanges(true));
     setRecord(prevState => ({ ...prevState, tags:newTags }));
     // console.log('AudioEdit new tags:', newTags);
   };
@@ -99,12 +109,7 @@ function AudioEdit() {
       .then(() => {
         setSuccessMessage('Update successful!');
         setError('');
-        // Update audioDetails state with normalized values to reflect in the input field
-        // setRecord(prevState => ({
-        //   ...prevState,
-        //   // Convert array back to string for input field
-        //   tags: formatTagsAsString(adjustedRecord.tags) 
-        // }));
+        dispatch(setUnsavedChanges(false));
       })
       .catch(err => {
         console.error('Update error:', err);
@@ -151,12 +156,11 @@ function AudioEdit() {
   const renderBreadcrumbs = () => {
     return (
       <div className="breadcrumb-box">
-        <span className="link" onClick={() => navigate('/audio/list')}>
-          <FeatherIcon icon="arrow-left" />List
-        </span>
-        <span className="link" onClick={() => navigate(`/audio/view/${audioID}`)}>
-          View
-        </span>
+        <ul className="breadcrumb">
+          <li className="link"><SafeLink to="/audio/list">List</SafeLink></li>
+          <li className="link"><SafeLink to="/audio/upload">Add New</SafeLink></li>
+          <li className="link"><SafeLink to="/audio/view/${audioID}">Views</SafeLink></li>
+        </ul>
       </div>
     );
   };
@@ -167,6 +171,7 @@ function AudioEdit() {
         <div className="display-box">
           <form onSubmit={handleSubmit}>
             <h2 className='title'>Edit Audio</h2>
+            {renderBreadcrumbs()}
             <div className="form-group">
               <label className="form-label" htmlFor="title">Title: <Required /></label>
               <input className="form-field" type="text" id="title" name="title" value={record.title || ""} onChange={handleChange} />

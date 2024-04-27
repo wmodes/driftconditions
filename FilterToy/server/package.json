@@ -1,0 +1,19 @@
+{
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "ffprobe-static": "^3.1.0",
+    "fluent-ffmpeg": "^2.1.2",
+    "fs-extra": "^11.2.0",
+    "module-alias": "^2.2.3",
+    "util": "^0.12.5",
+    "winston": "^3.13.0"
+  },
+  "proxy": "http://localhost:8081",
+  "_moduleAliases": {
+    "@config": "./config"
+  },
+  "scripts": {
+    "start": "node server.js"
+  }
+}

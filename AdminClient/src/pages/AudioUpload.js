@@ -8,6 +8,10 @@ import { audioUpload } from '../store/audioSlice';
 import { setClassificationFormOptions, formatClassificationForDB } from '../utils/formatUtils';
 import { ClassificationCheckboxes, TagInput } from '../utils/formUtils';
 
+// unsavedChanges: global state, listeners, and handlers
+import { setUnsavedChanges } from '../store/formSlice';
+import { useUnsavedChangesEvents, SafeLink, useSafeNavigate } from '../utils/formUtils';
+
 // Import the config object from the config.js file
 import config from '../config/config'; 
 // pull variables from the config object
@@ -17,18 +21,22 @@ const fieldNotes = config.audio.fieldNotes;
 
 function AudioUpload() {
   const dispatch = useDispatch();  
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
+  const navigate = useSafeNavigate;
+
+  // Call the useUnsavedChanges hook to track unsaved changes and handle navigation
+  useUnsavedChangesEvents();
 
   // get auth state from Redux store
   const { user: userAuth } = useSelector((state) => state.auth);
-  const [audioEditPerm, setAudioEditPerm] = useState(false);
+  const [editPerm, setEditPerm] = useState(false);
 
   // Check if the user has permission to edit audio
   useEffect(() => {
     // Check if the user has permission to edit audio
     if (userAuth.permissions.indexOf('audioEdit') !== -1) {
-      console.log('User has permission to edit audio');
-      setAudioEditPerm(true);
+      // console.log('User has permission to edit audio');
+      setEditPerm(true);
     }
   }, [userAuth.permissions]);
 
@@ -54,6 +62,8 @@ function AudioUpload() {
   });
   
   const handleChange = (e) => {
+    dispatch(setUnsavedChanges(true));
+    // console.log('AudioUpload:handleChange: setting unsavedChanges to true');
     const { name, value, type, checked } = e.target;
     if (type === 'checkbox') {
       if (name === 'copyrightCert') {
@@ -81,15 +91,17 @@ function AudioUpload() {
       // Generate a title based on the file name
       const fileName = file.name;
       let title = fileName.replace(/\.[^/.]+$/, ''); // Remove file extension
-      // replace any number of punctuation characters with a single space
-      title = title.replace(/[^a-zA-Z0-9\s'()]+/g, ' ');
-      // make Title Case
+      // Replace punctuation characters with a single space, excluding space-dash-space pattern, single quotes, and Unicode characters
+      title = title.replace(/(?<![ -'])\p{P}+(?![ -'])/gu, ' ');
+      // Make Title Case
       title = title.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
       setRecord(prevState => ({ ...prevState, title }));
     }
   };
 
   const handleFileChange = (e) => {
+    dispatch(setUnsavedChanges(true));
+    // console.log('AudioUpload:handleFileChange: setting unsavedChanges to true');
     const selectedFile = e.target.files[0];    
     if (selectedFile && allowedFileTypes.includes(selectedFile.type)) {
       // Set the file if it's one of the allowed types
@@ -106,6 +118,8 @@ function AudioUpload() {
   };
 
   const handleTagChange = (newTags) => {
+    dispatch(setUnsavedChanges(true));
+    // console.log('AudioUpload:handleTagChange: setting unsavedChanges to true');
     setRecord(prevState => ({ ...prevState, tags:newTags }));
   };
 
@@ -127,13 +141,14 @@ function AudioUpload() {
         setUploadedAudioID(response.audioID);
         // Redirect to the edit page for the newly uploaded audio
         navigate(`/audio/edit/${response.audioID}`);
+        dispatch(setUnsavedChanges(false));
       })
       .catch(error => {
         setIsLoading(false); // Stop loading
         console.error("Upload error:", error);
         setError(error.message || 'Failed to upload audio.');
       });
-  };  
+  };
 
   // Check if required fields are filled
   const isFormValid = record.title && file && record.copyrightCert;
@@ -144,13 +159,24 @@ function AudioUpload() {
   .replace(/^./, match => match.toUpperCase())
   .trim();
 
+  // Function to render advanced pagination buttons with navigation controls
+  const renderBreadcrumbs = () => {
+    return (
+      <div className="breadcrumb-box">
+        <ul className="breadcrumb">
+          <li className="link"><SafeLink to="/audio/list">List</SafeLink></li>
+        </ul>
+      </div>
+    );
+  };
+
   return (
     <div className="edit-wrapper">
       <div className="display-box-wrapper">
         <div className="display-box">
           <form onSubmit={handleSubmit}>
             <h2 className='title'>Upload Audio</h2>
-
+            {renderBreadcrumbs()}
             <div className="form-group">
               <label className="form-label" htmlFor="title">Title: <Required /></label>
               <input name="title" className="form-field" type="text" id="title" value={record.title} onChange={handleChange} />
@@ -158,9 +184,9 @@ function AudioUpload() {
               <label className="form-label" htmlFor="status">Status:</label>
               <select name="status" value={record.status} onChange={handleChange} className="form-select">
                 <option value="Review">Under Review</option>
-                <option value="Approved" disabled={!audioEditPerm}>Approved</option>
-                <option value="Disapproved" disabled={!audioEditPerm}>Disapproved</option>
-                <option value="Trashed" disabled={!audioEditPerm}>Trashed</option>
+                <option value="Approved" disabled={!editPerm}>Approved</option>
+                <option value="Disapproved" disabled={!editPerm}>Disapproved</option>
+                <option value="Trashed" disabled={!editPerm}>Trashed</option>
               </select>
               <p className="form-note mt-1">{fieldNotes.status}</p>
             </div>
@@ -219,6 +245,7 @@ function AudioUpload() {
               {error && <p className="error">{error}</p>}
             </div>
           </form>
+          {renderBreadcrumbs()}
         </div>
       </div>
     </div>

@@ -18,7 +18,6 @@ const aceOptions = config.aceEditor;
 
 function RecipeView() {
   const { recipeID } = useParams();
-  console.log('recipeID:', recipeID);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -57,12 +56,10 @@ function RecipeView() {
   const renderBreadcrumbs = () => {
     return (
       <div className="breadcrumb-box">
-        <span className="link" onClick={() => navigate('/recipe/list')}>
-          <FeatherIcon icon="arrow-left" /> List
-        </span>
-        <span className="link" onClick={() => navigate(`/recipe/edit/${recipeID}`)}>
-          Edit
-        </span>
+        <ul className="breadcrumb">
+          <li className="link"><Link to="/recipe/list">List</Link></li>
+          <li className="link"><Link to="/recipe/edit/${recipeID}">Edit</Link></li>
+        </ul> 
       </div>
     );
   };

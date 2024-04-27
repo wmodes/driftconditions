@@ -1,6 +1,6 @@
 
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 import { setProjectName } from '../store/appSlice';
@@ -19,10 +19,9 @@ const RootLayout = () => {
   
   // Get the page context based on the current path
   const pageContext = getPageContext(currentPath);
-  // console.log('pageContext:', pageContext);
+
   // check user authentication and authorization
   useAuthCheckAndNavigate(pageContext);
-  // console.log('RootLayout authChecked:', authChecked);
 
   useEffect(() => {
     // Ensure a project name is set or retrieved on app initialization

@@ -6,11 +6,16 @@ import { Link, useNavigate } from 'react-router-dom';
 import { logout } from '../store/authSlice';
 import FeatherIcon from 'feather-icons-react';
 
+// unsavedChanges: global state, listeners, and handlers
+import { setUnsavedChanges } from '../store/formSlice';
+import { SafeLink, useSafeNavigate } from '../utils/formUtils';
+
 export default function Navigation() {
   const { user } = useSelector((state) => state.auth);
   // console.log("nav: user", user)
   const dispatch = useDispatch();
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
+  const navigate = useSafeNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const projectName = useSelector(state => state.app.projectName);
 
@@ -96,7 +101,7 @@ export default function Navigation() {
                 const handleClick = item.action ? () => item.action() : closeMenu;
                 return (
                   <li key={itemIndex} onClick={handleClick}>
-                    <Link to={item.link} className="nav-item">{item.text}</Link>
+                    <SafeLink to={item.link} className="nav-item">{item.text}</SafeLink>
                   </li>
                 );
               })}
@@ -111,9 +116,9 @@ export default function Navigation() {
   return (
     <nav className='navbar'>
       <div className="logo-wrapper">
-        <Link className="logo" to='/'>
+        <SafeLink className="logo" to='/'>
           {projectName}
-        </Link>
+        </SafeLink>
       </div>
       <div className="navburger">
         <button className="icon" onClick={toggleMenu}>

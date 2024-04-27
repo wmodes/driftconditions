@@ -1,8 +1,84 @@
 // formUtil - utilities for form components
 
 import React, { useState, useEffect, useRef } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { Link, useNavigate } from 'react-router-dom';
+import { setUnsavedChanges } from '../store/formSlice';
 import { WithContext as ReactTags } from 'react-tag-input';
 import { normalizeTag } from './formatUtils';
+
+// Function to track unsaved changes and handle navigation
+export const useUnsavedChangesEvents = () => {
+  const dispatch = useDispatch();
+  const unsavedChanges = useSelector(state => state.form.unsavedChanges);
+  console.log('formUtils:useUnsavedChanges:unsavedChanges', unsavedChanges);
+
+  useEffect(() => {
+    const handleBeforeUnload = (event) => {
+      console.log('formUtils:useUnsavedChanges:handleBeforeUnload:unsavedChanges', unsavedChanges);
+      if (unsavedChanges) {
+        // Display confirmation dialog
+        const confirmMessage = 'You have unsaved changes. Are you sure you want to leave?';
+        const confirmed = window.confirm(confirmMessage);
+        if (!confirmed) {
+          // Prevent the default action (navigation)
+          event.preventDefault();
+          // Set a custom message for the dialog
+          event.returnValue = confirmMessage;
+          return confirmMessage;
+        }
+      }
+    };
+    // Add event listener for beforeunload
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    const handleUnloadConfirmation = () => {
+      // Reset unsavedChanges if the user chooses to continue
+      if (unsavedChanges) {
+        dispatch(setUnsavedChanges(false));
+      }
+    };
+    // Add event listener for unload
+    window.addEventListener('unload', handleUnloadConfirmation);
+
+    // Cleanup function to remove event listeners
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('unload', handleUnloadConfirmation);
+    };
+  }, [unsavedChanges, dispatch]);
+};
+
+// Function to handle navigation
+export const useSafeNavigate = () => { 
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const unsavedChanges = useSelector(state => state.form.unsavedChanges);
+  
+  const handleSafeNavigation = (path) => {
+    console.log('formUtils:useSafeNavigation:path', path);
+    if (!unsavedChanges || window.confirm('You have unsaved changes. Are you sure you want to leave?')) {
+      // Set unsavedChanges to false if user chooses to continue
+      if (unsavedChanges) {
+        dispatch(setUnsavedChanges(false));
+      }
+      navigate(path);
+    }
+  };
+  return handleSafeNavigation;
+};
+
+// SafeLink component to handle navigation with unsaved changes
+export const SafeLink = ({ to, children }) => {
+  const safeNavigate = useSafeNavigate();
+  
+  const handleClick = (event) => {
+    event.preventDefault();
+    safeNavigate(to);
+  };
+
+  return <Link to={to} onClick={handleClick}>{children}</Link>;
+};
 
 // provide a dropdown list of tags to select from
 //
@@ -94,7 +170,7 @@ export const TagInput = ({ onTagChange, initialTags }) => {
 
   useEffect(() => {
     // Call onTagChange with initial tags when the component mounts
-    onTagChange(ReactTagsToArray(tags));
+    // onTagChange(ReactTagsToArray(tags));
   }, []); // Empty dependency array to run only once on mount
 
   // make sure that when we click in the select-results div, the input field is focused

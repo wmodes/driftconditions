@@ -4,6 +4,10 @@ import { useDispatch } from 'react-redux';
 import { recipeInfo, recipeUpdate } from '../store/recipeSlice';
 import RecipeForm from '../components/RecipeForm'; // Adjust the import path as needed
 
+// unsavedChanges: global state, listeners, and handlers
+import { setUnsavedChanges } from '../store/formSlice';
+import { useUnsavedChangesEvents, SafeLink, useSafeNavigate } from '../utils/formUtils';
+
 import { 
   formatDateAsFriendlyDate, 
   formatJSONForDisplay, formatJSONStrForDB, 
@@ -21,8 +25,12 @@ const classificationOptions = config.recipes.classification;
 
 function RecipeEdit() {
   const { recipeID } = useParams();
-  const navigate = useNavigate();
   const dispatch = useDispatch();
+  // const navigate = useNavigate();
+  const navigate = useSafeNavigate();
+
+  // Call the useUnsavedChangesEvents hook to create event listeners
+  useUnsavedChangesEvents();
 
   // State for handling loading, success, and error feedback
   const [isLoading, setIsLoading] = useState(true);
@@ -64,6 +72,7 @@ function RecipeEdit() {
 
   // we don't need to massage the data because RecipeForm will handle that
   const handleChange = (updatedRecord) => {
+    dispatch(setUnsavedChanges(true));
     setRecord(updatedRecord);
   };
 
@@ -88,6 +97,7 @@ function RecipeEdit() {
           // Convert stuff back to strings for input fields
           recipeData: formatJSONForDisplay(adjustedRecord.recipeData),
         }));
+        dispatch(setUnsavedChanges(false));
       })
       .catch((err) => {
         console.error('Update error:', err);
@@ -105,12 +115,10 @@ function RecipeEdit() {
   const renderBreadcrumbs = () => {
     return (
       <div className="breadcrumb-box">
-        <span className="link" onClick={() => navigate('/recipe/list')}>
-          <FeatherIcon icon="arrow-left" /> List
-        </span>
-        <span className="link" onClick={() => navigate(`/recipe/view/${recipeID}`)}>
-          View
-        </span>
+        <ul className="breadcrumb">
+          <li className="link"><SafeLink to="/recipe/list">List</SafeLink></li>
+          <li className="link"><SafeLink to="/recipe/view/${recipeID}">View</SafeLink></li>
+        </ul>
       </div>
     );
   };
