@@ -1,4 +1,4 @@
-
+// config.js - admin client configuration
 
 const config = {
   adminServer: {

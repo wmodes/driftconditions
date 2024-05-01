@@ -1,21 +1,15 @@
 {
-  "name": "MixEngine",
-  "version": "1.0.0",
-  "description": "",
-  "author": "Wes Modes",
-  "license": "MIT",
-  "main": "server.js",
   "dependencies": {
-    "config": "file:../config",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
-    "express": "^4.19.2",
+    "express": "^4.19.1",
     "ffprobe-static": "^3.1.0",
     "fluent-ffmpeg": "^2.1.2",
     "fs-extra": "^11.2.0",
     "json5": "^2.2.3",
     "jsonwebtoken": "^9.0.2",
-    "module-alias": "^2.2.3"
+    "module-alias": "^2.2.3",
+    "config": "file:../config"
   },
   "_moduleAliases": {
     "@root": ".",
