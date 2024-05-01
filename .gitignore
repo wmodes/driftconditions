@@ -4,3 +4,5 @@ package-lock.json
 content
 logs
 .vscode
+Attic
+.DS_Store
