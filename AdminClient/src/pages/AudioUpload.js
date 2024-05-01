@@ -21,7 +21,7 @@ const fieldNotes = config.audio.fieldNotes;
 
 function AudioUpload() {
   const dispatch = useDispatch();  
-  // const navigate = useNavigate();
+  const navigateOG = useNavigate();
   const navigate = useSafeNavigate;
 
   // Call the useUnsavedChanges hook to track unsaved changes and handle navigation
@@ -139,9 +139,9 @@ function AudioUpload() {
         setSuccessMessage('Upload successful!');
         setError('');
         setUploadedAudioID(response.audioID);
-        // Redirect to the edit page for the newly uploaded audio
-        navigate(`/audio/edit/${response.audioID}`);
         dispatch(setUnsavedChanges(false));
+        // Redirect to the edit page for the newly uploaded audio
+        navigateOG(`/audio/edit/${response.audioID}`);
       })
       .catch(error => {
         setIsLoading(false); // Stop loading

@@ -76,6 +76,7 @@ const config = {
       'Instrumental', 
       'Experimental', 
       'Digital', 
+      'Effect',
       'Other'
     ],
   },
@@ -129,9 +130,10 @@ const config = {
   filters: {
     noise: {
       presets: {
-        default: {f: [13, 7, 3], a: [1, 0.5, 0.25], n: 1, s: 3, p: 1, o: -0.5, q: 0.5},
-        main: {f: [13, 7, 3], a: [1, 0.5, 0.25], n: 1, s: 3, p: -1, o: -0.5, q: 0.5},
-        interference: {f: [13, 7, 3], a: [1, 0.5, 0.25], n: 1, s: 3, p: 1, o: -0.5, q: 0.5},
+        default: {f: [13, 7, 3], a: [1, 0.5, 0.25], n: 1, s: 2, p: 1, o: -0.5, q: 0.5},
+        interrupted: {f: [13, 7, 3], a: [1, 0.5, 0.25], n: 1, s: 2, p: -1, o: -0.5, q: 0.5},
+        interrupter: {f: [13, 7, 3], a: [1, 0.5, 0.25], n: 1, s: 2, p: 1, o: -0.5, q: 0.5},
+        fadeInNOut: {f: [13, 7, 3], a: [1, 0.5, 0.25], n: 1, s: 1, p: 1, o: 1, q: 0.5},
       },
     },
   }

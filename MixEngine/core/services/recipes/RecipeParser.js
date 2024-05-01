@@ -1,4 +1,6 @@
-const { logger } = require('config');
+// RecipeParser.js - RecipeParser class for normalizing recipe data
+
+const logger = require('config/logger').custom('Conductor', 'info');
 
 const { config } = require('config');
 // Extract values from the config object
@@ -136,6 +138,25 @@ class RecipeParser {
       }
     });
     return tagsList;
+  }
+
+  getPlaylistFromRecipe(recipe) {
+    const playlist = [];
+    // Iterate over each track in the recipe
+    recipe.recipeObj.forEach(track => {
+      if (track.clips) {
+        // Iterate over each clip in the track
+        track.clips.forEach(clip => {
+          // Ignore silence clips
+          if (clip.classification.includes('silence')) {
+            return;
+          }
+          // Directly add the clip to the playlist
+          playlist.push(clip.title);
+        });
+      }
+    });
+    return playlist;
   }
 
 }

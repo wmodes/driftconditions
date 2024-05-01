@@ -2,7 +2,7 @@
 
 const { database: db } = require('config');
 const ffmpeg = require('fluent-ffmpeg');
-const logger = require('config/logger').custom('MixEngine', 'debug');
+const logger = require('config/logger').custom('MixEngine', 'info');
 const path = require('path');
 
 const { config } = require('config');
@@ -29,7 +29,21 @@ class MixEngine {
     this.amixDuration = 'longest';
   }
 
-  async makeMix(recipe, duration) {
+  _resetState() {
+    this.filterChain = [];
+    this.currentInputNum = 0;
+    this.currentTrackNum = 0;
+    this.currentClipNum = 0;
+    this.trackFinalLabels = []; 
+    this.finalOutputLabel = '';
+    this.mixFilename = '';
+    this.mixFilepath = '';
+    this.amixDuration = 'longest';
+  }
+
+  async makeMix(recipe, mixDetails) {
+    // Reset state
+    this._resetState();
     const recipeObj = recipe.recipeObj;
     //
     // Setup ffmpeg command
@@ -42,18 +56,12 @@ class MixEngine {
     // Build the filter chain
     this._buildComplexFilter(recipeObj);
     //
-    // Create entry into the database for the mix
-    const mixID = await this._createMixEntry(recipe);
-    //
     // Define output path
     // const mixID = 999;  // Placeholder for testing
-    this._setMixFilepath(mixID, recipe);
+    mixDetails.filepath = this._setMixFilepath(mixDetails.mixID, recipe);
     //
     // Configure output and run the ffmpeg process
     await this._configureAndRun(ffmpegCmd);
-    //
-    // Update the database entry with the mix path and duration
-    await this._updateMixEntry(mixID, this.mixFilename, duration);
   }
 
   _setupInputs(ffmpegCmd, recipeObj) {
@@ -74,6 +82,7 @@ class MixEngine {
     const mixFilepath = path.join(mixFileDir, mixFilename);
     logger.debug(`MixEngine:makeMix: mixFilepath: ${mixFilepath}`);
     this.mixFilepath = mixFilepath;
+    return this.mixFilepath;
   }
 
   // method to build the complete filter chain
@@ -174,7 +183,7 @@ class MixEngine {
               volume: this._buildNoiseFilter(volCmdParam),
               eval: 'frame'
             };
-            this.amixDuration = 'shortest';
+            // this.amixDuration = 'shortest';
             break;
           default:
             volOptions.volume = 1.0;
@@ -389,63 +398,6 @@ class MixEngine {
     return longestTrack;
   }
 
-  /*
-   * Database methods
-   */
-
-  // Create an entry in the database for the mix
-  async _createMixEntry(recipe) {
-    logger.info('MixEngine:_createMixEntry(): Creating database entry for the mix');
-    const { recipeID, title, classification, tags } = recipe;
-    try {
-      // SQL Query to insert a new mix entry
-      const queryStr = `
-        INSERT INTO mixQueue 
-          (recipeID, title, status, recipeObj, classification, tags)
-        VALUES (?, ?, ?, ?, ?, ?)
-      `;
-      const queryValues = [
-        recipeID, 
-        title, 
-        "Prep",
-        JSON.stringify(recipe.recipeObj),
-        JSON.stringify(classification), 
-        JSON.stringify(tags)
-      ];
-      const [result] = await db.execute(queryStr, queryValues);
-      // Log the newly created mixID
-      logger.debug(`MixEngine:_createMixEntry(): New mix created with mixID: ${result.insertId}`);
-      return result.insertId;
-    } catch (error) {
-      logger.error('MixEngine:_createMixEntry(): Error creating mix entry', error);
-      throw new Error('Failed to create mix entry');
-    }
-  }
-
-  async _updateMixEntry(mixID, mixFilename, duration) {
-    logger.info('MixEngine:_updateMixEntry(): Updating database entry with mix path');
-    try {
-      // SQL Query to update the mix entry with the generated mix path
-      const queryStr = `
-        UPDATE mixQueue
-        SET status = ?, filename = ?, duration = ?
-        WHERE mixID = ?
-      `;
-      const queryValues = [
-        "Ready",
-        mixFilename, 
-        duration, 
-        mixID
-      ];
-      // logger.debug(`MixEngine:_updateMixEntry: queryStr: ${queryStr}`);
-      // logger.debug(`MixEngine:_updateMixEntry: queryValues: ${queryValues}`);
-      await db.execute(queryStr, queryValues);
-      logger.info(`MixEngine:_updateMixEntry(): Mix entry updated with mixPath: ${mixFilename}`);
-    } catch (error) {
-      logger.error('MixEngine:_updateMixEntry(): Error updating mix entry', error);
-      throw new Error('Failed to update mix entry');
-    }
-  }
 
 
 

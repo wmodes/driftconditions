@@ -152,11 +152,23 @@ const config = {
             "They can be single values or an array of values.",
             "(Notes can be safely deleted.)",
             ],
-            classificationNote: "Classification can be 'Ambient', 'Atmospheric', 'Environmental', 'Premixed', 'Soundscape', 'Archival', 'Spoken', 'Narrative', 'Instructional', 'VocalMusic', 'Instrumental', 'Experimental', 'Digital', or 'Other'.",
-            classification:"Vocal Music",
+            classification: [
+              'Ambient', 
+              'Atmospheric', 
+              'Environmental', 
+              'Premixed', 
+              'Soundscape', 
+              'Archival', 
+              'Spoken', 
+              'Narrative', 
+              'Instructional', 
+              'VocalMusic', 
+              'Instrumental', 
+              'Experimental', 
+              'Digital', 
+              'Other'],
             tags: ["vintage", "jazz"],
-            lengthNote: "Length can be 'tiny', 'short', 'medium', 'long', or 'huge'.",
-            length: "long",
+            length: ['tiny', 'short', 'medium', 'long', 'huge'],
             volumeNote: "Volume can be a number from 0 to 100. This overrides the track volume.",
             volume: 100,
           }
@@ -170,7 +182,10 @@ const config = {
       note: "NEW TRACK: Add up to 5 tracks.",
       volume: 100,
       clips: [
-        { classification: "Instrumental", tag: "ambient", length: "long"
+        { 
+          classification: ["Instrumental", "VocalMusic"], 
+          tag: ["ambient", "environmental"], 
+          length: ["medium", "long"]
         }
       ]
     },
@@ -178,15 +193,16 @@ const config = {
     // starting pattern for adding a new clip
     newClip: {
       note: "NEW CLIP: Add as many clips as you like to a track.",
-      classification: [ "Ambient/Atmospheric",  "Field Recording"],
-      tags: "ambient", length: "long"
+      classification: [ "ambient",  "premixed"],
+      tags: ["static"], length: ["long", "huge"], 
+      volume: 100
     },
 
     // starting pattern for adding a new clip
     newSilence: {
       note: "SILENCE: Really just a clip with classification: 'silence'.",
       classification: "silence",
-      length: "short"
+      length: ["tiny", "short"],
     },
 
   },

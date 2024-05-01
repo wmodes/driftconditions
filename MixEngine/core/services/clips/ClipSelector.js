@@ -15,7 +15,7 @@ class ClipSelector {
     this.earliestDate = null;
     this.latestDate = null;
     this.dateRange = null;
-    this.recentTags = [];
+    this.recentTags = []; 
   }
 
   // given recipe which includes clip criteria, get audio clips from db
