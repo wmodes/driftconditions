@@ -1,0 +1,14 @@
+[Unit]
+Description=AdminClient React frontend service
+After=network.target
+
+[Service]
+Type=simple
+User=debian
+WorkingDirectory=/home/debian/interference/AdminClient
+ExecStart=/usr/bin/npm start
+Restart=on-failure
+Environment=PORT=3000
+
+[Install]
+WantedBy=multi-user.target
