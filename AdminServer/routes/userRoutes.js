@@ -31,7 +31,7 @@ router.post('/list',  verifyToken, async (req, res) => {
     const pageArg = parseInt(req.body.page || 1, 10);
     const recordsPerPage = parseInt(req.body.recordsPerPage || 15, 10);
     const offset = (pageArg - 1) * recordsPerPage;
-    // console.log('req.body:',req.body);
+    logger.debug('req.body:',req.body);
 
     // Adjusted for user fields
     const sortOptions = {
@@ -135,7 +135,7 @@ router.post('/profile', verifyToken, async (req, res) => {
 
     // Attempt to fetch the target user's information based on targetID or username
     let userInfo = await getUserInfo({ userID: targetID, username: targetUsername });
-    // console.log('User info:', userInfo);
+    logger.debug('User info:', userInfo);
 
     // Check if userInfo is null (user not found) and respond accordingly
     if (!userInfo) {
@@ -153,9 +153,9 @@ router.post('/profile', verifyToken, async (req, res) => {
     // Determine if the edit flag should be true or false
     // const isEditable = targetID == userIDFromToken || (!targetID && !targetUsername);
     const isEditable = (targetID == userIDFromToken) || (targetUsername == usernameFromToken);
-    // console.log('targetID:', targetID, 'userIDFromToken:', userIDFromToken);
-    // console.log('targetUsername:', targetUsername, 'usernameFromToken:', usernameFromToken);
-    // console.log('isEditable:', isEditable);
+    logger.debug('targetID:', targetID, 'userIDFromToken:', userIDFromToken);
+    logger.debug('targetUsername:', targetUsername, 'usernameFromToken:', usernameFromToken);
+    logger.debug('isEditable:', isEditable);
 
     // Respond with the user's information and the edit flag
     res.status(200).json({
@@ -174,9 +174,9 @@ router.post('/profile', verifyToken, async (req, res) => {
 // This is a protected route, only accessible to authenticated users.
 // TODO: Deal with password updates
 router.post('/profile/edit', verifyToken, async (req, res) => {
-  // console.log('update profile');
+  logger.debug('update profile');
   const { firstname, lastname, email, bio, location, url } = req.body;
-  // console.log('Request to update profile:', { firstname, lastname, email, bio, location, url });
+  logger.debug('Request to update profile:', { firstname, lastname, email, bio, location, url });
   try {
     // Verify the token to get user ID
     const decoded = jwt.verify(req.cookies.token, jwtSecretKey);
@@ -257,22 +257,22 @@ router.post('/user', verifyToken, async (req, res) => {
   fields = ['username', 'firstname', 'lastname', 'email', 'url', 'bio', 'location', 'roleName', 'validated', 'addedOn'];
   try {
     const { username } = req.body; // Extracting username from the request body
-    // console.log('Request for userlookup received', { username });
+    logger.debug('Request for userlookup received', { username });
     if (!username) {
-      // console.log('Bad request: Missing username');
+      logger.debug('Bad request: Missing username');
       return res.status(400).send("Bad request: Missing username");
     }
     // Extract userID of the requesting user from the token
     const token = req.cookies.token;
     const decoded = jwt.verify(token, jwtSecretKey);
     const requestingUserID = decoded.userID;
-    // console.log('Decoded JWT for user ID', { requestingUserID });
+    logger.debug('Decoded JWT for user ID', { requestingUserID });
     // Fetch requesting user's information for permission check
     const requestingUserInfo = await getUserInfo({ userID: requestingUserID });
-    // console.log('Requesting user info:', requestingUserInfo);
+    logger.debug('Requesting user info:', requestingUserInfo);
     // Check if the requesting user has permission to view the target user's information
     if (!await hasPermission(requestingUserInfo, 'userlookup')) { // Make sure to await the result
-      // console.log('Permission denied for userlookup', { requestingUserID });
+      logger.debug('Permission denied for userlookup', { requestingUserID });
       return res.status(403).send("Forbidden: You do not have permission to view this user's information");
     }
     // Fetch and return the target user's information based on username
@@ -283,14 +283,14 @@ router.post('/user', verifyToken, async (req, res) => {
         delete targetUserInfo[field];
       }
     }
-    // console.log('Target user info:', targetUserInfo);
+    logger.debug('Target user info:', targetUserInfo);
     if (targetUserInfo) {
       res.status(200).json({
         success: true,
         data: targetUserInfo
       });
     } else {
-      // console.log('User not found', { username });
+      logger.debug('User not found', { username });
       res.status(404).send("User not found");
     }
   } catch (error) {

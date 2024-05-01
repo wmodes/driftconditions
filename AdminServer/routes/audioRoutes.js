@@ -178,7 +178,7 @@ router.get('/sample/:year/:month/:filename', verifyToken, async (req, res) => {
   // Construct the file path
   // Adjust the path according to your actual files location
   const filePath = path.join(contentFileDir, year, month, filename);
-  // console.log('File path:', filePath);
+  logger.debug('File path:', filePath);
 
   try {
     await fs.access(filePath, fs.constants.F_OK);
@@ -216,21 +216,21 @@ router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
     return res.status(400).send('No file uploaded.');
   }
   try {
-    // console.log("orig file name: ", req.file.originalname)
+    logger.debug("orig file name: ", req.file.originalname)
     // Verify token and get userID (sync)
     const decoded = jwt.verify(req.cookies.token, jwtSecretKey);
     const creatorID = decoded.userID;
-    // console.log('Uploader ID:', creatorID);
+    logger.debug('Uploader ID:', creatorID);
     // Rename file and move into place (async)
     const filePathForDB = await renameAndStore(req.file.path, req.file.originalname, record.title);
     const fullFilePath = path.join(contentFileDir, filePathForDB);
-    // console.log('relFilePath:', fullFilePath, 'file path for db:', filePathForDB);
+    logger.debug('relFilePath:', fullFilePath, 'file path for db:', filePathForDB);
     // Get audio duration (async)
     const duration = await getAudioDuration(fullFilePath);
-    // console.log('Duration:', duration);
+    logger.debug('Duration:', duration);
     // Get file type from file name in lowercase (sync)
     const filetype = path.extname(req.file.originalname).toLowerCase().substring(1);
-    // console.log('File type:', filetype);
+    logger.debug('File type:', filetype);
 
     // Prep db params
     const query = `INSERT INTO audio (title, status, filename, creatorID, duration, filetype, classification, tags, comments, copyrightCert) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
@@ -351,16 +351,16 @@ async function renameAndStore(tempPath, origFilename, title) {
 
   // create the directory if it doesn't exist
   const uploadDir = path.join(contentFileDir, year, month);
-  // console.log('Upload dir:', uploadDir);
+  logger.debug('Upload dir:', uploadDir);
   await mkdirp(uploadDir);
 
   // Normalize the title to be used as the filename
   let baseFilename = title.toLowerCase().replace(/[\W_]+/g, '-').replace(/^\-+|\-+$/g, '');
-  // console.log('Base filename:', baseFilename);
+  logger.debug('Base filename:', baseFilename);
 
   // Extract the extension from the original filename
   const extension = path.extname(origFilename).toLowerCase();
-  // console.log('Original file extension:', extension);
+  logger.debug('Original file extension:', extension);
 
   // Place the file in the final directory
   //
@@ -380,11 +380,11 @@ async function renameAndStore(tempPath, origFilename, title) {
 
   // Move the file to the final path without overwriting
   await fsExtra.move(tempPath, fullFilepath, { overwrite: false });
-  // console.log('File moved to:', fullFilepath);
+  logger.debug('File moved to:', fullFilepath);
   
   // Calculate the relative path without hardcoding
   const relativePath = path.relative(path.join(contentFileDir), fullFilepath);
-  // console.log('Relative path:', relativePath);
+  logger.debug('Relative path:', relativePath);
 
   return relativePath;
 }
