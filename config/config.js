@@ -1,15 +1,17 @@
 // config.js
-// This file contains the configuration for AdminClient, AdminServer, and MixEngine
+// This file contains the configuration for AdminServer and MixEngine servers
 
 // Load environment variables from .env file
 require('dotenv').config();
+const BASEDIR = process.env.BASEDIR;
+const CLIENTPORT = process.env.PORT;
 
 const config = {
   adminServer: {
     protocol: 'http',
     host: 'localhost',
     port: 8080,
-    logfile: '/Users/wmodes/dev/interference/logs/server.log',
+    logfile: BASEDIR + '/logs/server.log',
   },
   audio: {
     selectPoolPercentSize: 25,
@@ -88,7 +90,7 @@ const config = {
     protocol: 'http',
     host: 'localhost',
     port: 8081,
-    logfile: '/Users/wmodes/dev/interference/logs/audioserver.log',
+    logfile: BASEDIR + '/logs/audioserver.log',
   },
   dbConfig: {
     connectionLimit: 10,
@@ -110,13 +112,13 @@ const config = {
   },
   corsOptions: {
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    origin: 'http://localhost:3000',
+    origin: 'http://localhost:' + CLIENTPORT,
     credentials: true,
   },
   content: {
-    contentFileDir: '/Users/wmodes/dev/interference/content',
-    tmpFileDir: '/Users/wmodes/dev/interference/content/tmp',
-    mixFileDir: '/Users/wmodes/dev/interference/content/mixes',
+    contentFileDir: BASEDIR + '/content',
+    tmpFileDir: BASEDIR + '/content/tmp',
+    mixFileDir: BASEDIR + '/content/mixes',
   },
   ffmpeg: {
     output: {

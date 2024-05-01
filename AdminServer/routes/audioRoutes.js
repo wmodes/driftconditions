@@ -181,22 +181,25 @@ router.get('/sample/:year/:month/:filename', verifyToken, async (req, res) => {
   // console.log('File path:', filePath);
 
   try {
-    // Use fs.promises.access to check if the file exists. 
-    // Note: fs.promises.access does not directly return a value, but it will reject if the file does not exist
     await fs.access(filePath, fs.constants.F_OK);
-    // console.log('File exists:', filePath);
-
-    // If the file exists, send it
+    // File exists, proceed to send it
     res.sendFile(filePath, (err) => {
       if (err) {
-        // console.error('Error sending file:', err);
-        // Handle error, but don't expose internal details
-        res.status(500).send('Error serving the file');
+        console.error('Error sending file:', err);
+        if (!res.headersSent) {
+          res.status(500).send('Error serving the file');
+        } else {
+          console.error('Response was already partially sent when error occurred');
+        }
       }
     });
   } catch (err) {
-    // console.error('File does not exist:', filePath);
-    res.status(404).send('File not found');
+    console.error('File does not exist:', filePath);
+    if (!res.headersSent) {
+      res.status(404).send('File not found');
+    } else {
+      console.error('Response was already partially sent when file not found error occurred');
+    }
   }
 });
 
