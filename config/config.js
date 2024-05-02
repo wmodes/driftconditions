@@ -4,26 +4,24 @@
 // Load environment variables from .env file
 require('dotenv').config();
 const BASEDIR = process.env.BASEDIR;
-const CLIENTPORT = process.env.PORT;
+const HOSTNAME = process.env.HOSTNAME;
+const CLIENTPORT = process.env.CLIENTPORT;
+
 
 const config = {
   adminServer: {
     protocol: 'https',
-    host: 'localhost',
+    host: HOSTNAME,
     port: 8080,
     logfile: BASEDIR + '/logs/server.log',
   },
   corsOptions: {
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     origin: [
-      'http://localhost', 
-      'http://localhost:' + CLIENTPORT, 
-      'https://localhost', 
-      'https://localhost:' + CLIENTPORT,
-      'http://driftconditions.org',
-      'http://driftconditions.org' + CLIENTPORT,
-      'https://driftconditions.org',
-      'https://driftconditions.org' + CLIENTPORT,
+      `http://${HOSTNAME}`, 
+      `http://${HOSTNAME}:${CLIENTPORT}`, 
+      `https://${HOSTNAME}`, 
+      `https://${HOSTNAME}:${CLIENTPORT}`,
     ],
     credentials: true,
   },  
@@ -102,7 +100,7 @@ const config = {
   },
   mixEngineServer: {
     protocol: 'https',
-    host: 'localhost',
+    host: HOSTNAME,
     port: 8081,
     logfile: BASEDIR + '/logs/audioserver.log',
   },

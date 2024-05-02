@@ -2,7 +2,8 @@
 
 const config = {
   adminServer: {
-    baseURL: 'https://localhost:8080',
+    baseURL: `${process.env.REACT_APP_SERVER_URL}`,
+    audioBaseURL: `${process.env.REACT_APP_SERVER_URL}/api/audio/sample`,
     retryLimit: 3,
     routes: {
       // auth
@@ -29,9 +30,7 @@ const config = {
       recipeUpdate: '/api/recipe/update',
       recipeList: '/api/recipe/list',
       recipeTrash: '/api/recipe/trash',
-
     },
-    audioBaseURL: 'https://localhost:8080/api/audio/sample',
   },
   adminClient: {
     pages: {
