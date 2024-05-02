@@ -2,7 +2,7 @@
 
 const config = {
   adminServer: {
-    baseURL: 'http://localhost:8080',
+    baseURL: 'https://localhost:8080',
     retryLimit: 3,
     routes: {
       // auth
@@ -31,7 +31,7 @@ const config = {
       recipeTrash: '/api/recipe/trash',
 
     },
-    audioBaseURL: 'http://localhost:8080/api/audio/sample',
+    audioBaseURL: 'https://localhost:8080/api/audio/sample',
   },
   adminClient: {
     pages: {

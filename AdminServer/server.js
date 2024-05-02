@@ -10,6 +10,8 @@
 //   - CORS and cookie management
 
 const express = require('express');
+const fs = require('fs');
+const https = require('https');
 const app = express();
 const cors = require('cors');
 const bodyParser = require('body-parser');
@@ -20,6 +22,14 @@ const { logger } = require('config');
 const { config } = require('config');
 const server = config.adminServer;
 const corsOptions = config.corsOptions;
+
+// Load SSL/TLS certificates
+const privateKey = fs.readFileSync('certs/server.key', 'utf8');
+const certificate = fs.readFileSync('certs/server.cert', 'utf8');
+const credentials = { key: privateKey, cert: certificate };
+
+// Create HTTPS server
+const httpsServer = https.createServer(credentials, app);
 
 // Middleware setup
 // app.use(bodyParser.urlencoded({extended: false}));
@@ -57,6 +67,6 @@ app.use(errorHandler);
 
 // Starts the server, highlighting the use of a specific port for listening to incoming requests.
 // Starts the server, highlighting the use of a specific port for listening to incoming requests.
-app.listen(server.port, () => {
+httpsServer.listen(server.port, () => {
   logger.info(`Server listening at ${server.protocol}://${server.host}:${server.port}`);
 });
