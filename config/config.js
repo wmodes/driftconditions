@@ -95,7 +95,7 @@ const config = {
   dbConfig: {
     connectionLimit: 10,
     host: 'localhost',
-    user: 'root',
+    user: 'mysql',
     password: process.env.DATABASE_PASSWORD,
     database: 'interference',
   },
