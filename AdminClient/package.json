@@ -30,7 +30,7 @@
   },
   "scripts": {
     "start": "PORT=3000 react-scripts start",
-    "build": "react-scripts --max_old_space_size=4096 build"
+    "build": "react-scripts --max_old_space_size=1536 build"
   },
   "eslintConfig": {
     "extends": [
