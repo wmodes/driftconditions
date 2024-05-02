@@ -1,0 +1,12 @@
+http://driftconditions.org {
+    # Redirect all HTTP traffic to HTTPS on standard port
+    redir https://driftconditions.org{uri}
+}
+
+https://driftconditions.org {
+    root * /home/debian/interference/AdminClient/build
+    file_server
+    encode gzip
+    tls wmodes@gmail.com
+    try_files {path} /index.html
+}

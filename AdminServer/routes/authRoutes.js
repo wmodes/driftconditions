@@ -140,8 +140,8 @@ const issueNewToken = (res, user) => {
     httpOnly: true,
     expires: new Date(Date.now() + cookieExpires),
     path: '/',
-    sameSite: 'Lax', // or 'Strict' based on your requirements
-    // secure: true, // Uncomment if your site is served over HTTPS
+    sameSite: 'None', // or 'Strict' based on your requirements
+    secure: true, // Uncomment if your site is served over HTTPS
   });
 
   return token; // Return the token if needed elsewhere, otherwise, this line can be omitted
@@ -154,8 +154,8 @@ router.post('/logout', async (req, res) => {
     httpOnly: true,
     expires: new Date(0),
     path: '/',
-    sameSite: 'Lax', // Match the settings used when setting the cookie
-    // secure: true, // Uncomment if your site is served over HTTPS
+    sameSite: 'None', // Match the settings used when setting the cookie
+    secure: true, // Uncomment if your site is served over HTTPS
   });
   res.status(200).send({ message: 'Logged out successfully' });
 });

@@ -1,0 +1,12 @@
+http://localhost:3000 {
+    # Redirect all HTTP traffic to HTTPS on standard port
+    redir https://localhost:3000{uri}
+}
+
+https://localhost:3000 {
+    root * /Users/wmodes/dev/interference/AdminClient/build
+    file_server
+    encode gzip
+    tls wmodes@gmail.com
+    try_files {path} /index.html
+}
