@@ -83,6 +83,7 @@ router.post('/signin', async (req, res) => {
 
     // Execute query to find user by username
     const [users] = await db.query(query, values);
+    logger.debug("users:", users);
 
     // no user found
     if (users.length < 1) {
