@@ -24,8 +24,8 @@ const server = config.adminServer;
 const corsOptions = config.corsOptions;
 
 // Load SSL/TLS certificates
-const privateKey = fs.readFileSync('certs/server.key', 'utf8');
-const certificate = fs.readFileSync('certs/server.cert', 'utf8');
+const privateKey = fs.readFileSync('certs/localhost+2-key.pem', 'utf8');
+const certificate = fs.readFileSync('certs/localhost+2.pem', 'utf8');
 const credentials = { key: privateKey, cert: certificate };
 
 // Create HTTPS server

@@ -2,6 +2,8 @@
 
 require('module-alias/register');
 const express = require('express');
+const fs = require('fs');
+const https = require('https');
 const app = express();
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
@@ -15,6 +17,11 @@ const Conductor = require('@services/Conductor');
 const { config } = require('config');
 const corsOptions = config.corsOptions;
 const mixEngineServer = config.mixEngineServer;
+
+// Load SSL/TLS certificates
+const privateKey = fs.readFileSync('certs/localhost+2-key.pem', 'utf8');
+const certificate = fs.readFileSync('certs/localhost+2.pem', 'utf8');
+const credentials = { key: privateKey, cert: certificate };
 
 // Middleware setup
 app.use(express.urlencoded({extended: true}));
@@ -47,6 +54,6 @@ conductor.start().then(() => {
 });
 
 // Starts the server, highlighting the use of a specific port for listening to incoming requests.
-app.listen(mixEngineServer.port, () => {
+httpsServer.listen(mixEngineServer.port, () => {
   logger.info(`Server listening at ${mixEngineServer.protocol}://${mixEngineServer.host}:${mixEngineServer.port}`);
 });

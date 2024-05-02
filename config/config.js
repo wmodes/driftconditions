@@ -87,7 +87,7 @@ const config = {
     maxQueued: 12,
   },
   mixEngineServer: {
-    protocol: 'http',
+    protocol: 'https',
     host: 'localhost',
     port: 8081,
     logfile: BASEDIR + '/logs/audioserver.log',

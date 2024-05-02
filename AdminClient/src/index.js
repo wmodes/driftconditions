@@ -36,15 +36,15 @@
   // import { logout } from './store/authSlice';
 
   // Making the store accessible in the browser's console for debugging
-  if (process.env.NODE_ENV === 'development') {
-    console.log("Redux store available at window.store");
+  // if (process.env.NODE_ENV === 'development') {
+  //   console.log("Redux store available at window.store");
 
-    // const store = configureStore({ reducer: rootReducer });
-    // Temporarily expose the store for debugging
-    window.store = store;
+  //   // const store = configureStore({ reducer: rootReducer });
+  //   // Temporarily expose the store for debugging
+  //   window.store = store;
 
-    // window.logout = () => store.dispatch(logout());
-  }
+  //   // window.logout = () => store.dispatch(logout());
+  // }
 
   // Defining application routes using React Router. The structure shows nested routes where `RootLayout` acts as a layout wrapper for other components.
   const router = createBrowserRouter(
