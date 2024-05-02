@@ -13,6 +13,20 @@ const config = {
     port: 8080,
     logfile: BASEDIR + '/logs/server.log',
   },
+  corsOptions: {
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    origin: [
+      'http://localhost', 
+      'http://localhost:' + CLIENTPORT, 
+      'https://localhost', 
+      'https://localhost:' + CLIENTPORT,
+      'http://driftconditions.org',
+      'http://driftconditions.org' + CLIENTPORT,
+      'https://driftconditions.org',
+      'https://driftconditions.org' + CLIENTPORT,
+    ],
+    credentials: true,
+  },  
   audio: {
     selectPoolPercentSize: 25,
     selectPoolMinSize: 5,
@@ -110,11 +124,6 @@ const config = {
   authCookie: {
     cookieExpires: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
   },
-  corsOptions: {
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    origin: ['http://localhost:' + CLIENTPORT, 'http://localhost', 'http://driftconditions.org'],
-    credentials: true,
-  },  
   content: {
     contentFileDir: BASEDIR + '/content',
     tmpFileDir: BASEDIR + '/content/tmp',
