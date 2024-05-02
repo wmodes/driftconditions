@@ -5,6 +5,7 @@
 require('dotenv').config();
 const BASEDIR = process.env.BASEDIR;
 const CLIENTPORT = process.env.PORT;
+console.log(`config: CLIENTPORT: ${CLIENTPORT}`);
 
 const config = {
   adminServer: {
@@ -112,7 +113,7 @@ const config = {
   },
   corsOptions: {
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    origin: 'http://localhost:' + CLIENTPORT,
+    origin: 'http://127.0.0.1:' + CLIENTPORT,
     credentials: true,
   },
   content: {
