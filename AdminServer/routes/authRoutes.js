@@ -166,7 +166,7 @@ router.post('/check', async (req, res) => {
     if (req.cookies.token) {
       tokenData = await decodeToken(req.cookies.token);
     } else {
-      console.log("no token found");
+      logger.debug("no token found");
     }
     // fetch the row in the "roles" table matching the role
     const user = await getRolePermissions(tokenData ? tokenData.userID : null);

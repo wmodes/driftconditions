@@ -228,7 +228,7 @@ async function getUserInfo({ userID = null, username = null } = {}) {
 }
 
 // Function to get permissions for a role from the database
-// Adjusted hasPermission function with added console.log statements
+// Adjusted hasPermission function with added logger.debug statements
 async function hasPermission(requestingUserInfo, callingRoute) {
   // Early exit if requestingUserInfo is not provided or invalid
   if (!requestingUserInfo || !requestingUserInfo.roleName) {

@@ -178,7 +178,7 @@ router.post('/create', verifyToken, async (req, res) => {
 //
 router.post('/update', verifyToken, async (req, res) => {
   const record = req.body;
-  console.log('recipeUpdate Route: Record:', record);
+  logger.debug('recipeUpdate Route: Record:', record);
   const decoded = jwt.verify(req.cookies.token, jwtSecretKey);
   const editorID = decoded.userID;
 

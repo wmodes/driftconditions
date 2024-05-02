@@ -211,7 +211,7 @@ router.get('/sample/:year/:month/:filename', verifyToken, async (req, res) => {
 //
 router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
   record = req.body;
-  console.log('audioUpload Route: Record:', record);
+  logger.debug('audioUpload Route: Record:', record);
   if (!req.file) {
     return res.status(400).send('No file uploaded.');
   }
@@ -269,7 +269,7 @@ router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
 //
 router.post('/update', verifyToken, async (req, res) => {
   const record = req.body;
-  console.log('audioUpdate Route: Record:', record);
+  logger.debug('audioUpdate Route: Record:', record);
   const decoded = jwt.verify(req.cookies.token, jwtSecretKey);
   const editorID = decoded.userID;
 
