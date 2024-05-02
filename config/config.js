@@ -112,9 +112,9 @@ const config = {
   },
   corsOptions: {
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    origin: 'http://localhost:' + CLIENTPORT,
+    origin: ['http://localhost:' + CLIENTPORT, 'http://driftconditions.org'],
     credentials: true,
-  },
+  },  
   content: {
     contentFileDir: BASEDIR + '/content',
     tmpFileDir: BASEDIR + '/content/tmp',
