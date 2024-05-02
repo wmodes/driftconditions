@@ -6,7 +6,7 @@ import { recipeInfo } from '../store/recipeSlice';
 import { 
   formatDateAsFriendlyDate, formatListAsString, formatTagsAsString, 
   formatJSONForDisplay } from '../utils/formatUtils';
-import FeatherIcon from 'feather-icons-react';
+// import FeatherIcon from 'feather-icons-react';
 
 import AceEditor from 'react-ace';
 import 'ace-builds/src-noconflict/mode-json';
@@ -18,7 +18,7 @@ const aceOptions = config.aceEditor;
 
 function RecipeView() {
   const { recipeID } = useParams();
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const dispatch = useDispatch();
 
   // Success and error handling
@@ -50,7 +50,7 @@ function RecipeView() {
         setError('Failed to fetch recipe details.');
         setIsLoading(false); // Stop loading on error
       });
-  }, [recipeID, dispatch]);
+  }, [recipeRecord, recipeID, dispatch]);
 
   // Function to render breadcrumbs with navigation controls
   const renderBreadcrumbs = () => {
@@ -58,7 +58,7 @@ function RecipeView() {
       <div className="breadcrumb-box">
         <ul className="breadcrumb">
           <li className="link"><Link to="/recipe/list">List</Link></li>
-          <li className="link"><Link to="/recipe/edit/${recipeID}">Edit</Link></li>
+          <li className="link"><Link to={'/recipe/edit/' + recipeID}>Edit</Link></li>
         </ul> 
       </div>
     );

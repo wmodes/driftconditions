@@ -2,7 +2,7 @@
 
 import ace from 'ace-builds/src-noconflict/ace';
 import 'ace-builds/src-noconflict/mode-json'; // Import base mode if extending from it
-const langTools = ace.require("ace/ext/language_tools");
+// const langTools = ace.require("ace/ext/language_tools");
 
 // Define Custom Highlight Rules
 export const defineCustomHighlightRules = () => {

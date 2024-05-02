@@ -29,7 +29,7 @@
     "wavesurfer.js": "^7.7.11"
   },
   "scripts": {
-    "start": "HTTPS=true PORT=80 react-scripts start",
+    "start": "PORT=3000 react-scripts start",
     "build": "react-scripts build"
   },
   "eslintConfig": {

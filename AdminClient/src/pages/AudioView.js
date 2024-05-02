@@ -13,7 +13,7 @@ import FeatherIcon from 'feather-icons-react';
 import config from '../config/config';
 // pull variables from the config object
 const audioBaseURL = config.adminServer.audioBaseURL;
-const fieldNotes = config.audio.fieldNotes;
+// const fieldNotes = config.audio.fieldNotes;
 
 function AudioView() {
   const { audioID } = useParams();

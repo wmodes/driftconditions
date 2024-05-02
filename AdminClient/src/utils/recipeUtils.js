@@ -17,7 +17,7 @@ function trackPositionInJson(jsonDestruct, row) {
     let trackCount = -1;
     let clipCount = -1;
     let clipFlag = false;
-    let outroFlag = false;
+    // let outroFlag = false;
 
     function depthPattern() {
       return depthTracker.join('');
@@ -81,7 +81,7 @@ function trackPositionInJson(jsonDestruct, row) {
   } catch (error) {
     // Handle or re-throw the error as needed
     console.error('JSON Error:', error);
-    throw `JSON Error: ${error}`; // Re-throwing for the calling function to handle
+    throw error; // Re-throwing for the calling function to handle
   }
 }
 

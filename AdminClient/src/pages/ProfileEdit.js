@@ -37,8 +37,9 @@ function ProfileEdit() {
   const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
-    dispatch(profileInfo())
+    dispatch(profileInfo({}))
       .then((res) => {
+        // console.log('Profile fetched:', res.payload);
         if (res.payload && res.payload.data) {
           setProfile(res.payload.data);
         }
@@ -87,7 +88,7 @@ function ProfileEdit() {
           <form onSubmit={handleSubmit}>
             <h2 className='title'>Edit Profile</h2>
             <p className='mb-2'>
-              <span className='mb-1 pr-4'>Username:</span>
+              <span className='form-label mb-1 pr-4'>Username:</span>
               <span className='pb-1 text-xl'>{profile.username}</span>
             </p>
             {mutableFields.map(({ key, label }) => (

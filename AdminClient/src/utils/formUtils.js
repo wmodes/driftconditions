@@ -1,6 +1,6 @@
 // formUtil - utilities for form components
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { setUnsavedChanges } from '../store/formSlice';
@@ -11,11 +11,11 @@ import { normalizeTag } from './formatUtils';
 export const useUnsavedChangesEvents = () => {
   const dispatch = useDispatch();
   const unsavedChanges = useSelector(state => state.form.unsavedChanges);
-  console.log('formUtils:useUnsavedChanges:unsavedChanges', unsavedChanges);
+  // console.log('formUtils:useUnsavedChanges:unsavedChanges', unsavedChanges);
 
   useEffect(() => {
     const handleBeforeUnload = (event) => {
-      console.log('formUtils:useUnsavedChanges:handleBeforeUnload:unsavedChanges', unsavedChanges);
+      // console.log('formUtils:useUnsavedChanges:handleBeforeUnload:unsavedChanges', unsavedChanges);
       if (unsavedChanges) {
         // Display confirmation dialog
         const confirmMessage = 'You have unsaved changes. Are you sure you want to leave?';
@@ -56,7 +56,7 @@ export const useSafeNavigate = () => {
   const unsavedChanges = useSelector(state => state.form.unsavedChanges);
   
   const handleSafeNavigation = (path) => {
-    console.log('formUtils:useSafeNavigation:path', path);
+    // console.log('formUtils:useSafeNavigation:path', path);
     if (!unsavedChanges || window.confirm('You have unsaved changes. Are you sure you want to leave?')) {
       // Set unsavedChanges to false if user chooses to continue
       if (unsavedChanges) {
@@ -92,6 +92,7 @@ export const TagSelect = ({ options, onTagChange, initialValues }) => {
   useEffect(() => {
     // Call onTagAddition with initial tags when the component mounts
     onTagChange(ReactTagsToArray(tags));
+  // eslint-disable-next-line
   }, []) ; // Empty dependency array to run only once on mount
 
   const handleDelete = (i) => {
@@ -166,7 +167,7 @@ export const TagInput = ({ onTagChange, initialTags }) => {
   const convertedTags = arrayToReactTags(initialTags);
 
   const [tags, setTags] = useState(convertedTags);
-  const inputRef = useRef(null); // Create a ref for the input field
+  // const inputRef = useRef(null); // Create a ref for the input field
 
   useEffect(() => {
     // Call onTagChange with initial tags when the component mounts

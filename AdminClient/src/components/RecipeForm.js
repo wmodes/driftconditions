@@ -18,6 +18,7 @@ import { defineCustomEditorMode } from '../utils/editorUtils';
 import { ClassificationCheckboxes, TagInput } from '../utils/formUtils';
 
 import config from '../config/config';
+// eslint-disable-next-line
 import { set } from 'ace-builds/src-noconflict/ace';
 const aceOptions = config.aceEditor;
 const newTrackPattern = config.recipes.newTrack;
@@ -33,7 +34,7 @@ function RecipeForm({ action, initialRecord, onSave, onCancel, onChange }) {
   useEffect(() => {
     // Check if the user has permission to edit audio
     if (userAuth.permissions.indexOf('recipeEdit') !== -1) {
-      console.log('User has permission to edit recipes');
+      // console.log('User has permission to edit recipes');
       setEditPerm(true);
     }
   }, [userAuth.permissions]);
@@ -41,6 +42,7 @@ function RecipeForm({ action, initialRecord, onSave, onCancel, onChange }) {
   // State to hold the form data
   const [record, setRecord] = useState(initialRecord);
   // console.log("RecipeForm: initialRecord", initialRecord);
+  // eslint-disable-next-line
   const [resetRecord, setResetRecord] = useState(
     JSON.parse(JSON.stringify(initialRecord || {}))
   );
@@ -67,6 +69,7 @@ function RecipeForm({ action, initialRecord, onSave, onCancel, onChange }) {
       editor.session.setMode('ace/mode/custom_json'); // Apply the custom mode
       validateOnTheFly(record.recipeData); // Validate the initial content
     }
+    // eslint-disable-next-line
   }, [isEditorReady]);
 
   // Local handleChange function updates local state and calls parent callback
@@ -146,6 +149,7 @@ function RecipeForm({ action, initialRecord, onSave, onCancel, onChange }) {
   };
 
   // Debounce the on-the-fly validation function
+  // eslint-disable-next-line
   const validateOnTheFly = useCallback(_.debounce((newValue) => {
     performValidation(newValue);
   }, 500), [editorRef]); // Assuming editorRef is stable and included if needed

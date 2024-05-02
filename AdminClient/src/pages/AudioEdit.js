@@ -3,8 +3,8 @@
 // TODO: Link back to List at top of form 
 
 import React, { useEffect, useState, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
+import { useParams } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
 import { audioInfo, audioUpdate } from '../store/audioSlice';
 import { initWaveSurfer, destroyWaveSurfer } from '../utils/waveUtils';
 
@@ -16,7 +16,7 @@ import { formatDateAsFriendlyDate, setClassificationFormOptions,
   formatClassificationForDB } from '../utils/formatUtils';
 import { ClassificationCheckboxes, TagInput } from '../utils/formUtils';
 
-import FeatherIcon from 'feather-icons-react';
+// import FeatherIcon from 'feather-icons-react';
 
 // Import the config object from the config.js file
 import config from '../config/config';
@@ -147,10 +147,10 @@ function AudioEdit() {
 
   const Required = () => <span className="required">*</span>;
 
-  const prepLabel = (text) => text
-    .replace(/([A-Z])/g, ' $1')
-    .replace(/^./, match => match.toUpperCase())
-    .trim();
+  // const prepLabel = (text) => text
+  //   .replace(/([A-Z])/g, ' $1')
+  //   .replace(/^./, match => match.toUpperCase())
+  //   .trim();
 
   // Function to render advanced pagination buttons with navigation controls
   const renderBreadcrumbs = () => {
@@ -159,7 +159,7 @@ function AudioEdit() {
         <ul className="breadcrumb">
           <li className="link"><SafeLink to="/audio/list">List</SafeLink></li>
           <li className="link"><SafeLink to="/audio/upload">Add New</SafeLink></li>
-          <li className="link"><SafeLink to="/audio/view/${audioID}">Views</SafeLink></li>
+          <li className="link"><SafeLink to={'/audio/view/' + audioID}>Views</SafeLink></li>
         </ul>
       </div>
     );

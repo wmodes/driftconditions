@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { recipeInfo, recipeUpdate } from '../store/recipeSlice';
 import RecipeForm from '../components/RecipeForm'; // Adjust the import path as needed
@@ -12,8 +12,8 @@ import {
   formatDateAsFriendlyDate, 
   formatJSONForDisplay, formatJSONStrForDB, 
   setClassificationFormOptions, formatClassificationForDB } from '../utils/formatUtils';
-import { ClassificationCheckboxes } from '../utils/formUtils';
-import FeatherIcon from 'feather-icons-react';
+// import { ClassificationCheckboxes } from '../utils/formUtils';
+// import FeatherIcon from 'feather-icons-react';
 import Waiting from '../utils/appUtils';
 
 // Import the config object from the config.js file
@@ -117,7 +117,7 @@ function RecipeEdit() {
       <div className="breadcrumb-box">
         <ul className="breadcrumb">
           <li className="link"><SafeLink to="/recipe/list">List</SafeLink></li>
-          <li className="link"><SafeLink to="/recipe/view/${recipeID}">View</SafeLink></li>
+          <li className="link"><SafeLink to={"/recipe/view/" + recipeID}>View</SafeLink></li>
         </ul>
       </div>
     );

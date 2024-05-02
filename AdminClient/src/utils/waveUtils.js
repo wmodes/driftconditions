@@ -8,6 +8,7 @@ const wsRegionsConfig = wsConfig.plugins.regions;
 
 // Global variable to store the WaveSurfer instance
 let ws = null; 
+// eslint-disable-next-line
 let wsRegions = null;
 
 // Fetch the audio file as a blob and return the URL

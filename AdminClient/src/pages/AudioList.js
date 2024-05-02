@@ -75,6 +75,7 @@ function AudioList() {
         setRetryAttempt(prevAttempt => prevAttempt + 1); // Increment retry attempt
       });
   // Only dependency is location.search to react to changes in search parameters
+  // eslint-disable-next-line
   }, [dispatch, location.search, retryAttempt]);
 
   // Placeholder for roles check function

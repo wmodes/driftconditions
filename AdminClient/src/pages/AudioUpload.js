@@ -41,11 +41,11 @@ function AudioUpload() {
   }, [userAuth.permissions]);
 
   // Local state for managing form inputs
-  const [title, setTitle] = useState('');
-  const [tags, setTags] = useState('');
-  const [comments, setComments] = useState('');
+  // const [title, setTitle] = useState('');
+  // const [tags, setTags] = useState('');
+  // const [comments, setComments] = useState('');
   const [file, setFile] = useState(null);
-  const [isCertified, setIsCertified] = useState(false);
+  // const [isCertified, setIsCertified] = useState(false);
   const [uploadedAudioID, setUploadedAudioID] = useState(null);
 
   // Success and error handling
@@ -154,10 +154,10 @@ function AudioUpload() {
   const isFormValid = record.title && file && record.copyrightCert;
   const Required = () => <span className="required">*</span>;
 
-  const prepLabel = (text) => text
-  .replace(/([A-Z])/g, ' $1')
-  .replace(/^./, match => match.toUpperCase())
-  .trim();
+  // const prepLabel = (text) => text
+  // .replace(/([A-Z])/g, ' $1')
+  // .replace(/^./, match => match.toUpperCase())
+  // .trim();
 
   // Function to render advanced pagination buttons with navigation controls
   const renderBreadcrumbs = () => {

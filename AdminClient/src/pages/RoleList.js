@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { roleList, roleUpdate } from '../store/userSlice';
-import { formatListAsString, formatListStrAsArray } from '../utils/formatUtils';
+import { formatListAsString } from '../utils/formatUtils';
 import { TagSelect } from '../utils/formUtils';
 
 // Import the config object from the config.js file

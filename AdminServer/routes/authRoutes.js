@@ -84,7 +84,7 @@ router.post('/signin', async (req, res) => {
 
     // Execute query to find user by username
     const [users] = await db.query(query, values);
-    logger.debug("users:", users);
+    // logger.debug("users:", users);
 
     // no user found
     if (users.length < 1) {
@@ -172,7 +172,7 @@ router.post('/check', async (req, res) => {
     }
     // fetch the row in the "roles" table matching the role
     const user = await getRolePermissions(tokenData ? tokenData.userID : null);
-    logger.debug(`authRoutes:/check: user: ${user}`);
+    // logger.debug(`authRoutes:/check: user: ${user}`);
     if (!user) {
       return res.status(403).json({ 
         error: {
@@ -182,7 +182,7 @@ router.post('/check', async (req, res) => {
         }
       });
     }
-    logger.debug("user:", user);
+    // logger.debug("user:", user);
 
     // if user.editDate (which is really the role permisssions edit date) 
     // is after the token's issuedAt date, then issue a new token 
@@ -190,9 +190,9 @@ router.post('/check', async (req, res) => {
     if (tokenData) {
       const oneHourFromNow = new Date(Date.now() + tokenRefresh); // 1 hour from now
       if (user.editDate > tokenData.issuedAt || tokenData.expiresAt <= oneHourFromNow) {
-        logger.debug("role permissions have been updated or token expires within 1 hour");
+        // logger.debug("role permissions have been updated or token expires within 1 hour");
         const token = issueNewToken(res, user);
-        logger.debug("new token issued");
+        // logger.debug("new token issued");
       }
     }
 
@@ -209,7 +209,7 @@ router.post('/check', async (req, res) => {
         }
       });
     }
-    logger.debug("context and permission matched");
+    // logger.debug("context and permission matched");
     // if all checks are okay, return 200
     res.status(200).json({ 
       authorized: true,
@@ -261,7 +261,7 @@ async function getRolePermissions(userID) {
       const roleQuery = `SELECT * FROM roles WHERE roleName = ? LIMIT 1;`;
       const roleValues = 'noauth';
       const [roleRows] = await db.query(roleQuery, roleValues);
-      logger.debug("roleRows:", roleRows);
+      // logger.debug("roleRows:", roleRows);
       if (roleRows.length === 0) {
         logger.debug('Role not found:', roleName);
         return null; // Role not found
@@ -278,7 +278,7 @@ async function getRolePermissions(userID) {
     // First, fetch the roleName of the user
     const userQuery = `SELECT * FROM users WHERE userID = ? LIMIT 1;`;
     const userValues = [userID];
-    logger.debug('Fetching user role:', userID);
+    // logger.debug('Fetching user role:', userID);
     const [userRows] = await db.query(userQuery, userValues);
 
     if (userRows.length === 0) {
@@ -295,18 +295,19 @@ async function getRolePermissions(userID) {
     // Next, fetch the permissions for the fetched roleName
     const roleQuery = `SELECT * FROM roles WHERE roleName = ? LIMIT 1;`;
     const roleValues = [user.roleName];
-    logger.debug('Fetching role permissions for role:', roleName);
+    // logger.debug('Fetching role permissions for role:', user.roleName);
     const [roleRows] = await db.query(roleQuery, roleValues);
 
     if (roleRows.length === 0) {
       logger.debug('Role not found:', roleName);
       return null; // Role not found
     }
-    logger.debug("roleRows[0]:", roleRows[0])
+    // logger.debug("roleRows[0]:", roleRows[0])
     user.permissions = roleRows[0].permissions;
     user.editDate = roleRows[0].editDate;
-    logger.debug("getRolePermissions user:", user);
-    logger.debug('Role permissions:', roleName, permissions);
+    user.roleName = roleRows[0].roleName;
+    // logger.debug("getRolePermissions user:", user);
+    // logger.debug('Role permissions:', user.roleName, user.permissions);
 
     return user;
   } catch (error) {

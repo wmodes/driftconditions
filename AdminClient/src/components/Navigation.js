@@ -2,12 +2,12 @@
 
 import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { Link, useNavigate } from 'react-router-dom';
+// import { Link, useNavigate } from 'react-router-dom';
 import { logout } from '../store/authSlice';
 import FeatherIcon from 'feather-icons-react';
 
 // unsavedChanges: global state, listeners, and handlers
-import { setUnsavedChanges } from '../store/formSlice';
+// import { setUnsavedChanges } from '../store/formSlice';
 import { SafeLink, useSafeNavigate } from '../utils/formUtils';
 
 export default function Navigation() {

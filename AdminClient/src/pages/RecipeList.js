@@ -2,7 +2,7 @@
 
 // TODO: Add search field
 
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { recipeList as recipeListAction, recipeTrash as recipeTrashAction } from '../store/recipeSlice';
@@ -69,6 +69,7 @@ function RecipeList() {
         setRetryAttempt(prevAttempt => prevAttempt + 1); // Increment retry attempt
       });
   // Only dependency is location.search to react to changes in search parameters
+  // eslint-disable-next-line
   }, [dispatch, location.search, retryAttempt]);
 
   const recipeTrash = async (recipeID) => {
