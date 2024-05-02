@@ -172,6 +172,7 @@ router.post('/check', async (req, res) => {
     }
     // fetch the row in the "roles" table matching the role
     const user = await getRolePermissions(tokenData ? tokenData.userID : null);
+    logger.debug(`authRoutes:/check: user: ${user}`);
     if (!user) {
       return res.status(403).json({ 
         error: {
