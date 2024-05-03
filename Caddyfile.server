@@ -4,6 +4,9 @@ http://driftconditions.org {
 }
 
 https://driftconditions.org {
+    log {
+        level DEBUG
+    }
     root * /Users/wmodes/dev/interference/AdminClient/build
     file_server
     encode gzip
@@ -12,6 +15,9 @@ https://driftconditions.org {
 }
 
 https://driftconditions.org:8080 {
+    log {
+        level DEBUG
+    }
     reverse_proxy localhost:8081 {
         header_up Host {host}
         header_up X-Real-IP {remote}
