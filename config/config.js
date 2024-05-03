@@ -29,7 +29,7 @@ const config = {
   },  
   mixEngineServer: {
     protocol: 'http',
-    host: localhost,
+    host: 'localhost',
     port: 8083,
     logfile: BASEDIR + '/logs/audioserver.log',
   },
