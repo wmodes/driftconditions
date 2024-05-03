@@ -46,7 +46,7 @@ conductor.start().then(() => {
   logger.error(`Conductor failed to start: ${error.message}`);
 });
 
-// Starts the server, highlighting the use of a specific port for listening to incoming requests.
+// Starts the server, highligsing the use of a specific port for listening to incoming requests.
 app.listen(mixEngineServer.port, () => {
   logger.info(`Server listening at ${mixEngineServer.protocol}://${mixEngineServer.host}:${mixEngineServer.port}`);
 });

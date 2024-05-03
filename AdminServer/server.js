@@ -21,9 +21,6 @@ const { config } = require('config');
 const server = config.adminServer;
 const corsOptions = config.corsOptions;
 
-// Create HTTPS server
-const httpsServer = https.createServer(credentials, app);
-
 // Middleware setup
 // app.use(bodyParser.urlencoded({extended: false}));
 // app.use(bodyParser.json());
