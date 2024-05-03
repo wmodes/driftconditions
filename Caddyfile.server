@@ -3,11 +3,8 @@ http://driftconditions.org {
     redir https://driftconditions.org{uri}
 }
 
-https://driftconditions.org:443 {
-    log {
-        level DEBUG
-    }
-    root * /Users/wmodes/dev/interference/AdminClient/build
+https://driftconditions.org {
+    root * /home/debian/interference/AdminClient/build
     file_server
     encode gzip
     tls wmodes@gmail.com
@@ -15,9 +12,6 @@ https://driftconditions.org:443 {
 }
 
 https://driftconditions.org:8080 {
-    log {
-        level DEBUG
-    }
     reverse_proxy localhost:8081 {
         header_up Host {host}
         header_up X-Real-IP {remote}
