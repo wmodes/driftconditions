@@ -172,7 +172,7 @@ function AudioUpload() {
   };
 
   if (isLoading) {
-    return (<Waiting />);
+    return (<Waiting  message="Please wait, uploading..." />);
   }
 
   return (

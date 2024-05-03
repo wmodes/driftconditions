@@ -7,12 +7,16 @@ import { tailChase } from 'ldrs';
 // and is idempotent (safe to call multiple times).
 tailChase.register();
 
-const Waiting = () => {
+const Waiting = ({ message = "Loading..." }) => {
   return (
-    <div className="flex justify-center items-center h-screen">
-      {/* Ensure custom elements are recognized by React. */}
-      <l-tail-chase size="75" speed="1.75" color="#336699" />
-    </div>
+    <>
+      <div className="flex justify-center items-center h-screen">
+        <l-tail-chase size="75" speed="1.75" color="#336699" />
+      </div>
+      <div>
+        <p style={{ color: '#336699' }}>{message}</p>
+      </div>
+    </>
   );
 }
 
