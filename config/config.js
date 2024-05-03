@@ -11,7 +11,7 @@ const CLIENTPORT = process.env.CLIENTPORT;
 const config = {
   adminServer: {
     protocol: 'http',
-    host: localhost,
+    host: 'localhost',
     port: 8081,
     logfile: BASEDIR + '/logs/server.log',
   },
