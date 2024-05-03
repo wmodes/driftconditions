@@ -17,6 +17,7 @@ https://driftconditions.org:8080 {
         header_up X-Real-IP {remote}
         header_up X-Forwarded-For {remote}
         header_up X-Forwarded-Proto {scheme}
+        flush_interval -1  # Disable buffering
     }
     tls wmodes@gmail.com
 }

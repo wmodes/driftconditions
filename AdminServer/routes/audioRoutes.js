@@ -213,12 +213,15 @@ router.get('/sample/:year/:month/:filename', verifyToken, async (req, res) => {
 router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
   record = req.body;
   logger.debug('audioUpload Route: Record:', record);
+  logger.debug('audioRoutes:/upload: req:', JSON.stringify(req.file, null, 2));
   if (!req.file) {
     return res.status(400).send('No file uploaded.');
   }
   try {
+    // TODO: This debug statement is returning nonsense. Fix it.
     logger.debug("orig file name: ", req.file.originalname)
     // Verify token and get userID (sync)
+    // TODO: creatorID is empty. Fix it.
     const decoded = jwt.verify(req.cookies.token, jwtSecretKey);
     const creatorID = decoded.userID;
     logger.debug('Uploader ID:', creatorID);
