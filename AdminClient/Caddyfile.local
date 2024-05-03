@@ -1,5 +1,5 @@
 http://localhost:3000 {
-    # Redirect all HTTP traffic to HTTPS on standard port
+    # Redirect all HTTP traffic on port 3000 to HTTPS
     redir https://localhost:3000{uri}
 }
 
@@ -7,6 +7,16 @@ https://localhost:3000 {
     root * /Users/wmodes/dev/interference/AdminClient/build
     file_server
     encode gzip
-    tls wmodes@gmail.com
+    tls internal  # Use 'tls internal' for development to avoid using real email
     try_files {path} /index.html
+}
+
+https://localhost:8080 {
+    reverse_proxy localhost:8081 {
+        header_up Host {host}
+        header_up X-Real-IP {remote}
+        header_up X-Forwarded-For {remote}
+        header_up X-Forwarded-Proto {scheme}
+    }
+    tls internal
 }

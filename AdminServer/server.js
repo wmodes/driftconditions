@@ -1,4 +1,4 @@
-// index.js - primary server code including:
+// server.js - main starting point for AdminServer, with tasks including:
 //   - User registration and authentication
 //   - User profiles and modifying user information
 //   - Audio upload and management
@@ -10,8 +10,6 @@
 //   - CORS and cookie management
 
 const express = require('express');
-const fs = require('fs');
-const https = require('https');
 const app = express();
 const cors = require('cors');
 const bodyParser = require('body-parser');
@@ -22,11 +20,6 @@ const { logger } = require('config');
 const { config } = require('config');
 const server = config.adminServer;
 const corsOptions = config.corsOptions;
-
-// Load SSL/TLS certificates
-const privateKey = fs.readFileSync('certs/localhost+2-key.pem', 'utf8');
-const certificate = fs.readFileSync('certs/localhost+2.pem', 'utf8');
-const credentials = { key: privateKey, cert: certificate };
 
 // Create HTTPS server
 const httpsServer = https.createServer(credentials, app);
@@ -67,6 +60,6 @@ app.use(errorHandler);
 
 // Starts the server, highlighting the use of a specific port for listening to incoming requests.
 // Starts the server, highlighting the use of a specific port for listening to incoming requests.
-httpsServer.listen(server.port, () => {
+app.listen(server.port, () => {
   logger.info(`Server listening at ${server.protocol}://${server.host}:${server.port}`);
 });

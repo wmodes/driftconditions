@@ -9,4 +9,12 @@ https://driftconditions.org {
     encode gzip
     tls wmodes@gmail.com
     try_files {path} /index.html
+
+    # Reverse proxy for API requests
+    reverse_proxy /api/* localhost:8081 {
+        header_up Host {host}
+        header_up X-Real-IP {remote}
+        header_up X-Forwarded-For {remote}
+        header_up X-Forwarded-Proto {scheme}
+    }
 }

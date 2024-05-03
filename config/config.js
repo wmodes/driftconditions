@@ -10,14 +10,16 @@ const CLIENTPORT = process.env.CLIENTPORT;
 
 const config = {
   adminServer: {
-    protocol: 'https',
-    host: HOSTNAME,
-    port: 8080,
+    protocol: 'http',
+    host: localhost,
+    port: 8081,
     logfile: BASEDIR + '/logs/server.log',
   },
   corsOptions: {
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     origin: [
+      `http://localhost`, 
+      `http://localhost:${CLIENTPORT}`,
       `http://${HOSTNAME}`, 
       `http://${HOSTNAME}:${CLIENTPORT}`, 
       `https://${HOSTNAME}`, 
@@ -25,6 +27,19 @@ const config = {
     ],
     credentials: true,
   },  
+  mixEngineServer: {
+    protocol: 'http',
+    host: localhost,
+    port: 8083,
+    logfile: BASEDIR + '/logs/audioserver.log',
+  },
+  dbConfig: {
+    connectionLimit: 10,
+    host: '127.0.0.1',
+    user: 'mysql',
+    password: process.env.DATABASE_PASSWORD,
+    database: 'interference',
+  },
   audio: {
     selectPoolPercentSize: 25,
     selectPoolMinSize: 5,
@@ -97,19 +112,6 @@ const config = {
   mixes: {
     maxRecent: 12,
     maxQueued: 12,
-  },
-  mixEngineServer: {
-    protocol: 'https',
-    host: HOSTNAME,
-    port: 8081,
-    logfile: BASEDIR + '/logs/audioserver.log',
-  },
-  dbConfig: {
-    connectionLimit: 10,
-    host: '127.0.0.1',
-    user: 'mysql',
-    password: process.env.DATABASE_PASSWORD,
-    database: 'interference',
   },
   bcrypt: {
     saltRounds: 10,
