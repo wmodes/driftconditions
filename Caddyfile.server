@@ -3,7 +3,7 @@ http://driftconditions.org {
     redir https://driftconditions.org{uri}
 }
 
-https://driftconditions.org {
+https://driftconditions.org:443 {
     log {
         level DEBUG
     }
