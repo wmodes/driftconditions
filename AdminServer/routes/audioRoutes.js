@@ -179,7 +179,7 @@ router.get('/sample/:year/:month/:filename', verifyToken, async (req, res) => {
   // Construct the file path
   // Adjust the path according to your actual files location
   const filePath = path.join(contentFileDir, year, month, filename);
-  logger.debug('File path:', filePath);
+  logger.debug(`audioRoutes:renameAndStore: filePath: ${filePath}`);
 
   try {
     await fs.access(filePath, fs.constants.F_OK);
@@ -212,28 +212,26 @@ router.get('/sample/:year/:month/:filename', verifyToken, async (req, res) => {
 //
 router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
   record = req.body;
-  logger.debug('audioUpload Route: Record:', record);
+  logger.debug(`audioUpload Route: record: ${JSON.stringify(record, null, 2)}`);
   if (!req.file) {
     return res.status(400).send('No file uploaded.');
   }
   try {
-    // TODO: This debug statement is returning nonsense. Fix it.
-    logger.debug("audioRoutes:/upload: orig file name: ", req.file.originalname)
+    logger.debug(`audioRoutes:/upload: origfilename: ${req.file.originalname}`);
     // Verify token and get userID (sync)
-    // TODO: creatorID is empty. Fix it.
     const decoded = jwt.verify(req.cookies.token, jwtSecretKey);
     const creatorID = decoded.userID;
-    logger.debug('audioRoutes:/upload: Uploader ID:', creatorID);
+    logger.debug(`audioRoutes:/upload: creatorID: {creatorID}`);
     // Rename file and move into place (async)
     const filePathForDB = await renameAndStore(req.file.path, req.file.originalname, record.title);
     const fullFilePath = path.join(contentFileDir, filePathForDB);
-    logger.debug('audioRoutes:/upload: relFilePath:', fullFilePath, 'file path for db:', filePathForDB);
+    logger.debug(`audioRoutes:/upload: fullFilePath: ${fullFilePath}, filePathForDB: ${filePathForDB}`);
     // Get audio duration (async)
     const duration = await getAudioDuration(fullFilePath);
-    logger.debug('audioRoutes:/upload: Duration:', duration);
+    logger.debug(`audioRoutes:/upload: duration: ${duration}`);
     // Get file type from file name in lowercase (sync)
     const filetype = path.extname(req.file.originalname).toLowerCase().substring(1);
-    logger.debug('audioRoutes:/upload: File type:', filetype);
+    logger.debug(`audioRoutes:/upload: filetype: ${filetype}`);
 
     // Prep db params
     const query = `INSERT INTO audio (title, status, filename, creatorID, duration, filetype, classification, tags, comments, copyrightCert) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
@@ -272,7 +270,7 @@ router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
 //
 router.post('/update', verifyToken, async (req, res) => {
   const record = req.body;
-  logger.debug('audioUpdate Route: Record:', record);
+  logger.debug(`audioURoutes:/update record: ${JSON.stringify(record, null, 2)}`);
   const decoded = jwt.verify(req.cookies.token, jwtSecretKey);
   const editorID = decoded.userID;
 
@@ -354,16 +352,16 @@ async function renameAndStore(tempPath, origFilename, title) {
 
   // create the directory if it doesn't exist
   const uploadDir = path.join(contentFileDir, year, month);
-  logger.debug('Upload dir:', uploadDir);
+  logger.debug(`audioRoutes:renameAndStore: uploadDir: ${uploadDir}`);
   await mkdirp(uploadDir);
 
   // Normalize the title to be used as the filename
   let baseFilename = title.toLowerCase().replace(/[\W_]+/g, '-').replace(/^\-+|\-+$/g, '');
-  logger.debug('Base filename:', baseFilename);
+  logger.debug(`audioRoutes:renameAndStore: baseFilename: ${baseFilename}`);
 
   // Extract the extension from the original filename
   const extension = path.extname(origFilename).toLowerCase();
-  logger.debug('Original file extension:', extension);
+  logger.debug(`audioRoutes:renameAndStore: extension: ${extension}`);
 
   // Place the file in the final directory
   //
@@ -383,11 +381,11 @@ async function renameAndStore(tempPath, origFilename, title) {
 
   // Move the file to the final path without overwriting
   await fsExtra.move(tempPath, fullFilepath, { overwrite: false });
-  logger.debug('File moved to:', fullFilepath);
+  logger.debug(`audioRoutes:renameAndStore: fullFilepath: ${fullFilepath}`);
   
   // Calculate the relative path without hardcoding
   const relativePath = path.relative(path.join(contentFileDir), fullFilepath);
-  logger.debug('Relative path:', relativePath);
+  logger.debug(`audioRoutes:renameAndStore: relativePath: ${relativePath}`);
 
   return relativePath;
 }
