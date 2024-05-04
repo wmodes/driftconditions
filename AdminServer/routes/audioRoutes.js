@@ -213,7 +213,7 @@ router.get('/sample/:year/:month/:filename', verifyToken, async (req, res) => {
 router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
   record = req.body;
   logger.debug('audioUpload Route: Record:', record);
-  logger.debug('audioRoutes:/upload: req:', JSON.stringify(req.file, null, 2));
+  logger.debug('audioRoutes:/upload: req:', JSON.stringify(req, null, 2));
   if (!req.file) {
     return res.status(400).send('No file uploaded.');
   }
