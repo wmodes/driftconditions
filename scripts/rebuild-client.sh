@@ -1,10 +1,7 @@
 #!/bin/zsh
 
-# Get the name of the current directory
-current_folder="${PWD##*/}"
-
-# Check if the current directory is 'interference'
-if [[ "$current_folder" != "interference" ]]; then
+# Ensure the script runs in the 'interference' directory
+if [[ $(basename "$PWD") != "interference" ]]; then
   echo "Start this script from the root directory 'interference'."
   exit 1
 fi
@@ -12,7 +9,5 @@ fi
 # Change directory to AdminClient
 cd AdminClient
 
-# Run the build command
+# Run npm build
 npm run build
-
-echo "Build completed successfully."
