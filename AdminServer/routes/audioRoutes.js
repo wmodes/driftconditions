@@ -213,28 +213,27 @@ router.get('/sample/:year/:month/:filename', verifyToken, async (req, res) => {
 router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
   record = req.body;
   logger.debug('audioUpload Route: Record:', record);
-  logger.debug('audioRoutes:/upload: req:', JSON.stringify(req, null, 2));
   if (!req.file) {
     return res.status(400).send('No file uploaded.');
   }
   try {
     // TODO: This debug statement is returning nonsense. Fix it.
-    logger.debug("orig file name: ", req.file.originalname)
+    logger.debug("audioRoutes:/upload: orig file name: ", req.file.originalname)
     // Verify token and get userID (sync)
     // TODO: creatorID is empty. Fix it.
     const decoded = jwt.verify(req.cookies.token, jwtSecretKey);
     const creatorID = decoded.userID;
-    logger.debug('Uploader ID:', creatorID);
+    logger.debug('audioRoutes:/upload: Uploader ID:', creatorID);
     // Rename file and move into place (async)
     const filePathForDB = await renameAndStore(req.file.path, req.file.originalname, record.title);
     const fullFilePath = path.join(contentFileDir, filePathForDB);
-    logger.debug('relFilePath:', fullFilePath, 'file path for db:', filePathForDB);
+    logger.debug('audioRoutes:/upload: relFilePath:', fullFilePath, 'file path for db:', filePathForDB);
     // Get audio duration (async)
     const duration = await getAudioDuration(fullFilePath);
-    logger.debug('Duration:', duration);
+    logger.debug('audioRoutes:/upload: Duration:', duration);
     // Get file type from file name in lowercase (sync)
     const filetype = path.extname(req.file.originalname).toLowerCase().substring(1);
-    logger.debug('File type:', filetype);
+    logger.debug('audioRoutes:/upload: File type:', filetype);
 
     // Prep db params
     const query = `INSERT INTO audio (title, status, filename, creatorID, duration, filetype, classification, tags, comments, copyrightCert) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
