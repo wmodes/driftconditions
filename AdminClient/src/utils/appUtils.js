@@ -9,14 +9,14 @@ tailChase.register();
 
 const Waiting = ({ message = "Loading..." }) => {
   return (
-      <div className="flex justify-center items-center h-screen">
-        <div>
-          <l-tail-chase size="75" speed="1.75" color="#336699" />
-        </div>
-        <div className="mt-10">
-          <p className="text-center" style={{ color: '#336699' }}>{message}</p>
-        </div>
+    <div className="flex flex-col justify-center items-center h-screen">
+      <div>
+        <l-tail-chase size="75" speed="1.75" color="#336699" />
       </div>
+      <div className="mt-10">
+        <p className="text-center" style={{ color: '#336699' }}>{message}</p>
+      </div>
+    </div>
   );
 }
 
