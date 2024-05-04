@@ -1,4 +1,4 @@
-#!/bin/zsh
+#!/bin/bash
 
 # Ensure the script runs in the 'interference' directory
 if [[ $(basename "$PWD") != "interference" ]]; then

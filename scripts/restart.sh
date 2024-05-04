@@ -1,4 +1,4 @@
-#!/bin/zsh
+#!/bin/bash
 
 # Restart Caddy service
 sudo systemctl restart caddy
