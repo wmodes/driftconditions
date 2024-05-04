@@ -13,8 +13,8 @@ const Waiting = ({ message = "Loading..." }) => {
         <div>
           <l-tail-chase size="75" speed="1.75" color="#336699" />
         </div>
-        <div>
-          <p style={{ color: '#336699' }}>{message}</p>
+        <div className="mt-10">
+          <p className="text-center" style={{ color: '#336699' }}>{message}</p>
         </div>
       </div>
   );
