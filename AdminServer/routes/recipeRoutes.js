@@ -2,7 +2,7 @@
 
 const express = require('express');
 const router = express.Router();
-const logger = require('config/logger');
+const logger = require('config/logger').custom('AdminServer', 'debug');
 const { database: db } = require('config');
 
 const jwt = require('jsonwebtoken');
@@ -47,7 +47,7 @@ router.post('/info', verifyToken, async (req, res) => {
     // Respond with the fetched data
     res.status(200).json(record);
   } catch (error) {
-    console.error('Error fetching recipe info:', error);
+    logger.error(`recipeRoutes:/info: Error fetching recipe info: ${error}`);
     res.status(500).send('Server error during recipe info retrieval');
   }
 });
@@ -134,7 +134,7 @@ router.post('/list', verifyToken, async (req, res) => {
       recipeList,
     });
   } catch (error) {
-    console.error('Error listing recipes:', error);
+    logger.error(`recipeRoutes:/list: Error listing recipes: ${error}`);
     res.status(500).send('Server error during recipe list retrieval');
   }
 });
@@ -170,7 +170,7 @@ router.post('/create', verifyToken, async (req, res) => {
       recipeID: recipeID
     });
   } catch (error) {
-    console.error('Error creating new recipe:', error);
+    logger.error(`recipeRoutes:/create: Error creating new recipe: ${error}`);
     res.status(500).send('Server error during recipe creation');
   }
 });
@@ -179,7 +179,7 @@ router.post('/create', verifyToken, async (req, res) => {
 //
 router.post('/update', verifyToken, async (req, res) => {
   const record = req.body;
-  logger.debug('recipeUpdate Route: Record:', record);
+  logger.debug(`recipeRoutes:/update: record: ${record}`);
   const decoded = jwt.verify(req.cookies.token, jwtSecretKey);
   const editorID = decoded.userID;
 
@@ -216,7 +216,7 @@ router.post('/update', verifyToken, async (req, res) => {
     }
     res.status(200).json({ message: 'Recipe updated successfully' });
   } catch (error) {
-    console.error('Server error during recipe update:', error);
+    logger.error(`recipeRoutes:/update: Server error during recipe update: ${error}`);
     res.status(500).send('Server error');
   }
 });
@@ -237,7 +237,7 @@ router.post('/trash', verifyToken, async (req, res) => {
     }
     res.status(200).json({ message: 'Recipe deleted successfully' });
   } catch (error) {
-    console.error('Error trashing recipe:', error);
+    logger.error(`recipeRoutes:/update: Error trashing recipe: ${error}`);
     res.status(500).send('Server error during recipe trashing');
   }
 });

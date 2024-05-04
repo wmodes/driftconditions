@@ -9,7 +9,7 @@
 // foundational imports
 const express = require('express');
 const router = express.Router();
-const logger = require('config/logger');
+const logger = require('config/logger').custom('AdminServer', 'debug');
 const { database: db } = require('config');
 
 // authentication imports
@@ -126,7 +126,7 @@ router.post('/list', verifyToken, async (req, res) => {
       audioList,
     });
   } catch (error) {
-    console.error('Error listing audio files:', error);
+    logger.error(`audioRoutes:/list: Error listing audio files: ${error}`);
     res.status(500).send('Server error during audio list retrieval');
   }
 });
@@ -165,7 +165,7 @@ router.post('/info', verifyToken, async (req, res) => {
     record.tags = repairBrokenJSON(record.tags);
     res.status(200).json(record);
   } catch (error) {
-    console.error('Error verifying token or fetching audio info:', error);
+    logger.error(`audioRoutes:/info: Error verifying token or fetching audio info: ${error}`);
     res.status(500).send('Server error during audio info retrieval');
   }
 });
@@ -186,20 +186,20 @@ router.get('/sample/:year/:month/:filename', verifyToken, async (req, res) => {
     // File exists, proceed to send it
     res.sendFile(filePath, (err) => {
       if (err) {
-        console.error('Error sending file:', err);
+        logger.error(`audioRoutes:/sample: Error sending file: ${err}`);
         if (!res.headersSent) {
           res.status(500).send('Error serving the file');
         } else {
-          console.error('Response was already partially sent when error occurred');
+          logger.error('audioRoutes:/sample: Response was already partially sent when error occurred');
         }
       }
     });
   } catch (err) {
-    console.error('File does not exist:', filePath);
+    logger.error(`audioRoutes:/sample: File does not exist: ${filePath}`);
     if (!res.headersSent) {
       res.status(404).send('File not found');
     } else {
-      console.error('Response was already partially sent when file not found error occurred');
+      logger.error('audioRoutes:/sample: Response was already partially sent when file not found error occurred');
     }
   }
 });
@@ -257,7 +257,7 @@ router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
       audioID: audioID
     });
   } catch (error) {
-    console.error('Error processing upload:', error);
+    logger.error(`audioRoutes:/upload: Error processing upload: ${error}`);
     res.status(500).send('Server error during file processing');
   }
 });
@@ -308,7 +308,7 @@ router.post('/update', verifyToken, async (req, res) => {
     }
     res.status(200).send({ message: 'Audio updated successfully' });
   } catch (error) {
-    console.error('Server error during audio update:', error);
+    logger.error(`audioRoutes:/update: Server error during audio update: ${error}`);
     res.status(500).send('Server error');
   }
 });
@@ -333,7 +333,7 @@ router.post('/trash', verifyToken, async (req, res) => {
     }
     res.status(200).send({ message: 'Audio trashed successfully' });    
   } catch (error) {
-    console.error('Error trashing audio file:', error);
+    logger.error(`audioRoutes:/trash: Error trashing audio file: ${error}`);
     res.status(500).send('Server error during audio trashing');
   }
 });

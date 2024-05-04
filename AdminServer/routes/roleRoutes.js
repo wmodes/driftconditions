@@ -3,7 +3,7 @@
 // foundational imports
 const express = require('express');
 const router = express.Router();
-const logger = require('config/logger');
+const logger = require('config/logger').custom('AdminServer', 'debug');
 const { database: db } = require('config');
 
 // authentication imports
@@ -33,7 +33,7 @@ router.post('/list', verifyToken, async (req, res) => {
       roles: rolesList,
     });
   } catch (error) {
-    console.error('Error listing roles:', error);
+    logger.error(`roleRoutes:/list: Error listing roles: ${error}`);
     res.status(500).send('Server error during roles list retrieval');
   }
 });
@@ -61,13 +61,13 @@ router.post('/update', verifyToken, async (req, res) => {
     // Execute the query
     const [result] = await db.query(query, values);
     if (!result.affectedRows) {
-      console.error('Error updating role: No rows affected');
+      logger.error('roleRoutes:/update: Error updating role: No rows affected');
       res.status(404).send('Role not found or no changes made');
     } else {
       res.status(200).json({ message: 'Role updated successfully' });
     }
   } catch (error) {
-    console.error('Error in /role/update route:', error);
+    logger.error(`roleRoutes:/update: Error in /role/update route: ${error}`);
     res.status(500).send('Server error during role update');
   }
 });

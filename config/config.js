@@ -13,7 +13,7 @@ const config = {
     protocol: 'http',
     host: 'localhost',
     port: 8081,
-    logfile: BASEDIR + '/logs/server.log',
+    logfile: BASEDIR + '/logs/adminserver.log',
   },
   corsOptions: {
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
@@ -31,7 +31,7 @@ const config = {
     protocol: 'http',
     host: 'localhost',
     port: 8083,
-    logfile: BASEDIR + '/logs/audioserver.log',
+    logfile: BASEDIR + '/logs/mixengine.log',
   },
   dbConfig: {
     connectionLimit: 10,

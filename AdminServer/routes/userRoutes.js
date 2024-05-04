@@ -7,7 +7,7 @@
 // foundational imports
 const express = require('express');
 const router = express.Router();
-const logger = require('config/logger');
+const logger = require('config/logger').custom('AdminServer', 'debug');
 const { database: db } = require('config');
 
 // authentication imports
@@ -107,7 +107,7 @@ router.post('/list',  verifyToken, async (req, res) => {
       userList,
     });
   } catch (error) {
-    console.error('Error listing users:', error);
+    logger.error(`userRoutes:/list: Error listing users: ${error}`);
     res.status(500).send('Server error during user list retrieval');
   }
 });
@@ -136,7 +136,7 @@ router.post('/profile', verifyToken, async (req, res) => {
 
     // Attempt to fetch the target user's information based on targetID or username
     let userInfo = await getUserInfo({ userID: targetID, username: targetUsername });
-    logger.debug('User info:', userInfo);
+    logger.debug(`User info: ${userInfo}`);
 
     // Check if userInfo is null (user not found) and respond accordingly
     if (!userInfo) {
@@ -154,9 +154,9 @@ router.post('/profile', verifyToken, async (req, res) => {
     // Determine if the edit flag should be true or false
     // const isEditable = targetID == userIDFromToken || (!targetID && !targetUsername);
     const isEditable = (targetID == userIDFromToken) || (targetUsername == usernameFromToken);
-    logger.debug('targetID:', targetID, 'userIDFromToken:', userIDFromToken);
-    logger.debug('targetUsername:', targetUsername, 'usernameFromToken:', usernameFromToken);
-    logger.debug('isEditable:', isEditable);
+    logger.debug(`targetID: ${targetID, 'userIDFromToken:', userIDFromToken}`);
+    logger.debug(`targetUsername: ${targetUsername, 'usernameFromToken:', usernameFromToken}`);
+    logger.debug(`isEditable: ${isEditable}`);
 
     // Respond with the user's information and the edit flag
     res.status(200).json({
@@ -165,7 +165,7 @@ router.post('/profile', verifyToken, async (req, res) => {
     });
   } catch (error) {
     // Log the error and respond with a server error status
-    console.error('Error in profile route:', error);
+    logger.error(`userRoutes:/profile: Error in profile route: ${error}`);
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
@@ -177,7 +177,7 @@ router.post('/profile', verifyToken, async (req, res) => {
 router.post('/profile/edit', verifyToken, async (req, res) => {
   logger.debug('update profile');
   const { firstname, lastname, email, bio, location, url } = req.body;
-  logger.debug('Request to update profile:', { firstname, lastname, email, bio, location, url });
+  logger.debug(`Request to update profile: ${{ firstname, lastname, email, bio, location, url }}`);
   try {
     // Verify the token to get user ID
     const decoded = jwt.verify(req.cookies.token, jwtSecretKey);
@@ -194,13 +194,13 @@ router.post('/profile/edit', verifyToken, async (req, res) => {
     // Execute the query
     const [result] = await db.query(query, values);
     if (!result.affectedRows) {
-      console.error('Error updating user profile: No rows affected');
+      logger.error('userRoutes:/edit: Error updating user profile: No rows affected');
       res.status(500).send('Error updating user profile');
     } else {
       res.status(200).send({ message: 'Profile updated successfully' });
     }    
   } catch (error) {
-    console.error('Error in /profile/edit route:', error);
+    logger.error(`userRoutes:/edit: Update failed: ${error}`);
     res.status(500).send('Server error');
   }
 });
@@ -258,7 +258,7 @@ router.post('/user', verifyToken, async (req, res) => {
   fields = ['username', 'firstname', 'lastname', 'email', 'url', 'bio', 'location', 'roleName', 'validated', 'addedOn'];
   try {
     const { username } = req.body; // Extracting username from the request body
-    logger.debug('Request for userlookup received', { username });
+    logger.debug(`Request for userlookup received ${{ username }}`);
     if (!username) {
       logger.debug('Bad request: Missing username');
       return res.status(400).send("Bad request: Missing username");
@@ -267,13 +267,13 @@ router.post('/user', verifyToken, async (req, res) => {
     const token = req.cookies.token;
     const decoded = jwt.verify(token, jwtSecretKey);
     const requestingUserID = decoded.userID;
-    logger.debug('Decoded JWT for user ID', { requestingUserID });
+    logger.debug(`Decoded JWT for user ID ${{ requestingUserID }}`);
     // Fetch requesting user's information for permission check
     const requestingUserInfo = await getUserInfo({ userID: requestingUserID });
-    logger.debug('Requesting user info:', requestingUserInfo);
+    logger.debug(`Requesting user info: ${requestingUserInfo}`);
     // Check if the requesting user has permission to view the target user's information
     if (!await hasPermission(requestingUserInfo, 'userlookup')) { // Make sure to await the result
-      logger.debug('Permission denied for userlookup', { requestingUserID });
+      logger.debug(`Permission denied for userlookup ${{ requestingUserID }}`);
       return res.status(403).send("Forbidden: You do not have permission to view this user's information");
     }
     // Fetch and return the target user's information based on username
@@ -284,18 +284,18 @@ router.post('/user', verifyToken, async (req, res) => {
         delete targetUserInfo[field];
       }
     }
-    logger.debug('Target user info:', targetUserInfo);
+    logger.debug(`Target user info: ${targetUserInfo}`);
     if (targetUserInfo) {
       res.status(200).json({
         success: true,
         data: targetUserInfo
       });
     } else {
-      logger.debug('User not found', { username });
+      logger.debug(`User not found ${{ username }}`);
       res.status(404).send("User not found");
     }
   } catch (error) {
-    // console.error('Error in userlookup route:', error);
+    // logger.error(`userRoutes:/user: Error fetching record: ${error}`);
     res.status(500).send("Server error");
   }
 });
