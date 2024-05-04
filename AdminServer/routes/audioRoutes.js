@@ -9,7 +9,7 @@
 // foundational imports
 const express = require('express');
 const router = express.Router();
-const logger = require('config/logger').custom('AdminServer', 'debug');
+const logger = require('config/logger').custom('AdminServer', 'info');
 const { database: db } = require('config');
 
 // authentication imports
