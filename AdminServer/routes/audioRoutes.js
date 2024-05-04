@@ -221,7 +221,7 @@ router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
     // Verify token and get userID (sync)
     const decoded = jwt.verify(req.cookies.token, jwtSecretKey);
     const creatorID = decoded.userID;
-    logger.debug(`audioRoutes:/upload: creatorID: {creatorID}`);
+    logger.debug(`audioRoutes:/upload: creatorID: ${creatorID}`);
     // Rename file and move into place (async)
     const filePathForDB = await renameAndStore(req.file.path, req.file.originalname, record.title);
     const fullFilePath = path.join(contentFileDir, filePathForDB);
