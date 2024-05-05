@@ -136,7 +136,7 @@ router.post('/profile', verifyToken, async (req, res) => {
 
     // Attempt to fetch the target user's information based on targetID or username
     let userInfo = await getUserInfo({ userID: targetID, username: targetUsername });
-    logger.debug(`User info: ${userInfo}`);
+    logger.debug(`userRoutes://profile: userInfo: ${JSON.stringify(userInfo)}`);
 
     // Check if userInfo is null (user not found) and respond accordingly
     if (!userInfo) {
