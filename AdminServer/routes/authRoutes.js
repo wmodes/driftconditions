@@ -302,7 +302,7 @@ async function getRolePermissions(userID) {
       logger.error(`authRoutes:getRolePermissions: Role not found: ${roleName}`);
       return null; // Role not found
     }
-    logger.debug(`authRoutes:getRolePermissions: roleRows[0]: ${roleRows[0]}`)
+    logger.debug(`authRoutes:getRolePermissions: roleRows[0]: ${JSON.stringify(roleRows[0])}`);
     user.permissions = roleRows[0].permissions;
     user.editDate = roleRows[0].editDate;
     user.roleName = roleRows[0].roleName;

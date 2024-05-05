@@ -49,14 +49,18 @@ export const useAuthCheckAndNavigate = (context) => {
 
         // Based on the result, navigate accordingly
         if (result.status === 403 && result.data.error.reason === "not_authenticated") {
-          navigate('/signin');
+          if (context !== "homepage") {
+            navigate('/signin');
+          }
         } else if (result.status === 403 && result.data.error.reason === "not_authorized") {
           navigate('/notauth');
         }
       } catch (error) {
         dispatch(setAuthChecked({ authChecked: true }));
         console.error("Auth check failed:", error);
-        navigate('/signin'); // Fallback navigation in case of error
+        if (context !== "homepage") {
+          navigate('/signin'); // Fallback navigation in case of error
+        }
       }
     };
 

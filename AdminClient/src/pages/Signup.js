@@ -36,7 +36,7 @@ function Signup() {
       setFirstname('');
       setLastname('');
       setEmail('');
-      navigate('/sigin');
+      navigate('/signin');
     })
     .catch((error) => {
         // Handle any error here

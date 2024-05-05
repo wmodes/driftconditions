@@ -1,7 +1,7 @@
-http://localhost:3000 {
-    # Redirect all HTTP traffic on port 3000 to HTTPS
-    redir https://localhost:3000{uri}
-}
+# http://localhost:3000 {
+#     # Redirect all HTTP traffic on port 3000 to HTTPS
+#    redir https://localhost:3000{uri}
+# }
 
 https://localhost:3000 {
     root * /Users/wmodes/dev/interference/AdminClient/build
@@ -9,6 +9,15 @@ https://localhost:3000 {
     encode gzip
     tls internal  # Use 'tls internal' for development to avoid using real email
     try_files {path} /index.html
+
+    # Enable access logs with default log format
+    log {
+        output file /var/log/caddy/access.log {
+            roll_size 100mb
+            roll_keep 7
+            roll_keep_for 720h
+        }
+    }
 }
 
 https://localhost:8080 {
