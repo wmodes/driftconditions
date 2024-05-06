@@ -129,6 +129,41 @@ function RecipeList() {
     setError('');
   };
 
+  // Function to render controls
+  const renderFilters = () => {
+    return (                
+      <div className="filter-box">
+        <ul>
+          <li>
+            <button className="link" onClick={() => handleFilter('all')}>
+              All
+            </button>
+          </li>
+          <li>
+            <button className="link" onClick={() => handleFilter('review')}>
+              Review
+            </button>
+          </li>
+          <li>
+            <button className="link" onClick={() => handleFilter('approved')}>
+              Approved
+            </button>
+          </li>
+          <li>
+            <button className="link" onClick={() => handleFilter('disapproved')}>
+              Disapproved
+            </button>
+          </li>
+          <li>
+            <button className="link" onClick={() => handleFilter('trash')}>
+              Trash
+            </button>
+          </li>
+        </ul>
+      </div>
+    );
+  };
+
   return (
     <div className="list-wrapper">
       <div className="display-box-wrapper">
@@ -142,35 +177,7 @@ function RecipeList() {
           {!error && !isLoading ? (
             <div>
               <div className="top-controls">
-                <div className="filter-box">
-                  <ul>
-                    <li>
-                      <button className="link" onClick={() => handleFilter('all')}>
-                        All
-                      </button>
-                    </li>
-                    <li>
-                      <button className="link" onClick={() => handleFilter('review')}>
-                        Review
-                      </button>
-                    </li>
-                    <li>
-                      <button className="link" onClick={() => handleFilter('approved')}>
-                        Approved
-                      </button>
-                    </li>
-                    <li>
-                      <button className="link" onClick={() => handleFilter('disapproved')}>
-                        Disapproved
-                      </button>
-                    </li>
-                    <li>
-                      <button className="link" onClick={() => handleFilter('trash')}>
-                        Trash
-                      </button>
-                    </li>
-                  </ul>
-                </div>
+                {renderFilters()}
                 {renderPagination(totalRecords, recordsPerPage, page, handlePageChange)}
               </div>
               <table className="recipe-table big-table">
@@ -248,6 +255,7 @@ function RecipeList() {
                 </tbody>
               </table>
               <div className="bottom-controls">
+                {renderFilters()}
                 {renderPagination(totalRecords, recordsPerPage, page, handlePageChange)}
               </div>
             </div>

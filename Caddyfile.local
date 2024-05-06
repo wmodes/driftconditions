@@ -3,7 +3,7 @@
 #    redir https://localhost:3000{uri}
 # }
 
-https://localhost:3000 {
+https://localhost:3001 {
     root * /Users/wmodes/dev/interference/AdminClient/build
     file_server
     encode gzip

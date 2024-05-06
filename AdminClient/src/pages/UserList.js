@@ -4,7 +4,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { userList as userListAction } from '../store/userSlice'; 
+import { userList as userListAction, userDisable as userDisableAction } from '../store/userSlice'; 
 import { parseQuery, stringifyQuery } from '../utils/queryUtils';
 import { renderPagination } from '../utils/listUtils';
 import { formatDateAsFriendlyDate } from '../utils/formatUtils';
@@ -34,21 +34,23 @@ function UserList() {
 
   const currentFilters = parseQuery(location.search);
 
+  const getCurrentQueryParams = () => {
+    const searchParams = new URLSearchParams(location.search);
+    return {
+      page: parseInt(searchParams.get('page') || '1', 10),
+      sort: searchParams.get('sort') || 'date',
+      order: searchParams.get('order') || 'DESC',
+      filter: searchParams.get('filter') || 'all',
+      role: searchParams.get('role'),
+    };
+  };
+
   useEffect(() => {
-    // Adapt useEffect for loading user data
     if (retryAttempt >= retryLimit) return;
     setIsLoading(true);
-
-    const searchParams = new URLSearchParams(location.search);
-    const page = parseInt(searchParams.get('page') || '1', 10);
-    setPage(page);
-    const sort = searchParams.get('sort');
-    const order = searchParams.get('order');
-    const filter = searchParams.get('filter') || 'all';
-    const role = searchParams.get('role');
-
-    const queryParams = { page, sort, order, filter, role };
-    // console.log('User list query params:', queryParams);
+  
+    // Directly extract params from URL each time the effect runs
+    const queryParams = getCurrentQueryParams();
 
     dispatch(userListAction({queryParams}))
       .unwrap()
@@ -116,6 +118,75 @@ function UserList() {
     setError('');
   };
 
+  const userDisable = async (userID) => {
+    dispatch(userDisableAction({ userID }))
+      .unwrap()
+      .then(() => {
+        setSuccessMessage(`User ${userID} deleted successfully.`);
+        setCriticalError('');
+        setError('');
+        const queryParams = getCurrentQueryParams();
+        console.log('queryParams:', queryParams);
+        // Rerender the list by fetching updated data
+        dispatch(userListAction({queryParams}))
+        .unwrap()
+        .then(response => {
+          // console.log('response:', response);
+          // console.log('response.audioList:', response.audioList, 'response.totalRecords:', response.totalRecords);
+          setUserList(response.userList || []);
+          setTotalRecords(response.totalRecords);
+        })
+        .catch(error => {
+          console.error("Error fetching updated user list:", error);
+          setError('Failed to fetch updated user list.');
+        });
+      })
+      .catch(error => {
+        console.error("Error disabling user:", error);
+        setError('Failed to disable user.'); // Update error state
+      });
+  };
+
+  // Function to render controls
+  const renderFilters = () => {
+    return (  
+      <div className="filter-box">
+        <ul>
+          <li>
+            <button className="link" onClick={() => handleFilter('all')}>
+              All
+            </button>
+          </li>
+          <li>
+            <button className="link" onClick={() => handleFilter('user')}>
+              User
+            </button>
+          </li>
+          <li>
+            <button className="link" onClick={() => handleFilter('contrib')}>
+              Contrib
+            </button>
+          </li>
+          <li>
+            <button className="link" onClick={() => handleFilter('editor')}>
+              Editor
+            </button>
+          </li>
+          <li>
+            <button className="link" onClick={() => handleFilter('mod')}>
+              Mod
+            </button>
+          </li>
+          <li>
+            <button className="link" onClick={() => handleFilter('admin')}>
+              Admin
+            </button>
+          </li>
+        </ul>
+      </div>
+    );
+  };
+
   return (
     <div className="list-wrapper">
       <div className="display-box-wrapper">
@@ -130,40 +201,7 @@ function UserList() {
           {!criticalError && !isLoading ? (
             <dir>
               <div className="top-controls">
-                <div className="filter-box">
-                  <ul>
-                    <li>
-                      <button className="link" onClick={() => handleFilter('all')}>
-                        All
-                      </button>
-                    </li>
-                    <li>
-                      <button className="link" onClick={() => handleFilter('user')}>
-                        User
-                      </button>
-                    </li>
-                    <li>
-                      <button className="link" onClick={() => handleFilter('contrib')}>
-                        Contrib
-                      </button>
-                    </li>
-                    <li>
-                      <button className="link" onClick={() => handleFilter('editor')}>
-                        Editor
-                      </button>
-                    </li>
-                    <li>
-                      <button className="link" onClick={() => handleFilter('mod')}>
-                        Mod
-                      </button>
-                    </li>
-                    <li>
-                      <button className="link" onClick={() => handleFilter('admin')}>
-                        Admin
-                      </button>
-                    </li>
-                  </ul>
-                </div>
+                {renderFilters()}
                 {renderPagination(totalRecords, recordsPerPage, page, handlePageChange)}
               </div>
               <table className="user-table big-table">
@@ -203,9 +241,14 @@ function UserList() {
                       {/* Adapt table cells for user data */}
                       <td>{user.userID}</td>
                       <td>
-                        <Link to={`/profile/${user.username}`} className="link-button">
-                          {user.username}
-                        </Link>
+                        {user.username}
+                        <div>
+                          <ul className="action-list">
+                            <li><Link to={`/profile/${user.username}`}>View</Link></li>
+                            <li><Link to={`/profile/edit/${user.username}`}>Edit</Link></li>
+                            <li><button className="link" onClick={() => userDisable(user.userID)}>Disable</button></li>
+                          </ul>
+                        </div>
                       </td>
                       <td>{user.firstname}</td>
                       <td>{user.lastname}</td>
@@ -219,6 +262,7 @@ function UserList() {
                 </tbody>
               </table>
               <div className="bottom-controls">
+                {renderFilters()}
                 {renderPagination(totalRecords, recordsPerPage, page, handlePageChange)}
               </div>
             </dir>

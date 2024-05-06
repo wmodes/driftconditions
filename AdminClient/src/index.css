@@ -391,10 +391,6 @@ svg {
   font-size: 0.9rem;
   display: flex;
   flex-direction: row;
-}
-
-.top-controls {
-  /* justify at ends with space between */
   justify-content: space-between;
 }
 

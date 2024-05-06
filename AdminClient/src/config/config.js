@@ -15,6 +15,7 @@ const config = {
       profile: '/api/user/profile',
       profileEdit: '/api/user/profile/edit',
       userList: '/api/user/list',
+      userDisable: '/api/user/disable',
       // role
       roleList: '/api/role/list',
       roleUpdate: '/api/role/update',
@@ -40,6 +41,8 @@ const config = {
       profile: '/profile',
       profileEdit: '/profile/edit',
       userList: '/user/list',
+      userLookup: null,
+      userEdit: null,
       roleList: '/role/list',
       audioUpload: '/audio/upload',
       audioList: '/audio/list',

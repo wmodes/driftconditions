@@ -7,7 +7,7 @@
 // foundational imports
 const express = require('express');
 const router = express.Router();
-const logger = require('config/logger').custom('AdminServer', 'info');
+const logger = require('config/logger').custom('AdminServer', 'debug');
 const { database: db } = require('config');
 
 // authentication imports
@@ -52,6 +52,7 @@ router.post('/list',  verifyToken, async (req, res) => {
         field: 'addedOn',
         order: orderArg || 'DESC'
       }
+      // TODO: Add "Disable" sort option
     };
     // if sortArg is not in sortOptions, default to 'user'
     if (!sortOptions[sortArg]) sortArg = 'user';
@@ -78,10 +79,10 @@ router.post('/list',  verifyToken, async (req, res) => {
     let filterValues = filterCondition.values;
 
     const [countResult] = await db.query(`
-      SELECT COUNT(*) AS totalRecords
-      FROM users
-      WHERE 1=1 ${filterQuery};
-    `, filterValues);
+    SELECT COUNT(*) AS totalRecords
+    FROM users
+    WHERE status != "Disabled" ${filterQuery};
+  `, filterValues);
     
     const totalRecords = countResult[0].totalRecords;
 
@@ -97,10 +98,10 @@ router.post('/list',  verifyToken, async (req, res) => {
         roleName,
         addedOn
       FROM users
-      WHERE 1=1 ${filterQuery}
+      WHERE status != "Disabled" ${filterQuery}
       ORDER BY ${sortColumn} ${sortOrder}
       LIMIT ? OFFSET ?;
-    `, [...filterValues, recordsPerPage, offset]);
+    `, [...filterValues, recordsPerPage, offset]);  
 
     res.status(200).json({
       totalRecords,
@@ -113,55 +114,89 @@ router.post('/list',  verifyToken, async (req, res) => {
 });
 
 // Route for showing a user's public profile. 
-// If a targetID is provided, it shows that ID, 
+// If a username is provided, it shows that user, 
 // otherwise it extracts the user ID from the token, and returns the user's information.
 // This is a protected route, only accessible to authenticated users.
 router.post('/profile', verifyToken, async (req, res) => {
-  const fields = ['username', 'firstname', 'lastname', 'email', 'url', 'bio', 'location', 'roleName', 'addedOn'];
-
   try {
+    // Get the username from the body if provided
+    var targetUsername = req.body.username;
+    logger.debug(`userRoutes:/profile: passed username: ${targetUsername}`);
+
     // get userID and username from token
-    const token = req.cookies.token;
-    const decoded = jwt.verify(token, jwtSecretKey);
-    const userIDFromToken = decoded.userID;
-    const usernameFromToken = decoded.username;
+    // useful for checking if the user is trying to view their own profile
+    // and in case we haven't been provided a username
+    const requestingUserInfo = jwt.verify(req.cookies.token, jwtSecretKey);
+    logger.debug(`userRoutes:/profile: requestingUserInfo: ${JSON.stringify(requestingUserInfo, null, 2)}`);
+    const requestingUserID = requestingUserInfo.userID;
+    const requestingUsername = requestingUserInfo.username;
 
-    // Determine the target: Use provided targetID or username from the body 
-    var { targetID, targetUsername } = req.body;
+    // If no username is provided, use the user info from the token
+   if (!targetUsername) {
+     targetUsername = requestingUsername;
+   }
 
-    // if no targetID or targetUsername is provided, use the user ID from the token
-    if (!targetID && !targetUsername) {
-      targetID = userIDFromToken;
+    // Define access and fields returned based on the user's permission level
+   let lookupStatus = null;
+    //
+    // is user trying to view their own profile?
+    if (requestingUsername === targetUsername) {
+      lookupStatus = "self";
+    } 
+    // is user trying to view someone else's profile?
+    else {
+      // First, check if they have permission to do so
+      if (await hasPermission(requestingUserInfo, 'userLookup')) { 
+        logger.debug(`userRoutes:/profile: User lookup granted for ${{ requestingUsername }}`);
+        lookupStatus = "basic";
+      } 
+      else {
+        logger.debug(`Permission denied for userlookup ${{ requestingUserID }}`);
+        return res.status(403).send("Forbidden: You do not have permission to view this user's information");
+      }
+      // Next, check if user can view extended info
+      if (await hasPermission(requestingUserInfo, 'userEdit')) { 
+        logger.debug(`userRoutes:/profile: Extended user lookup granted for ${{ requestingUsername }}`);
+        lookupStatus = "extended";
+      } 
     }
+    // from here, user is either viewing their own profile or has permission to view another's
 
-    // Attempt to fetch the target user's information based on targetID or username
-    let userInfo = await getUserInfo({ userID: targetID, username: targetUsername });
-    logger.debug(`userRoutes://profile: userInfo: ${JSON.stringify(userInfo)}`);
-
-    // Check if userInfo is null (user not found) and respond accordingly
+    // fetch the target user's information based on username
+    let userInfo = await getUserInfo({ username: targetUsername });
+    logger.debug(`userRoutes:/profile: userInfo: ${JSON.stringify(userInfo, null, 2)}`);
     if (!userInfo) {
       return res.status(404).json({ success: false, message: "User not found" });
     }
 
+    // Define the fields to be returned based on the user's permission level
+    let allowedFields = [];
+    switch (lookupStatus) {
+      case "extended":
+      case "self":
+        // return everything except password
+        allowedFields = ['username', 'status', 'email', 'firstname', 'lastname', 'email', 'url', 'bio', 'location', 'roleName', 'addedOn'];
+        break;
+      case "basic":
+      default:
+        allowedFields = ['username', 'firstname', 'lastname', 'url', 'bio', 'location', 'roleName', 'addedOn'];
+    }
     // Filter userInfo to include only the specified fields
-    const filteredUserInfo = Object.keys(userInfo).reduce((acc, key) => {
-      if (fields.includes(key)) {
+    const userInfoReturned = Object.keys(userInfo).reduce((acc, key) => {
+      if (allowedFields.includes(key)) {
         acc[key] = userInfo[key];
       }
       return acc;
     }, {});
+    logger.debug(`userRoutes:/profile: filtered userInfoReturned: ${JSON.stringify(userInfoReturned, null, 2)}`);
 
     // Determine if the edit flag should be true or false
-    // const isEditable = targetID == userIDFromToken || (!targetID && !targetUsername);
-    const isEditable = (targetID == userIDFromToken) || (targetUsername == usernameFromToken);
-    logger.debug(`targetID: ${targetID, 'userIDFromToken:', userIDFromToken}`);
-    logger.debug(`targetUsername: ${targetUsername, 'usernameFromToken:', usernameFromToken}`);
-    logger.debug(`isEditable: ${isEditable}`);
+    const isEditable = (targetUsername == requestingUsername);
 
     // Respond with the user's information and the edit flag
     res.status(200).json({
       success: true,
-      data: { ...filteredUserInfo, edit: isEditable }
+      data: { ...userInfoReturned, edit: isEditable }
     });
   } catch (error) {
     // Log the error and respond with a server error status
@@ -229,27 +264,16 @@ async function getUserInfo({ userID = null, username = null } = {}) {
 }
 
 // Function to get permissions for a role from the database
-// Adjusted hasPermission function with added logger.debug statements
-async function hasPermission(requestingUserInfo, callingRoute) {
+function hasPermission(requestingUserInfo, callingRoute) {
+  logger.debug(`userRoutes:hasPermission: requestingUserInfo: ${JSON.stringify(requestingUserInfo, null, 2)}, typeof: ${typeof requestingUserInfo}`);
   // Early exit if requestingUserInfo is not provided or invalid
-  if (!requestingUserInfo || !requestingUserInfo.roleName) {
+  if (!requestingUserInfo || !requestingUserInfo.permissions) {
     throw new Error('Invalid or missing requesting user info.');
   }
-  // Prep db params
-  const query = 'SELECT permissions FROM roles WHERE roleName = ?';
-  const values = [requestingUserInfo.roleName];
-  // Run db query
-  const [results] = await db.query(query, values);
-  if (results.length > 0 && results[0].permissions) {
-    // Parse the permissions JSON to an array
-    const permissionsArray = JSON.parse(results[0].permissions);
-    // Check if the callingRoute is in the user's permissions
-    const isPermitted = permissionsArray.includes(callingRoute);
-    return isPermitted;
-  } else {
-    // If no permissions found or callingRoute is not permitted, return false
-    return false;
-  }
+  // do a case-insensitive search of users perms from token w callingRoute
+  const permissionsArray = requestingUserInfo.permissions.map(permission => permission.toLowerCase());
+  const isPermitted = permissionsArray.includes(callingRoute.toLowerCase());
+  return isPermitted;
 }
 
 // Route for showing another user's profile. It extracts the user ID from the token, and returns the target user's information.
@@ -272,7 +296,7 @@ router.post('/user', verifyToken, async (req, res) => {
     const requestingUserInfo = await getUserInfo({ userID: requestingUserID });
     logger.debug(`Requesting user info: ${requestingUserInfo}`);
     // Check if the requesting user has permission to view the target user's information
-    if (!await hasPermission(requestingUserInfo, 'userlookup')) { // Make sure to await the result
+    if (!hasPermission(requestingUserInfo, 'userlookup')) { // Make sure to await the result
       logger.debug(`Permission denied for userlookup ${{ requestingUserID }}`);
       return res.status(403).send("Forbidden: You do not have permission to view this user's information");
     }
@@ -299,5 +323,29 @@ router.post('/user', verifyToken, async (req, res) => {
     res.status(500).send("Server error");
   }
 });
+
+// Route to disable a user
+//
+router.post('/disable', verifyToken, async (req, res) => {
+  const { userID } = req.body;
+  logger.debug(`userRoutes:/disable: userID: ${userID}`)
+  if (!userID) {
+    return res.status(400).send('User ID is required');
+  }
+  try {
+    const query = `UPDATE users SET status = 'Disabled' WHERE userID = ?`;
+    const values = [userID];
+    const [result] = await db.query(query, values);
+    if (result.affectedRows === 0) {
+      return res.status(404).send('User not found');
+    }
+    res.status(200).json({ message: 'User disabled successfully' });
+  } catch (error) {
+    logger.error(`userRoutes:/disable: Error disabling user: ${error}`);
+    res.status(500).send('Server error during user disabling');
+  }
+});
+
+
 
 module.exports = router;

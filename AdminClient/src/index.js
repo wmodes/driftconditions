@@ -53,8 +53,9 @@
         <Route path='/' element={<Homepage />} />
         <Route path='/signup' element={<Signup />} />
         <Route path='/signin' element={<Signin />} />
-        <Route path='/profile' element={<Profile />} /> 
         <Route path="/profile/:username" element={<Profile />} />
+        <Route path='/profile' element={<Profile />} /> 
+        <Route path="/profile/edit/:username" element={<Profile />} />
         <Route path='/profile/edit' element={<ProfileEdit />} /> 
         <Route path='/user/list' element={<UserList />} />
         <Route path='/role/list' element={<RoleList />} />

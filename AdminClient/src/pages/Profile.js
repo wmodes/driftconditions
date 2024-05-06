@@ -12,7 +12,7 @@ import FeatherIcon from 'feather-icons-react';
 
 function Profile() {
   // Accessing the username from the URL
-  const { username: targetUsername } = useParams();
+  const { username } = useParams();
   // State hooks to store error message
   const [error, setError] = useState('');
   // State hooks to store user profile information
@@ -41,7 +41,7 @@ function Profile() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    dispatch(profileInfo({targetUsername})) // Dispatching with potentially undefined username
+    dispatch(profileInfo({username})) // Dispatching with potentially undefined username
       .then((res) => {
         if (res.payload && res.payload.data) {
           let newProfile = {};
@@ -49,7 +49,7 @@ function Profile() {
             newProfile[key] = value;
           }
           setProfile(newProfile);
-          if (!targetUsername) {
+          if (!username) {
             // Modify URL to include the user's username
             navigate(`/profile/${newProfile.username}`, { replace: true });
           }
@@ -65,7 +65,7 @@ function Profile() {
         setError(error.toString());
         setProfile(notFoundUser); // Fallback to notFoundUser in case of any error
       });
-  }, [dispatch, targetUsername, navigate]);
+  }, [dispatch, username, navigate]);
 
   //
   // RENDERING HELPERS

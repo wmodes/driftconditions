@@ -1,12 +1,15 @@
 // ProfileEdit.js allows user to edit profile information.
 
 import React, { useEffect, useState } from 'react';
-// Hooks for Redux state management and action dispatching, if needed.
+import { useParams } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 // Assuming you have an action or function to fetch user profile
 import { profileInfo, profileEdit } from '../store/userSlice';
 
 function ProfileEdit() { 
+  // Use useParams to access the route parameters
+  const { username } = useParams();
+
   // These fields: firstname, lastname, email, bio, location, and url are mutable.
   const mutableFields = [
     { key: 'firstname', label: 'First Name' },
@@ -37,7 +40,7 @@ function ProfileEdit() {
   const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
-    dispatch(profileInfo({}))
+    dispatch(profileInfo({ username }))
       .then((res) => {
         // console.log('Profile fetched:', res.payload);
         if (res.payload && res.payload.data) {
@@ -46,8 +49,9 @@ function ProfileEdit() {
       })
       .catch((error) => {
         console.error("Failed to fetch profile:", error);
+        setError('Failed to fetch profile.');
       });
-  }, [dispatch]);
+  }, [username, dispatch]);
 
   // Keep values in sync with form values
   const handleChange = (e) => {

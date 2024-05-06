@@ -75,9 +75,8 @@ router.post('/signup', async (req, res) => {
 // responds with user info on successful authentication or an error message on failure.
 // This showcases using bcrypt to compare hashed passwords for login verification.
 router.post('/signin', async (req, res) => {
-  const { username, password } = req.body;
-
   try {
+    const { username, password } = req.body;
     // Construct db query
     const query = 'SELECT * FROM users WHERE username = ?';
     const values = [username];

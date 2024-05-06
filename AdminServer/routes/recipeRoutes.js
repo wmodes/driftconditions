@@ -237,7 +237,7 @@ router.post('/trash', verifyToken, async (req, res) => {
     }
     res.status(200).json({ message: 'Recipe deleted successfully' });
   } catch (error) {
-    logger.error(`recipeRoutes:/update: Error trashing recipe: ${error}`);
+    logger.error(`recipeRoutes:/trash: Error trashing recipe: ${error}`);
     res.status(500).send('Server error during recipe trashing');
   }
 });
