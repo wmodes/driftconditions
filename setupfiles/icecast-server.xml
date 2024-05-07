@@ -11,7 +11,7 @@ Restart:
 % sudo systemctl restart icecast2
 
 View error logs:
-% journalctl -u icecast2 --no-pager | less
+% journalctl -u icecast2 
 
 -->
 
