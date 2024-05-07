@@ -2,16 +2,16 @@
 Icecast configuration file for local development
 
 Link into icecast config with:
-% sudo ln -s /home/debian/interference/setupfiles/icecast-server.xml /etc/icecast2/icecast.xml
+% sudo ln -sf /home/debian/interference/setupfiles/icecast-server.xml /etc/icecast2/icecast.xml
 
-Start in own terminal with:
-% icecast -c /usr/local/etc/icecast.xml
+Start:
+% sudo systemctl start icecast2
 
-View accesss logs:
-% sudo less /var/log/caddy/access.log
+Restart:
+% sudo systemctl restart icecast2
 
 View error logs:
-% sudo less /var/log/caddy/error.log
+% journalctl -u icecast2 --no-pager | less
 
 -->
 
