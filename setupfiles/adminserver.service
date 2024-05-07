@@ -1,0 +1,28 @@
+# AdminServer systemctl service file
+#
+# Link into systemctl with:
+# % sudo ln -s /home/debian/interference/setupfiles/adminserver.service /etc/systemd/system/adminserver.service
+#
+# Start:
+# % sudo systemctl start adminserver.service
+#
+# Restart:
+# % sudo systemctl start adminserver.service
+#
+# View journal:
+# % journalctl -u adminserver.service --no-pager | less
+# (thought ordinary servver messsage sould be reported in interference/logs/adminserver.log)
+
+[Unit]
+Description=AdminServer Node.js Express backend service
+After=network.target
+
+[Service]
+Type=simple
+User=debian
+WorkingDirectory=/home/debian/interference/AdminServer
+ExecStart=/usr/bin/npm start
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

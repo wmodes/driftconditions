@@ -1,8 +1,15 @@
+# Caddyfile for server
+#
+# ln -s /home/debian/interference/setupfiles/Caddyfile.server /etc/caddy/Caddyfile
+
+
+# redirect http to https
 http://driftconditions.org {
     # Redirect all HTTP traffic to HTTPS on standard port
     redir https://driftconditions.org{uri}
 }
 
+# AdminClient
 https://driftconditions.org {
     root * /home/debian/interference/AdminClient/build
     file_server
@@ -20,8 +27,21 @@ https://driftconditions.org {
     }
 }
 
+# AdminServer
 https://driftconditions.org:8080 {
     reverse_proxy localhost:8081 {
+        header_up Host {host}
+        header_up X-Real-IP {remote}
+        header_up X-Forwarded-For {remote}
+        header_up X-Forwarded-Proto {scheme}
+        flush_interval -1  # Disable buffering
+    }
+    tls wmodes@gmail.com
+}
+
+# MixEngine
+https://driftconditions.org:8082 {
+    reverse_proxy localhost:8083 {
         header_up Host {host}
         header_up X-Real-IP {remote}
         header_up X-Forwarded-For {remote}

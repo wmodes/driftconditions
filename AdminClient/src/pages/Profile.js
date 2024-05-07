@@ -16,14 +16,16 @@ function Profile() {
   // State hooks to store error message
   const [error, setError] = useState('');
   // State hooks to store user profile information
-  const [profile, setProfile] = useState({
-    username: '',
-    firstname: '',
-    lastname: '',
-    email: '',
-    roleName: '',
-    addedOn: '',
-  });
+  const [profile, setProfile] = useState({});
+  // TODO: killme
+  // const [profile, setProfile] = useState({
+  //   username: '',
+  //   firstname: '',
+  //   lastname: '',
+  //   email: '',
+  //   roleName: '',
+  //   addedOn: '',
+  // });
 
   const notFoundUser = {
     username: '$&**$%@!',
@@ -44,11 +46,10 @@ function Profile() {
     dispatch(profileInfo({username})) // Dispatching with potentially undefined username
       .then((res) => {
         if (res.payload && res.payload.data) {
-          let newProfile = {};
-          for (const [key, value] of Object.entries(res.payload.data)) {
-            newProfile[key] = value;
-          }
+          const newProfile = res.payload.data;
           setProfile(newProfile);
+          // This is the case where we didn't provide a username 
+          // and it returns the logged in user's info
           if (!username) {
             // Modify URL to include the user's username
             navigate(`/profile/${newProfile.username}`, { replace: true });
@@ -97,18 +98,32 @@ function Profile() {
               </div>
             </div>
             <div className='flex-grow ml-4 text-center'>
-              <h2 className='title'>{profile.firstname} {profile.lastname}</h2>
-              <h3 className='subtitle'>{profile.username}</h3>
+              <h2 className='title'>
+                {profile.firstname} {profile.lastname}
+              </h2>
+              <h3 className='subtitle'>
+                {profile.username}
+              </h3>
             </div>
           </div>
-          {profile.bio && <p className='my-2'>{profile.bio}</p>}
-          {profile.location && <p className='my-2 text-lg'><FeatherIcon icon="map-pin" />&nbsp;{profile.location}</p>}
-          <p className='my-2 text-lg'>
-            <FeatherIcon icon="mail" />&nbsp;
-            <a href="mailto:{profile.email}" target="_blank" rel="noopener noreferrer">
-              {profile.email}
-            </a>
-          </p>
+          {profile.bio && (
+            <p className='my-2'>
+              {profile.bio}
+            </p>
+          )}
+          {profile.location && (
+            <p className='my-2 text-lg'>
+              <FeatherIcon icon="map-pin" />&nbsp;{profile.location}
+            </p>
+          )}
+          {profile.email && (
+            <p className='my-2 text-lg'>
+              <FeatherIcon icon="mail" />&nbsp;
+              <a href="mailto:{profile.email}" target="_blank" rel="noopener noreferrer">
+                {profile.email}
+              </a>
+            </p>
+          )}
           {profile.url && (
             <p className='my-2 text-lg'>
               <FeatherIcon icon="link-2" />&nbsp;
@@ -117,9 +132,21 @@ function Profile() {
               </a>
             </p>
           )}
-          <p className="my-5 text-center">Member since {formatDate(profile.addedOn)}<br></br>
-          Current role: <span className="italic capitalize">{profile.roleName}</span>
-          </p>
+          {profile.addedOn && (
+            <div className="mt-5 text-center">
+              Member since {formatDate(profile.addedOn)}
+            </div>
+          )}
+          {profile.roleName && (
+            <div className="my-0 text-center">
+              Current role: <span className="italic capitalize">{profile.roleName}</span>
+            </div>
+          )}
+          {profile.status && (
+            <div className="mt-0 mb-5 text-center">
+              Status: <span className="italic capitalize">{profile.status}</span>
+            </div>
+          )}
           {profile.edit && (
             <div className="edit-box">
               <Link to="/profile/edit" className="edit-button">
