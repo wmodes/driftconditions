@@ -1,3 +1,11 @@
+# Caddyfile for local dev
+#
+# Start:
+# % sudo caddy run --config setupfiles/Caddyfile.local
+#
+# View accesss logs:
+# % less /var/log/caddy/access.log
+
 # http://localhost:3000 {
 #     # Redirect all HTTP traffic on port 3000 to HTTPS
 #    redir https://localhost:3000{uri}

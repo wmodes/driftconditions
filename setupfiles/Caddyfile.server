@@ -1,7 +1,17 @@
 # Caddyfile for server
 #
-# ln -s /home/debian/interference/setupfiles/Caddyfile.server /etc/caddy/Caddyfile
-
+# Symlink with:
+# % sudo ln -sf /home/debian/interference/setupfiles/Caddyfile.server /etc/caddy/Caddyfile
+#
+# Start:
+# % sudo systemctl start caddy
+#
+# Restart:
+# % sudo systemctl restart caddy
+#
+# View journal:
+# % journalctl -u caddy --no-pager | less
+# (thought ordinary servver messsage sould be reported in /var/log/caddy/access.log)
 
 # redirect http to https
 http://driftconditions.org {
