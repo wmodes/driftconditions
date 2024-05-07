@@ -10,7 +10,8 @@ function ProfileEdit() {
   // Use useParams to access the route parameters
   const { username } = useParams();
 
-  // These fields: firstname, lastname, email, bio, location, and url are mutable.
+  // Possibel 
+  // TODO: Killme
   const mutableFields = [
     { key: 'firstname', label: 'First Name' },
     { key: 'lastname', label: 'Last Name' },
@@ -20,15 +21,17 @@ function ProfileEdit() {
     { key: 'url', label: 'Your Website URL' }
   ];
 
-  const [profile, setProfile] = useState({
-    username: '',
-    firstname: '',
-    lastname: '',
-    email: '',
-    bio: '',
-    location: '',
-    url: ''
-  });
+  const [profile, setProfile] = useState({});
+  // TODO: Killme
+  // const [profile, setProfile] = useState({
+  //   username: '',
+  //   firstname: '',
+  //   lastname: '',
+  //   email: '',
+  //   bio: '',
+  //   location: '',
+  //   url: ''
+  // });
 
   // State hooks to store input values from the form.
   const [newPassword, setNewPassword] = useState('');
@@ -52,6 +55,8 @@ function ProfileEdit() {
         setError('Failed to fetch profile.');
       });
   }, [username, dispatch]);
+
+  console.debug(`ProfileEdit: Profile fetched: ${JSON.stringify(profile, null, 2)}`);
 
   // Keep values in sync with form values
   const handleChange = (e) => {
@@ -95,7 +100,7 @@ function ProfileEdit() {
               <span className='form-label mb-1 pr-4'>Username:</span>
               <span className='pb-1 text-xl'>{profile.username}</span>
             </p>
-            {mutableFields.map(({ key, label }) => (
+            {profile.map(({ key, label }) => (
               <div key={key}>
                 <label className="form-label" htmlFor={key}>
                   {label}: {requiredFields.includes(key) && <Required />}

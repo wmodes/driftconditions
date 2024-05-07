@@ -3,7 +3,8 @@
 #    redir https://localhost:3000{uri}
 # }
 
-https://localhost:3001 {
+# AdminClient
+https://localhost:3000 {
     root * /Users/wmodes/dev/interference/AdminClient/build
     file_server
     encode gzip
@@ -20,8 +21,20 @@ https://localhost:3001 {
     }
 }
 
+# AdminServer
 https://localhost:8080 {
     reverse_proxy localhost:8081 {
+        header_up Host {host}
+        header_up X-Real-IP {remote}
+        header_up X-Forwarded-For {remote}
+        header_up X-Forwarded-Proto {scheme}
+    }
+    tls internal
+}
+
+# MixEngine
+https://localhost:8082 {
+    reverse_proxy localhost:8083 {
         header_up Host {host}
         header_up X-Real-IP {remote}
         header_up X-Forwarded-For {remote}
