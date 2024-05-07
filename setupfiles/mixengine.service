@@ -1,7 +1,8 @@
 # MixEngine systemctl service file
 #
 # Link into systemctl with:
-# % sudo ln -s /home/debian/interference/setupfiles/mixengine.service /etc/systemd/system/mixengine.service
+# % sudo ln -sf /home/debian/interference/setupfiles/mixengine.service /etc/systemd/system/mixengine.service
+# % systemctl daemon-reload
 #
 # Start:
 # % sudo systemctl start mixengine.service
