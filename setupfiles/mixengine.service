@@ -15,13 +15,13 @@
 # (thought ordinary servver messsage sould be reported in interference/logs/mixengine.log)
 
 [Unit]
-Description=AdminServer Node.js Express backend service
+Description=MixEngine Node.js Express backend service
 After=network.target
 
 [Service]
 Type=simple
 User=debian
-WorkingDirectory=/home/debian/interference/AdminServer
+WorkingDirectory=/home/debian/interference/MixEngine
 ExecStart=/usr/bin/npm start
 Restart=on-failure
 
