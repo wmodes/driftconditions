@@ -30,9 +30,11 @@ app.use((req, res, next) => {
 
 // Require route modules
 const authRoutes = require('./core/api/routes/authRoutes');
+const queueRoutes = require('./core/api/routes/queueRoutes');
 
 // Use routes
 app.use('/api/auth', authRoutes);
+app.use('/api/queue', queueRoutes);
 
 // Error handling middleware
 app.use(notFound);
@@ -46,7 +48,7 @@ conductor.start().then(() => {
   logger.error(`Conductor failed to start: ${error.message}`);
 });
 
-// Starts the server, highligsing the use of a specific port for listening to incoming requests.
+// Starts the server
 app.listen(mixEngineServer.port, () => {
   logger.info(`Server listening at ${mixEngineServer.protocol}://${mixEngineServer.host}:${mixEngineServer.port}`);
 });

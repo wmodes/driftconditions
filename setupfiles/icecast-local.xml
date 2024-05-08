@@ -2,7 +2,7 @@
 Icecast configuration file for local development
 
 Link into icecast config with:
-% sudo ln -s /Users/<username>/dev/interference/icecast.xml.local /usr/local/etc/icecast.xml
+% sudo ln -s /Users/<username>/dev/interference/setupfiles/icecast-local.xml /usr/local/etc/icecast.xml
 
 Start in own terminal with:
 % icecast -c /usr/local/etc/icecast.xml

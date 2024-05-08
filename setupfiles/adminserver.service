@@ -1,7 +1,8 @@
 # AdminServer systemctl service file
 #
 # Link into systemctl with:
-# % sudo ln -s /home/debian/interference/setupfiles/adminserver.service /etc/systemd/system/adminserver.service
+# % sudo ln -sf /home/debian/interference/setupfiles/adminserver.service /etc/systemd/system/adminserver.service
+# % systemctl daemon-reload
 #
 # Start:
 # % sudo systemctl start adminserver.service

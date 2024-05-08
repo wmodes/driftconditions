@@ -41,7 +41,7 @@ class MixQueue {
       const queryValues = [
         recipe.recipeID, 
         recipe.title, 
-        "Ready",
+        "Queued",
         mixDetails.filepath,
         mixDetails.duration,
         JSON.stringify(mixDetails.playlist),
@@ -80,7 +80,6 @@ class MixQueue {
       throw new Error('Failed to get number of mixes in queue');
     }
   }
-
 
 }
 

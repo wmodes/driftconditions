@@ -65,7 +65,7 @@ npm start
 Start reverse proxies for AdminServer and MixEngine in its own terminal:
 ```
 cd interference
-sudo caddy run --config Caddyfile.local
+sudo caddy run --config setupfiles/Caddyfile.local
 ```
 Access client at http://localhost:3001
 
@@ -91,7 +91,7 @@ npm start
 Start Caddy including AdminClient build along with the reverse proxies in its own terminal:
 ```
 cd interference
-sudo caddy run --config Caddyfile.local
+sudo caddy run --config setupfiles/Caddyfile.local
 ```
 Access client at https://localhost:3000
 
