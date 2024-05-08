@@ -7,26 +7,24 @@ At this point we have a working Express server and React client talking to a MyS
 ### Local/dev
 
 - https://localhost:3000 - React build of AdminClient
-- http://localhost:3001 - dev version of AdminClient
-- https://localhost:8080 - reverse proxy to AdminServer
+- http://localhost:3001 - Dev version of AdminClient
+- https://localhost:8080 - Secure reverse proxy to AdminServer
 - http://localhost:8081 - AdminServer
-- https://localhost:8082 - reverse proxy to MixEngine
+- https://localhost:8082 - Secure reverse proxy to MixEngine
 - http://localhost:8083 - MixEngine
 - mysql://localhost:3306 - MySQL server
-- http://localhost:8000 - Icecast streaming service (stream source)
-- http://localhost:8001 - Icecast listener access
+- http://localhost:8000 - Icecast streaming service (stream source & listener)
 
 ### Server
 
 - http://driftconditions:80 - redirects to https on port 443
 - https://driftconditions:443 - React build of AdminClient
-- https://driftconditions:8080 - reverse proxy to AdminServer
+- https://driftconditions:8080 - Secure reverse proxy to AdminServer
 - http://driftconditions:8081 - AdminServer (firewalled)
-- https://driftconditions:8082 - reverse proxy to MixEngine
+- https://driftconditions:8082 - Secure reverse proxy to MixEngine
 - http://driftconditions:8083 - MixEngine (firewalled)
 - mysql://driftconditions:3306 - MySQL server (firewalled)
-- http://driftconditions:8000 - Icecast streaming service (stream source)
-- http://driftconditions:8001 - Icecast listener access
+- http://driftconditions:8000 - Icecast streaming service (stream source & listener)
 
 ## Scripts
 
