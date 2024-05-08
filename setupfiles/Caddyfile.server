@@ -11,12 +11,12 @@
 #
 # View journal:
 # % journalctl -u caddy --no-pager | less
-# (thought ordinary servver messsage sould be reported in /var/log/caddy/access.log)
+# (thought ordinary caddy messages sould be reported in /var/log/caddy/access.log)
 
 # redirect http to https
-http://driftconditions.org {
+http://driftconditions.org:80 {
     # Redirect all HTTP traffic to HTTPS on standard port
-    redir https://driftconditions.org{uri}
+    redir https://driftconditions.org:443{uri}
 }
 
 # AdminClient

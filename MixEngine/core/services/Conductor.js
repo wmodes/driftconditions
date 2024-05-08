@@ -11,6 +11,7 @@ const MixQueue = require('@services/queue/QueueManager');
 
 const { config } = require('config');
 const maxQueued = config.mixes.maxQueued;
+const checkTime = config.mixes.checkTime;
 
 class Conductor {
   constructor() {
@@ -105,8 +106,7 @@ class Conductor {
 
   async waitForNextIteration() {
     logger.info('Conductor:waitForNextIteration: Queue Maxed Out, Waiting...');
-    const waitTimeInMs = 1000 * 60 * 5; //  wait for 5 minutes
-    return new Promise(resolve => setTimeout(resolve, waitTimeInMs));
+    return new Promise(resolve => setTimeout(resolve, checkTime));
   }
 
   // Add any additional methods needed for your application logic

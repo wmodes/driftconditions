@@ -4,6 +4,7 @@
 
 // foundational imports
 const express = require('express');
+const logger = require('config/logger').custom('MixEngine', 'info');
 const router = express.Router();
 const { database: db } = require('config');
 

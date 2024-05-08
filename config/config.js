@@ -32,6 +32,7 @@ const config = {
     host: 'localhost',
     port: 8083,
     logfile: BASEDIR + '/logs/mixengine.log',
+    checkTime: 1000 * 60 * 2, // 2 minutes
   },
   dbConfig: {
     connectionLimit: 10,
@@ -112,6 +113,7 @@ const config = {
   mixes: {
     maxRecent: 12,
     maxQueued: 12,
+    checkTime: 1000 * 60 * 2, // 2 minutes
   },
   bcrypt: {
     saltRounds: 10,
