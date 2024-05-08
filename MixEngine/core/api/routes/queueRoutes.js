@@ -5,6 +5,8 @@ const express = require('express');
 const logger = require('config/logger').custom('MixEngine', 'info');
 const router = express.Router();
 const { database: db } = require('config');
+// get path module
+const path = require('path');
 
 // authentication imports
 const jwt = require('jsonwebtoken');
@@ -12,15 +14,33 @@ const jwt = require('jsonwebtoken');
 // configuration import
 const { config } = require('config');
 // pull these out of the config object
+const mixFileDir = config.content.mixFileDir;
+const playlistPeriod = config.mixes.playlistPeriod; // in ms
 
 // Route to get the next mix from the queue
-router.post('/nextmix', async (req, res) => {
+router.get('/nextmix', async (req, res) => {
   try {
-    const mix = await getNextMixFromQueue();
-    if (mix) {
-      res.json(mix);
+    const mixObj = await getNextMixFromQueue();
+    if (mixObj) {
+      await markMixAsPlayed(mixObj.mixID);
+      logger.info(`queueRoutes:/nextmix: Sending mix: ${mixObj.filename}`);
+      res.json(mixObj.filename);
     } else {
       res.status(404).send('No mix available');
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Route to get the current playlist
+router.get('/getplaylist', async (req, res) => {
+  try {
+    const mixArray = await getCurrentPlaylist();
+    if (mixArray) {
+      res.json(mixArray);
+    } else {
+      res.status(404).send('Playlist unavailable');
     }
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -73,6 +93,25 @@ async function markMixAsPlayed(mixID) {
     await db.execute(queryStr, [mixID]);
   } catch (error) {
     logger.error('Error marking mix as played', error);
+    throw error;
+  }
+}
+
+// Helper function to get the current playlist
+async function getCurrentPlaylist() {
+  logger.info('Fetching the current playlist');
+  try {
+    const playlistCutoff = new Date(Date.now() - playlistPeriod);
+    const queryStr = `
+      SELECT *
+      FROM mixQueue 
+      WHERE status = 'Played' AND dateUsed >= ?
+      ORDER BY dateUsed DESC
+    `;
+    const [rows] = await db.execute(queryStr, [playlistCutoff]);
+    return rows;
+  } catch (error) {
+    logger.error('queueRoutes:getCurrentPlaylist: Error fetching the playlist', error);
     throw error;
   }
 }
