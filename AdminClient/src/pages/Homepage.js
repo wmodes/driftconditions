@@ -38,10 +38,26 @@ const Homepage = () => {
               </div>
             </div>
             <div className="column2">
-              <div className='player'>
-              <h2 className='title'>
-              <FeatherIcon icon="volume-2" />&nbsp;listen</h2>
-              
+              <div className='player-wrapper'>
+                <h2 className='title'>
+                <FeatherIcon icon="volume-2" />&nbsp;listen</h2>
+                <div className="player text-center">
+                  <p>Listen to { projectName } live.</p>
+                  <div class="flex justify-center w-full">
+                    <audio controls className="inline-block">
+                      <source src="https://driftconditions.org:8000/stream" type="audio/mpeg" />
+                      Your browser does not support the audio element.
+                    </audio>
+                  </div>
+              </div>
+              <div className='playlist-wrapper mt-4'>
+                <h2 className='title'>
+                <FeatherIcon icon="volume-2" />&nbsp;playlist</h2>
+                <div className="playlist text-center">
+                  {/* put playlist here updated every minute or so */}
+                  Soon, soon, soon...
+                </div>
+              </div>
             </div>
           </div>
         </div>
