@@ -56,16 +56,22 @@ npm start
 
 Start AdminClient in its own terminal:
 ```
-cd AdminServer
-npm start
+% cd AdminServer
+% npm start
 ```
 
 Start reverse proxies for AdminServer and MixEngine in its own terminal:
 ```
-cd interference
-sudo caddy run --config setupfiles/Caddyfile.local
+% cd interference
+% sudo caddy run --config setupfiles/Caddyfile.local
 ```
 Access client at http://localhost:3001
+
+Start liquidsoap in its own terminal:
+```
+% cd interference
+% liquidsoap setupfiles/liquidsoap.liq
+```
 
 Start Icecast server with:
 ```
