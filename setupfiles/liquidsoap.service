@@ -1,0 +1,12 @@
+[Unit]
+Description=Liquidsoap Streaming Service
+After=network.target
+
+[Service]
+User=liquidsoap
+Group=liquidsoap
+ExecStart=/bin/liquidsoap /home/debian/interference/setupfiles/liquidsoap.liq
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
