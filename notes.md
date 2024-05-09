@@ -13,7 +13,8 @@ At this point we have a working Express server and React client talking to a MyS
 - https://localhost:8082 - Secure reverse proxy to MixEngine
 - http://localhost:8083 - MixEngine
 - mysql://localhost:3306 - MySQL server
-- http://localhost:8000 - Icecast streaming service (stream source & listener)
+- https://localhost:8000 - Icecast secure stream
+- http://localhost:8001 - Icecast stream (stream source & listener)
 
 ### Server
 
@@ -24,7 +25,8 @@ At this point we have a working Express server and React client talking to a MyS
 - https://driftconditions:8082 - Secure reverse proxy to MixEngine
 - http://driftconditions:8083 - MixEngine (firewalled)
 - mysql://driftconditions:3306 - MySQL server (firewalled)
-- http://driftconditions:8000 - Icecast streaming service (stream source & listener)
+- https://driftconditions:8000 - Icecast secure stream
+- http://driftconditions:8001 - Icecast stream (stream source & listener)
 
 ## Scripts
 
@@ -39,19 +41,19 @@ Note that on the server, systemctl takes care of startup upon boot
 
 Start the mysql server (probably already running):
 ```
-brew services start mysql
+% brew services start mysql
 ```
 
 Start AdminServer in its own terminal:
 ```
-cd AdminServer
-npm start
+% cd AdminServer
+% npm start
 ```
 
 Start MixEngine in its own terminal:
 ```
-cd MixEngine
-npm start
+% cd MixEngine
+% npm start
 ```
 
 Start AdminClient in its own terminal:
@@ -75,53 +77,71 @@ Start liquidsoap in its own terminal:
 
 Start Icecast server with:
 ```
-icecast -c /usr/local/etc/icecast.xml
+% icecast -c /usr/local/etc/icecast.xml
 ```
 
 ### Local build testing
 
 Start AdminServer in its own terminal:
 ```
-cd AdminServer
-npm start
+% cd AdminServer
+% npm start
 ```
 
 Start MixEngine in its own terminal:
 ```
-cd MixEngine
-npm start
+% cd MixEngine
+% npm start
 ```
 
 Start Caddy including AdminClient build along with the reverse proxies in its own terminal:
 ```
-cd interference
-sudo caddy run --config setupfiles/Caddyfile.local
+% cd interference
+% sudo caddy run --config setupfiles/Caddyfile.local
 ```
 Access client at https://localhost:3000
 
 Start Icecast server with:
 ```
-icecast -c /usr/local/etc/icecast.xml
+% icecast -c /usr/local/etc/icecast.xml
+```
+
+Start liquidsoap in its own terminal:
+```
+% cd interference
+% liquidsoap setupfiles/liquidsoap.liq
 ```
 
 ### Server build testing
 
 Start/restart AdminServer (one or the other, depending):
 ```
-sudo systemctl start adminserver.service
-sudo systemctl restart adminserver.service
+% sudo systemctl start adminserver.service
+% sudo systemctl restart adminserver.service
 ```
 
 Start/restart MixEngine (one or the other, depending):
 ```
-sudo systemctl start mixengine.service
-sudo systemctl restart mixengine.service
+% sudo systemctl start mixengine.service
+% sudo systemctl restart mixengine.service
 ```
 
 Start/restart Caddy including AdminClient build along with the reverse proxies:
 ```
-sudo systemctl start caddy
-sudo systemctl restart caddy
+% sudo systemctl start caddy
+% sudo systemctl restart caddy
+```
+
+Start/restart Icecast:
+```
+sudo systemctl start icecast2
+sudo systemctl restart icecast2
+```
+
+Start/restart liquidsoap:
+```
+% sudo systemctl start liquidsoap.service
+% sudo systemctl restart liquidsoap.service
 ```
 
 ## Technologies

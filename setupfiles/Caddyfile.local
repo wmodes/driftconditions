@@ -50,3 +50,14 @@ https://localhost:8082 {
     }
     tls internal
 }
+
+# Icecast Streaming Server
+https://localhost:8000 {
+    reverse_proxy localhost:8001 {
+        header_up Host {host}
+        header_up X-Real-IP {remote}
+        header_up X-Forwarded-For {remote}
+        header_up X-Forwarded-Proto {scheme}
+    }
+    tls wmodes@gmail.com
+}
