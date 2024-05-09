@@ -22,7 +22,7 @@ router.get('/nextmix', async (req, res) => {
   try {
     const mixObj = await getNextMixFromQueue();
     if (mixObj) {
-      // await markMixAsPlayed(mixObj.mixID);
+      await markMixAsPlayed(mixObj.mixID);
       logger.info(`queueRoutes:/nextmix: Sending mix: ${mixObj.filename}`);
       res.send(mixObj.filename);
     } else {
