@@ -82,7 +82,7 @@ View error logs:
 
     <!-- You may have multiple <listen-socket> elements -->
     <listen-socket>
-        <port>8000</port>
+        <port>8001</port>
         <!-- <bind-address>127.0.0.1</bind-address> -->
         <!-- <shoutcast-mount>/stream</shoutcast-mount> -->
     </listen-socket>

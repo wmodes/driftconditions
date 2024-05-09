@@ -82,10 +82,10 @@ View error logs:
 
     <!-- You may have multiple <listen-socket> elements -->
     <listen-socket>
-        <port>8000</port>
-        <ssl>1</ssl>
-        <ssl-certificate>/var/lib/caddy/.local/share/caddy/certificates/acme-v02.api.letsencrypt.org-directory/driftconditions.org/driftconditions.org.crt</ssl-certificate>
-        <ssl-private-key>/var/lib/caddy/.local/share/caddy/certificates/acme-v02.api.letsencrypt.org-directory/driftconditions.org/driftconditions.org.key</ssl-private-key>
+        <port>8001</port>
+        <!-- <ssl>1</ssl> -->
+        <!-- <ssl-certificate>/var/lib/caddy/.local/share/caddy/certificates/acme-v02.api.letsencrypt.org-directory/driftconditions.org/driftconditions.org.crt</ssl-certificate> -->
+        <!-- <ssl-private-key>/var/lib/caddy/.local/share/caddy/certificates/acme-v02.api.letsencrypt.org-directory/driftconditions.org/driftconditions.org.key</ssl-private-key> -->
     </listen-socket>
     <!--
     <listen-socket>

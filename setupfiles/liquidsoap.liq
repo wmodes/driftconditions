@@ -19,10 +19,9 @@ safe_crossfaded_dynamic = mksafe(crossfaded_dynamic)
 # Icecast output settings
 output.icecast(%mp3,
   host = "localhost",
-  port = 8000,
+  port = 8001,
   password = "1c3c@$t",
   mount = "/stream",
-  ssl = true,
   description = "DriftConditions explores the intersection of intention and chance through an ever-evolving tapestry of audio. Each broadcast delves into a hidden world of code-generated sounds, echoing whispers, and serendipitous static, offering listeners a unique journey through an auditory landscape unconstrained by traditional narratives.",
   name = "DriftConditions: Whispers in the Static",
   genre = "Experimental, Ambient, Soundscape",
