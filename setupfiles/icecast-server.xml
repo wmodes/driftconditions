@@ -84,8 +84,8 @@ View error logs:
     <listen-socket>
         <port>8000</port>
         <ssl>1</ssl>
-        <!-- <bind-address>127.0.0.1</bind-address> -->
-        <!-- <shoutcast-mount>/stream</shoutcast-mount> -->
+        <ssl-certificate>/var/lib/caddy/.local/share/caddy/certificates/acme-v02.api.letsencrypt.org-directory/driftconditions.org/driftconditions.org.crt</ssl-certificate>
+        <ssl-private-key>/var/lib/caddy/.local/share/caddy/certificates/acme-v02.api.letsencrypt.org-directory/driftconditions.org/driftconditions.org.key</ssl-private-key>
     </listen-socket>
     <!--
     <listen-socket>
@@ -241,8 +241,6 @@ View error logs:
              Both should be PEM encoded.
         <ssl-certificate>/usr/share/icecast2/icecast.pem</ssl-certificate>
         -->
-        <ssl-certificate>/var/lib/caddy/.local/share/caddy/certificates/acme-v02.api.letsencrypt.org-directory/driftconditions.org/driftconditions.org.crt</ssl-certificate>
-        <ssl-private-key>/var/lib/caddy/.local/share/caddy/certificates/acme-v02.api.letsencrypt.org-directory/driftconditions.org/driftconditions.org.key</ssl-private-key>
 
     </paths>
 
