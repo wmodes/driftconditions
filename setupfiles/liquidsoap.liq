@@ -11,7 +11,10 @@ dynamicplaylist = request.dynamic(id="dynamic_playlist", fun() ->
 )
 
 # Ensure the track is ready before playing using mksafe
-safe_dynamic = mksafe(dynamicplaylist)
+crossfaded_dynamic = crossfade(dynamicplaylist)
+
+# Apply crossfade to the dynamic playlist
+safe_crossfaded_dynamic = mksafe(crossfaded_dynamic)
 
 # Icecast output settings
 output.icecast(%mp3,
@@ -19,7 +22,7 @@ output.icecast(%mp3,
   port = 8000,
   password = "1c3c@$t",
   mount = "/stream",
-  safe_dynamic
+  safe_crossfaded_dynamic
 )
 
 
