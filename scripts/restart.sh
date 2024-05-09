@@ -15,3 +15,7 @@ echo "MixEngine service has been restarted."
 # Restart icecast
 sudo systemctl restart icecast2
 echo "Icecast service has been restarted."
+
+# Restart liquidsoap
+sudo systemctl restart liquidsoap
+echo "Liquidsoap service has been restarted."
