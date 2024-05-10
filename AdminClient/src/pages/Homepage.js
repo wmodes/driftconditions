@@ -6,6 +6,7 @@ import { fetchQueuePlaylist } from '../store/queueSlice';
 import { renderPlaylist } from '../utils/queueUtils';
 import FeatherIcon from 'feather-icons-react';
 import { generateRandomTexts } from '../utils/textUtils'; 
+import logo from '../images/sunsetLogo.png';
 
 const Homepage = () => {
   const dispatch = useDispatch();
@@ -47,6 +48,10 @@ const Homepage = () => {
         <div className="homepage-box">
 
           <div className="column1">
+
+            <div className="image-wrapper mb-8">
+              <img src={logo} alt="Radio Emanations" />
+            </div>
 
             <div className='player-wrapper mb-8'>
               <h2 className='title'>
