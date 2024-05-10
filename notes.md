@@ -18,15 +18,15 @@ At this point we have a working Express server and React client talking to a MyS
 
 ### Server
 
-- http://driftconditions:80 - redirects to https on port 443
-- https://driftconditions:443 - React build of AdminClient
-- https://driftconditions:8080 - Secure reverse proxy to AdminServer
-- http://driftconditions:8081 - AdminServer (firewalled)
-- https://driftconditions:8082 - Secure reverse proxy to MixEngine
-- http://driftconditions:8083 - MixEngine (firewalled)
-- mysql://driftconditions:3306 - MySQL server (firewalled)
-- httpss://driftconditions:8000 - Icecast secure stream
-- http://driftconditions:8001 - Icecast stream (stream source & listener)
+- http://driftconditions.org:80 - redirects to https on port 443
+- https://driftconditions.org:443 - React build of AdminClient
+- https://driftconditions.org:8080 - Secure reverse proxy to AdminServer
+- http://driftconditions.org:8081 - AdminServer (firewalled)
+- https://driftconditions.org:8082 - Secure reverse proxy to MixEngine
+- http://driftconditions.org:8083 - MixEngine (firewalled)
+- mysql://driftconditions.org:3306 - MySQL server (firewalled)
+- httpss://driftconditions.org:8000 - Icecast secure stream
+- http://driftconditions.org:8001 - Icecast stream (stream source & listener)
 
 ## Scripts
 
