@@ -26,6 +26,7 @@ const config = {
       'http://localhost:8083',
       'https://localhost:8000',
       'http://localhost:8001',
+      'http://driftconditions.org',
       'http://driftconditions.org:80',
       'https://driftconditions.org:443',
       'https://driftconditions.org:8080',
