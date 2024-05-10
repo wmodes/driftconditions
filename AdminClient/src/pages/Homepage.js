@@ -30,6 +30,9 @@ const Homepage = () => {
       }
     };
     loadPlaylist();
+
+    // Reload every 2 minutes (120,000 milliseconds)
+    const intervalId = setInterval(loadPlaylist, 120000);
     
   }, [projectName, dispatch]);
 
