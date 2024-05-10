@@ -1,3 +1,5 @@
+// audioSlice.js - Redux slice for handling audio data
+
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios'; // Assuming axios for HTTP requests
 

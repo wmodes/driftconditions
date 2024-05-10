@@ -1,22 +1,39 @@
 // client/src/pages/Homepage.js
 
 import React, { useState, useEffect } from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchQueuePlaylist } from '../store/queueSlice';
+import { renderPlaylist } from '../utils/queueUtils';
 // feather icons
 import FeatherIcon from 'feather-icons-react';
 // tracery text
 import { generateRandomTexts } from '../utils/textUtils'; 
 
 const Homepage = () => {
-  // Access projectName from the global state
-  const projectName = useSelector(state => state.app.projectName); 
+  const dispatch = useDispatch();
+  const [playlist, setPlaylist] = useState([]); 
   const [generatedText, setGeneratedText] = useState([]);
+  // Access projectName from the global state
+  const projectName = useSelector(state => state.app.projectName);
 
   useEffect(() => {
     // Assuming generateRandomTexts is a function that accepts projectName and returns an array of text strings
     const generatedText = generateRandomTexts(projectName);
     setGeneratedText(generatedText);
-  }, [projectName]);
+
+    // Fetch the playlist and handle it locally
+    const loadPlaylist = async () => {
+      try {
+        const result = await dispatch(fetchQueuePlaylist()).unwrap();
+        setPlaylist(result); // Set the fetched playlist to local state
+        console.log('Playlist:', result);
+      } catch (error) {
+        console.error('Failed to fetch playlist:', error);
+      }
+    };
+    loadPlaylist();
+    
+  }, [projectName, dispatch]);
 
   // Function to safely set inner HTML
   const createMarkup = (htmlString) => {
@@ -55,7 +72,9 @@ const Homepage = () => {
                 <FeatherIcon icon="volume-2" />&nbsp;playlist</h2>
                 <div className="playlist text-center">
                   {/* put playlist here updated every minute or so */}
-                  Soon, soon, soon...
+                  <div className="playlist-wrapper">
+                    {renderPlaylist(playlist)}
+                  </div>
                 </div>
               </div>
             </div>

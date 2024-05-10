@@ -223,6 +223,28 @@ svg {
   font-size: 1.5rem;
 }
 
+.playlist {
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
+  text-align:left;
+}
+
+.playlist .mix {
+  margin-bottom: 0.25rem;
+  padding-bottom: 0.25rem;
+  border-bottom: solid 0.25px #888;
+}
+
+.playlist .time {
+  min-width: 50px;
+  padding-top: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 300;
+  color: #444;
+  text-align: right;
+}
+
 /*
  *  Layout Elements
  */
