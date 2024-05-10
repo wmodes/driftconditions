@@ -125,7 +125,7 @@ const config = {
     maxRecent: 12,
     maxQueued: 12,
     checkTime: 1000 * 60 * 2, // 2 minutes
-    playlistPeriod: 1000 * 60 * 60 * 6, // 6 hours
+    playlistPeriod: 1000 * 60 * 60 * 4, // 4 hours
   },
   bcrypt: {
     saltRounds: 10,
