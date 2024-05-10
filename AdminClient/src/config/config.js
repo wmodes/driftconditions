@@ -57,7 +57,7 @@ const config = {
     },
   },
   mixEngine: {
-    baseURL: 'https://localhost:8082',
+    baseURL: 'https://driftconditions.org:8082',
     routes: {
       // queue
       queuePlaylist: '/api/queue/getplaylist',
