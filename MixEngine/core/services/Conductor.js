@@ -7,7 +7,7 @@ const RecipeParser = require('@services/recipes/RecipeParser');
 const ClipSelector = require('@services/clips/ClipSelector');
 const ClipAdjustor = require('@services/clips/ClipAdjustor');
 const MixEngine = require('@services/audio/MixEngine');
-const MixQueue = require('@services/queue/QueueManager');
+const MixQueue = require('@services/queue/MixQueue');
 
 const { config } = require('config');
 const maxQueued = config.mixes.maxQueued;

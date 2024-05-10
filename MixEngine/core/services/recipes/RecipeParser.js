@@ -5,6 +5,7 @@ const logger = require('config/logger').custom('Conductor', 'info');
 const { config } = require('config');
 // Extract values from the config object
 const { selectPoolPercentSize, selectPoolMinSize } = config.recipes;
+const clipLength = config.audio.clipLength;
 
 class RecipeParser {
 
@@ -151,8 +152,16 @@ class RecipeParser {
           if (clip.classification.includes('silence')) {
             return;
           }
-          // Directly add the clip to the playlist
-          playlist.push(clip.title);
+          // Ignore clips with duration less than clipLength.tiny.max
+          if (clip.duration < clipLength.tiny.max) {
+            return;
+          }
+          // Check if the clip is already in the playlist to avoid duplicates
+          const isDuplicate = playlist.some(existingClip => existingClip.id === clip.id);
+          if (!isDuplicate) {
+              // Directly add the clip to the playlist if it's not a duplicate
+              playlist.push(clip);
+          }
         });
       }
     });

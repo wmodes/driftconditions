@@ -72,6 +72,7 @@ class ClipSelector {
         clip.title = selectedAudioClip.title;
         clip.filename = selectedAudioClip.filename;
         clip.duration = selectedAudioClip.duration;
+        clip.creatorID = selectedAudioClip.creatorID;
       };
     };
     return true;

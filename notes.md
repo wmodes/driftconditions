@@ -25,7 +25,7 @@ At this point we have a working Express server and React client talking to a MyS
 - https://driftconditions:8082 - Secure reverse proxy to MixEngine
 - http://driftconditions:8083 - MixEngine (firewalled)
 - mysql://driftconditions:3306 - MySQL server (firewalled)
-- https://driftconditions:8000 - Icecast secure stream
+- httpss://driftconditions:8000 - Icecast secure stream
 - http://driftconditions:8001 - Icecast stream (stream source & listener)
 
 ## Scripts
