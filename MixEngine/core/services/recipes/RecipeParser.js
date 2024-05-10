@@ -152,12 +152,12 @@ class RecipeParser {
           if (clip.classification.includes('silence')) {
             return;
           }
-          // Ignore clips with duration less than clipLength.tiny.max
+          // Ignore clips with duration (s) less than clipLength.tiny.max (s)
           if (clip.duration < clipLength.tiny.max) {
             return;
           }
           // Check if the clip is already in the playlist to avoid duplicates
-          const isDuplicate = playlist.some(existingClip => existingClip.id === clip.id);
+          const isDuplicate = playlist.some(existingClip => existingClip.audioID === clip.audioID);
           if (!isDuplicate) {
               // Directly add the clip to the playlist if it's not a duplicate
               playlist.push(clip);
