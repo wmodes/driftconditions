@@ -131,6 +131,7 @@ const config = {
       'Instrumental', 
       'Experimental', 
       'Digital', 
+      'Effect',
       'Other'
     ],
     
@@ -168,6 +169,7 @@ const config = {
               'Instrumental', 
               'Experimental', 
               'Digital', 
+              'Effect',
               'Other'],
             tags: ["vintage", "jazz"],
             length: ['tiny', 'short', 'medium', 'long', 'huge'],
