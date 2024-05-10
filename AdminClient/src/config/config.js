@@ -2,8 +2,8 @@
 
 const config = {
   adminServer: {
-    baseURL: `${process.env.REACT_APP_SERVER_URL}`,
-    audioBaseURL: `${process.env.REACT_APP_SERVER_URL}/api/audio/sample`,
+    baseURL: process.env.REACT_APP_SERVER_URL,
+    audioBaseURL: process.env.REACT_APP_SERVER_URL + '/api/audio/sample',
     retryLimit: 3,
     routes: {
       // auth
@@ -55,6 +55,13 @@ const config = {
       notauth: '/notauth',
       error: '/error',
     },
+  },
+  mixEngine: {
+    baseURL: 'https://localhost:8082',
+    routes: {
+      // queue
+      queuePlaylist: '/api/queue/getplaylist',
+    }
   },
   list: {
     recordsPerPage: 15,
