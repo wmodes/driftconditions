@@ -97,7 +97,7 @@ const config = {
     wrap: true,
   },
   audio: {
-    allowedFileTypes: ['audio/mpeg', 'audio/wav', 'audio/ogg', 'audio/flac'],
+    allowedFileTypes: ['audio/mpeg', 'audio/wav', 'audio/ogg', 'audio/flac', 'audio/aiff', 'audio/x-m4a'],
     classification: [
       'Ambient', 
       'Atmospheric', 
@@ -118,7 +118,7 @@ const config = {
     fieldNotes: {
       tags: "Describe the topic, theme, or texture of the audio, such as 'rainy night', 'jazz', or 'whispering'. Use tags to highlight specific elements or moods in your audio. Separate tags with commas.",
       classification: "A broad category that describes the broad type of audio.",
-      filetypes: "Supported file types: mp3, wav, ogg, flac",
+      filetypes: "Supported file types: mp3, wav, ogg, flac, aiff, m4a",
       status: "New uploads will be marked as 'Pending Review' until approved by a moderator.",
       copyright: "Please certify that this contains no copyrighted works for which you do not have a right to use.",
     }
