@@ -22,16 +22,6 @@ function ProfileEdit() {
   ];
 
   const [profile, setProfile] = useState({});
-  // TODO: Killme
-  // const [profile, setProfile] = useState({
-  //   username: '',
-  //   firstname: '',
-  //   lastname: '',
-  //   email: '',
-  //   bio: '',
-  //   location: '',
-  //   url: ''
-  // });
 
   // State hooks to store input values from the form.
   const [newPassword, setNewPassword] = useState('');

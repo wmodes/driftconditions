@@ -1,7 +1,7 @@
 // clipSelector.js - A class module for fetching and selecting audio clips based on certain criteria
 
 const { database: db } = require('config');
-const logger = require('config/logger').custom('ClipSelector', 'info');
+const logger = require('config/logger').custom('ClipSelector', 'debug');
 
 const { config } = require('config');
 const clipLengthRanges = config.audio.clipLength;
@@ -73,6 +73,7 @@ class ClipSelector {
         clip.filename = selectedAudioClip.filename;
         clip.duration = selectedAudioClip.duration;
         clip.creatorID = selectedAudioClip.creatorID;
+        clip.creatorUsername = selectedAudioClip.creatorUsername;
       };
     };
     return true;
@@ -128,6 +129,7 @@ _setSilenceBasics(clip) {
     // Use audioID to select full clip from the database
     const [selectedFullClip] = await this._fetchSelectedClip(selectedClip.audioID);
     logger.debug(`Selected clip: ${selectedFullClip.title}, score: ${selectedClip.score}`);
+    // logger.debug(`Selected clip: ${JSON.stringify(selectedFullClip, null, 2)}`);
     // Add new tags to the recent tags array
     this._addNewTags(selectedFullClip.tags);
     // update the clip with the new lastUsed timestamp
@@ -377,8 +379,9 @@ _setSilenceBasics(clip) {
   async _fetchSelectedClip(audioID) {
     try {
       const queryStr = `
-        SELECT *
+        SELECT audio.*, users.username AS creatorUsername
         FROM audio
+        LEFT JOIN users ON audio.creatorID = users.userID
         WHERE audioID = ?
       `;
       const queryValues = [audioID];
