@@ -44,7 +44,7 @@ export const renderPlaylist = (playlist) => {
             <span className="clip-title">{clip.title} </span>
             {clip.creatorUsername && (
               <span className="clip-creator">
-                (<Link to={`/profile/${clip.creatorUsername}`}>{clip.creatorUsername}</Link>)
+                (Contrib: <Link to={`/profile/${clip.creatorUsername}`}>{clip.creatorUsername}</Link>)
               </span>
             )}
           </div>

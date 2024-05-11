@@ -245,6 +245,16 @@ svg {
   text-align: right;
 }
 
+.playlist .clip-creator {
+  font-size: 0.75rem;
+  font-weight: 300;
+  color: #444;
+}
+
+.playlist a {
+  color: var(--link-color);
+}
+
 /*
  *  Layout Elements
  */
