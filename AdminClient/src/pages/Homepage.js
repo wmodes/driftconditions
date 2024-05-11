@@ -25,7 +25,7 @@ const Homepage = () => {
       try {
         const result = await dispatch(fetchQueuePlaylist()).unwrap();
         setPlaylist(result); // Set the fetched playlist to local state
-        console.log('Playlist:', result);
+        // console.log('Playlist:', result);
       } catch (error) {
         console.error('Failed to fetch playlist:', error);
       }
