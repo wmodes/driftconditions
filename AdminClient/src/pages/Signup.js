@@ -1,7 +1,7 @@
 // Signup.js handles the user registration process, capturing user details and using Redux for state management.
 
 // useState hook for form input management.
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 // Hooks for Redux state management and action dispatching.
 import { useDispatch } from 'react-redux';
@@ -11,31 +11,41 @@ import { signup } from '../store/authSlice';
 function Signup() {
   const navigate = useNavigate();
   // State hooks to store input values from the form.
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [firstname, setFirstname] = useState('');
-  const [lastname, setLastname] = useState('');
-  const [email, setEmail] = useState('');
+  const [record, setRecord] = useState({
+    username: '',
+    password: '',
+    firstname: '',
+    lastname: '',
+    email: '',
+  });
+
+  const [isFormValid, setIsFormValid] = useState(false);
 
   // Accessing Redux state for error handling.
   const [error, setError] = useState('');
   // useDispatch hook to dispatch the signup action.
   const dispatch = useDispatch();
 
+  // Handle form input changes and update the record state
+  const handleChange = (e) => {
+    const { name, value: initialValue } = e.target;
+    console.log(`Signup: handleChange: name: ${name}, value: ${initialValue}`)
+    let value = initialValue;
+    if (name === 'username') {
+      // Convert username to lowercase and remove spaces and all non-alphanumeric characters
+      value = value.toLowerCase().replace(/[^a-z0-9]/g, '');
+    }
+    setRecord(prevState => ({ ...prevState, [name]: value }));
+  };
+
   // Handles form submission, invoking the signup process.
-  const submitHandler = e => {
+  const handleSubmit = e => {
     // Prevents the default form submission.
     e.preventDefault();
     // Dispatches the signup action with user details.
-    dispatch(signup({username, password, firstname, lastname, email}))
+    dispatch(signup(record))
     .then((res) => {
       console.log("data received:", res);
-      // Resets form fields after submission.
-      setUsername('');
-      setPassword('');
-      setFirstname('');
-      setLastname('');
-      setEmail('');
       navigate('/signin');
     })
     .catch((error) => {
@@ -45,8 +55,13 @@ function Signup() {
     });
   } 
 
-  // Check if required fields are filled
-  const isFormValid = username && password && firstname && lastname && email;
+  // Check if all required fields are filled
+  useEffect(() => {
+    const isValid = record.username && record.password && record.firstname && record.lastname && record.email;
+    setIsFormValid(isValid);
+    // setError(isValid ? '' : 'Please fill in all fields');
+  }, [record]);
+
   const Required = () => <span className="required">*</span>;
 
   // Renders the signup form with input fields for user details and conditional rendering for feedback.
@@ -54,18 +69,18 @@ function Signup() {
     <div className="signin-wrapper">
       <div className="display-box-wrapper">
         <div className="display-box">
-          <form onSubmit={submitHandler}>
+          <form onSubmit={handleSubmit}>
             <h2 className='title'>Sign up</h2>
             <label className="form-label" htmlFor="username">Username: <Required /></label>
-            <input className="form-field" type="text" id="username" value={username} onChange={e => setUsername(e.target.value)} />
+            <input className="form-field" type="text" name="username" value={record.username} onChange={handleChange} />
             <label className="form-label"  htmlFor="password">Password: <Required /></label>
-            <input className="form-field" type="password" id="password" value={password} onChange={e => setPassword(e.target.value)} />
+            <input className="form-field" type="password" name="password" value={record.password} onChange={handleChange} />
             <label className="form-label"  htmlFor="firstname">First Name: <Required /></label>
-            <input className="form-field" type="text" id="firstname" value={firstname} onChange={e => setFirstname(e.target.value)} />
+            <input className="form-field" type="text" name="firstname" value={record.firstname} onChange={handleChange} />
             <label className="form-label"  htmlFor="lastname">Last Name: <Required /></label>
-            <input className="form-field" type="text" id="email" value={lastname} onChange={e => setLastname(e.target.value)} />
+            <input className="form-field" type="text" name="lastname" value={record.lastname} onChange={handleChange} />
             <label className="form-label"  htmlFor="email">Email <Required /></label>
-            <input className="form-field" type="text" id="email" value={email} onChange={e => setEmail(e.target.value)} />
+            <input className="form-field" type="text" name="email" value={record.email} onChange={handleChange} />
             <div className='button-box'>
               <button className='button cancel' type="button">Cancel</button>
               <button className='button submit' type="submit" disabled={!isFormValid}>Register</button>

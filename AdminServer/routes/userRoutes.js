@@ -276,55 +276,6 @@ function hasPermission(requestingUserInfo, callingRoute) {
   return isPermitted;
 }
 
-// TODO: Killme
-// // Route for showing another user's profile. It extracts the user ID from the token, and returns the target user's information.
-// // This is a protected route, only accessible to authenticated users.
-// router.post('/user', verifyToken, async (req, res) => {
-//   fields = ['username', 'firstname', 'lastname', 'email', 'url', 'bio', 'location', 'roleName', 'validated', 'addedOn'];
-//   try {
-//     const { username } = req.body; // Extracting username from the request body
-//     logger.debug(`Request for userlookup received ${{ username }}`);
-//     if (!username) {
-//       logger.debug('Bad request: Missing username');
-//       return res.status(400).send("Bad request: Missing username");
-//     }
-//     // Extract userID of the requesting user from the token
-//     const token = req.cookies.token;
-//     const decoded = jwt.verify(token, jwtSecretKey);
-//     const requestingUserID = decoded.userID;
-//     logger.debug(`Decoded JWT for user ID ${{ requestingUserID }}`);
-//     // Fetch requesting user's information for permission check
-//     const requestingUserInfo = await getUserInfo({ userID: requestingUserID });
-//     logger.debug(`Requesting user info: ${requestingUserInfo}`);
-//     // Check if the requesting user has permission to view the target user's information
-//     if (!hasPermission(requestingUserInfo, 'userlookup')) { // Make sure to await the result
-//       logger.debug(`Permission denied for userlookup ${{ requestingUserID }}`);
-//       return res.status(403).send("Forbidden: You do not have permission to view this user's information");
-//     }
-//     // Fetch and return the target user's information based on username
-//     const targetUserInfo = await getUserInfo({ username: username });
-//     // remove all but the fields we want to return  
-//     for (const field in targetUserInfo) {
-//       if (!fields.includes(field)) {
-//         delete targetUserInfo[field];
-//       }
-//     }
-//     logger.debug(`Target user info: ${targetUserInfo}`);
-//     if (targetUserInfo) {
-//       res.status(200).json({
-//         success: true,
-//         data: targetUserInfo
-//       });
-//     } else {
-//       logger.debug(`User not found ${{ username }}`);
-//       res.status(404).send("User not found");
-//     }
-//   } catch (error) {
-//     // logger.error(`userRoutes:/user: Error fetching record: ${error}`);
-//     res.status(500).send("Server error");
-//   }
-// });
-
 // Route to disable a user
 //
 router.post('/disable', verifyToken, async (req, res) => {
