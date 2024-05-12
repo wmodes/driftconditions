@@ -183,7 +183,7 @@ class MixEngine {
               volume: this._buildNoiseFilter(volCmdParam),
               eval: 'frame'
             };
-            // this.amixDuration = 'shortest';
+            this.amixDuration = 'shortest';
             break;
           default:
             volOptions.volume = 1.0;
