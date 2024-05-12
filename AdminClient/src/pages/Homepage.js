@@ -5,8 +5,8 @@ import { useSelector, useDispatch } from 'react-redux';
 import { fetchQueuePlaylist } from '../store/queueSlice';
 import { renderPlaylist } from '../utils/queueUtils';
 import FeatherIcon from 'feather-icons-react';
+import HeroImage from '../components/HeroImage';
 import { generateRandomTexts } from '../utils/textUtils'; 
-import logo from '../images/sunsetLogo.png';
 
 const Homepage = () => {
   const dispatch = useDispatch();
@@ -50,7 +50,7 @@ const Homepage = () => {
           <div className="column1">
 
             <div className="image-wrapper mb-8">
-              <img src={logo} alt="Radio Emanations" />
+              <HeroImage />
             </div>
 
             <div className='player-wrapper mb-8'>
