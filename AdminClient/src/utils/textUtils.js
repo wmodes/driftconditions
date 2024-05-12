@@ -1,10 +1,9 @@
-// Description: Text utility functions
-//  - generating random texts
-//  - choosing a project name
+// textUtils.js - utility functions for generating random texts and project name
 
-//
-// Generating random texts
-//
+// Import the config object from the config.js file
+import config from '../config/config';
+// pull variables from the config object
+const projectNames = config.app.projectNames;
 
 var tracery = require('tracery-grammar');
 
@@ -110,24 +109,6 @@ export const generateRandomTexts = (projectName) => {
 //
 // Choosing a project name
 //
-
-const projectNames = [
-  "StaticDrift",
-  "RadioNocturne",
-  "ToxicEvent",
-  "DriftConditions",
-  "RadioInterference",
-  "DuskVariations",
-  "DriftFrequency",
-  "RadioHalcyon",
-  "RadioElegy",
-  "RadioDiaspora",
-  "ProjectAether",
-  "FlowSchema",
-  "SafetyProtocol",
-  "ShutdownMatrix",
-  "FeedstockFidelity",
-];
 
 export const getProjectName = () => {
   let projectName = sessionStorage.getItem('projectName');

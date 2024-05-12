@@ -1,9 +1,11 @@
 // config.js - admin client configuration
 
+const clientServerURL = process.env.REACT_APP_SERVER_URL;
+
 const config = {
   adminServer: {
-    baseURL: process.env.REACT_APP_SERVER_URL,
-    audioBaseURL: process.env.REACT_APP_SERVER_URL + '/api/audio/sample',
+    baseURL: clientServerURL,
+    audioBaseURL: clientServerURL + '/api/audio/sample',
     retryLimit: 3,
     routes: {
       // auth
@@ -217,6 +219,42 @@ const config = {
     },
 
   },
+  app: {
+    projectNames: [
+      "StaticDrift",
+      "RadioNocturne",
+      "ToxicEvent",
+      "DriftConditions",
+      "RadioInterference",
+      "DuskVariations",
+      "DriftFrequency",
+      "RadioHalcyon",
+      "RadioElegy",
+      "RadioDiaspora",
+      "ProjectAether",
+      "FlowSchema",
+      "SafetyProtocol",
+      "ShutdownMatrix",
+      "FeedstockFidelity",
+    ],
+    homepageImageURLBase: '/img/homepage',
+    homepageImages: [
+      "8-bit-radio-tower.png",
+      "fucked-up-vcr.png",
+      "hatch-show-style-triptych.png",
+      "heavily-distorted.png",
+      "mexican-radio-tower.png",
+      "mountain-road-with-distortions.png",
+      "night-drive-woodcut.png",
+      "night-highway.png",
+      "silkscreen-cosmic-car.png",
+      "sunset-logo.png",
+      "sunset-logo-blue.png",
+      "tintype-tower.png",
+      "washed-out-80s-road.png",
+      "washed-out-industrial-area.png",
+    ]
+  }
 
 };
 
