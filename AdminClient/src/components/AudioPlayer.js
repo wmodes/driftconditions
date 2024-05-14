@@ -1,12 +1,13 @@
 // AudioPlayer.js
-import React from 'react';
+import React, { useState } from 'react';
 import ReactPlayer from 'react-player';
 
 import config from '../config/config';
 // pull variables from the config object
 const restartTime = config.stream.restartTime;
 
-const AudioPlayer = ({ url }) => {
+const AudioPlayer = ({ url }) => {  
+  const [playerKey, setPlayerKey] = useState(0); // key to force re-render of ReactPlayer
 
   // Function to restart the audio after a delay
   const audioRestart = () => {
