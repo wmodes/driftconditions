@@ -1,19 +1,17 @@
-// AudioPlayer.js
 import React, { useState } from 'react';
-import ReactPlayer from 'react-player';
 
 import config from '../config/config';
 // pull variables from the config object
 const restartTime = config.stream.restartTime;
 
-const AudioPlayer = ({ url }) => {  
-  const [playerKey, setPlayerKey] = useState(0); // key to force re-render of ReactPlayer
+const AudioPlayer = ({ url }) => {
+  const [playerKey, setPlayerKey] = useState(0); // key to force re-render of the audio element
 
   // Function to restart the audio after a delay
   const audioRestart = () => {
     console.log('Attempting to restart audio stream...');
     setTimeout(() => {
-      // Update key to force re-render and thus reinitialization of ReactPlayer
+      // Update key to force re-render and thus reinitialization of the audio element
       setPlayerKey(prevKey => prevKey + 1);
     }, restartTime); // Wait before retrying
   };
@@ -41,18 +39,20 @@ const AudioPlayer = ({ url }) => {
   };
 
   return (
-    <ReactPlayer
-      url={url}
-      playing={true}
-      controls={true}
-      width="100%"
-      height="40px"
-      onReady={handleReady}
-      onStart={handleStart}
+    <audio
+      key={playerKey}
+      src={url}
+      controls
+      autoPlay
+      onCanPlay={handleReady}
+      onPlay={handleStart}
       onPause={handlePause}
       onEnded={handleEnded}
       onError={handleError}
-    />
+      style={{ width: '100%' }}
+    >
+      Your browser does not support the audio element.
+    </audio>
   );
 };
 
