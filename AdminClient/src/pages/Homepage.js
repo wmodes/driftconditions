@@ -5,8 +5,13 @@ import { useSelector, useDispatch } from 'react-redux';
 import { fetchQueuePlaylist } from '../store/queueSlice';
 import { renderPlaylist } from '../utils/queueUtils';
 import FeatherIcon from 'feather-icons-react';
+import AudioPlayer from '../components/AudioPlayer'; 
 import HeroImage from '../components/HeroImage';
 import { generateRandomTexts } from '../utils/textUtils'; 
+
+import config from '../config/config';
+// pull variables from the config object
+const streamURL = config.stream.url;
 
 const Homepage = () => {
   const dispatch = useDispatch();
@@ -59,10 +64,11 @@ const Homepage = () => {
               <div className="player text-center">
                 <p>Listen to { projectName } live. The broadcast is assembled live, on-the-fly, and will never be heard exactly the same again.</p>
                 <div className="flex justify-center w-full">
-                  <audio controls className="inline-block">
+                  {/* <audio controls className="inline-block">
                     <source src="https://driftconditions.org:8000/stream" type="audio/mpeg" />
                     Your browser does not support the audio element.
-                  </audio>
+                  </audio>                  */}
+                  <AudioPlayer url={streamURL} />
                 </div>
               </div>
             </div>

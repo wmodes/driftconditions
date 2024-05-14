@@ -65,6 +65,10 @@ const config = {
       queuePlaylist: '/api/queue/getplaylist',
     }
   },
+  stream: {
+    url: 'https://driftconditions.org:8000/stream',
+    restartTime: 5000,
+  },
   list: {
     recordsPerPage: 15,
   },
