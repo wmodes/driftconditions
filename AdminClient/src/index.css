@@ -93,10 +93,10 @@ svg {
   background-color: var(--nav-background-color); /* bg-cornflower */
 }
 
-@media screen and (max-width: 695px){
+@media (max-width: 695px){
   .navbar {
-    padding-left: 0.5rem;
-    padding-right: 0.5rem;
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
   }
   
 }
@@ -195,7 +195,7 @@ svg {
   background-color: var(--content-box-color); /* bg-gray-200 */
 }
 
-@media screen and (max-width: 695px){
+@media (max-width: 695px){
   .homepage-box {
     max-width: 98%;
     padding: 0.5rem 0;
