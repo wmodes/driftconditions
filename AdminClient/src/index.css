@@ -98,7 +98,12 @@ svg {
     padding-left: 0.5rem !important;
     padding-right: 0.5rem !important;
   }
-  
+  .logo-wrapper {
+    padding-top: 0.25rem !important;
+  }
+  .logo-wrapper a {
+    font-size: 25px !important;
+  }
 }
 
 .logo-wrapper {
