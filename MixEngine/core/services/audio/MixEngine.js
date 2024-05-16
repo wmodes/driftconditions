@@ -2,7 +2,7 @@
 
 const { database: db } = require('config');
 const ffmpeg = require('fluent-ffmpeg');
-const logger = require('config/logger').custom('MixEngine', 'info');
+const logger = require('config/logger').custom('MixEngine', 'debug');
 const path = require('path');
 
 const { config } = require('config');
