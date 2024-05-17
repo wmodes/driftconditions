@@ -398,11 +398,6 @@ class MixEngine {
     return longestTrack;
   }
 
-
-
-
-
-
   _setupTestInputs() {
     // Test method to setup ffmpeg inputs
     const command = ffmpeg();

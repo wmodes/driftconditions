@@ -154,10 +154,13 @@ const config = {
   },
   filters: {
     noise: {
+      // general noise filter
+      // min(1, max(0, ((cos(PI * t * n / f0) * a0 + cos(PI * t * n / f1) * a1 + cos(PI * t * n / f2) * a2) + o ) * s  * p + q))
       presets: {
-        default: {f: [13, 7, 3], a: [1, 0.5, 0.25], n: 1, s: 2, p: 1, o: -0.5, q: 0.5},
-        interrupted: {f: [13, 7, 3], a: [1, 0.5, 0.25], n: 1, s: 2, p: -1, o: -0.5, q: 0.5},
-        interrupter: {f: [13, 7, 3], a: [1, 0.5, 0.25], n: 1, s: 2, p: 1, o: -0.5, q: 0.5},
+        // min(1, max(0, ((cos(PI * t * 1 / 13) * 1 + cos(PI * t * 1 / 7) * 0.5 + cos(PI * t * 1 / 3) * 0.25) - 0.5 ) * 0.75 * 1 + 0.5))
+        default: {f: [13, 7, 3], a: [1, 0.5, 0.25], n: 1, s: 0.75, p: 1, o: -0.5, q: 0.5},
+        interrupted: {f: [13, 7, 3], a: [1, 0.5, 0.25], n: 1, s: 0.75, p: -1, o: -0.5, q: 0.5},
+        interrupter: {f: [13, 7, 3], a: [1, 0.5, 0.25], n: 1, s: 0.75, p: 1, o: -0.5, q: 0.5},
         fadeInNOut: {f: [13, 7, 3], a: [1, 0.5, 0.25], n: 1, s: 1, p: 1, o: 1, q: 0.5},
         fadeInNOutNeg: {f: [13, 7, 3], a: [1, 0.5, 0.25], n: 1, s: 1, p: -1, o: 1, q: 0.5},
       },
