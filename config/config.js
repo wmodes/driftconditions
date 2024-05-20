@@ -142,6 +142,7 @@ const config = {
     contentFileDir: BASEDIR + '/content',
     tmpFileDir: BASEDIR + '/content/tmp',
     mixFileDir: BASEDIR + '/content/mixes',
+    soundsFileDir: BASEDIR + '/content/sounds',
   },
   ffmpeg: {
     output: {
@@ -152,10 +153,17 @@ const config = {
       sampleRate: 44100,
     },
   },
+  sounds: {
+    static: {
+      am: "dirty-am-static.mp3",
+      shortwave: "short-wave-static.mp3",
+    },
+  },
   filters: {
     noise: {
       // general noise filter
       // min(1, max(0, ((cos(PI * t * n / f0) * a0 + cos(PI * t * n / f1) * a1 + cos(PI * t * n / f2) * a2) + o ) * s  * p + q))
+      // https://graphtoy.com/?f1(x,t)=min(1,max(0,((cos(PI*(x+t)*1/13)*1+cos(PI*(x+t)*1/7)*0.5+cos(PI*(x+t)*1/3)*0.25)-0.5)*0.75*1+0.5))&v1=true&f2(x,t)=min(1,max(0,((cos(PI*(x+t)*1/13)*1+cos(PI*(x+t)*1/7)*0.5+cos(PI*(x+t)*1/3)*0.25)-0.5)*0.75*-1+0.5))&v2=true&f3(x,t)=4*(0.5-abs(0.5-f1(x,t)))*(0.5-abs(0.5-f2(x,t)))&v3=true&f4(x,t)=&v4=true&f5(x,t)=&v5=false&f6(x,t)=&v6=false&grid=1&coords=0,0,3.1599750516729905
       presets: {
         // min(1, max(0, ((cos(PI * t * 1 / 13) * 1 + cos(PI * t * 1 / 7) * 0.5 + cos(PI * t * 1 / 3) * 0.25) - 0.5 ) * 0.75 * 1 + 0.5))
         default: {f: [13, 7, 3], a: [1, 0.5, 0.25], n: 1, s: 0.75, p: 1, o: -0.5, q: 0.5},
@@ -165,6 +173,11 @@ const config = {
         fadeInNOutNeg: {f: [13, 7, 3], a: [1, 0.5, 0.25], n: 1, s: 1, p: -1, o: 1, q: 0.5},
       },
     },
+  },
+  exprs: {
+    noise: 'min(1,max(0,((cos(PI*(t)*1/13)*1+cos(PI*(t)*1/7)*0.5+cos(PI*(t)*1/3)*0.25)-0.5)*0.75*1+0.5))',
+    inverseNoise: '1 - %{noise}',
+    transitions: '4*(0.5-abs(0.5-%{noise}))*(0.5-abs(0.5-%{inverseNoise}))',
   }
 };
 

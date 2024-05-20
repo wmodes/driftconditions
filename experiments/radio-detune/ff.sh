@@ -17,32 +17,113 @@
 # The list of arguments can be quoted using the character ‘'’ as initial and ending mark, and the character ‘\’ for escaping the characters within the quoted text; otherwise the argument string is considered terminated when the next special character (belonging to the set ‘[]=;,’) is encountered.
 
 # working fade in/out
-# ffmpeg -i knox.mp3 -i static.mp3 -filter_complex \
+# ffmpeg -i audio.mp3 -i static.flac -filter_complex \
 # "[0:a] \
-#     volume = 'min(1, max(0, 0.5 + 0.5 * cos(PI * t / 5)))': eval=frame \
-#     [a0]; \
+#     volume = 'min(1, max(0.01, cos(PI * t / 5)))': eval=frame[a0];" \
+# -map "[a0]" -c:a libmp3lame -q:a 2 output.mp3
+
+# working fade in/out
+# ffmpeg -i audio.mp3 -i static.flac -filter_complex \
+# "[0:a] \
+#     volume = 'min(1, max(0.01, cos(PI * t / 5)))': eval=frame[a0]; \
 # [1:a] \
-#     volume = 'min(1, max(0, 0.5 - 0.5 * cos(PI * t / 5)))': eval=frame \
-#     [a1]; \
+#     volume = '1 - min(1, max(0.01, cos(PI * t / 5)))': eval=frame[a1]; \
 # [a0][a1]
 #     amix = inputs=2: duration=shortest" \
 # -c:a libmp3lame -q:a 2 output.mp3
 
-# applying a lowpass filter
-ffmpeg -i knox.mp3 -i static.mp3 -filter_complex \
-"[0:a] \
-    volume = 'min(1, max(0, 0.5 + 0.5 * cos(PI * t / 5)))': eval=frame, \
-    lowpass=f=3000: mix='0.5 + 0.5 * cos(PI * t / 5)' \
-    [a0]; \
-[1:a] \
-    volume = 'min(1, max(0, 0.5 - 0.5 * cos(PI * t / 5)))': eval=frame \
-    [a1]; \
-[a0][a1]
-    amix = inputs=2: duration=shortest" \
+# creating a test distorted audio
+# ffmpeg -i audio.mp3 -filter_complex \
+# "[0:a] \
+#   lowpass=f=3000, \
+#   highpass=f=300, \
+#   aecho=0.8:0.88:60:0.4, \
+#   aphaser=type=t:speed=2:decay=0.6, \
+#   afftdn=nf=-25, \
+#   acrusher=level_in=1:level_out=1:bits=8:mode=log:aa=1, \
+#   asetrate=48000*1.25,atempo=1/1.25, \
+#   volume=6[audio1a]" \
+# -map "[audio1a]" -c:a libmp3lame -q:a 2 output_distorted_radio.mp3
+
+# using volume to fade in/out distorted audio
+# ffmpeg -i audio.mp3 -stream_loop -1 -i static2.mp3 -filter_complex \
+#     "[0:a] \
+#         volume='min(1,max(0,((cos(PI*(t)*1/13)*1+cos(PI*(t)*1/7)*0.5+cos(PI*(t)*1/3)*0.25)-0.5)*0.75+0.5))':eval=frame[audio0]; \
+#     [0:a] \
+#         lowpass=f=3000, \
+#         highpass=f=300, \
+#         aecho=0.8:0.88:60:0.4, \
+#         aphaser=type=t:speed=2:decay=0.6, \
+#         afftdn=nf=-25, \
+#         acrusher=level_in=1:level_out=1:bits=8:mode=log:aa=1, \
+#         asetrate=48000*1.25,atempo=1/1.25, \
+#         volume=8[audio1a]; \
+#     [audio1a] \
+#         volume='1 - min(1,max(0,((cos(PI*(t)*1/13)*1+cos(PI*(t)*1/7)*0.5+cos(PI*(t)*1/3)*0.25)-0.5)*0.75+0.5))':eval=frame[audio1b]; \
+#     [1:a] \
+#         volume=4[audio2a]; \
+#     [audio2a] \
+#         volume='1 - min(1,max(0,((cos(PI*(t)*1/13)*1+cos(PI*(t)*1/7)*0.5+cos(PI*(t)*1/3)*0.25)-0.5)*0.75+0.5))':eval=frame[audio2]; \
+#     [audio0][audio1b][audio2] \
+#         amix=inputs=3:duration=shortest" \
+# -c:a libmp3lame -q:a 2 output.mp3
+
+#using volume fade in/out distorted audio (w only filters)
+# ffmpeg -i audio2.mp3 -i static2.mp3 -filter_complex \
+#     "[0:a] \
+#         volume='1 - min(1,max(0,((cos(PI*(t)*1/13)*1+cos(PI*(t)*1/7)*0.5+cos(PI*(t)*1/3)*0.25)-0.5)*0.75+0.5))':eval=frame[audio0]; \
+#     [0:a] \
+#         lowpass=f=3000, \
+#         highpass=f=300, \
+#         aecho=0.8:0.88:60:0.4, \
+#         aphaser=type=t:speed=2:decay=0.6, \
+#         afftdn=nf=-25, \
+#         acrusher=level_in=1:level_out=1:bits=8:mode=log:aa=1, \
+#         asetrate=48000*1.1,atempo=1/1.1, \
+#         volume=8[audio1a]; \
+#     [audio1a] \
+#         volume='min(1,max(0,((cos(PI*(t)*1/13)*1+cos(PI*(t)*1/7)*0.5+cos(PI*(t)*1/3)*0.25)-0.5)*0.75+0.5))':eval=frame[audio1b]; \
+#     [1:a] \
+#         aloop=loop=-1:size=0:start=0[audio2a]; \
+#     [audio2a] \
+#         volume=5[audio2b]; \
+#     [audio2b] \
+#         volume='min(1,max(0,((cos(PI*(t)*1/13)*1+cos(PI*(t)*1/7)*0.5+cos(PI*(t)*1/3)*0.25)-0.5)*0.75+0.5))':eval=frame[audio2c]; \
+#     [audio0][audio1b][audio2c] \
+#         amix=inputs=3:duration=first" \
+# -c:a libmp3lame -q:a 2 output.mp3
+
+#using volume fade in/out distorted audio (reduced filters)
+ffmpeg -i audio2.mp3 -i static2.mp3 -filter_complex \
+    "[0:a] \
+        volume='1 - min(1,max(0,((cos(PI*(t)*1/13)*1+cos(PI*(t)*1/7)*0.5+cos(PI*(t)*1/3)*0.25)-0.5)*0.75+0.5))':eval=frame[audio0]; \
+    [0:a] \
+        lowpass=f=3000, \
+        highpass=f=300, \
+        afftdn=nf=-25, \
+        asetrate=48000*1.1,atempo=1/1.1, \
+        volume=8[audio1a]; \
+    [audio1a] \
+        volume='min(1,max(0,((cos(PI*(t)*1/13)*1+cos(PI*(t)*1/7)*0.5+cos(PI*(t)*1/3)*0.25)-0.5)*0.75+0.5))':eval=frame[audio1b]; \
+    [1:a] \
+        aloop=loop=-1:size=0:start=0[audio2a]; \
+    [audio2a] \
+        volume=5[audio2b]; \
+    [audio2b] \
+        volume='min(1,max(0,((cos(PI*(t)*1/13)*1+cos(PI*(t)*1/7)*0.5+cos(PI*(t)*1/3)*0.25)-0.5)*0.75+0.5))':eval=frame[audio2c]; \
+    [audio0][audio1b][audio2c] \
+        amix=inputs=3:duration=first" \
 -c:a libmp3lame -q:a 2 output.mp3
 
+
+# applying a lowpass filter
+# ffmpeg -i audio.mp3 -filter_complex \
+# "[0:a] \
+#     lowpass=f=3000:mix='0.5 + 0.5 * cos(PI * t / 5)';" \
+# -c:a libmp3lame -q:a 2 output.mp3
+
 # applying a low and high pass filter
-# ffmpeg -i knox.mp3 -i static.mp3 -filter_complex \
+# ffmpeg -i audio.mp3 -i static.mp3 -filter_complex \
 # "[0:a]volume='0.5 + 0.5 * cos(PI * t / 5)':eval=frame, \
 #       lowpass=f=3000, highpass=f=200 \
 #     [audio0a]; \
@@ -52,7 +133,7 @@ ffmpeg -i knox.mp3 -i static.mp3 -filter_complex \
 # -c:a libmp3lame -q:a 2 output.mp3
 
 # applying low/highpass filters + phaser + echo
-# ffmpeg -i knox.mp3 -i static.mp3 -filter_complex \
+# ffmpeg -i audio.mp3 -i static.mp3 -filter_complex \
 # "[0:a]volume='min(1, max(0, 0.5 + 0.5 * cos(PI * t / 5)))':eval=frame, \
 #     lowpass=f=3000:mix='min(1, max(0, 0.8 - 0.8 * cos(PI * t / 5)))':eval=frame, \
 #     highpass=f=200:mix='min(1, max(0, 0.8 - 0.8 * cos(PI * t / 5)))':eval=frame [a0]; \
@@ -64,21 +145,25 @@ ffmpeg -i knox.mp3 -i static.mp3 -filter_complex \
 # "afftdn, aeq=frequency=1000:width_type=o:w=1000:g=-10, aphaser=type=sine:speed=0.5, aecho=0.8:0.88:60:0.4" \
 # output.mp3
 
-# ffmpeg -i knox.mp3 -i static.mp3 -filter_complex \
+# ffmpeg -i audio.mp3 -i static.mp3 -filter_complex \
 # "[0:a]volume='min(1, max(0, 0.5 + 0.5 * cos(PI * t / 5)))':eval=frame, \
 # lowpass=f='min(20000, max(20, 20000 * (0.8 - 0.8 * cos(PI * t / 5))))':eval=frame[a0]; \
 # [1:a]volume='min(1, max(0, 0.5 - 0.5 * cos(PI * t / 5)))':eval=frame[a1]; \
 # [a0][a1]amix=inputs=2:duration=shortest" \
 # -c:a libmp3lame -q:a 2 output.mp3
 
-# ffmpeg -i knox.mp3 -i static.mp3 -filter_complex \
+# ffmpeg -i audio.mp3 -i static.mp3 -filter_complex \
 # "[0:a]volume='min(1, max(0, 0.5 + 0.5 * cos(PI * t / 5)))':eval=frame, \
 # firequalizer=gain='if(between(f,0,20000), (0.8 - 0.8 * cos(PI * t / 5)) * -96, -96)':eval=frame[a0]; \
 # [1:a]volume='min(1, max(0, 0.5 - 0.5 * cos(PI * t / 5)))':eval=frame[a1]; \
 # [a0][a1]amix=inputs=2:duration=shortest" \
 # -c:a libmp3lame -q:a 2 output.mp3
 
-
+# using a control signal to vary volume
+# ffmpeg -f lavfi -i aevalsrc="0.5 + 0.5*sin(2*PI*1*t):s=44100" -t 10 control.wav
+# ffmpeg -i audio.mp3 -i control.wav -filter_complex \
+# "[0:a][1:a]sidechaincompress=threshold=-30dB:ratio=5:attack=0.3:release=0.8" \
+# output.mp3
 
 # Filters with Timeline Support
 # Filters:

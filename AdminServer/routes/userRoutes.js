@@ -7,7 +7,7 @@
 // foundational imports
 const express = require('express');
 const router = express.Router();
-const logger = require('config/logger').custom('AdminServer', 'info');
+const logger = require('config/logger').custom('AdminServer', 'debug');
 const { database: db } = require('config');
 
 // authentication imports
@@ -147,19 +147,20 @@ router.post('/profile', verifyToken, async (req, res) => {
     else {
       // First, check if they have permission to do so
       if (await hasPermission(requestingUserInfo, 'userLookup')) { 
-        logger.debug(`userRoutes:/profile: User lookup granted for ${{ requestingUsername }}`);
+        logger.debug(`userRoutes:/profile: User lookup granted for ${requestingUsername}`);
         lookupStatus = "basic";
       } 
       else {
         logger.debug(`Permission denied for userlookup ${{ requestingUserID }}`);
         return res.status(403).send("Forbidden: You do not have permission to view this user's information");
       }
-      // Next, check if user can view extended info
-      if (await hasPermission(requestingUserInfo, 'userEdit')) { 
-        logger.debug(`userRoutes:/profile: Extended user lookup granted for ${{ requestingUsername }}`);
-        lookupStatus = "extended";
-      } 
     }
+    // Next, check if user can view extended info
+    if (await hasPermission(requestingUserInfo, 'userEdit')) { 
+      logger.debug(`userRoutes:/profile: Extended user lookup granted for ${requestingUsername}`);
+      lookupStatus = "extended";
+    } 
+    logger.debug(`userRoutes:/profile: lookupStatus: ${lookupStatus}`);
     // from here, user is either viewing their own profile or has permission to view another's
 
     // fetch the target user's information based on username
@@ -169,17 +170,24 @@ router.post('/profile', verifyToken, async (req, res) => {
       return res.status(404).json({ success: false, message: "User not found" });
     }
 
+    // create copies of immutable fields
+    userInfo.roleNameShow = userInfo.roleName;
+    userInfo.statusShow = userInfo.status;
+
     // Define the fields to be returned based on the user's permission level
     let allowedFields = [];
     switch (lookupStatus) {
       case "extended":
+        // return everything except password
+        allowedFields = ['userID', 'username', 'status', 'statusShow', 'email', 'firstname', 'lastname', 'email', 'url', 'bio', 'location', 'roleName', 'roleNameShow', 'addedOn'];
+        break;
       case "self":
         // return everything except password
-        allowedFields = ['username', 'status', 'email', 'firstname', 'lastname', 'email', 'url', 'bio', 'location', 'roleName', 'addedOn'];
+        allowedFields = ['userID', 'username', 'statusShow', 'email', 'firstname', 'lastname', 'email', 'url', 'bio', 'location', 'roleNameShow', 'addedOn'];
         break;
       case "basic":
       default:
-        allowedFields = ['username', 'firstname', 'lastname', 'url', 'bio', 'location', 'roleName', 'addedOn'];
+        allowedFields = ['userID', 'username', 'firstname', 'lastname', 'url', 'bio', 'location', 'roleNameShow', 'addedOn'];
     }
     // Filter userInfo to include only the specified fields
     const userInfoReturned = Object.keys(userInfo).reduce((acc, key) => {
@@ -209,31 +217,54 @@ router.post('/profile', verifyToken, async (req, res) => {
 // It extracts the user information from the request and updates the user's information.
 // This is a protected route, only accessible to authenticated users.
 // TODO: Deal with password updates
+// TODO: Abstract permission check above and use it here
+// TODO: Debug this route. It cheerfully works, but doesn't update.
 router.post('/profile/edit', verifyToken, async (req, res) => {
   logger.debug('update profile');
-  const { firstname, lastname, email, bio, location, url } = req.body;
-  logger.debug(`Request to update profile: ${{ firstname, lastname, email, bio, location, url }}`);
+  const allowedFields = ['email', 'firstname', 'lastname', 'url', 'bio', 'location', 'roleName', 'status'];
+  logger.debug(`Request to update profile: ${JSON.stringify(req.body)}`);
+
   try {
     // Verify the token to get user ID
     const decoded = jwt.verify(req.cookies.token, jwtSecretKey);
     const userID = decoded.userID;
 
-    // SQL query to update user information
+    // Filter out only the fields that are allowed and provided in req.body
+    const queryFields = [];
+    const queryValues = [];
+
+    allowedFields.forEach(field => {
+      if (req.body[field] !== undefined) {
+        queryFields.push(`${field} = ?`);
+        queryValues.push(req.body[field]);
+      }
+    });
+
+    // Ensure there's something to update
+    if (queryFields.length === 0) {
+      return res.status(400).send('No valid fields provided for update');
+    }
+
+    // Add the userID to the values array
+    queryValues.push(req.body.userID);
+
+    // Construct the SQL query
     const query = `
       UPDATE users 
-      SET firstname = ?, lastname = ?, email = ?, bio = ?, location = ?, url = ?
+      SET ${queryFields.join(', ')}
       WHERE userID = ?
     `;
-    const values = [firstname, lastname, email, bio, location, url, userID];
+
+    logger.debug(`userRoutes:/edit: query: ${query}, queryValues: ${queryValues}`);
 
     // Execute the query
-    const [result] = await db.query(query, values);
+    const [result] = await db.query(query, queryValues);
     if (!result.affectedRows) {
       logger.error('userRoutes:/edit: Error updating user profile: No rows affected');
       res.status(500).send('Error updating user profile');
     } else {
       res.status(200).send({ message: 'Profile updated successfully' });
-    }    
+    }
   } catch (error) {
     logger.error(`userRoutes:/edit: Update failed: ${error}`);
     res.status(500).send('Server error');

@@ -99,7 +99,8 @@ class Conductor {
         }
       } catch (error) {
         logger.error(new Error(`Conductor error: ${error.message}, ${error.stack}`));
-        // Handle error or break loop based on your application's needs
+        //wait for some time or check for a condition to continue
+        await this.waitForNextIteration(); // Placeholder for timing logic
       }
     }
   }

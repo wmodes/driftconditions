@@ -10,9 +10,12 @@ const contentFileDir = config.content.contentFileDir;
 const mixFileDir = config.content.mixFileDir;
 const ffmpegOutput = config.ffmpeg.output;
 const filterConfig = config.filters;
+const exprsConfig = config.exprs;
 
 class MixEngine {
   constructor() {
+    this.exprs = this._substituteExpressions(exprsConfig);
+    logger.debug(`MixEngine:constructor: exprs: ${JSON.stringify(this.exprs, null, 2)}`);
     this.filterChain = [];
     // store the current input, track, and clip
     this.currentInputNum = 0;
@@ -27,6 +30,18 @@ class MixEngine {
     this.mixFilepath = '';
     // amix duration
     this.amixDuration = 'longest';
+  }
+
+  _substituteExpressions(exprsConfig) {
+    const exprs = { ...exprsConfig };
+    for (let key in exprs) {
+      exprs[key] = this._replacePlaceholders(exprs[key], exprs);
+    }
+    return exprs;
+  }
+
+  _replacePlaceholders(str, exprs) {
+    return str.replace(/%\{(\w+)\}/g, (_, exprKey) => exprs[exprKey]);
   }
 
   _resetState() {
