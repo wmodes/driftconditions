@@ -106,7 +106,7 @@ function Profile() {
           {profile.email && (
             <p className='my-2 text-lg'>
               <FeatherIcon icon="mail" />&nbsp;
-              <a href="mailto:{profile.email}" target="_blank" rel="noopener noreferrer">
+              <a href={`mailto:${profile.email}?subject=RE: driftconditions.org`} target="_blank" rel="noopener noreferrer">
                 {profile.email}
               </a>
             </p>
