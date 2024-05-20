@@ -8,3 +8,12 @@ Attic
 .DS_Store
 certs
 design
+*.mp3
+*.flac
+*.wav
+*.aiff
+*.aif
+*.ogg
+*.wma
+*.m4a
+*.aac

@@ -48,12 +48,12 @@ export const profileInfo = createAsyncThunk(
 
 export const profileEdit = createAsyncThunk(
   profileEditRoute, 
-    async ({username}, thunkAPI) => {
+  async ({profile}, thunkAPI) => {
     try {
-      console.log(`userSlice: profileEdit: username: ${username}`);
+      console.log(`userSlice: profileEdit: username: ${profile.username}`);
       const response = await axios.post(
         profileEditRoute, 
-        {username}, 
+        profile, 
         { withCredentials: true }
       );
       return response.data;

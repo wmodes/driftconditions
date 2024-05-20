@@ -1,13 +1,9 @@
 // Profile.js displays the logged-in user's profile information.
 
 import React, { useEffect, useState } from 'react';
-// Hooks for Redux state management and action dispatching, if needed.
 import { useDispatch } from 'react-redux';
-// Assuming you have an action or function to fetch user profile
-import { profileInfo } from '../store/userSlice';
-// For redirecting the user in case they are not logged in
 import { Link, useParams, useNavigate } from 'react-router-dom';
-// feather icons
+import { profileInfo } from '../store/userSlice';
 import FeatherIcon from 'feather-icons-react';
 
 function Profile() {
@@ -17,15 +13,9 @@ function Profile() {
   const [error, setError] = useState('');
   // State hooks to store user profile information
   const [profile, setProfile] = useState({});
-  // TODO: killme
-  // const [profile, setProfile] = useState({
-  //   username: '',
-  //   firstname: '',
-  //   lastname: '',
-  //   email: '',
-  //   roleName: '',
-  //   addedOn: '',
-  // });
+
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const notFoundUser = {
     username: '$&**$%@!',
@@ -38,9 +28,6 @@ function Profile() {
     roleName: 'A mystery wrapped in an enigma',
     addedOn: 'January 1, 1970',
   }
-
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
 
   useEffect(() => {
     dispatch(profileInfo({username})) // Dispatching with potentially undefined username
