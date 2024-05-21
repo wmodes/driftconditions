@@ -226,7 +226,7 @@ svg {
 }
 
 .homepage-box .text {
-  font-size: 1.1rem;
+  font-size: 1.2rem;
 }
 
 .homepage-box p {
@@ -242,6 +242,14 @@ svg {
   line-height: 1.5;
   text-align: center;
   font-size: 1.5rem;
+}
+
+.homepage-box .contact {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: solid 0.25px #888;
+  font-size: 0.9rem;
+  text-align: center;
 }
 
 .playlist {

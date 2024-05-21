@@ -82,6 +82,10 @@ const Homepage = () => {
                 <p className="pullquote" key={2} dangerouslySetInnerHTML={createMarkup(generatedText[2])}></p>
                 <p key={3} dangerouslySetInnerHTML={createMarkup(generatedText[3])}></p> 
               </div>
+              <div className="contact">
+                <p>Need to reach us? <a className="link" 
+                href="mailto:info@driftconditions.org">Okay.</a></p>
+              </div>
             </div> {/* end narrative-wrapper */}
 
           </div> {/* end column1 */}

@@ -224,23 +224,6 @@ const config = {
 
   },
   app: {
-    projectNames: [
-      "StaticDrift",
-      "RadioNocturne",
-      "ToxicEvent",
-      "DriftConditions",
-      "RadioInterference",
-      "DuskVariations",
-      "DriftFrequency",
-      "RadioHalcyon",
-      "RadioElegy",
-      "RadioDiaspora",
-      "ProjectAether",
-      "FlowSchema",
-      "SafetyProtocol",
-      "ShutdownMatrix",
-      "FeedstockFidelity",
-    ],
     homepageImageURLBase: '/img/homepage',
     homepageImages: [
       "8-bit-radio-tower.png",
