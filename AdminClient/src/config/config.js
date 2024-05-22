@@ -121,6 +121,83 @@ const config = {
       'Effect',
       'Other'
     ],
+    classificationFields: [
+      {
+        label: 'Ambient',
+        value: 'ambient',
+        moreInfo: "Music or sounds that form an ambient bed for other audio, e.g., drone, ambient music, longer static audio, minimalist music"
+      },
+      {
+        label: 'Atmospheric',
+        value: 'atmospheric',
+        moreInfo: "Includes many field recordings, and longer found sounds, e.g., city ambiance, cafe recordings, crowd noise"
+      },
+      {
+        label: 'Environmental',
+        value: 'environmental',
+        moreInfo: "Recordings of natural sounds, e.g., distant thunder, bird calls, rainfall, ocean waves"
+      },
+      {
+        label: 'Premixed',
+        value: 'premixed',
+        moreInfo: "Already assembled mixes that would not benefit from additional mixing, e.g., radio show/podcast excerpts, mixed music tracks"
+      },
+      {
+        label: 'Soundscape',
+        value: 'soundscape',
+        moreInfo: "Complex audio environments combining various sounds, e.g., urban soundscape, virtual environment audio, theatrical sound design"
+      },
+      {
+        label: 'Archival',
+        value: 'archival',
+        moreInfo: "Historical recordings or sounds, e.g., old radio broadcasts, historical speeches, old TV shows"
+      },
+      {
+        label: 'Spoken Word',
+        value: 'spoken',
+        moreInfo: "Spoken Word recordings, e.g., talks, poetry readings, speeches, interviews"
+      },
+      {
+        label: 'Narrative',
+        value: 'narrative',
+        moreInfo: "Recordings that tell a story, e.g., radio dramas, storytelling sessions, narrative podcasts"
+      },
+      {
+        label: 'Instructional',
+        value: 'instructional',
+        moreInfo: "Educational or instructional audio, e.g., language lessons, how-to guides, training programs"
+      },
+      {
+        label: 'Vocal Music',
+        value: 'vocalMusic',
+        moreInfo: "Music that prominently features vocals, as opposed to instrumental"
+      },
+      {
+        label: 'Instrumental',
+        value: 'instrumental',
+        moreInfo: "Music without vocals, e.g., classical music, instrumental jazz, ambient instrumental tracks"
+      },
+      {
+        label: 'Experimental',
+        value: 'experimental',
+        moreInfo: "Non-traditional or avant-garde audio, e.g., noise music, sound experiments, unconventional audio compositions"
+      },
+      {
+        label: 'Digital',
+        value: 'digital',
+        moreInfo: "Digital sounds and effects, e.g., synthesizer music, electronic beats, computer-generated sounds"
+      },
+      {
+        label: 'Effect',
+        value: 'effect',
+        moreInfo: "Short recordings that can be layered over other audio, e.g., sound effects, audio stingers, transition sounds"
+      },
+      {
+        label: 'Other',
+        value: 'other',
+        moreInfo: "Miscellaneous sounds that do not fit into other categories, e.g., unique or rare audio clips, uncategorized recordings"
+      }
+    ],
     fieldNotes: {
       tags: "Describe the topic, theme, or texture of the audio, such as 'rainy night', 'jazz', or 'whispering'. Use tags to highlight specific elements or moods in your audio. Separate tags with commas.",
       classification: "A broad category that describes the broad type of audio.",

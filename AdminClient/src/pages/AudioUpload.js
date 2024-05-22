@@ -18,6 +18,7 @@ import config from '../config/config';
 // pull variables from the config object
 const allowedFileTypes = config.audio.allowedFileTypes;
 const classificationOptions = config.audio.classification;
+const classificationFields = config.audio.classificationFields;
 const fieldNotes = config.audio.fieldNotes;
 
 function AudioUpload() {
