@@ -1,7 +1,7 @@
 // client/src/pages/Homepage.js
 
 import React, { useState, useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { fetchQueuePlaylist } from '../store/queueSlice';
 import { renderPlaylist } from '../utils/queueUtils';
 import FeatherIcon from 'feather-icons-react';
@@ -37,7 +37,7 @@ const Homepage = () => {
     loadPlaylist();
 
     // Reload every 2 minutes (120,000 milliseconds)
-    const intervalId = setInterval(loadPlaylist, 120000);
+    setInterval(loadPlaylist, 120000);
     
   }, [projectName, dispatch]);
 
