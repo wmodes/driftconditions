@@ -252,6 +252,11 @@ svg {
   text-align: center;
 }
 
+.hero-image-container {
+  border-radius: 5%;
+  overflow: hidden;
+}
+
 .playlist {
   display: flex;
   flex-direction: row;

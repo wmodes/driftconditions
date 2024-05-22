@@ -1,4 +1,7 @@
-// textUtils.js - utility functions for generating random texts and project name
+// randomUtils.js - utility functions for generating random texts and project name
+
+// Import the config object from the config.js file
+import config from '../config/config';
 
 var tracery = require('tracery-grammar');
 
@@ -69,7 +72,7 @@ var grammarDefinition = {
     "#projNoun##projNoun#", "#projAdj##projNoun#", "#projAdj##projPlural#", "#projNoun##projPlural#"
   ],
   "projNoun": [
-    "Static", "Drift", "Radio", "Nocturne", "Event", "Interference", "Dusk", "Frequency", "Elegy", "Diaspora", "Project", "Aether", "Flow", "Schema", "Protocol", "Shutdown", "Matrix", "Feedstock", "Fidelity", "Harmony", "Dissonance", "Resonance", "Feedback", "Modulation", "Amplitude", "Noise", "Tone", "Timbre", "Pitch", "Rhythm", "Dynamics", "Articulation", "Phrasing",
+    "Static", "Drift", "Radio", "Nocturne", "Event", "Interference", "Dusk", "Frequency", "Elegy", "Diaspora", "Project", "Aether", "Flow", "Schema", "Protocol", "Shutdown", "Matrix", "Feedstock", "Fidelity", "Dissonance", "Resonance", "Feedback", "Modulation", "Amplitude", "Noise", "Tone", "Timbre", "Pitch", "Dynamics", "Articulation", "Phrasing",
     "Control", "Process", "System", "Equipment", "Operation", "Variable", "Instrumentation", "Utility", "Procedure", "Safety", "Analysis", "Catalyst", "Drawing", "Standard", "Specification", "Manual", "Design"
   ],
   "projPlural": [
@@ -129,4 +132,50 @@ export const getProjectName = () => {
   }
   // console.log('projectName:', projectName);
   return projectName;
+};
+
+//
+// Choosing a hero image
+//
+
+export const getHeroImageURL = () => {
+  const { homepageImages, homepageImageURLBase } = config.app;
+
+  // Calculate the index for the current image
+  const imageIndex = generateHash() % homepageImages.length;
+  const imageUrl = `${homepageImageURLBase}/${homepageImages[imageIndex]}`;
+  return imageUrl;
+}
+
+//
+// Helper functions
+//
+
+// Function to generate a hash from date and projectName
+const generateHash = () => {
+  const projectName = getProjectName();
+  const date = new Date();
+  const weekNumber = getWeekNumber(date);
+  const month = date.getMonth();
+  const year = date.getFullYear();
+  const projectHash = stringToHash(projectName);
+  const hashKey = `${projectHash}${weekNumber}${month}${year}`;
+  return parseInt(hashKey, 10); // Convert hash to integer
+};
+
+// Function to generate a simple hash from a string
+const stringToHash = (str) => {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash << 5) - hash + str.charCodeAt(i);
+    hash |= 0; // Convert to 32bit integer
+  }
+  return Math.abs(hash); // Ensure it's a positive number
+};
+
+// Function to get week number of the current date
+const getWeekNumber = (date) => {
+  const firstDayOfYear = new Date(date.getFullYear(), 0, 1);
+  const pastDaysOfYear = (date - firstDayOfYear) / 86400000;
+  return Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
 };
