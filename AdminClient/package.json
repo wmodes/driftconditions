@@ -26,6 +26,7 @@
     "react-router-dom": "^6.23.0",
     "react-scripts": "^5.0.1",
     "react-tag-input": "^6.9.0",
+    "react-tooltip": "^5.26.4",
     "tracery-grammar": "^2.7.4",
     "wavesurfer.js": "^7.7.11"
   },

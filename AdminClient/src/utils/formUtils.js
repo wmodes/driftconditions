@@ -6,6 +6,13 @@ import { Link, useNavigate } from 'react-router-dom';
 import { setUnsavedChanges } from '../store/formSlice';
 import { WithContext as ReactTags } from 'react-tag-input';
 import { normalizeTag } from './formatUtils';
+import { Tooltip } from 'react-tooltip';
+import FeatherIcon from 'feather-icons-react';
+
+// Import the config object from the config.js file
+import config from '../config/config'; 
+// pull variables from the config object
+const classificationFields = config.audio.classificationFields;
 
 // Function to track unsaved changes and handle navigation
 export const useUnsavedChangesEvents = () => {
@@ -236,19 +243,46 @@ export const TagInput = ({ onTagChange, initialTags }) => {
   );
 };
 
+// export const InfoButton = ({ infoText, id }) => {
+//   return (
+//     <span className="info-button">
+//       <span id={id} className="info-icon">i</span>
+//       <Tooltip anchorSelect={id} place="top">
+//         {infoText}
+//       </Tooltip>
+//     </span>
+//   );
+// };
+
+export const InfoButton = ({ infoText, id }) => {
+  return (
+    <span className="info-button">
+      {/* <span id={id} className="info-icon" data-tooltip-id={id} data-tooltip-content={infoText} >?</span> */}
+      <FeatherIcon icon="help-circle" data-tooltip-id={id} data-tooltip-content={infoText  } />
+      <Tooltip id={id} 
+        delayShow={500}
+        delayHide={1000}
+      />
+    </span>
+  );
+};
+
 export const ClassificationCheckboxes = ({ classification, handleChange }) => {
   return (
     <div className="form-checkbox">
-      {Object.entries(classification).map(([key, value]) => (
-        <div className="checkbox-field" key={key}>
+      {classificationFields.map(field => (
+        <div className="checkbox-field" key={field.value}>
           <input
             type="checkbox"
-            id={key}
-            name={key}
-            checked={value}
+            id={field.value}
+            name={field.value}
+            checked={classification[field.value] || false}
             onChange={handleChange}
           />
-          <label htmlFor={key}> {key}</label>
+          <label htmlFor={field.value}>
+            {field.label}
+          </label>
+          <InfoButton infoText={field.moreInfo} id={`info-${field.value}`} />
         </div>
       ))}
     </div>

@@ -9,6 +9,7 @@
   import { Provider } from 'react-redux';
   import './index.css';
   // import App from './App';
+  // import 'react-tooltip/dist/react-tooltip.css'
 
   // Page components
   import Homepage from './pages/Homepage';
