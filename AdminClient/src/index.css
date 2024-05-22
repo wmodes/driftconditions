@@ -668,8 +668,12 @@ svg {
 
 .info-button {
   padding-left: 5px;
-  /* pointer-events: none; */
-  cursor: pointer; 
+  cursor: pointer;   
+  user-select: none; /* Standard property */
+  -webkit-user-select: none; /* Safari */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* Internet Explorer/Edge */
+  pointer-events: auto;
 }
 
 .info-button .info-icon {
@@ -685,6 +689,19 @@ svg {
 .info-button svg {
   width: 0.9rem;
   stroke: #444;
+}
+
+/* Prevent text selection for an element and its children */
+.non-selectable, .non-selectable * {
+  user-select: none; /* Standard property */
+  -webkit-user-select: none; /* Safari */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* Internet Explorer/Edge */
+}
+
+/* Ensure pointer events are enabled */
+.pointer-enabled {
+  pointer-events: auto;
 }
 
 /* Form tags */

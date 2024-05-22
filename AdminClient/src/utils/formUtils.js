@@ -256,12 +256,16 @@ export const TagInput = ({ onTagChange, initialTags }) => {
 
 export const InfoButton = ({ infoText, id }) => {
   return (
-    <span className="info-button">
+    <span 
+      tabIndex="-1" 
+      className="info-button non-selectable pointer-enabled"
+      onMouseDown={(e) => e.preventDefault()} // Prevent focus on mouse down
+    >
       {/* <span id={id} className="info-icon" data-tooltip-id={id} data-tooltip-content={infoText} >?</span> */}
       <FeatherIcon icon="help-circle" data-tooltip-id={id} data-tooltip-content={infoText  } />
       <Tooltip id={id} 
-        delayShow={500}
-        delayHide={1000}
+        delayShow={250}
+        delayHide={250}
       />
     </span>
   );

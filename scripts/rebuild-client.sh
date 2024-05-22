@@ -9,5 +9,8 @@ fi
 # Change directory to AdminClient
 cd AdminClient
 
+# make sure we have all the modules we need
+npm install
+
 # Run npm build
 npm run build
