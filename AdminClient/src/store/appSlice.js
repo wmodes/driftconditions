@@ -9,7 +9,7 @@ export const appSlice = createSlice({
   },
   reducers: {
     setProjectName: (state, action) => {
-      state.projectName = action.payload.name;
+      state.projectName = action.payload.projectName;
     },
   },
 });

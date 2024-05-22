@@ -6,8 +6,7 @@ import { fetchQueuePlaylist } from '../store/queueSlice';
 import { renderPlaylist } from '../utils/queueUtils';
 import FeatherIcon from 'feather-icons-react';
 import AudioPlayer from '../components/AudioPlayer'; 
-import HeroImage from '../components/HeroImage';
-import { generateRandomTexts } from '../utils/textUtils'; 
+import { generateRandomTexts, getProjectName, getHeroImageURL} from '../utils/randomUtils'; 
 
 import config from '../config/config';
 // pull variables from the config object
@@ -17,8 +16,8 @@ const Homepage = () => {
   const dispatch = useDispatch();
   const [playlist, setPlaylist] = useState([]); 
   const [generatedText, setGeneratedText] = useState([]);
-  // Access projectName from the global state
-  const projectName = useSelector(state => state.app.projectName);
+  
+  const projectName = getProjectName();
 
   useEffect(() => {
     // Assuming generateRandomTexts is a function that accepts projectName and returns an array of text strings
@@ -55,7 +54,9 @@ const Homepage = () => {
           <div className="column1">
 
             <div className="image-wrapper mb-8">
-              <HeroImage />
+            <div className="hero-image-container">
+              <img src={getHeroImageURL()} alt="Hero" />
+            </div>
             </div>
 
             <div className='player-wrapper mb-8'>
