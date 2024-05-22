@@ -261,7 +261,6 @@ export const InfoButton = ({ infoText, id }) => {
       className="info-button non-selectable pointer-enabled"
       onMouseDown={(e) => e.preventDefault()} // Prevent focus on mouse down
     >
-      {/* <span id={id} className="info-icon" data-tooltip-id={id} data-tooltip-content={infoText} >?</span> */}
       <FeatherIcon icon="help-circle" data-tooltip-id={id} data-tooltip-content={infoText  } />
       <Tooltip id={id} 
         delayShow={250}
