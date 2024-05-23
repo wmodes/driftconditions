@@ -1,6 +1,7 @@
 // RecipeParser.js - RecipeParser class for normalizing recipe data
 
 const logger = require('config/logger').custom('Conductor', 'info');
+const JSON5 = require('json5');
 
 const { config } = require('config');
 // Extract values from the config object
@@ -19,7 +20,7 @@ class RecipeParser {
   }
 
   validateRecipe(recipe) {
-    // console.log('RecipeParser:validateRecipe: recipe:', JSON.stringify(recipe, null, 2));
+    // console.log('RecipeParser:validateRecipe: recipe:', JSON5.stringify(recipe, null, 2));
     // console.log('RecipeParser:validateRecipe: recipe.recipeData:', recipe.recipeData);
     // check to make sure we have recipeData
     if (recipe.recipeData === undefined || recipe.recipeData === null) {
@@ -29,7 +30,7 @@ class RecipeParser {
     let recipeData;
     try {
       // check to make sure recipeData is valid JSON, if not return error
-      recipeData = JSON.parse(recipe.recipeData);
+      recipeData = JSON5.parse(recipe.recipeData);
     }
     catch (error) {
       logger.error(`RecipeParser:validateRecipe: Invalid JSON in recipeData: ${error.message}`);
@@ -46,25 +47,28 @@ class RecipeParser {
 
   normalizeRecipe(recipe) {
     // Parse the JSON string once and store it in a new key 'recipeObj'
-    recipe.recipeObj = JSON.parse(recipe.recipeData);
+    recipe.recipeObj = JSON5.parse(recipe.recipeData);
+
+    // Convert all keys and values to lowercase
+    recipe.recipeObj = this._convertToLowercase(recipe.recipeObj);
     
     // Operate on 'recipeObj' instead of parsing 'recipeData' every time
     const tracks = recipe.recipeObj.filter(record => record.track !== undefined);
 
     // Normalize each track and its clips
     tracks.forEach(track => {
-      this._validateAndNormalizeKeys(track, RecipeParser.validTrackProperties);
+      this._validateAndNormalize(track, RecipeParser.validTrackProperties);
       if (track.clips) {
         track.clips.forEach(clip => {
-          this._validateAndNormalizeKeys(clip, RecipeParser.validClipProperties);
+          this._validateAndNormalize(clip, RecipeParser.validClipProperties);
         });
       }
     });
     // Optionally update 'recipeData' if needed, or it can be done elsewhere when needed
-    // recipe.recipeData = JSON.stringify(recipe.recipeObj);
+    // recipe.recipeData = JSON5.stringify(recipe.recipeObj);
   }
 
-  _validateAndNormalizeKeys(object, validProperties) {
+  _validateAndNormalize(object, validProperties) {
     Object.keys(object).forEach(originalKey => {
       let key = originalKey; // Use a mutable variable for key name
       // Rename 'length' key to 'clipLength' if necessary
@@ -73,7 +77,7 @@ class RecipeParser {
           delete object[key];
           key = 'clipLength'; // Update key to 'clipLength' for subsequent checks
       }
-      const normalizedKey = this._normalizeKey(key, validProperties);
+      const normalizedKey = this._normalizeKeys(key, validProperties);
       // Remove keys that are not in the valid properties list
       if (!validProperties.includes(normalizedKey)) {
           delete object[normalizedKey];
@@ -91,7 +95,7 @@ class RecipeParser {
     });
   }
 
-  _normalizeKey(key, validProperties) {
+  _normalizeKeys(key, validProperties) {
     const singular = key.endsWith('s') ? key.slice(0, -1) : key;
     const plural = key + 's';
     if (validProperties.includes(singular)) {
@@ -109,11 +113,27 @@ class RecipeParser {
     }
   }
 
+  // Helper method to convert all keys and values to lowercase
+  _convertToLowercase(obj) {
+    if (Array.isArray(obj)) {
+      return obj.map(item => this._convertToLowercase(item));
+    } else if (obj !== null && typeof obj === 'object') {
+      return Object.keys(obj).reduce((acc, key) => {
+        const lowerKey = key.toLowerCase();
+        acc[lowerKey] = this._convertToLowercase(obj[key]);
+        return acc;
+      }, {});
+    } else if (typeof obj === 'string') {
+      return obj.toLowerCase();
+    }
+    return obj;
+  }
+
   // Method to get a list of clips needed for a recipe
   // UPDATE: Unneeded - just use the recipeData directly
   // getListOfClipsNeeded(recipe) {
   //   const clipsNeeded = [];
-  //   const recipeData = JSON.parse(recipe.recipeData);
+  //   const recipeData = JSON5.parse(recipe.recipeData);
   //   // Since the recipe is already normalized, every track should directly have the 'clips' property
   //   const tracks = recipeData.filter(record => record.track !== undefined);
   //   // Iterate through tracks to construct list of clips needed

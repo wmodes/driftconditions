@@ -1,6 +1,7 @@
 // formatUtil - utilities for formatting data
 
 import JSON5 from 'json5';
+const { parse: JSONparse, stringify: JSONstringify } = require('comment-json');
 
 // format loose date for database
 export function formatDateForDB(dateStr) {
@@ -66,21 +67,21 @@ export function formatTagStrAsArray(tags) {
 
 export const formatTagsAsString = formatListAsString;
 
-// Takes a JSON object and pretty prints it as a string using JSON5 with indentation.
+// Takes a JSON object and pretty prints it as a string using comment-json with indentation.
 export const formatJSONForDisplay = (json) => {
   if (typeof json === 'string') {
-    return JSON5.stringify(JSON5.parse(json), null, '\t');
+    return json;
+    // return JSONstringify(JSONparse(json), null, '\t');  // Use tab for indentation
   } else {
-    return JSON5.stringify(json, null, '\t');
+    return JSONstringify(json, null, '\t');  // Directly stringify the object with tab for indentation
   }
 };
 
-// Takes a JSON string, parses it as JSON5 (which is more lenient than standard JSON),
+// Takes a JSON string, parses it as comment-json (which preserves comments and formatting),
 // and returns the equivalent JavaScript object.
 export const formatJSONStrForDB = (jsonStr) => {
-  // console.log('formatJSONStrForDB jsonStr:', jsonStr);
-  // Parse the JSON5 string to an object
-  return JSON5.parse(jsonStr);
+  return jsonStr;
+  // return JSONparse(jsonStr);  // Parse the JSON5 string while preserving comments and formatting
 };
 
 // Takes a classification array and formats it for the form.

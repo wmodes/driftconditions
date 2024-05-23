@@ -98,21 +98,23 @@ ffmpeg -i audio2.mp3 -i static2.mp3 -filter_complex \
     "[0:a] \
         volume='1 - min(1,max(0,((cos(PI*(t)*1/13)*1+cos(PI*(t)*1/7)*0.5+cos(PI*(t)*1/3)*0.25)-0.5)*0.75+0.5))':eval=frame[audio0]; \
     [0:a] \
+        channelmap=channel_layout=stereo, \
         lowpass=f=3000, \
         highpass=f=300, \
         afftdn=nf=-25, \
-        asetrate=48000*1.1,atempo=1/1.1, \
-        volume=8[audio1a]; \
+        asetrate=44100*1.01,aresample=44100,atempo=1/1.01, \
+        apulsator=hz=0.25, \
+        volume=1.5[audio1a]; \
     [audio1a] \
         volume='min(1,max(0,((cos(PI*(t)*1/13)*1+cos(PI*(t)*1/7)*0.5+cos(PI*(t)*1/3)*0.25)-0.5)*0.75+0.5))':eval=frame[audio1b]; \
     [1:a] \
-        aloop=loop=-1:size=0:start=0[audio2a]; \
+        aloop=loop=-1:size=2e9[audio2a]; \
     [audio2a] \
-        volume=5[audio2b]; \
+        volume=4[audio2b]; \
     [audio2b] \
         volume='min(1,max(0,((cos(PI*(t)*1/13)*1+cos(PI*(t)*1/7)*0.5+cos(PI*(t)*1/3)*0.25)-0.5)*0.75+0.5))':eval=frame[audio2c]; \
     [audio0][audio1b][audio2c] \
-        amix=inputs=3:duration=first" \
+        amix=inputs=3:duration=shortest" \
 -c:a libmp3lame -q:a 2 output.mp3
 
 

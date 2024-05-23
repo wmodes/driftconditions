@@ -13,7 +13,7 @@ import "ace-builds/src-noconflict/ext-language_tools";
 import JSON5 from 'json5';
 import _ from 'lodash';
 
-import { insertNewClipIntoJsonStr } from '../utils/recipeUtils';
+import { insertNewElementIntoJsonStr } from '../utils/recipeUtils';
 import { defineCustomEditorMode } from '../utils/editorUtils';
 import { ClassificationCheckboxes, TagInput } from '../utils/formUtils';
 
@@ -165,22 +165,23 @@ function RecipeForm({ action, initialRecord, onSave, onCancel, onChange }) {
   }
 
   // helper to parse JSON5 content
-  function parseContent(content) {
+  function isValidJSON(content) {
     try {
       return JSON5.parse(content);
+      return true;
     } catch (error) {
       console.error('Failed to parse content:', error);
       setError('Failed to parse content. Error in your JSON5 syntax.'); 
-      return null; // Handle this error appropriately in your application
+      return false; // Handle this error appropriately in your application
     }
   }
 
   const addTrack = () => {
     setError(''); // Clear any previous error
-    const data = parseContent(record.recipeData);
-    if (!data || !Array.isArray(data)) return; // Error parsing content  
+    const recipeData = record.recipeData;
+    if (!isValidJSON(recipeData) || !Array.isArray(recipeData)) return; // Error parsing content  
     // Find the highest existing track number
-    const maxTrackNumber = data.reduce((max, item) => {
+    const maxTrackNumber = recipeData.reduce((max, item) => {
       return item.track && item.track > max ? item.track : max;
     }, 0);
     // Clone the newTrackPattern and update the track number
@@ -188,8 +189,8 @@ function RecipeForm({ action, initialRecord, onSave, onCancel, onChange }) {
       ...newTrackPattern,
       track: maxTrackNumber + 1
     };
-    data.push(newTrack); // Assuming data is an array
-    const updatedRecipeData = JSON5.stringify(data, null, 2);
+    recipeData.push(newTrack); // Assuming data is an array
+    const updatedRecipeData = JSON5.stringify(recipeData, null, 2);
     handleRecipeChanges(updatedRecipeData);
   }
 
@@ -205,7 +206,7 @@ function RecipeForm({ action, initialRecord, onSave, onCancel, onChange }) {
     setError(''); // Clear any previous error
     try {
       const { row } = editorRef.editor.getCursorPosition();
-      const modifiedRecord = insertNewClipIntoJsonStr(
+      const modifiedRecord = insertNewElementIntoJsonStr(
         record.recipeData, 
         row, 
         newPattern

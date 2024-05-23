@@ -1,12 +1,40 @@
 // Recipe processing utils
 
 import JSON5 from 'json5';
+const { parse: JSONparse, stringify: JSONstringify } = require('comment-json');
+
+// Insert a new clip into a JSON string based on a specified row
+// @PARAM type: string - the type of JSON element to insert, 'track' or 'clip'
+// @PARAM jsonStr: string - the JSON string to insert the new element into
+// @PARAM currentRow: number - the row number to insert the new element after
+// @PARAM newPattern: string - the new JSON element to insert
+// @RETURN string - the updated JSON string
+// TODO: Generalize this function to insert any JSON-like string at the proper boundary
+export const insertNewElementIntoJsonStr = (type, jsonStr, currentRow, newPattern) => {
+  try {
+    console.log(`recipeUtils:insertNewClipIntoJsonStr: jsonStr: ${jsonStr}, typof: ${typeof jsonStr}`);
+    const jsonDestruct = splitJsonElements(jsonStr);
+    // TODO: Keep going and find the track or clip index
+    const position = trackPositionInJson(jsonDestruct, currentRow);
+    const { track: trackIndex, clip: clipIndex } = position;
+    console.log('position', position);
+    // const parsedJsonData = JSONparse(jsonStr); 
+    // console.log(`recipeUtils:insertNewClipIntoJsonStr: parsedJsonData: ${parsedJsonData}`)
+    // const updatedJsonData = insertClipIntoTrack(parsedJsonData, trackIndex, clipIndex, newPattern);
+    // 
+
+    return JSON5.stringify(updatedJsonData, null, 2); // Stringifying the updated JSON
+  } catch (error) {
+    // Rethrowing the error with additional context
+    throw new Error(error);
+  }
+};
 
 function splitJsonElements(jsonStr) {
-  // This regex attempts to capture various JSON elements including unquoted keys and newline characters.
-  // We include patterns for quoted strings, unquoted keys (which are not standard JSON but might appear in JSON-like inputs),
-  // brackets, braces, colons, commas, and explicitly newline characters.
-  const elements = jsonStr.match(/"[^"\\]*(\\.[^"\\]*)*"|'[^'\\]*(\\.[^'\\]*)*'|\b\w+\b|[\[\]{}:,]|\n/g);
+  // This regex captures various JSON elements including quoted strings, unquoted keys, brackets,
+  // braces, colons, commas, newlines, and comments (both single-line and multi-line).
+  const elements = jsonStr.match(/"[^"\\]*(\\.[^"\\]*)*"|'[^'\\]*(\\.[^'\\]*)*'|\b\w+\b|[\[\]{}:,]|\n|\/\/.*|\/\*[\s\S]*?\*\//g);
+  // console.log(`splitJsonElements: ${elements}`);
   return elements;
 }
 
@@ -24,7 +52,17 @@ function trackPositionInJson(jsonDestruct, row) {
     }
 
     for (let item of jsonDestruct) {
-
+      // if item begins with '//' or '/*', skip it
+      if (item.startsWith('//')) {
+        lineNumber++;
+        continue;
+      } else if (item.startsWith('/*')) {
+        // count the number of newlines in the comment
+        const commentLines = item.split('\n').length;
+        lineNumber += commentLines;
+        continue;
+      }
+      // now consider item and what to do with it
       switch (item) {
         case '\n':
           lineNumber++;
@@ -130,21 +168,5 @@ const insertClipIntoTrack = (jsonData, trackIndex, clipIndex, newClipPattern) =>
   // this time, everything in the array is considered a clip
   targetTrack.clips.splice(clipIndex + 1, 0, newClipPattern);
   return jsonData;
-};
-
-
-export const insertNewClipIntoJsonStr = (jsonStr, row, newClipPattern) => {
-  try {
-    const jsonDestruct = splitJsonElements(jsonStr);
-    const position = trackPositionInJson(jsonDestruct, row);
-    const { track: trackIndex, clip: clipIndex } = position;
-    console.log('position', position);
-    const parsedJsonData = JSON5.parse(jsonStr); 
-    const updatedJsonData = insertClipIntoTrack(parsedJsonData, trackIndex, clipIndex, newClipPattern);
-    return JSON5.stringify(updatedJsonData, null, 2); // Stringifying the updated JSON
-  } catch (error) {
-    // Rethrowing the error with additional context
-    throw new Error(error);
-  }
 };
 
