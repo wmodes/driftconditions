@@ -4,6 +4,7 @@ const express = require('express');
 const router = express.Router();
 const logger = require('config/logger').custom('AdminServer', 'debug');
 const { database: db } = require('config');
+const { parse: JSONparse, stringify: JSONstringify } = require('comment-json');
 
 const jwt = require('jsonwebtoken');
 const verifyToken = require('../middleware/authMiddleware');
@@ -157,7 +158,8 @@ router.post('/create', verifyToken, async (req, res) => {
       record.title,
       record.description,
       creatorID,
-      JSON.stringify(record.recipeData),
+      // JSONstringify(record.recipeData),
+      record.recipeData,
       record.status,
       JSON.stringify(record.classification),
       JSON.stringify(normalizeTagArray(record.tags)),
@@ -179,7 +181,7 @@ router.post('/create', verifyToken, async (req, res) => {
 //
 router.post('/update', verifyToken, async (req, res) => {
   const record = req.body;
-  logger.debug(`recipeRoutes:/update: record: ${record}`);
+  logger.debug(`recipeRoutes:/update: record: ${JSONstringify(record)}`);
   const decoded = jwt.verify(req.cookies.token, jwtSecretKey);
   const editorID = decoded.userID;
 
@@ -202,7 +204,8 @@ router.post('/update', verifyToken, async (req, res) => {
       record.title,
       record.description,
       editorID,
-      JSON.stringify(record.recipeData),
+      // JSONstringify(record.recipeData),
+      record.recipeData,
       record.status,
       JSON.stringify(record.classification),
       JSON.stringify(normalizeTagArray(record.tags)),

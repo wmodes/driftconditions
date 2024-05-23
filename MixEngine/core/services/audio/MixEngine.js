@@ -2,6 +2,7 @@
 
 const { database: db } = require('config');
 const ffmpeg = require('fluent-ffmpeg');
+const JSON5 = require('json5');
 const logger = require('config/logger').custom('MixEngine', 'debug');
 const path = require('path');
 
@@ -15,7 +16,7 @@ const exprsConfig = config.exprs;
 class MixEngine {
   constructor() {
     this.exprs = this._substituteExpressions(exprsConfig);
-    logger.debug(`MixEngine:constructor: exprs: ${JSON.stringify(this.exprs, null, 2)}`);
+    // logger.debug(`MixEngine:constructor: exprs: ${JSON5.stringify(this.exprs, null, 2)}`);
     this.filterChain = [];
     // store the current input, track, and clip
     this.currentInputNum = 0;
@@ -117,7 +118,7 @@ class MixEngine {
     //
     // Build the final mix filter
     this._buildMixFilter(recipeObj);
-    logger.debug(`MixEngine:_buildComplexFilter: filterChain: ${JSON.stringify(this.filterChain, null, 2)}`);
+    logger.debug(`MixEngine:_buildComplexFilter: filterChain: ${JSON5.stringify(this.filterChain, null, 2)}`);
   }
 
   _buildAllTracksAndClipsFilters(recipeObj) {
@@ -136,12 +137,16 @@ class MixEngine {
     this.currentClipNum = 0;
     // gather clip output labels
     let clipOutputLabels = [];
-    // what's in a name?
-    const trackOutputLabel = `track_${this.currentTrackNum}_output`;
-    const trackAdjustedLabel = `track_${this.currentTrackNum}_adjusted`;
+    //
+    // track base label
+    const trackBaseLabel = `track_${this.currentTrackNum}`;
+    // Keep track of the track label so far
+    let mostRecentTrackLabel = '';
+    let newTrackLabel = '';
     //
     // we start with a track object
     // and go through the clips in the track
+    newTrackLabel = trackBaseLabel + '_base';
     track.clips.forEach(clip => {
       // build the filters for each clip
       // this will include volume adjustment, silence generation, and any filters
@@ -163,12 +168,15 @@ class MixEngine {
         a: 1
       },
       inputs: clipOutputLabels,
-      outputs: trackOutputLabel
+      outputs: newTrackLabel
     });
+    // set the track label for the next step
+    mostRecentTrackLabel = newTrackLabel;
     //
     // Set volume of track
     if (track.volume) {
       logger.debug(`MixEngine:_buildTrackFilters(): track.volume: ${track.volume} typeof: ${typeof track.volume}`);
+      newTrackLabel = trackBaseLabel + '_volume';
       // 
       // Handle track volume adjustment
       let volOptions = {};
@@ -210,15 +218,36 @@ class MixEngine {
       //
       // now create track filter volume entry
       this.filterChain.push({
+        inputs: mostRecentTrackLabel,
         filter: 'volume',
         options: volOptions,
-        inputs: trackOutputLabel,
-        outputs: trackAdjustedLabel
+        outputs: newTrackLabel
       });
-      this.trackFinalLabels.push(trackAdjustedLabel);
-    } else {
-      this.trackFinalLabels.push(trackOutputLabel);
+      // set the track label for the next step
+      mostRecentTrackLabel = newTrackLabel;
     }
+    //
+    // effects
+    //
+    // looping effect
+    if (track.effects && track.effects.includes("loop")) { 
+      newTrackLabel = trackBaseLabel + '_loop';
+      this.filterChain.push({
+        inputs: mostRecentTrackLabel,
+        filter: 'aloop',
+        options: {
+          loop: -1,
+          size: 2e9,
+        },
+        outputs: newTrackLabel
+      });
+      // ensure that we don't loop forever
+      this.amixDuration = 'shortest';
+      // set the track label for the next step
+      mostRecentTrackLabel = newTrackLabel;
+    }
+    // set the final track label
+    this.trackFinalLabels.push(mostRecentTrackLabel);
   }
 
   // Build a harmonic series filter using a mix of sine and cosine at different scales
@@ -282,9 +311,14 @@ class MixEngine {
 
   // Builds the ffmpeg input and initial filter for each clip, including handling for silence
   _buildClipFilters(clip) {
-    // what's in a name?
-    const clipOutputLabel = `clip_${this.currentTrackNum}_${this.currentClipNum}_output`;
-    const clipAdjustedLabel = `clip_${this.currentTrackNum}_${this.currentClipNum}_adjusted`;
+    //
+    // track base label
+    const clipBaseLabel = `clip_${this.currentTrackNum}_${this.currentClipNum}`;
+    // Keep track of the track label so far
+    let mostRecentClipLabel = '';
+    let newClipLabel = '';
+    // start processing the clip
+    newClipLabel = clipBaseLabel + '_base';
     if (clip.classification.includes("silence")) {
         // Handle silence generation
         const silenceDuration = clip.duration || 10; // Default to 10 seconds
@@ -294,10 +328,12 @@ class MixEngine {
               exprs: 0,
               duration: silenceDuration
             },
-            outputs: clipOutputLabel
+            outputs: newClipLabel
         });
-        logger.debug(`MixEngine:_buildClip(): Generating silence of duration ${silenceDuration} seconds with label ${clipOutputLabel}`);
-        return clipOutputLabel;
+        logger.debug(`MixEngine:_buildClip(): Generating silence of duration ${silenceDuration} seconds with label ${newClipLabel}`);
+        // set the track label for the next step
+        mostRecentClipLabel = newClipLabel;
+        return mostRecentClipLabel;
     } else {
         // 
         // Handle clip volume adjustment
@@ -335,17 +371,37 @@ class MixEngine {
         //
         // now create clip filter volume entry
         this.filterChain.push({
+          inputs: `${this.currentInputNum}:a`,
           filter: 'volume',
           options: volOptions,
-          inputs: `${this.currentInputNum}:a`,
-          outputs: clipAdjustedLabel
+          outputs: newClipLabel
         });
+        // set the clip label for the next step
+        mostRecentClipLabel = newClipLabel;
         //
-        // Apply effects to input
+        // effects
         //
+        // looping effect
+        if (clip.effects && clip.effects.includes("loop")) { 
+          newClipLabel = clipBaseLabel + '_loop';
+          this.filterChain.push({
+            inputs: mostRecentClipLabel,
+            filter: 'aloop',
+            options: {
+              loop: -1,
+              size: 2e9,
+            },
+            outputs: newClipLabel
+          });
+          // ensure that we don't loop forever
+          this.amixDuration = 'shortest';
+          // set the track label for the next step
+          mostRecentClipLabel = newClipLabel;
+        }
         // increment the input number
         this.currentInputNum++;
-        return clipAdjustedLabel;
+        // return the most recent clip label
+        return mostRecentClipLabel;
     }
   }
 

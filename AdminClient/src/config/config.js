@@ -225,79 +225,120 @@ const config = {
       'Other'
     ],
     
-    // starting pattern for creating a new recipe
-    example: [
-      { notes: [
-          "This configures a basic recipe.",
-          "The system ignores any tags it doesn't recognize, like 'notes' 😀.",
-          "But the recipe has to be valid JSON-like code."
-        ]
-      },
-      { track:0,
-        notes: [
-          "Tracks are played simultaneously like a multi-track recording.",
-          "You can have up to 5 tracks, and there must be at least one."],
-        volume: 100,
-        clips:[
-          {
-            generalNote: ["Clips are individual audio files within the tracks.",
-            "Specify classification and/or tags that will be used to randomly pick an audio clip.",
-            "They can be single values or an array of values.",
-            "(Notes can be safely deleted.)",
-            ],
-            classification: [
-              'Ambient', 
-              'Atmospheric', 
-              'Environmental', 
-              'Premixed', 
-              'Soundscape', 
-              'Archival', 
-              'Spoken', 
-              'Narrative', 
-              'Instructional', 
-              'VocalMusic', 
-              'Instrumental', 
-              'Experimental', 
-              'Digital', 
-              'Effect',
-              'Other'],
-            tags: ["vintage", "jazz"],
-            length: ['tiny', 'short', 'medium', 'long', 'huge'],
-            volumeNote: "Volume can be a number from 0 to 100. This overrides the track volume.",
-            volume: 100,
-          }
-        ]
-      },
-    ],
-
-    // starting pattern for adding a new track
-    newTrack: {
+    // starting pattern for creating a new recipe (indentation matters here)
+    example: `{
+  // This is a basic recipe. 
+  //
+  // Note that the system ignores any tags it doesn't recognize, 
+  // and comments like this are ignored as well 😀. 
+  // BUT the recipe has to be valid JSON-like code and the editor
+  // will tell you if it's not.
+  //
+  // Note that brackets [] and braces {} have to match up.
+  // Values have to be in quotes.
+  //
+  tracks = [
+    {
       track: 0,
-      note: "NEW TRACK: Add up to 5 tracks.",
+      // This is a track.
+      //
+      // Tracks are played simultaneously like a multi-track recording.
+      // You can have up to 5 tracks, and there must be at least one.
+      //
+      // This is the volume (0-100) of the entire track
       volume: 100,
-      clips: [
-        { 
-          classification: ["Instrumental", "VocalMusic"], 
-          tag: ["ambient", "environmental"], 
-          length: ["medium", "long"]
+      effects: [
+        // Audio processing effects applied to the track.
+        // Currently only loop is supported, but more will be added.
+        //
+      ],
+      clips:[
+        {
+          // This is a clip.
+          // 
+          // Clips are individual audio files within the tracks.
+          // Specify classification, tags, and length that will be used to 
+          // help pick a random audio file for that matches the clip. 
+          //
+          classification: [
+            // Classification is a broad category that describes the type 
+            // of audio. Possible values are: Ambient, Atmospheric,  
+            // Environmental, Premixed, Soundscape, Archival, Spoken, 
+            // Narrative, Instructional, VocalMusic, Instrumental, 
+            // Experimental, Digital, Effect, and/or Other
+            // Note that you can have more than one classification.
+            //
+            'VocalMusic', 
+            'Instrumental', 
+          ],
+          tags: [
+            // Tags are descriptive words or phrases that help identify the audio.
+            //
+            "vintage", "jazz"
+          ],
+          length: [
+            // Length is a rough estimate of the duration of the audio.
+            // Possible values are: 'tiny', 'short', 'medium', 'long', 'huge'
+            //
+            'short', 'medium'
+          ],
+          // This is the volume (0-100) of the individual clip
+          volume: 100,
+          effects: [
+            // Audio processing effects applied to the individual clip.
+            // Currently only loop is supported, but more will be added.
+            //
+          ]
         }
       ]
     },
+  ]
+}`,
 
-    // starting pattern for adding a new clip
-    newClip: {
-      note: "NEW CLIP: Add as many clips as you like to a track.",
-      classification: [ "ambient",  "premixed"],
-      tags: ["static"], length: ["long", "huge"], 
-      volume: 100
-    },
+    // starting pattern for adding a new track (indentation matters here)
+    newTrack: `
+    { 
+      track: 0,
+      // New track, add up to 5.
+      volume: 100,
+      effects: [
+      ],
+      clips:[
+        {
+          classification: [
+            // Possible values are: Ambient, Atmospheric,  Environmental, Premixed, 
+            // Soundscape, Archival, Spoken, Narrative, Instructional, VocalMusic, 
+            // Instrumental, Experimental, Digital, Effect, and/or Other
+            'Archival', 
+          ],
+          tags: [
+            "television", "old-time-radio"
+          ],
+          length: [
+            // Possible values are: 'tiny', 'short', 'medium', 'long', 'huge'
+            'medium', 'long'
+          ],
+          volume: 100,
+        }
+      ]
+    },`,
 
-    // starting pattern for adding a new clip
-    newSilence: {
-      note: "SILENCE: Really just a clip with classification: 'silence'.",
-      classification: "silence",
-      length: ["tiny", "short"],
-    },
+    // starting pattern for adding a new clip (indentation matters here)
+    newClip: `
+        {
+          // "NEW CLIP: Add as many clips as you like to a track.",
+          classification: [ "ambient",  "premixed"],
+          tags: ["static"], length: ["long", "huge"], 
+          volume: 100
+        },`,
+
+    // starting pattern for adding a new clip (indentation matters here)
+    newSilence: `
+        {
+          // SILENCE: Just a clip with classification: 'silence'.
+          classification: "silence",
+          length: ["tiny", "short"],
+        },`,
 
   },
   app: {

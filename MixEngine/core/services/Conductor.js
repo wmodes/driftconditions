@@ -2,6 +2,7 @@
 
 const { database: db } = require('config');
 const logger = require('config/logger').custom('Conductor', 'info');
+const JSON5 = require('json5');
 const RecipeSelector = require('@services/recipes/RecipeSelector');
 const RecipeParser = require('@services/recipes/RecipeParser');
 const ClipSelector = require('@services/clips/ClipSelector');
@@ -45,7 +46,7 @@ class Conductor {
             continue;
           }
           // console.log('typeof selectedRecipe.recipeData:', typeof selectedRecipe.recipeData);
-          // console.log('Selected Recipe:', JSON.stringify(selectedRecipe.recipeData, null, 2));
+          // console.log('Selected Recipe:', JSON5.stringify(selectedRecipe.recipeData, null, 2));
           //
           // Normalize the recipe
           // this.testRecipeNormalize()
@@ -59,13 +60,13 @@ class Conductor {
           // Get list of criteria
           // UPDATE: Unneeded - just use the recipeObj directly
           // const criteriaList = this.recipeParser.getListOfClipsNeeded(selectedRecipe);
-          // logger.info(`criteriaList: ${JSON.stringify(criteriaList, null, 2)}`);
+          // logger.info(`criteriaList: ${JSON5.stringify(criteriaList, null, 2)}`);
           //
           // Select files based on clips as criteria
           // TODO: rather than return a new list, just add files to recipe
           // const selectedClips = await this.clipSelector.selectClips(criteriaList);
           const clipResults = await this.clipSelector.selectAudioClips(selectedRecipe);
-          logger.debug(`recipe after clip selection: ${JSON.stringify(selectedRecipe.recipeObj, null, 2)}`);
+          logger.debug(`recipe after clip selection: ${JSON5.stringify(selectedRecipe.recipeObj, null, 2)}`);
           //
           // Did we find clips for this recipe?
           if (!clipResults) {
@@ -76,18 +77,18 @@ class Conductor {
           //
           // Get list of clips for playlist
           mixDetails.playlist = this.recipeParser.getPlaylistFromRecipe(selectedRecipe) || [];
-          logger.debug(`Conductor:start: playlist: ${JSON.stringify(mixDetails.playlist, null, 2)}`);
+          logger.debug(`Conductor:start: playlist: ${JSON5.stringify(mixDetails.playlist, null, 2)}`);
           //
           // Adjust timings for clips
           mixDetails.duration = this.clipAdjustor.adjustClipTimings(selectedRecipe);
-          logger.debug(`recipe after clip timing adjustment: ${JSON.stringify(selectedRecipe.recipeObj, null, 2)}`);
+          logger.debug(`recipe after clip timing adjustment: ${JSON5.stringify(selectedRecipe.recipeObj, null, 2)}`);
           //
           // Get next mix ID
           mixDetails.mixID = await this.mixQueue.getNextMixID();
           //
           // Make the mix
           await this.mixEngine.makeMix(selectedRecipe, mixDetails);
-          logger.debug(`Conductor:start: mixDetails: ${JSON.stringify(mixDetails, null, 2)}`);
+          logger.debug(`Conductor:start: mixDetails: ${JSON5.stringify(mixDetails, null, 2)}`);
           //
           // Create entry into the database for the mix
           await this.mixQueue.createMixQueueEntry(selectedRecipe, mixDetails);
