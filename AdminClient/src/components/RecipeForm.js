@@ -208,6 +208,7 @@ function RecipeForm({ action, initialRecord, onSave, onCancel, onChange }) {
       const { row } = editorRef.editor.getCursorPosition();
       const modifiedRecord = insertNewElementIntoJsonStr(
         record.recipeData, 
+        'clip',
         row, 
         newPattern
       );

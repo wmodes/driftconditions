@@ -50,7 +50,7 @@ function RecipeCreate() {
     setIsLoading(true); // Start loading
     const adjustedRecord = {
       ...updatedRecord,
-      // recipeData: formatJSONStrForDB(updatedRecord.recipeData),
+      recipeData: formatJSONStrForDB(updatedRecord.recipeData),
       classification: formatClassificationForDB(updatedRecord.classification),
     };
     dispatch(recipeCreate({recipeRecord: adjustedRecord}))
