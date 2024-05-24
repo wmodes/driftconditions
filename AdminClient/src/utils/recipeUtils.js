@@ -10,12 +10,14 @@ const { parse: JSONparse, stringify: JSONstringify } = require('comment-json');
 // @PARAM newPattern: string - the new JSON element to insert
 // @RETURN string - the updated JSON string
 // TODO: Generalize this function to insert any JSON-like string at the proper boundary
-export const insertNewElementIntoJsonStr = (type, jsonStr, currentRow, newPattern) => {
+export const insertNewElementIntoJsonStr = (jsonStr, type, currentRow, newPattern) => {
   try {
     console.log(`recipeUtils:insertNewClipIntoJsonStr: jsonStr: ${jsonStr}, typof: ${typeof jsonStr}`);
-    const jsonDestruct = splitJsonElements(jsonStr);
+    const jsonElementArray = splitJsonElements(jsonStr);
+    // console.log(`recipeUtils:insertNewClipIntoJsonStr: jsonElementArray: ${jsonElementArray}`);
     // TODO: Keep going and find the track or clip index
-    const position = trackPositionInJson(jsonDestruct, currentRow);
+    const position = getPositionForInsert(jsonElementArray, type, currentRow);
+    return;
     const { track: trackIndex, clip: clipIndex } = position;
     console.log('position', position);
     // const parsedJsonData = JSONparse(jsonStr); 
@@ -23,92 +25,208 @@ export const insertNewElementIntoJsonStr = (type, jsonStr, currentRow, newPatter
     // const updatedJsonData = insertClipIntoTrack(parsedJsonData, trackIndex, clipIndex, newPattern);
     // 
 
-    return JSON5.stringify(updatedJsonData, null, 2); // Stringifying the updated JSON
+    // return JSON5.stringify(updatedJsonData, null, 2); // Stringifying the updated JSON
   } catch (error) {
     // Rethrowing the error with additional context
     throw new Error(error);
   }
 };
 
+// splits a JSON string into an array of JSON elements
+// @PARAM jsonStr: string - the JSON string to split
+// @RETURN array - an array of JSON elements
 function splitJsonElements(jsonStr) {
   // This regex captures various JSON elements including quoted strings, unquoted keys, brackets,
-  // braces, colons, commas, newlines, and comments (both single-line and multi-line).
-  const elements = jsonStr.match(/"[^"\\]*(\\.[^"\\]*)*"|'[^'\\]*(\\.[^'\\]*)*'|\b\w+\b|[\[\]{}:,]|\n|\/\/.*|\/\*[\s\S]*?\*\//g);
-  // console.log(`splitJsonElements: ${elements}`);
+  // braces, colons, commas, newlines, comments (both single-line and multi-line), and whitespace.
+  const elements = jsonStr.match(/"[^"\\]*(\\.[^"\\]*)*"|'[^'\\]*(\\.[^'\\]*)*'|\b\w+\b|[\[\]{}:,]|\n|\/\/.*|\/\*[\s\S]*?\*\/|\s+/g);
+  console.log(`splitJsonElements: ${elements}`);
   return elements;
 }
 
-function trackPositionInJson(jsonDestruct, row) {
+// gets the position to insert a new JSON element after a specified row
+// @PARAM jsonElementArray: array - the destructured JSON elements
+// @PARAM type: string - the type of JSON element to insert, 'track' or 'clip'
+// @PARAM row: number - the row number to insert the new element after
+// @RETURN object - line and row position to insert the new element
+function getPositionForInsert(jsonElementArray, type, row) {
+  // This function is a state machine that tracks the depth of the JSON structure
+  // and counts the number of tracks and clips to determine the position to insert
+  // 
+  // Possibilities:
+  //   Inserting a track:
+  //     1. Insert a new track at the top level after the last track 
+  //   Inserting a clip:
+  //     1. CurrentPosition is before the first track, 
+  //        insert a clip at the beginning of the first track
+  //     2. CurrentPosition is after the last track, 
+  //        insert a clip at the end of the last track
+  //     3. CurrentPosition is between tracks, 
+  //        insert a clip at the end of the previous track
+  //     4. CurrentPosition is inside a track but before the clip list, 
+  //        insert a clip at the beginning of the clip list
+  //     5. CurrentPosition is inside a clip,
+  //        insert a clip after the current clip
+  //
+  // JSON structure:
+  //   {
+  //     tracks: [
+  //       {
+  //         track: 0,
+  //         clips:[
+  //           {},
+  //           {}
+  //         ] // clips
+  //       } // track
+  //     ] // tracks
+  //   } // JSON
+  //
+  // We will have to make sure that commas are added to the previous tracks or clips
+  //
   try {
     let lineNumber = 0;
+    // tracks the depth of the JSON structure
     let depthTracker = [];
     let trackCount = -1;
     let clipCount = -1;
+    // are we in a track or clip?
+    let trackFlag = false;
     let clipFlag = false;
-    // let outroFlag = false;
+    // keeping track of character position within JSON-like string
+    let charPosCount = 0;
+    // flag to indicate if the current position has been found
+    let currentPosFound = false;
+    // these are candidates for the position to insert the new element
+    let potentialInsertTrackPosition = 0;
+    let potentialInsertClipPosition = 0;
 
     function depthPattern() {
       return depthTracker.join('');
     }
 
-    for (let item of jsonDestruct) {
-      // if item begins with '//' or '/*', skip it
+    console.log('Searching for insertion position...');
+    for (let item of jsonElementArray) {
+      // keep a character count
+      charPosCount += item.length;
+      //
+      // single-line comments: skip
       if (item.startsWith('//')) {
-        lineNumber++;
+        // console.log('skipping comment');
         continue;
-      } else if (item.startsWith('/*')) {
+      } 
+      // multi-line comments: skip
+      else if (item.startsWith('/*')) {
+        // console.log('skipping comment');
         // count the number of newlines in the comment
         const commentLines = item.split('\n').length;
-        lineNumber += commentLines;
+        lineNumber += commentLines - 1;
         continue;
       }
+      // sequences of tabs and spaces: skip
+      else if (item.match(/^[ /t]]+$/)) {
+        // console.log('skipping whitespace');
+        continue;
+      }
+      console.log('item:', item);
+      //
       // now consider item and what to do with it
       switch (item) {
+        //
+        // newlines: how we tell when we are at the cursor position
         case '\n':
           lineNumber++;
-          if (lineNumber === row + 1) {
-            // we continue going, but know we are on the way out
-            // outroFlag = true;
-            return { track: trackCount, clip: clipCount };
+          console.log(`new line. Linenumber: ${lineNumber} (${row + 1})`);
+          // TODO: We might miss the position if we are in a multi-line comment, so this should be fixed
+          if (lineNumber >= row + 1 && !currentPosFound) {
+            console.log(`cursor position found at line ${lineNumber}`);
+            currentPosFound = true;
           }
           break;
+        //
+        // entering an object
         case '{':
           depthTracker.push(item);
-          if (depthPattern() === '[{[{' && clipFlag) {
-            clipCount++; // Condition for incrementing clip count.
+          // entering JSON structure
+          if (depthPattern() === '{') {
+            console.log('Entering JSON structure');
+          } 
+          // entering a track
+          else if (depthPattern() === '{[{' && trackFlag) {
+            console.log('Entering a track');
+            trackCount++; 
+            // Resetting clipCount as we enter a new track.
+            clipCount = -1;
+          } 
+          // entering a clip
+          else if (depthPattern() === '{[{[{' && clipFlag) {
+            console.log('Entering a clip');
+            clipCount++;
           }
           break;
+        //
+        // entering an array
         case '[':
           depthTracker.push(item);
+          // entering a track array
+          if (depthPattern() === '{[' && trackFlag) {
+            console.log('Entering a track array');
+          }
+          // entering a clip array
+          else if (depthPattern() === '{[{[' && clipFlag) {
+            console.log('Entering a clip array');
+          }
           break;
+        //
+        // exiting an object
         case '}':
           if (depthTracker.pop() !== '{') {
             throw new Error('Unmatched closing brace.');
-          } else {
-            // we've returned to the top level
-            // if (depthPattern() === '[' && outroFlag) {
-            //   return { track: trackCount, clip: clipCount };
-            // }
+          }
+          // exiting a clip
+          if (depthPattern() === '{[{[' && clipFlag) {
+            console.log('Exiting a clip');
+          }
+          // exiting a track
+          else if (depthPattern() === '{[' && trackFlag) {
+            console.log('Exiting a track');
+          }
+          // exiting JSON structure
+          else if (depthPattern() === '') {
+            console.log('Exiting JSON structure');
           }
           break;
+        //
+        // exiting an array
         case ']':
           if (depthTracker.pop() !== '[') {
             throw new Error('Unmatched closing bracket.');
           }
-          if (depthPattern() === '[{' && clipFlag) {
-            clipFlag = false; // Reset clipFlag based on exiting a clip array.
-            clipCount = -1; // Resetting clipCount based on exiting a clip array.
+          // exiting a clip array
+          if (depthPattern() === '{[{' && clipFlag) {
+            console.log('Exiting a clip array');
+            clipFlag = false;
+            // Reset clipCount
+            clipCount = -1;
+          }
+          // exiting a track array
+          else if (depthPattern() === '{' && trackFlag) {
+            console.log('Exiting a track array');
+            trackFlag = false;
           }
           break;
-        case 'track':
-          if (depthPattern() === '[{') {
-            trackCount++;
-            clipFlag = false; // Resetting clipFlag as we encounter a new track.
+        // 
+        // encountering tracks key
+        case 'tracks':
+          if (depthPattern() === '{') {
+            console.log('Found tracks key');
+            trackFlag = true;
           }
           break;
+        //
+        // encountering clips key
         case 'clips':
-          if (depthPattern() === '[{') {
-            clipFlag = true; // Setting clipFlag as we enter a clips array.
+          if (depthPattern() === '{[{') {
+            console.log('Found clips key');
+            clipFlag = true;
           }
           break;
         default:
