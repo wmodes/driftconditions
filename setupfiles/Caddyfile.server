@@ -36,12 +36,18 @@ https://driftconditions.org {
         }
     }
 
-    # Serve static assets for fallback
+    # Serve static assets for fallback first
     handle /fallback/* {
         root * /home/debian/interference/fallback
         file_server
     }
 
+    # Serve the main site, fallback to index.html for SPA routing
+    handle {
+        try_files {path} /index.html
+    }
+
+    # Handle errors
     handle_errors {
         @fallback {
             not file {path}
