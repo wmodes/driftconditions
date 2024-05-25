@@ -1,6 +1,7 @@
 // static-reload.js
 
 window.onload = function() {
+  console.log('Fallback page loaded');
   const reloadInterval = 5 * 60 * 1000; // 5 minutes in milliseconds
   const retryTimeElement = document.getElementById('retry-time');
 
