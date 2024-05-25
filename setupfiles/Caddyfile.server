@@ -46,10 +46,10 @@ https://driftconditions.org {
     }
 
     # Serve static assets for fallback
-    handle /static/* {
-        root * /home/debian/interference/static
-        file_server
-    }
+    #handle /static/* {
+    #    root * /home/debian/interference/static
+    #    file_server
+    #}
 }
 
 # AdminServer
