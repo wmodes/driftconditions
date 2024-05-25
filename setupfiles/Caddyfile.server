@@ -25,8 +25,8 @@ https://driftconditions.org {
     file_server
     encode gzip
     tls wmodes@gmail.com
-    #try_files {path} /index.html
-    try_files /home/debian/interference/AdminClient/build/index.html 
+    try_files {path} /index.html
+    #try_files /home/debian/interference/AdminClient/build/index.html 
 
     # Enable access logs with default log format
     log {
