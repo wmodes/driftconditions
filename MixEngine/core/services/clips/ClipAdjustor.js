@@ -11,7 +11,7 @@ class ClipAdjustor {
   adjustClipTimings(recipe) {
     const currentRecipeObj = recipe.recipeObj;
     // Calculate initial durations and ranges
-    currentRecipeObj.forEach(track => {
+    currentRecipeObj.tracks.forEach(track => {
       track.duration = 0;  // Initialize as numerical
       track.minLength = 0;
       track.maxLength = 0;
@@ -34,9 +34,9 @@ class ClipAdjustor {
       });
     });
     // Find the longest track by max possible duration
-    let longestTrack = currentRecipeObj.reduce((max, track) => track.maxLength > max.maxLength ? track : max, currentRecipeObj[0]);
+    let longestTrack = currentRecipeObj.tracks.reduce((max, track) => track.maxLength > max.maxLength ? track : max, currentRecipeObj.tracks[0]);
     // Adjust silences in other tracks to match the longest track's duration
-    currentRecipeObj.forEach(track => {
+    currentRecipeObj.tracks.forEach(track => {
       if (track !== longestTrack) {
         // Difference needed to match longest track
         let trackDurationFlexMax = longestTrack.maxLength - track.minLength; 

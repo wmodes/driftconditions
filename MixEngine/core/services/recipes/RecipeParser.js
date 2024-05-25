@@ -37,7 +37,7 @@ class RecipeParser {
       return false;
     }
     // check to make sure has tracks, if not return error
-    const tracks = recipeData.filter(record => record.track !== undefined);
+    const tracks = recipeData.tracks.filter(record => record.track !== undefined);
     if (tracks.length === 0) {
       logger.error('RecipeParser:validateRecipe: No tracks found in the recipe');
       return false;
@@ -53,7 +53,7 @@ class RecipeParser {
     recipe.recipeObj = this._convertToLowercase(recipe.recipeObj);
     
     // Operate on 'recipeObj' instead of parsing 'recipeData' every time
-    const tracks = recipe.recipeObj.filter(record => record.track !== undefined);
+    const tracks = recipe.recipeObj.tracks.filter(record => record.track !== undefined);
 
     // Normalize each track and its clips
     tracks.forEach(track => {
@@ -129,42 +129,23 @@ class RecipeParser {
     return obj;
   }
 
-  // Method to get a list of clips needed for a recipe
-  // UPDATE: Unneeded - just use the recipeData directly
-  // getListOfClipsNeeded(recipe) {
-  //   const clipsNeeded = [];
-  //   const recipeData = JSON5.parse(recipe.recipeData);
-  //   // Since the recipe is already normalized, every track should directly have the 'clips' property
-  //   const tracks = recipeData.filter(record => record.track !== undefined);
-  //   // Iterate through tracks to construct list of clips needed
-  //   tracks.forEach(track => {
-  //     track.clips.forEach(clip => {
-  //       // Directly use the properties as they are already ensured to be in correct form and type
-  //       const { classification, tags, volume, clipLength, effects } = clip;
-  //       // Add the clip details to the list of clips needed
-  //       clipsNeeded.push({ classification, tags, volume, clipLength, effects });
-  //     });
-  //   });
-  //   return clipsNeeded;
-  // }
-
   getTagsFromTracks(recipe) {
     const tagsList = [];
   
     // Iterate over each track in the recipe
-    recipe.recipeObj.forEach(track => {
+    recipe.recipeObj.tracks.forEach(track => {
       if (track.tags) {
         // Directly add all tags from this track to the tagsList
         tagsList.push(...track.tags);
       }
     });
     return tagsList;
-  }
+  }  
 
   getPlaylistFromRecipe(recipe) {
     const playlist = [];
     // Iterate over each track in the recipe
-    recipe.recipeObj.forEach(track => {
+    recipe.recipeObj.tracks.forEach(track => {
       if (track.clips) {
         // Iterate over each clip in the track
         track.clips.forEach(clip => {

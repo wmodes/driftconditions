@@ -25,7 +25,7 @@ class ClipSelector {
   //    "audioClip" is a record from the database audio table representing a clip file
   async selectAudioClips(recipe) {
     // Iterate over each track in the recipe
-    for (const track of recipe.recipeObj) {
+    for (const track of recipe.recipeObj.tracks) {  
       // Iterate over each clip in the track
       for (const clip of track.clips) {
         //check for classification includes "silence"
