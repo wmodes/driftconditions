@@ -25,7 +25,7 @@ https://driftconditions.org {
     file_server
     encode gzip
     tls wmodes@gmail.com
-    try_files {path} /index.html /home/debian/interference/static/failure.html
+    try_files {path} /index.html
 
     # Enable access logs with default log format
     log {
@@ -34,6 +34,16 @@ https://driftconditions.org {
             roll_keep 7
             roll_keep_for 720h
         }
+    }
+
+    # Handle errors and serve fallback.html when build is unavailable
+    handle_errors {
+        @fallback {
+            not file /home/debian/interference/AdminClient/build{path}
+        }
+        rewrite @fallback /failure.html
+        root * /home/debian/interference/static
+        file_server
     }
 }
 
