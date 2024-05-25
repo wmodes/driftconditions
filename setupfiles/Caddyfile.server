@@ -36,18 +36,15 @@ https://driftconditions.org {
         }
     }
 
-    # Serve static files and handle errors
-    #handle {
-    #    @notfound {
-    #        not file {path}
-    #    }
-    #    root * /home/debian/interference/fallback
-    #    rewrite @notfound /index.html
-    #    file_server
-    #}
-
     # Serve static assets for fallback separately
     handle /fallback/* {
+        root * /home/debian/interference/fallback
+        file_server
+    }
+
+    # Serve static files and handle errors
+    handle_errors {
+        rewrite * /failure.html
         root * /home/debian/interference/fallback
         file_server
     }
