@@ -26,7 +26,6 @@ https://driftconditions.org {
     encode gzip
     tls wmodes@gmail.com
     try_files {path} /index.html
-    #try_files /home/debian/interference/AdminClient/build/index.html 
 
     # Enable access logs with default log format
     log {
@@ -37,19 +36,20 @@ https://driftconditions.org {
         }
     }
 
+    # Serve static files and handle errors
     handle {
+        @notfound {
+            not file {path}
+        }
+        rewrite @notfound /failure.html
         file_server
-        rewrite * /home/debian/interference/fallback/index.html
     }
 
-    #handle_errors {
-    #    @fallback {
-    #        not file {path}
-    #    }
-    #    rewrite @fallback /index.html
-    #    root * /home/debian/interference/fallback
-    #    file_server
-    #}
+    # Serve static assets for fallback separately
+    handle /fallback/* {
+        root * /home/debian/interference/fallback
+        file_server
+    }
 }
 
 # AdminServer
@@ -59,7 +59,6 @@ https://driftconditions.org:8080 {
         header_up X-Real-IP {remote}
         header_up X-Forwarded-For {remote}
         header_up X-Forwarded-Proto {scheme}
-        header_up Access-Control-Allow-Origin "*"
         flush_interval -1  # Disable buffering
     }
     tls wmodes@gmail.com
