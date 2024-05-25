@@ -3,7 +3,7 @@
  */
 
 const { database: db } = require('config');
-const logger = require('config/logger').custom('MixEngine', 'info');
+const logger = require('config/logger').custom('MixEngine', 'debug');
 const path = require('path');
 const fs = require('fs').promises;
 
