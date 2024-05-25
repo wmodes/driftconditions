@@ -18,7 +18,7 @@ const config = {
   corsOptions: {
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     origin: [
-      'http://localhost',
+      'https://localhost',
       'https://localhost:3000',
       'http://localhost:3001',
       'https://localhost:8080',

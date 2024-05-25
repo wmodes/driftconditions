@@ -46,10 +46,10 @@ https://driftconditions.org {
     }
 
     # Serve static assets for fallback
-    #handle /static/* {
-    #    root * /home/debian/interference/static
-    #    file_server
-    #}
+    handle /static/* {
+        root * /home/debian/interference/static
+        file_server
+    }
 }
 
 # AdminServer
@@ -59,6 +59,7 @@ https://driftconditions.org:8080 {
         header_up X-Real-IP {remote}
         header_up X-Forwarded-For {remote}
         header_up X-Forwarded-Proto {scheme}
+        header_up Access-Control-Allow-Origin "*"
         flush_interval -1  # Disable buffering
     }
     tls wmodes@gmail.com
