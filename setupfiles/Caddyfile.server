@@ -50,6 +50,10 @@ https://driftconditions.org {
         root * /home/debian/interference/static
         file_server
     }
+    handle /js/* {
+        root * /home/debian/interference/static
+        file_server
+    }
 
     handle_errors {
         @fallback {
