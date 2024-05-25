@@ -92,6 +92,9 @@ class Conductor {
           //
           // Create entry into the database for the mix
           await this.mixQueue.createMixQueueEntry(selectedRecipe, mixDetails);
+          //
+          // Prune old mixes
+          await this.mixQueue.pruneOldMixes();
         } 
         // We already have a maxed out queue, let's wait a bit
         else {

@@ -111,7 +111,7 @@ class MixQueue {
    * @returns {Promise<void>}
    * @throws {Error} If there is an error pruning the mixes.
    */
-  async pruneMixes() {
+  async pruneOldMixes() {
     logger.info('MixQueue:pruneMixes(): Pruning old mixes');
     try {
       const thresholdDate = new Date(Date.now() - mixKeepPeriod * 1000);
