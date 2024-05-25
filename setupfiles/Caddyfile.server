@@ -41,7 +41,8 @@ https://driftconditions.org {
         @notfound {
             not file {path}
         }
-        rewrite @notfound /failure.html
+        root * /home/debian/interference/fallback
+        rewrite @notfound /index.html
         file_server
     }
 
