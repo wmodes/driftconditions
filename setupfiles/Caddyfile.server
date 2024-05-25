@@ -36,10 +36,24 @@ https://driftconditions.org {
         }
     }
 
-    # Handle errors and serve fallback.html when build is unavailable
+    # Serve static files and handle errors
+    handle {
+        @notfound {
+            not file {path}
+        }
+        rewrite @notfound /failure.html
+        file_server
+    }
+
+    # Serve static assets for fallback separately
+    handle /img/* {
+        root * /home/debian/interference/static
+        file_server
+    }
+
     handle_errors {
         @fallback {
-            not file /home/debian/interference/AdminClient/build{path}
+            not file {path}
         }
         rewrite @fallback /failure.html
         root * /home/debian/interference/static
