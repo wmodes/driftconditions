@@ -36,17 +36,17 @@ https://driftconditions.org {
         }
     }
 
+    # Serve static assets for fallback
+    handle /fallback/* {
+        root * /home/debian/interference/fallback
+        file_server
+    }
+
     handle_errors {
         @fallback {
             not file {path}
         }
         rewrite @fallback /failure.html
-        root * /home/debian/interference/fallback
-        file_server
-    }
-
-    # Serve static assets for fallback
-    handle /fallback/* {
         root * /home/debian/interference/fallback
         file_server
     }

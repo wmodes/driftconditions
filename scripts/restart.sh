@@ -1,5 +1,12 @@
 #!/bin/bash
 
+# Just to be sure, let's make sure all current modules are installed
+cd AdminServer
+npm install
+cd ../MixEngine
+npm install
+cd ..
+
 # Restart Caddy service
 sudo systemctl restart caddy
 echo "Caddy service has been restarted."
