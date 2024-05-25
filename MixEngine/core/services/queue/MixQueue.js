@@ -1,17 +1,30 @@
-// MixQueue.js - Queue management for MixEngine
-
+/**
+ * @file MixQueue.js - Queue management for MixEngine
+ */
 
 const { database: db } = require('config');
 const logger = require('config/logger').custom('MixEngine', 'info');
+const path = require('path');
+const fs = require('fs').promises;
 
 const { config } = require('config');
+const mixKeepPeriod = config.mixes.mixKeepPeriod;
+const mixFileDir = config.content.mixFileDir;
 
+/**
+ * Class representing the mix queue.
+ */
 class MixQueue {
   constructor() {
     // Initialize any necessary properties here
   }
 
-  // retrieve the next mixID without actually assigning it. It retrieves the maximum mixID from the database and increments it to get the next available mixID
+  /**
+   * Retrieve the next mixID without actually assigning it. 
+   * It retrieves the maximum mixID from the database and increments it to get the next available mixID.
+   * @returns {Promise<number>} The next mixID.
+   * @throws {Error} If there is an error getting the next mixID.
+   */
   async getNextMixID() {
     logger.info('MixQueue:getNextMixID(): Getting the next mixID');
     try {
@@ -28,7 +41,13 @@ class MixQueue {
     }
   }
 
-  // Create an entry in the database for the mix
+  /**
+   * Create an entry in the database for the mix.
+   * @param {Object} recipe - The recipe object.
+   * @param {Object} mixDetails - The mix details object.
+   * @returns {Promise<number>} The ID of the newly created mix.
+   * @throws {Error} If there is an error creating the mix entry.
+   */
   async createMixQueueEntry(recipe, mixDetails) {
     logger.info('MixQueue:createMixQueueEntry(): Creating database entry for the mix');
     try {
@@ -61,6 +80,11 @@ class MixQueue {
     }
   }
 
+  /**
+   * Get the number of mixes in the queue.
+   * @returns {Promise<number>} The number of mixes in the queue.
+   * @throws {Error} If there is an error getting the number of mixes in the queue.
+   */
   async getNumberOfMixesInQueue() {
     logger.info('MixQueue:getNumberOfMixesInQueue(): Getting the number of mixes in the queue');
     try {
@@ -81,7 +105,60 @@ class MixQueue {
     }
   }
 
-}
+  /**
+   * Prune mixes that are older than the specified period and have been played.
+   * Deletes the files and updates the database status to "Deleted".
+   * @returns {Promise<void>}
+   * @throws {Error} If there is an error pruning the mixes.
+   */
+  async pruneMixes() {
+    logger.info('MixQueue:pruneMixes(): Pruning old mixes');
+    try {
+      const thresholdDate = new Date(Date.now() - mixKeepPeriod * 1000);
+      const queryStr = `
+        SELECT 
+          mixID, filename 
+        FROM 
+          mixQueue 
+        WHERE 
+          status = 'Played' 
+        AND lastUsed < ?
+      `;
+      const queryValues = [thresholdDate];
+      const [rows] = await db.execute(queryStr, queryValues);
+      const mixesToDelete = rows.map(row => ({
+        mixID: row.mixID,
+        filepath: path.join(mixFileDir, row.filename),
+      }));
 
+      const mixIDs = [];
+
+      for (const mix of mixesToDelete) {
+        try {
+          await fs.unlink(mix.filepath);
+          logger.info(`MixQueue:pruneMixes(): Deleted file ${mix.filepath}`);
+          mixIDs.push(mix.mixID); // Only push mixID if file deletion is successful
+        } catch (err) {
+          logger.error(`MixQueue:pruneMixes(): Error deleting file ${mix.filepath}`, err);
+        }
+      }
+
+      if (mixIDs.length > 0) {
+        const updateStr = `
+          UPDATE mixQueue
+          SET status = 'Deleted'
+          WHERE mixID IN (?)
+        `;
+        const queryValues = [mixIDs];
+        await db.execute(updateStr, queryValues);
+        logger.info(`MixQueue:pruneMixes(): Updated status to 'Deleted' for mixIDs: ${mixIDs.join(', ')}`);
+      }
+    } catch (error) {
+      logger.error('MixQueue:pruneMixes(): Error pruning mixes', error);
+      throw new Error('Failed to prune mixes');
+    }
+  }
+
+}
 
 module.exports = MixQueue;
