@@ -41,15 +41,15 @@ https://driftconditions.org {
             not file {path}
         }
         rewrite @fallback /failure.html
-        root * /home/debian/interference/static
+        root * /home/debian/interference/fallback
         file_server
     }
 
     # Serve static assets for fallback
-    #handle /static/* {
-    #    root * /home/debian/interference/static
-    #    file_server
-    #}
+    handle /fallback/* {
+        root * /home/debian/interference/fallback
+        file_server
+    }
 }
 
 # AdminServer
