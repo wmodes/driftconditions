@@ -39,7 +39,7 @@ https://driftconditions.org {
 
     handle {
         file_server
-        rewrite * /home/debian/interference/fallback/
+        rewrite * /home/debian/interference/fallback/index.html
     }
 
     #handle_errors {
