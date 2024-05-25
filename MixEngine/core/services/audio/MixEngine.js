@@ -81,16 +81,16 @@ class MixEngine {
   }
 
   _setupInputs(ffmpegCmd, recipeObj) {
-    recipeObj.forEach(track => {
-        track.clips.forEach(clip => {
-            if (!clip.classification.includes('silence')) {
-                const filePath = path.join(contentFileDir, clip.filename);
-                ffmpegCmd.input(filePath);
-                logger.debug(`Input file added: ${filePath}`);
-            }
-        });
+    recipeObj.tracks.forEach(track => {
+      track.clips.forEach(clip => {
+        if (!clip.classification.includes('silence')) {
+          const filePath = path.join(contentFileDir, clip.filename);
+          ffmpegCmd.input(filePath);
+          logger.debug(`Input file added: ${filePath}`);
+        }
+      });
     });
-  }
+  }  
 
   _setMixFilepath(mixID, recipe) {
     const mixFilename = `${this._sanitizeFilename(`${mixID}_${recipe.title}`)}.mp3`;
@@ -122,14 +122,13 @@ class MixEngine {
   }
 
   _buildAllTracksAndClipsFilters(recipeObj) {
-    // TODO: should "tracks" be the first key in the recipeData?
-    recipeObj.forEach(track => {
+    recipeObj.tracks.forEach(track => {
       // set track filters and outputs
       this._buildTrackFilters(track);
       // increment the track number
       this.currentTrackNum++;
     });
-  }
+  }  
 
   // Concatenates clips within a track and applies volume adjustment to the entire track if specified
   _buildTrackFilters(track) {
@@ -457,7 +456,7 @@ class MixEngine {
   _getMixDuration(recipeObj) {
     // find longest track
     let longestTrack = 0;
-    recipeObj.forEach(track => {
+    recipeObj.tracks.forEach(track => {
       let trackDuration = 0;
       track.clips.forEach(clip => {
         trackDuration += clip.duration;
@@ -467,7 +466,7 @@ class MixEngine {
       }
     });
     return longestTrack;
-  }
+  }  
 
   _setupTestInputs() {
     // Test method to setup ffmpeg inputs

@@ -12,10 +12,9 @@ const { parse: JSONparse, stringify: JSONstringify } = require('comment-json');
 // TODO: Generalize this function to insert any JSON-like string at the proper boundary
 export const insertNewElementIntoJsonStr = (jsonStr, type, currentRow, newPattern) => {
   try {
-    console.log(`recipeUtils:insertNewClipIntoJsonStr: jsonStr: ${jsonStr}, typof: ${typeof jsonStr}`);
+    // console.log(`recipeUtils:insertNewClipIntoJsonStr: jsonStr: ${jsonStr}, typof: ${typeof jsonStr}, length: ${jsonStr.length}`);
     const jsonElementArray = splitJsonElements(jsonStr);
     // console.log(`recipeUtils:insertNewClipIntoJsonStr: jsonElementArray: ${jsonElementArray}`);
-    // TODO: Keep going and find the track or clip index
     const position = getPositionForInsert(jsonElementArray, type, currentRow);
     return;
     const { track: trackIndex, clip: clipIndex } = position;
@@ -39,7 +38,7 @@ function splitJsonElements(jsonStr) {
   // This regex captures various JSON elements including quoted strings, unquoted keys, brackets,
   // braces, colons, commas, newlines, comments (both single-line and multi-line), and whitespace.
   const elements = jsonStr.match(/"[^"\\]*(\\.[^"\\]*)*"|'[^'\\]*(\\.[^'\\]*)*'|\b\w+\b|[\[\]{}:,]|\n|\/\/.*|\/\*[\s\S]*?\*\/|\s+/g);
-  console.log(`splitJsonElements: ${elements}`);
+  // console.log(`splitJsonElements: ${elements}`);
   return elements;
 }
 
@@ -54,18 +53,23 @@ function getPositionForInsert(jsonElementArray, type, row) {
   // 
   // Possibilities:
   //   Inserting a track:
-  //     1. Insert a new track at the top level after the last track 
+  //     t1. Insert a new track at the top level after the last track 
   //   Inserting a clip:
-  //     1. CurrentPosition is before the first track, 
-  //        insert a clip at the beginning of the first track
-  //     2. CurrentPosition is after the last track, 
-  //        insert a clip at the end of the last track
-  //     3. CurrentPosition is between tracks, 
-  //        insert a clip at the end of the previous track
-  //     4. CurrentPosition is inside a track but before the clip list, 
-  //        insert a clip at the beginning of the clip list
-  //     5. CurrentPosition is inside a clip,
-  //        insert a clip after the current clip
+  //     c1. CurrentPosition is before the first track
+  //         (track==0 && trackFlag==false),
+  //         insert a clip at the beginning of the first track
+  //     c2. CurrentPosition is after the last track
+  //         (track>0 && trackFlag==false),
+  //         insert a clip at the end of the last track
+  //     c3. CurrentPosition is between tracks
+  //         (track>0 && trackFlag==true && clipFlag==false),
+  //         insert a clip at the beginning of the next clip list
+  //     c4. CurrentPosition is inside a track but before the clip list
+  //         (track>0 && trackFlag==true && clipFlag==false),
+  //         insert a clip at the beginning of the next clip list
+  //     c5. CurrentPosition is inside a clip
+  //         (clipFlag==true),
+  //         insert a clip after the current clip
   //
   // JSON structure:
   //   {
@@ -73,10 +77,22 @@ function getPositionForInsert(jsonElementArray, type, row) {
   //       {
   //         track: 0,
   //         clips:[
+  //           (c1)
   //           {},
+  //           (c5)
   //           {}
   //         ] // clips
-  //       } // track
+  //       }, // track0
+  //       {
+  //         track: 1,
+  //         clips:[
+  //           (c3)(c4)
+  //           {},
+  //           {}
+  //           (c2)
+  //         ] // clips
+  //       } // track1
+  //       (t1)
   //     ] // tracks
   //   } // JSON
   //
@@ -86,8 +102,8 @@ function getPositionForInsert(jsonElementArray, type, row) {
     let lineNumber = 0;
     // tracks the depth of the JSON structure
     let depthTracker = [];
-    let trackCount = -1;
-    let clipCount = -1;
+    let trackCount = 0;
+    let clipCount = 0;
     // are we in a track or clip?
     let trackFlag = false;
     let clipFlag = false;
@@ -134,7 +150,7 @@ function getPositionForInsert(jsonElementArray, type, row) {
         // newlines: how we tell when we are at the cursor position
         case '\n':
           lineNumber++;
-          console.log(`new line. Linenumber: ${lineNumber} (${row + 1})`);
+          // console.log(`new line. Linenumber: ${lineNumber} (${row + 1})`);
           // TODO: We might miss the position if we are in a multi-line comment, so this should be fixed
           if (lineNumber >= row + 1 && !currentPosFound) {
             console.log(`cursor position found at line ${lineNumber}`);
@@ -154,7 +170,7 @@ function getPositionForInsert(jsonElementArray, type, row) {
             console.log('Entering a track');
             trackCount++; 
             // Resetting clipCount as we enter a new track.
-            clipCount = -1;
+            clipCount = 0;
           } 
           // entering a clip
           else if (depthPattern() === '{[{[{' && clipFlag) {
@@ -204,8 +220,6 @@ function getPositionForInsert(jsonElementArray, type, row) {
           if (depthPattern() === '{[{' && clipFlag) {
             console.log('Exiting a clip array');
             clipFlag = false;
-            // Reset clipCount
-            clipCount = -1;
           }
           // exiting a track array
           else if (depthPattern() === '{' && trackFlag) {
@@ -233,6 +247,7 @@ function getPositionForInsert(jsonElementArray, type, row) {
           break;
       }
     }
+    console.log(`trackCount: ${trackCount}, clipCount: ${clipCount}, charPosCount: ${charPosCount}`);
     return { track: trackCount, clip: clipCount };
   } catch (error) {
     // Handle or re-throw the error as needed

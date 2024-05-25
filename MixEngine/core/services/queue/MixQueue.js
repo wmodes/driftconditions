@@ -1,4 +1,4 @@
-// QueueStuff.js - Queue management for MixEngine
+// MixQueue.js - Queue management for MixEngine
 
 
 const { database: db } = require('config');

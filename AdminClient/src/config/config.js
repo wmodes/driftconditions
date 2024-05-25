@@ -235,7 +235,7 @@ const config = {
   // will tell you if it's not.
   //
   // Note that brackets [] and braces {} have to match up.
-  // Values have to be in quotes.
+  // Text values have to be in quotes.
   //
   tracks: [
     {
