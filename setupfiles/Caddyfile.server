@@ -44,8 +44,11 @@ https://driftconditions.org {
 
     # Serve static files and handle errors
     handle_errors {
-        rewrite * /failure.html
+        @notfound {
+            not file {path}
+        }
         root * /home/debian/interference/fallback
+        rewrite @notfound /index.html
         file_server
     }
 }
