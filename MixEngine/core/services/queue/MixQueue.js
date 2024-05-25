@@ -122,7 +122,7 @@ class MixQueue {
           mixQueue 
         WHERE 
           status = 'Played' 
-        AND lastUsed < ?
+        AND dateUsed < ?
       `;
       const queryValues = [thresholdDate];
       const [rows] = await db.execute(queryStr, queryValues);
