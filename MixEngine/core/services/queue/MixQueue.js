@@ -111,10 +111,10 @@ class MixQueue {
    * @returns {Promise<void>}
    * @throws {Error} If there is an error pruning the mixes.
    */
-  async pruneOldMixes() {
+  async pruneMixes() {
     logger.info('MixQueue:pruneMixes(): Pruning old mixes');
     try {
-      const thresholdDate = new Date(Date.now() - mixKeepPeriod * 1000);
+      const thresholdDate = new Date(Date.now() - mixKeepPeriod);
       const queryStr = `
         SELECT 
           mixID, filename 

@@ -103,7 +103,7 @@ class Conductor {
           await this.mixQueue.createMixQueueEntry(selectedRecipe, mixDetails);
           //
           // Prune old mixes
-          await this.mixQueue.pruneOldMixes();
+          await this.mixQueue.pruneMixes();
         } 
         // We already have a maxed out queue, let's wait a bit
         else {
