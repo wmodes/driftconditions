@@ -1,6 +1,6 @@
 // RecipeParser.js - RecipeParser class for normalizing recipe data
 
-const logger = require('config/logger').custom('Conductor', 'info');
+const logger = require('config/logger').custom('RecipeParser', 'info');
 const JSON5 = require('json5');
 
 const { config } = require('config');

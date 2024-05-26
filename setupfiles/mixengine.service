@@ -12,7 +12,7 @@
 #
 # View journal:
 # % journalctl -u mixengine.service --no-pager | less
-# (thought ordinary servver messsage sould be reported in interference/logs/mixengine.log)
+# (though ordinary servver messsage sould be reported in interference/logs/mixengine.log)
 
 [Unit]
 Description=MixEngine Node.js Express backend service
@@ -24,6 +24,7 @@ User=debian
 WorkingDirectory=/home/debian/interference/MixEngine
 ExecStart=/usr/bin/npm start
 Restart=on-failure
+RestartSec=5
 
 [Install]
 WantedBy=multi-user.target
