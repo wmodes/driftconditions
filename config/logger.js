@@ -1,8 +1,16 @@
-// core/utils/logger.js
+/**
+ * @file Logger module for creating and managing loggers.
+ */
+
 const winston = require('winston');
 const config = require('./config');
 
-// create a logger
+/**
+ * Creates a logger with the specified module name.
+ *
+ * @param {string} [moduleName] - The name of the module to be included in log messages.
+ * @returns {winston.Logger} The configured logger instance.
+ */
 function createLogger(moduleName) {
   return winston.createLogger({
     level: 'info',
@@ -12,7 +20,12 @@ function createLogger(moduleName) {
       }),
       winston.format.errors({ stack: true }),
       winston.format.splat(),
-      winston.format.json()
+      winston.format.printf(info => {
+        // Check if the log info contains a stack trace
+        const stack = info.stack ? `\nStack: ${info.stack}` : '';
+        const moduleNameString = moduleName ? `[${moduleName}]` : '';
+        return `${info.timestamp} ${info.level}: ${moduleNameString} ${info.message}${stack}`;
+      })
     ),
     defaultMeta: { service: 'user-service' },
     transports: [
@@ -23,7 +36,8 @@ function createLogger(moduleName) {
           winston.format.printf(info => {
             // Check if the log info contains a stack trace
             const stack = info.stack ? `\nStack: ${info.stack}` : '';
-            return `${info.timestamp} ${info.level}: ${info.message}${stack}`;
+            const moduleNameString = moduleName ? `[${moduleName}]` : '';
+            return `${info.timestamp} ${info.level}: ${moduleNameString} ${info.message}${stack}`;
           })
         ),
       }),
@@ -42,15 +56,22 @@ function createLogger(moduleName) {
 //   }));
 // }
 
-
-// Create the default logger
+/**
+ * Default logger instance.
+ */
 const logger = createLogger();
 
-// Method to set or get module-specific loggers
+/**
+ * Method to create or get module-specific loggers.
+ *
+ * @param {string} moduleName - The name of the module.
+ * @param {string} [level='info'] - The log level.
+ * @returns {winston.Logger} The module-specific logger instance.
+ */
 logger.custom = (moduleName, level = 'info') => {
-    const moduleLogger = createLogger(moduleName);
-    moduleLogger.level = level;
-    return moduleLogger;
+  const moduleLogger = createLogger(moduleName);
+  moduleLogger.level = level;
+  return moduleLogger;
 };
 
 module.exports = logger;

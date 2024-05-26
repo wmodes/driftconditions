@@ -109,11 +109,14 @@ function getPositionForInsert(jsonElementArray, type, row) {
     let clipFlag = false;
     // keeping track of character position within JSON-like string
     let charPosCount = 0;
-    // flag to indicate if the current position has been found
+    // flag to indicate if the cursor position has been found
     let currentPosFound = false;
+    let insertPosFound = false;
+    let placeCertainComma = false;
+    let trailingCommaLikely = false;
+    let trailingCommaFound = false;
     // these are candidates for the position to insert the new element
-    let potentialInsertTrackPosition = 0;
-    let potentialInsertClipPosition = 0;
+    let potentialInsertPosition = 0;
 
     function depthPattern() {
       return depthTracker.join('');
@@ -123,6 +126,8 @@ function getPositionForInsert(jsonElementArray, type, row) {
     for (let item of jsonElementArray) {
       // keep a character count
       charPosCount += item.length;
+      //
+      // the section where we deal with irritating special cases
       //
       // single-line comments: skip
       if (item.startsWith('//')) {
@@ -141,6 +146,24 @@ function getPositionForInsert(jsonElementArray, type, row) {
       else if (item.match(/^[ /t]]+$/)) {
         // console.log('skipping whitespace');
         continue;
+      }
+      // verify that we have a trailing comma
+      else if (trailingCommaLikely) {
+        // turn off the flag immediately regardless of what we find
+        trailingCommaLikely = false;
+        // we expected a comma, we found a comma
+        if (item === ',') {
+          console.log('trailing comma found');
+          // this will affect whether we insert a comma or not
+          trailingCommaFound = true;
+          // update the position to insert the new element after the trailing comma
+          potentialInsertPosition = charPosCount;
+          continue;
+        }
+        // we expected a comma, we found something else
+        else {
+          console.log('trailing comma not found');
+        }
       }
       console.log('item:', item);
       //
@@ -204,6 +227,16 @@ function getPositionForInsert(jsonElementArray, type, row) {
           // exiting a track
           else if (depthPattern() === '{[' && trackFlag) {
             console.log('Exiting a track');
+            // this is a good place to insert a track
+            // TODO: this will mess up the comma placement
+            if (type==='track' && 
+              currentPosFound && !insertPosFound) {
+              console('INSERT track here');
+              potentialInsertPosition = charPosCount;
+              insertPosFound = true;
+              placeCertainComma = true;
+              trailingCommaLikely = true;
+            }
           }
           // exiting JSON structure
           else if (depthPattern() === '') {

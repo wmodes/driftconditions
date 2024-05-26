@@ -1,4 +1,4 @@
-const logger = require('config/logger').custom('MixEngine', 'info');
+const logger = require('config/logger').custom('ClipAdjustor', 'info');
 
 const { config } = require('config');
 
