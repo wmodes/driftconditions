@@ -1,6 +1,10 @@
+/**
+ * @file This module provides a function to render a playlist of mixes with their respective clips,
+ *       formatted according to the user's local time.
+ */
+
 import React from 'react';
 import { Link } from 'react-router-dom';
-
 
 // playlist is a complex object with nested objects
 //   playlist = [
@@ -33,9 +37,19 @@ import { Link } from 'react-router-dom';
 //       </div>
 //   </div>
 
-
+/**
+ * Render a playlist of mixes with their respective clips.
+ *
+ * @param {Array} playlist - A list of mix objects. Each mix object contains:
+ *   - mixID: {number} - The ID of the mix.
+ *   - dateUsed: {string} - The date and time when the mix was used (in UTC).
+ *   - playlist: {Array} - A list of clip objects. Each clip object contains:
+ *     - title: {string} - The title of the clip.
+ *     - creatorUsername: {string} - The username of the clip's creator.
+ * @returns {JSX.Element[]} A list of JSX elements representing the rendered playlist.
+ */
 export const renderPlaylist = (playlist) => {
-  return playlist.map((mix) => (
+  return playlist.slice(1).map((mix) => (
     <div key={mix.mixID} className="playlist">
       <div className="time">{formatTime(mix.dateUsed)}</div>
       <div className="mix">
@@ -54,7 +68,12 @@ export const renderPlaylist = (playlist) => {
   ));
 };
 
-// Helper function to format date and time
+/**
+ * Helper function to format date and time in the user's local time zone.
+ *
+ * @param {string} datetime - The date and time string in UTC.
+ * @returns {string} The formatted time string in the user's local time zone.
+ */
 const formatTime = (datetime) => {
   const date = new Date(datetime);
   // Replace standard space with a non-breaking space character

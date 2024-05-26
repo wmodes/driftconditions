@@ -1,4 +1,6 @@
-// Conductor.js - Main orchestrator for managing recipe selection and other tasks
+/**
+ * @file Conductor.js - Main orchestrator for managing recipe selection and other tasks
+ */
 
 const { database: db } = require('config');
 const logger = require('config/logger').custom('Conductor', 'info');
@@ -14,6 +16,9 @@ const { config } = require('config');
 const maxQueued = config.mixes.maxQueued;
 const checkTime = config.mixes.checkTime;
 
+/**
+ * Class representing the Conductor.
+ */
 class Conductor {
   constructor() {
     this.recipeSelector = new RecipeSelector();
@@ -25,6 +30,10 @@ class Conductor {
     this.playlist = [];
   }
 
+  /**
+   * Starts the conductor's main loop.
+   * @async
+   */
   async start() {
     while (true) {
       try {
@@ -109,6 +118,10 @@ class Conductor {
     }
   }
 
+  /**
+   * Waits for the next iteration when the queue is maxed out.
+   * @async
+   */
   async waitForNextIteration() {
     logger.info('Conductor:waitForNextIteration: Queue Maxed Out, Waiting...');
     return new Promise(resolve => setTimeout(resolve, checkTime));
