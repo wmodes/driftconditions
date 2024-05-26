@@ -1,4 +1,6 @@
-// MixEngine.js - Main audio processing engine for mixing audio clips
+/**
+ * @file MixEngine.js - Main audio processing engine for mixing audio clips
+ */
 
 const { database: db } = require('config');
 const ffmpeg = require('fluent-ffmpeg');
@@ -13,6 +15,9 @@ const ffmpegOutput = config.ffmpeg.output;
 const filterConfig = config.filters;
 const exprsConfig = config.exprs;
 
+/**
+ * Class representing the MixEngine.
+ */
 class MixEngine {
   constructor() {
     this.exprs = this._substituteExpressions(exprsConfig);
@@ -33,6 +38,13 @@ class MixEngine {
     this.amixDuration = 'longest';
   }
 
+  /**
+   * Substitutes expressions in the configuration.
+   *
+   * @param {Object} exprsConfig - The expressions configuration.
+   * @returns {Object} The substituted expressions.
+   * @private
+   */
   _substituteExpressions(exprsConfig) {
     const exprs = { ...exprsConfig };
     for (let key in exprs) {
@@ -41,10 +53,22 @@ class MixEngine {
     return exprs;
   }
 
+  /**
+   * Replaces placeholders in a string with corresponding values from expressions.
+   *
+   * @param {string} str - The string with placeholders.
+   * @param {Object} exprs - The expressions object.
+   * @returns {string} The string with replaced placeholders.
+   * @private
+   */
   _replacePlaceholders(str, exprs) {
     return str.replace(/%\{(\w+)\}/g, (_, exprKey) => exprs[exprKey]);
   }
 
+  /**
+   * Resets the internal state of the MixEngine.
+   * @private
+   */
   _resetState() {
     this.filterChain = [];
     this.currentInputNum = 0;
@@ -57,6 +81,14 @@ class MixEngine {
     this.amixDuration = 'longest';
   }
 
+  /**
+   * Creates a mix based on the provided recipe and mix details.
+   *
+   * @param {Object} recipe - The recipe object.
+   * @param {Object} mixDetails - The mix details object.
+   * @returns {Promise<void>} A promise that resolves when the mix is created.
+   * @async
+   */
   async makeMix(recipe, mixDetails) {
     // Reset state
     this._resetState();
@@ -80,6 +112,13 @@ class MixEngine {
     await this._configureAndRun(ffmpegCmd);
   }
 
+  /**
+   * Sets up the ffmpeg inputs based on the recipe object.
+   *
+   * @param {Object} ffmpegCmd - The ffmpeg command object.
+   * @param {Object} recipeObj - The recipe object.
+   * @private
+   */
   _setupInputs(ffmpegCmd, recipeObj) {
     recipeObj.tracks.forEach(track => {
       track.clips.forEach(clip => {
@@ -92,6 +131,14 @@ class MixEngine {
     });
   }  
 
+  /**
+   * Sets the file path for the mix output.
+   *
+   * @param {number} mixID - The mix ID.
+   * @param {Object} recipe - The recipe object.
+   * @returns {string} The mix file path.
+   * @private
+   */
   _setMixFilepath(mixID, recipe) {
     const mixFilename = `${this._sanitizeFilename(`${mixID}_${recipe.title}`)}.mp3`;
     this.mixFilename = mixFilename;
@@ -101,7 +148,12 @@ class MixEngine {
     return this.mixFilepath;
   }
 
-  // method to build the complete filter chain
+  /**
+   * Builds the complete filter chain for the ffmpeg command.
+   *
+   * @param {Object} recipeObj - The recipe object.
+   * @private
+   */
   _buildComplexFilter(recipeObj) {
     // clear the filterChain
     this.filterChain = [];
@@ -121,6 +173,12 @@ class MixEngine {
     logger.debug(`MixEngine:_buildComplexFilter: filterChain: ${JSON5.stringify(this.filterChain, null, 2)}`);
   }
 
+  /**
+   * Builds filters for all tracks and clips in the recipe.
+   *
+   * @param {Object} recipeObj - The recipe object.
+   * @private
+   */
   _buildAllTracksAndClipsFilters(recipeObj) {
     recipeObj.tracks.forEach(track => {
       // set track filters and outputs
@@ -130,7 +188,12 @@ class MixEngine {
     });
   }  
 
-  // Concatenates clips within a track and applies volume adjustment to the entire track if specified
+  /**
+   * Concatenates clips within a track and applies volume adjustment to the entire track if specified.
+   *
+   * @param {Object} track - The track object.
+   * @private
+   */
   _buildTrackFilters(track) {
     // clear our clip counter
     this.currentClipNum = 0;
@@ -249,26 +312,13 @@ class MixEngine {
     this.trackFinalLabels.push(mostRecentTrackLabel);
   }
 
-  // Build a harmonic series filter using a mix of sine and cosine at different scales
-  //  It takes a config object like this with all values optional:
-  //  {
-  //    genFreqFact (f): [f1, f2, f3],// scales freq of sin and cos , default [13, 7, 3]
-  //    genAmpFact (a): [a1, a2, a3], // scales amp of sin and cos, default [1, 0.5, 0.25]
-  //    globFreqFact: n,              // higher numbers = less freq transitions, default 1
-  //    globAmpFact: s,               // creates more flat top graph, default 3
-  //    globAmpPol: p,                // above the graph line (+1) or below the line (-1), default 1.
-  //    globPreBias: o,               // makes neg globAmpFact less likely to transition, default -0.5
-  //    globPostBias: q,              // creates crossfade at edges of transitions, default 0.5
-  //  }
-  // The result will alwyas be clamped between 0 and 1 and look like this:
-  //   min(1, max(0, 
-  //       ((
-  //           cos(PI * t * n / f1) * a1 + 
-  //           sin(PI * t * n / f2) * a2 + 
-  //           cos(PI * t * n / f3) * a3
-  //         ) - 0.5 
-  //       ) * a + 0.5,
-  //     ))
+  /**
+   * Builds a harmonic series filter using a mix of sine and cosine at different scales.
+   *
+   * @param {Object|string} noiseOpts - The noise options or preset name.
+   * @returns {string} The noise filter string.
+   * @private
+   */
   _buildNoiseFilter(noiseOpts) {
     let noiseObj = {};
     if (typeof noiseOpts === 'string') {
@@ -308,7 +358,13 @@ class MixEngine {
     return noiseFilter;
   }
 
-  // Builds the ffmpeg input and initial filter for each clip, including handling for silence
+  /**
+   * Builds the ffmpeg input and initial filter for each clip, including handling for silence.
+   *
+   * @param {Object} clip - The clip object.
+   * @returns {string} The label of the most recent clip.
+   * @private
+   */
   _buildClipFilters(clip) {
     //
     // track base label
@@ -404,7 +460,12 @@ class MixEngine {
     }
   }
 
-  // Mixes all tracks from the recipe
+  /**
+   * Mixes all tracks from the recipe.
+   *
+   * @param {Object} recipeObj - The recipe object.
+   * @private
+   */
   _buildMixFilter(recipeObj) {
     if (this.trackFinalLabels.length === 1) {
       // If there is only one track, we don't need to mix anything
@@ -425,10 +486,24 @@ class MixEngine {
     }
   }
 
+  /**
+   * Sanitizes a filename by removing invalid characters.
+   *
+   * @param {string} filename - The filename to sanitize.
+   * @returns {string} The sanitized filename.
+   * @private
+   */
   _sanitizeFilename(filename) {
     return filename.replace(/[^a-z0-9_\-().\s]+/gi, '').replace(/\s+/g, '_');
   }
 
+  /**
+   * Configures and runs the ffmpeg command with the built filter chain.
+   *
+   * @param {Object} ffmpegCmd - The ffmpeg command object.
+   * @returns {Promise<void>} A promise that resolves when the ffmpeg command completes.
+   * @private
+   */
   _configureAndRun(ffmpegCmd) {
     return new Promise((resolve, reject) => {
       ffmpegCmd
@@ -453,6 +528,13 @@ class MixEngine {
     });
   }
 
+  /**
+   * Gets the duration of the mix based on the longest track in the recipe.
+   *
+   * @param {Object} recipeObj - The recipe object.
+   * @returns {number} The duration of the mix in seconds.
+   * @private
+   */
   _getMixDuration(recipeObj) {
     // find longest track
     let longestTrack = 0;
@@ -467,146 +549,6 @@ class MixEngine {
     });
     return longestTrack;
   }  
-
-  _setupTestInputs() {
-    // Test method to setup ffmpeg inputs
-    const command = ffmpeg();
-    command.input(path.join(contentFileDir, '2024/04/crash-aluminum-and-metal-dropping-on-concrete.mp3'));
-    return command;
-  }
-
-  _getTestFilterChain() {
-    // Test method to run the mix engine
-    const filterChain = [
-      {
-          filter: 'anull', // This filter does nothing; it simply passes audio through.
-          inputs: '0',
-          outputs: 'final_output'
-      }
-    ];
-    return filterChain;
-  }
-
-  async _testFmpegDirect(filename) {
-    const command = ffmpeg();
-    const files = [
-      '2024/04/dirty-radio-static-w-buzzes-and-beeps.mp3',
-      '2024/04/dust-storm-warning-nevada.mp3',
-      '2024/04/bio-unit-ambient-3.mp3',
-    ];
-    files.forEach(file => {
-      const filePath = path.join(contentFileDir, file);  
-      command.input(filePath);
-      logger.debug(`Input file added: ${filePath}`);
-    });
-
-    const filterChain = [
-      // Adjust volume of input 0 to 75%
-      {
-        filter: 'volume',
-        options: {
-          volume: '0.75' // Adjust volume to 75%
-        },
-        inputs: '0:a', // Specify input 0 audio stream
-        outputs: 'adjInput0' // Output label for adjusted input 0 stream
-      },
-      // Adjust volume of input 1 to 100%
-      {
-        filter: 'volume',
-        options: {
-          volume: '1.0' // Adjust volume to 100%
-        },
-        inputs: '1:a', // Specify input 1 audio stream
-        outputs: 'adjInput1' // Output label for adjusted input 1 stream
-      },
-      // Concatenate adjusted input streams
-      {
-        filter: 'concat',
-        options: {
-          n: '2', // Number of segments to concatenate
-          v: '0', // Set to '1' if the streams have different sample rates, formats, or channel layouts
-          a: '1' // Indicates that the filter is for audio concatenation
-        },
-        inputs: ['adjInput0', 'adjInput1'], // Specify the adjusted input audio streams to concatenate
-        outputs: 'track0' // Output label for concatenated track stream
-      },
-      // Adjust volume of concatenated track to 75%
-      {
-        filter: 'volume',
-        options: {
-          volume: '0.25' // Adjust volume to 75%
-        },
-        inputs: 'track0', // Specify concatenated track audio stream
-        outputs: 'adjTrack0' // Output label for adjusted concatenated track stream
-      },
-      // Adjust volume of input 2 to 100%
-      {
-        filter: 'volume',
-        options: {
-          volume: '1.0' // Adjust volume to 100%
-        },
-        inputs: '2:a', // Specify input 2 audio stream
-        outputs: 'adjInput2' // Output label for adjusted input 2 stream
-      },
-      // Mix adjTrack0 and adjInput2
-      {
-        filter: 'amix',
-        options: {
-          inputs: '2' // Number of input channels to mix
-        },
-        inputs: ['adjTrack0', 'adjInput2'], // Specify the adjusted input audio streams to mix
-        outputs: 'out' // Output label for final mixed output stream
-      }
-    ];
-
-    const outputFilepath = path.join(mixFileDir, 'direct_test_output.mp3');
-    command
-      .complexFilter(filterChain)
-      .audioCodec('libmp3lame')
-      .outputOptions(["-map [out]", "-v info"])  // Select output from concat filter
-      .output(outputFilepath)
-      .on('end', function() {
-          console.log('Transcoding succeeded !');
-      })
-      .on('error', function(err, stdout, stderr) {
-          console.log('Cannot process audio: ' + err.message);
-          console.log('ffmpeg stdout:\n' + stdout);
-          console.log('ffmpeg stderr:\n' + stderr);
-      })
-      .run()
-  }
-
-  _testVolumeAdjustment(filename) {
-    const command = ffmpeg();
-    const inputFilePath = path.join(contentFileDir, filename);
-    command.input(inputFilePath);
-
-    const outputFilePath = path.join(mixFileDir, 'volume_adjustment_test.mp3');
-
-    // Setup a simple volume filter
-    const filterChain = [
-        {
-            filter: 'volume',
-            options: 'volume=0.8',
-            inputs: '0',
-            outputs: 'final_output'
-        }
-    ];
-
-    command.complexFilter(filterChain)
-           .output(outputFilePath)
-           .audioCodec('libmp3lame')
-           .on('error', function(err, stdout, stderr) {
-               console.log('Error during ffmpeg processing: ' + err.message);
-               console.log('ffmpeg stdout:\n' + stdout);
-               console.log('ffmpeg stderr:\n' + stderr);
-           })
-           .on('end', function() {
-               console.log('Processing finished successfully');
-           });
-
-    command.run();
-  } 
 
 }
 
