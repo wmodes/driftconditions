@@ -35,6 +35,7 @@ function RecipeCreate() {
   // Instead of re-initializing the form upon error, maintain its current state
   const [record, setRecord] = useState({
     recipeData: formatJSONForDisplay(newRecipePattern),
+    tags: [], 
     status: 'Review',
     // turn classificationOptions into an object with keys for each option (set to false)
     classification: setClassificationFormOptions(classificationOptions, false),
