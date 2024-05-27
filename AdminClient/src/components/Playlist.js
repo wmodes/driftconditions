@@ -28,20 +28,25 @@ const formatTime = (datetime) => {
 const Playlist = () => {
   const [fullPlaylist, setFullPlaylist] = useState([]);
   const [seeMore, setSeeMore] = useState(false);
+  const [error, setError] = useState(false);
   const dispatch = useDispatch();
   const { user: userAuth } = useSelector((state) => state.auth);
 
   useEffect(() => {
     if (userAuth.permissions && userAuth.permissions.includes('recipeView')) {
       setSeeMore(true);
+    } else {
+      setError(true);
     }
 
     const loadFullPlaylist = async () => {
       try {
         const result = await dispatch(fetchQueuePlaylist()).unwrap();
         setFullPlaylist(result);
+        setError(false); // Clear error if data is successfully fetched
       } catch (error) {
         console.error('Failed to fetch playlist:', error);
+        setError(true);
       }
     };
 
@@ -52,17 +57,14 @@ const Playlist = () => {
   }, [dispatch, userAuth.permissions]);
 
   const renderMix = (mix) => {
-    const recipeID = mix.recipeID
+    const recipeID = mix.recipeID;
     const recipeTitle = mix.title;
     let mixPlaylist = mix.playlist || [];
 
-    // if mixPlaylist is not an array, get the real playlist from playlist.playlist
+    // if mixPlaylist is not an array, get the real playlist from mixPlaylist.playlist
     if (!Array.isArray(mixPlaylist)) {
-      mixPlaylist = mixPlaylist.playlist;
+      mixPlaylist = mixPlaylist.playlist || [];
     }
-
-    // console.log(`Playlist:renderMix: mix: ${JSON.stringify(mix, null, 2)}, typeof mix: ${typeof mix}`);
-    // console.log(`Playlist:renderMix: mixPlaylist: ${JSON.stringify(mixPlaylist, null, 2)}`);
 
     return (
       <div key={mix.mixID} className="mix">
@@ -82,13 +84,28 @@ const Playlist = () => {
       </div>
     );
   };
+  
+  if (error || fullPlaylist.length === 0) {
+    return (
+      <div className="unavailable-wrapper">
+        <div className="unavailable-box">
+          No playlist available at the moment.
+        </div>
+      </div>
+    );
+  }  
 
-  return fullPlaylist.slice(1).map((mix) => (
-    <div key={mix.mixID} className="playlist">
-      <div className="time">{formatTime(mix.dateUsed)}</div>
-      {renderMix(mix)}
+  return (
+    <div className="playlist text-center">
+      {fullPlaylist.slice(1).map((mix) => (
+        <div key={mix.mixID} className="playlist-item">
+          <div className="time">{formatTime(mix.dateUsed)}</div>
+          {renderMix(mix)}
+        </div>
+      ))}
     </div>
-  ));
+  );
+  
 };
 
 export default Playlist;
