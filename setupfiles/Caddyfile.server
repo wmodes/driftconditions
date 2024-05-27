@@ -60,6 +60,10 @@ https://driftconditions.org:8080 {
         header_up X-Real-IP {remote}
         header_up X-Forwarded-For {remote}
         header_up X-Forwarded-Proto {scheme}
+        header_down Access-Control-Allow-Origin {http.request.header.Access-Control-Allow-Origin}
+        header_down Access-Control-Allow-Credentials {http.request.header.Access-Control-Allow-Credentials}
+        header_down Access-Control-Allow-Methods {http.request.header.Access-Control-Allow-Methods}
+        header_down Access-Control-Allow-Headers {http.request.header.Access-Control-Allow-Headers}
         flush_interval -1  # Disable buffering
     }
     tls wmodes@gmail.com
@@ -72,6 +76,10 @@ https://driftconditions.org:8082 {
         header_up X-Real-IP {remote}
         header_up X-Forwarded-For {remote}
         header_up X-Forwarded-Proto {scheme}
+        header_down Access-Control-Allow-Origin {http.request.header.Access-Control-Allow-Origin}
+        header_down Access-Control-Allow-Credentials {http.request.header.Access-Control-Allow-Credentials}
+        header_down Access-Control-Allow-Methods {http.request.header.Access-Control-Allow-Methods}
+        header_down Access-Control-Allow-Headers {http.request.header.Access-Control-Allow-Headers}
         flush_interval -1  # Disable buffering
     }
     tls wmodes@gmail.com
