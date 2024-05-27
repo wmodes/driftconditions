@@ -6,18 +6,6 @@ def fetch_next_track()
     string.trim(result)
 end
 
-# Function to notify the server when a new track starts
-def notify_track_start(m)
-    # Extract the file name from the full file path
-    filename = string.split_right(m["file"], "/")[1]
-    # Extract the mixID from the file name (assuming the format is 'mixID_filename.mp3')
-    mixID = string.split(filename, "_")[0]
-    # Construct the URL for the API call
-    url = "http://localhost:8083/api/queue/markplayed"
-    # Use process.run to send the mixID to your server
-    process.run("curl -X POST -d 'mixID=" ^ mixID ^ "' " ^ url)
-end
-
 dynamicplaylist = request.dynamic(id="dynamic_playlist", fun() ->
   request.create(fetch_next_track())
 )
