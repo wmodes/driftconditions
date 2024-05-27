@@ -2,10 +2,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import { fetchQueuePlaylist } from '../store/queueSlice';
-import { renderPlaylist } from '../utils/queueUtils';
+// import { fetchQueuePlaylist } from '../store/queueSlice';
+// import { renderPlaylist } from '../utils/queueUtils';
 import FeatherIcon from 'feather-icons-react';
 import AudioPlayer from '../components/AudioPlayer'; 
+import Playlist from '../components/Playlist';
 import { generateRandomTexts, getProjectName, getHeroImageURL} from '../utils/randomUtils'; 
 
 import config from '../config/config';
@@ -23,23 +24,8 @@ const Homepage = () => {
     // Assuming generateRandomTexts is a function that accepts projectName and returns an array of text strings
     const generatedText = generateRandomTexts(projectName);
     setGeneratedText(generatedText);
-
-    // Fetch the playlist and handle it locally
-    const loadPlaylist = async () => {
-      try {
-        const result = await dispatch(fetchQueuePlaylist()).unwrap();
-        setPlaylist(result); // Set the fetched playlist to local state
-        // console.log('Playlist:', result);
-      } catch (error) {
-        console.error('Failed to fetch playlist:', error);
-      }
-    };
-    loadPlaylist();
-
-    // Reload every 2 minutes (120,000 milliseconds)
-    setInterval(loadPlaylist, 120000);
     
-  }, [projectName, dispatch]);
+  }, [projectName]);
 
   // Function to safely set inner HTML
   const createMarkup = (htmlString) => {
@@ -99,7 +85,8 @@ const Homepage = () => {
               <div className="playlist text-center">
                 {/* put playlist here updated every minute or so */}
                 <div className="playlist-wrapper">
-                  {renderPlaylist(playlist)}
+                  {/* {renderPlaylist(playlist)} */}
+                  <Playlist />
                 </div>
               </div>
             </div>

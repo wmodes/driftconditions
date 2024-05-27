@@ -27,7 +27,7 @@ class Conductor {
     this.clipAdjustor = new ClipAdjustor();
     this.mixEngine = new MixEngine();
     this.mixQueue = new MixQueue();
-    this.playlist = [];
+    // this.playlist = [];
   }
 
   /**
