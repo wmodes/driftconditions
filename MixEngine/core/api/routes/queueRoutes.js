@@ -33,6 +33,17 @@ router.get('/nextmix', async (req, res) => {
   }
 });
 
+// Route to mark a mix as played
+router.post('/markplayed', async (req, res) => {
+  try {
+    const { mixID } = req.body;
+    await markMixAsPlayed(mixID);
+    res.json({ message: 'Mix marked as played' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 // Route to get the current playlist
 router.get('/getplaylist', async (req, res) => {
   try {
@@ -42,17 +53,6 @@ router.get('/getplaylist', async (req, res) => {
     } else {
       res.status(404).send('Playlist unavailable');
     }
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
-// Route to mark a mix as played
-router.post('/markplayed', async (req, res) => {
-  try {
-    const { mixID } = req.body;
-    await markMixAsPlayed(mixID);
-    res.json({ message: 'Mix marked as played' });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
