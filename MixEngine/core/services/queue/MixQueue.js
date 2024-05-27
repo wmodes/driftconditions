@@ -8,6 +8,7 @@ const path = require('path');
 const fs = require('fs').promises;
 
 const { config } = require('config');
+const mixFileDir = config.content.mixFileDir;
 const mixKeepPeriod = config.mixes.mixKeepPeriod;
 
 /**
