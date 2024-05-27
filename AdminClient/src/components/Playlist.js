@@ -61,8 +61,8 @@ const Playlist = () => {
       mixPlaylist = mixPlaylist.playlist;
     }
 
-    console.log(`Playlist:renderMix: mix: ${JSON.stringify(mix, null, 2)}, typeof mix: ${typeof mix}`);
-    console.log(`Playlist:renderMix: mixPlaylist: ${JSON.stringify(mixPlaylist, null, 2)}`);
+    // console.log(`Playlist:renderMix: mix: ${JSON.stringify(mix, null, 2)}, typeof mix: ${typeof mix}`);
+    // console.log(`Playlist:renderMix: mixPlaylist: ${JSON.stringify(mixPlaylist, null, 2)}`);
 
     return (
       <div key={mix.mixID} className="mix">
