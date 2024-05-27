@@ -10,6 +10,8 @@ import 'ace-builds/src-noconflict/worker-json';
 // import 'ace-builds/src-noconflict/theme-github';
 import 'ace-builds/src-noconflict/theme-tomorrow';
 import "ace-builds/src-noconflict/ext-language_tools";
+// eslint-disable-next-line
+import { set } from 'ace-builds/src-noconflict/ace';
 import JSON5 from 'json5';
 import _ from 'lodash';
 
@@ -18,8 +20,7 @@ import { defineCustomEditorMode } from '../utils/editorUtils';
 import { ClassificationCheckboxes, TagInput } from '../utils/formUtils';
 
 import config from '../config/config';
-// eslint-disable-next-line
-import { set } from 'ace-builds/src-noconflict/ace';
+const fieldNotes = config.recipes.fieldNotes;
 const aceOptions = config.aceEditor;
 const newTrackPattern = config.recipes.newTrack;
 const newClipPattern = config.recipes.newClip;
@@ -271,6 +272,7 @@ function RecipeForm({ action, initialRecord, onSave, onCancel, onChange }) {
           <option value="Disapproved"  disabled={!editPerm}>Disapproved</option>
           <option value="Trashed"  disabled={!editPerm}>Trashed</option>
         </select>
+        <p className="form-note mt-1 mb-0">{fieldNotes.status}</p>
       </div>
 
       <div className="form-group pb-1">
@@ -305,13 +307,14 @@ function RecipeForm({ action, initialRecord, onSave, onCancel, onChange }) {
   
       <div className="form-group">
 
-        <label className="form-label" htmlFor="title">Category:</label>
+        <label className="form-label" htmlFor="title">Classification:</label>
         {record?.classification !== undefined && (     
           <ClassificationCheckboxes
             classification={record.classification}
             handleChange={handleChange}
           />
         )}
+        <p className="form-note">{fieldNotes.classification}</p>
 
         <label className="form-label" htmlFor="tags">Tags:</label>
         {record?.tags !== undefined && (        
@@ -320,6 +323,7 @@ function RecipeForm({ action, initialRecord, onSave, onCancel, onChange }) {
             onTagChange={handleTagChange}
           />
         )}
+        <p className="form-note mt-1">{fieldNotes.tags}</p>
         
         <label className="form-label" htmlFor="comments">Comments:</label>
         <textarea className="form-textarea" id="comments" name="comments" value={record.comments || ''} onChange={handleChange}></textarea>

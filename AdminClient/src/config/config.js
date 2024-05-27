@@ -121,6 +121,13 @@ const config = {
       'Effect',
       'Other'
     ],
+    fieldNotes: {
+      tags: "Describe the topic, theme, or texture of the audio, such as 'rainy night', 'jazz', or 'whispering'. Use tags to highlight specific elements or moods in your audio. Separate tags with commas.",
+      classification: "A broad category that describes the broad type of audio.",
+      filetypes: "Supported file types: mp3, wav, ogg, flac, aiff, m4a",
+      status: "New uploads will be marked as 'Pending Review' until approved by a moderator.",
+      copyright: "Please certify that this contains no copyrighted works for which you do not have a right to use.",
+    },
     classificationFields: [
       {
         label: 'Ambient',
@@ -198,13 +205,6 @@ const config = {
         moreInfo: "Miscellaneous sounds that do not fit into other categories, e.g., unique or rare audio clips, uncategorized recordings"
       }
     ],
-    fieldNotes: {
-      tags: "Describe the topic, theme, or texture of the audio, such as 'rainy night', 'jazz', or 'whispering'. Use tags to highlight specific elements or moods in your audio. Separate tags with commas.",
-      classification: "A broad category that describes the broad type of audio.",
-      filetypes: "Supported file types: mp3, wav, ogg, flac, aiff, m4a",
-      status: "New uploads will be marked as 'Pending Review' until approved by a moderator.",
-      copyright: "Please certify that this contains no copyrighted works for which you do not have a right to use.",
-    }
   },
   recipes: {
     classification: [
@@ -224,6 +224,11 @@ const config = {
       'Effect',
       'Other'
     ],
+    fieldNotes: {
+      tags: "These tags will be used when we search for clips, along with the tags in the recipe.",
+      classification: "Select all the classifications that apply.",
+      status: "New recipes will be marked as 'Pending Review' until approved by a moderator.",
+    },
     
     // starting pattern for creating a new recipe (indentation matters here)
     example: `{
