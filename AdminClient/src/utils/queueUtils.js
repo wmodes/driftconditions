@@ -48,11 +48,34 @@ import { Link } from 'react-router-dom';
  *     - creatorUsername: {string} - The username of the clip's creator.
  * @returns {JSX.Element[]} A list of JSX elements representing the rendered playlist.
  */
-export const renderPlaylist = (playlist) => {
+export const renderPlaylist = (playlistObj) => {
+  let seeMore = false;
+  let recipeID = 0;
+  let recipeTitle = 'unlisted';
+  let playlist = [];
+  // get auth state from Redux store
+  // const { user: userAuth } = useSelector((state) => state.auth);
+  if (userAuth.permissions.indexOf('recipeView') !== -1) {
+    seeMore = true;
+  }
+  // handle legacy playlist format
+  if (Array.isArray(playlistObj)) {
+    playlist = playlistObj;
+  } 
+  // new annotated format
+  else {
+    recipeID = playlistObj.recipeID;
+    recipeTitle = playlistObj.recipeTitle;
+    playlist = playlistObj.playlist;
+  }
+
   return playlist.slice(1).map((mix) => (
     <div key={mix.mixID} className="playlist">
       <div className="time">{formatTime(mix.dateUsed)}</div>
       <div className="mix">
+        {seeMore && (
+          <Link to={`/recipe/view/${recipeID}`}><strong>{recipeTitle}</strong></Link>
+        )}
         {mix.playlist.map((clip, index) => (
           <div key={index} className="clip">
             <span className="clip-title">{clip.title} </span>
