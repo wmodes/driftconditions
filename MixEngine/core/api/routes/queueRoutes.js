@@ -2,11 +2,10 @@
 
 // foundational imports
 const express = require('express');
-const logger = require('config/logger').custom('MixEngine', 'info');
 const router = express.Router();
-const { database: db } = require('config');
-// get path module
 const path = require('path');
+const logger = require('config/logger').custom('MixEngine', 'info');
+const { database: db } = require('config');
 
 // authentication imports
 const jwt = require('jsonwebtoken');
@@ -20,11 +19,12 @@ const playlistPeriod = config.mixes.playlistPeriod; // in ms
 // Route to get the next mix from the queue
 router.get('/nextmix', async (req, res) => {
   try {
-    const mixObj = await getNextMixFromQueue();
-    if (mixObj) {
-      await markMixAsPlayed(mixObj.mixID);
-      logger.info(`queueRoutes:/nextmix: Sending mix: ${mixObj.filename}`);
-      res.send(mixObj.filename);
+    const mixRecord = await getNextMixFromQueue();
+    if (mixRecord) {
+      await markMixAsPlayed(mixRecord.mixID);
+      const fullPath = path.join(mixFileDir, mixRecord.filename);
+      logger.info(`queueRoutes:/nextmix: Sending mix: ${fullPath}`);
+      res.send(fullPath);
     } else {
       res.status(404).send('No mix available');
     }

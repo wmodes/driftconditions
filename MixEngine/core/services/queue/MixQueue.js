@@ -9,7 +9,6 @@ const fs = require('fs').promises;
 
 const { config } = require('config');
 const mixKeepPeriod = config.mixes.mixKeepPeriod;
-const mixFileDir = config.content.mixFileDir;
 
 /**
  * Class representing the mix queue.
@@ -61,7 +60,7 @@ class MixQueue {
         recipe.recipeID, 
         recipe.title, 
         "Queued",
-        mixDetails.filepath,
+        mixDetails.filename,
         mixDetails.duration,
         JSON.stringify(mixDetails.playlist),
         JSON.stringify(recipe.recipeObj),
