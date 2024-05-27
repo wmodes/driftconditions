@@ -144,6 +144,8 @@ class RecipeParser {
 
   getPlaylistFromRecipe(recipe) {
     const playlistObj = {}
+    playlistObj.recipeID = recipe.recipeID;
+    playlistObj.recipeTitle = recipe.title;
     playlistObj.playlist = [];
     const playlist = playlistObj.playlist;
     // Iterate over each track in the recipe
