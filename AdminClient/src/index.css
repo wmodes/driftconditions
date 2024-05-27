@@ -257,20 +257,20 @@ svg {
   overflow: hidden;
 }
 
-.playlist {
+.playlist-item {
   display: flex;
   flex-direction: row;
   gap: 0.5rem;
   text-align:left;
 }
 
-.playlist .mix {
+.playlist-item .mix {
   margin-bottom: 0.25rem;
   padding-bottom: 0.25rem;
   border-bottom: solid 0.25px #888;
 }
 
-.playlist .time {
+.playlist-item .time {
   min-width: 50px;
   padding-top: 0.25rem;
   font-size: 0.75rem;
@@ -784,6 +784,24 @@ svg {
   color: var(--success-text-color);
   font-weight: bold;
 }
+
+.unavailable-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.unavailable-box {
+  background-color: #888;
+  color: white;
+  padding: 10px 30px;
+  border-radius: 10px;
+  text-align: center;
+}
+/*
+ *  Buttons
+ */
 
 .error {
   text-align: center;

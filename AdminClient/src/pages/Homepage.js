@@ -40,9 +40,9 @@ const Homepage = () => {
           <div className="column1">
 
             <div className="image-wrapper mb-8">
-            <div className="hero-image-container">
-              <img src={getHeroImageURL()} alt="Hero" />
-            </div>
+              <div className="hero-image-container">
+                <img src={getHeroImageURL()} alt="Hero" />
+              </div>
             </div>
 
             <div className='player-wrapper mb-8'>
@@ -56,9 +56,9 @@ const Homepage = () => {
                     Your browser does not support the audio element.
                   </audio>                  */}
                   <AudioPlayer url={streamURL} />
-                </div>
-              </div>
-            </div>
+                </div> {/* end flex */}
+              </div> {/* end player */}
+            </div> {/* end player-wrapper */}
 
             <div className='narrative-wrapper'>
               <h2 className='title'>
@@ -78,24 +78,16 @@ const Homepage = () => {
           </div> {/* end column1 */}
 
           <div className="column2">
-
             <div className='playlist-wrapper mt-4'>
               <h2 className='title'>
               <FeatherIcon icon="list" />&nbsp;playlist</h2>
-              <div className="playlist text-center">
-                {/* put playlist here updated every minute or so */}
-                <div className="playlist-wrapper">
-                  {/* {renderPlaylist(playlist)} */}
-                  <Playlist />
-                </div>
-              </div>
+              <Playlist />
             </div>
-
           </div> {/* end column2 */}
 
-        </div> 
-      </div> 
-    </div> 
+        </div> {/* end homepage-box */}
+      </div> {/* end homepage-box-wrapper */}
+    </div> /* end profile-edit-wrapper */
   );
 };
 
