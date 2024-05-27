@@ -26,7 +26,7 @@ const formatTime = (datetime) => {
  * @returns {JSX.Element[]} A list of JSX elements representing the rendered playlist.
  */
 const Playlist = () => {
-  const [playlistObj, setPlaylistObj] = useState({});
+  const [fullPlaylist, setFullPlaylist] = useState([]);
   const [seeMore, setSeeMore] = useState(false);
   const dispatch = useDispatch();
   const { user: userAuth } = useSelector((state) => state.auth);
@@ -36,41 +36,40 @@ const Playlist = () => {
       setSeeMore(true);
     }
 
-    const loadPlaylist = async () => {
+    const loadFullPlaylist = async () => {
       try {
         const result = await dispatch(fetchQueuePlaylist()).unwrap();
-        setPlaylistObj(result);
+        setFullPlaylist(result);
       } catch (error) {
         console.error('Failed to fetch playlist:', error);
       }
     };
 
-    loadPlaylist();
-    const intervalId = setInterval(loadPlaylist, 120000);
+    loadFullPlaylist();
+    const intervalId = setInterval(loadFullPlaylist, 120000);
 
     return () => clearInterval(intervalId); // Cleanup on unmount
   }, [dispatch, userAuth.permissions]);
 
-  let recipeID = 0;
-  let recipeTitle = 'Unspecified Recipe';
-  let playlist = [];
-  
-  if (Array.isArray(playlistObj)) {
-    playlist = playlistObj;
-  } else {
-    recipeID = playlistObj.recipeID;
-    recipeTitle = playlistObj.recipeTitle;
-    playlist = playlistObj.playlist || [];
-  }
+  const renderMix = (mix) => {
+    const recipeID = mix.recipeID
+    const recipeTitle = mix.title;
+    let mixPlaylist = mix.playlist || [];
 
-  return playlist.slice(1).map((mix) => (
-    <div key={mix.mixID} className="playlist">
-      <div className="time">{formatTime(mix.dateUsed)}</div>
-      <div className="mix">
+    // if mixPlaylist is not an array, get the real playlist from playlist.playlist
+    if (!Array.isArray(mixPlaylist)) {
+      mixPlaylist = mixPlaylist.playlist;
+    }
+
+    console.log(`Playlist:renderMix: mix: ${JSON.stringify(mix, null, 2)}, typeof mix: ${typeof mix}`);
+    console.log(`Playlist:renderMix: mixPlaylist: ${JSON.stringify(mixPlaylist, null, 2)}`);
+
+    return (
+      <div key={mix.mixID} className="mix">
         {seeMore && (
           <Link to={`/recipe/view/${recipeID}`}><strong>{recipeTitle}</strong></Link>
         )}
-        {mix.playlist.map((clip, index) => (
+        {mixPlaylist.map((clip, index) => (
           <div key={index} className="clip">
             <span className="clip-title">{clip.title} </span>
             {clip.creatorUsername && (
@@ -81,6 +80,13 @@ const Playlist = () => {
           </div>
         ))}
       </div>
+    );
+  };
+
+  return fullPlaylist.slice(1).map((mix) => (
+    <div key={mix.mixID} className="playlist">
+      <div className="time">{formatTime(mix.dateUsed)}</div>
+      {renderMix(mix)}
     </div>
   ));
 };
