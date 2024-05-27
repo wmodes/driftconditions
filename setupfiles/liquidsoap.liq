@@ -28,9 +28,6 @@ crossfaded_dynamic = crossfade(dynamicplaylist)
 # Ensure the track is ready before playing using mksafe
 safe_crossfaded_dynamic = mksafe(crossfaded_dynamic)
 
-# Attach the notify_track_start function to the on_metadata hook
-safe_crossfaded_dynamic = on_metadata(safe_crossfaded_dynamic, notify_track_start)
-
 # Icecast output settings
 output.icecast(%mp3,
   host = "localhost",
