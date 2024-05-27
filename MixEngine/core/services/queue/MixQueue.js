@@ -131,27 +131,32 @@ class MixQueue {
         filepath: path.join(mixFileDir, row.filename),
       }));
 
-      const mixIDs = [];
+      const deletedMixIDs = [];
 
       for (const mix of mixesToDelete) {
         try {
           await fs.unlink(mix.filepath);
           logger.info(`MixQueue:pruneMixes(): Deleted file ${mix.filepath}`);
-          mixIDs.push(mix.mixID); // Only push mixID if file deletion is successful
+          deletedMixIDs.push(mix.mixID); // Push mixID if file deletion is successful
         } catch (err) {
-          logger.error(`MixQueue:pruneMixes(): Error deleting file ${mix.filepath}`, err);
+          if (err.code === 'ENOENT') {
+            // File not found, push mixID to deletedMixIDs
+            logger.warn(`MixQueue:pruneMixes(): File not found ${mix.filepath}, marking mixID ${mix.mixID} as deleted`);
+            deletedMixIDs.push(mix.mixID);
+          } else {
+            logger.error(`MixQueue:pruneMixes(): Error deleting file ${mix.filepath}`, err);
+          }
         }
       }
 
-      if (mixIDs.length > 0) {
+      if (deletedMixIDs.length > 0) {
         const updateStr = `
           UPDATE mixQueue
           SET status = 'Deleted'
-          WHERE mixID IN (?)
+          WHERE mixID IN (${deletedMixIDs.map(() => '?').join(', ')})
         `;
-        const queryValues = [mixIDs];
-        await db.execute(updateStr, queryValues);
-        logger.info(`MixQueue:pruneMixes(): Updated status to 'Deleted' for mixIDs: ${mixIDs.join(', ')}`);
+        await db.execute(updateStr, deletedMixIDs);
+        logger.info(`MixQueue:pruneMixes(): Updated status to 'Deleted' for mixIDs: ${deletedMixIDs.join(', ')}`);
       }
     } catch (error) {
       logger.error('MixQueue:pruneMixes(): Error pruning mixes', error);
