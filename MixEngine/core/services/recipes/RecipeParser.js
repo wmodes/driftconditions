@@ -143,11 +143,7 @@ class RecipeParser {
   }  
 
   getPlaylistFromRecipe(recipe) {
-    const playlistObj = {}
-    playlistObj.recipeID = recipe.recipeID;
-    playlistObj.recipeTitle = recipe.title;
-    playlistObj.playlist = [];
-    const playlist = playlistObj.playlist;
+    const playlist = [];
     // Iterate over each track in the recipe
     recipe.recipeObj.tracks.forEach(track => {
       if (track.clips) {
@@ -170,7 +166,7 @@ class RecipeParser {
         });
       }
     });
-    return playlistObj;
+    return playlist;
   }
 
 }
