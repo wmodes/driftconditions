@@ -105,8 +105,9 @@ class MixEngine {
     this._buildComplexFilter(recipeObj);
     //
     // Define output path
-    // const mixID = 999;  // Placeholder for testing
-    mixDetails.filepath = this._setMixFilepath(mixDetails.mixID, recipe);
+    this._setMixFilepath(mixDetails.mixID, recipe);
+    mixDetails.filename = this.mixFilename;
+    mixDetails.filepath = this.mixFilepath;
     //
     // Configure output and run the ffmpeg process
     await this._configureAndRun(ffmpegCmd);
@@ -136,7 +137,7 @@ class MixEngine {
    *
    * @param {number} mixID - The mix ID.
    * @param {Object} recipe - The recipe object.
-   * @returns {string} The mix file path.
+   * @sideeffect this.mixFilename, this.mixFilepaths
    * @private
    */
   _setMixFilepath(mixID, recipe) {
@@ -145,7 +146,6 @@ class MixEngine {
     const mixFilepath = path.join(mixFileDir, mixFilename);
     logger.debug(`MixEngine:makeMix: mixFilepath: ${mixFilepath}`);
     this.mixFilepath = mixFilepath;
-    return this.mixFilepath;
   }
 
   /**
