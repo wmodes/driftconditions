@@ -27,7 +27,8 @@ class FilterTest {
       { title: 'Volume fade in/out with distorted audio', method: 'volumeFadeInOutDistortedAudio' },
       { title: 'Volume fade in/out with distorted audio, phased panning, and looped static', 
         method: 'volumeFadeInOutWithLoopedStatic' },
-      { title: 'Detune between stations', method: 'detuneBetweenStations'}
+      { title: 'Detune between stations', method: 'detuneBetweenStations'},
+      { title: 'Faraway sounds with lowpass filter', method: 'farawayFilter'},
     ];
     this.filterChain = [];
     this.finalOutputLabel = '';
@@ -763,6 +764,35 @@ class FilterTest {
     this.finalOutputLabel = 'out';
     this.configureAndRun();
   }
+
+  /**
+   * Apply a faraway filter to the input files.
+   */
+  farawayFilter() {
+    this.loadInputs(['music']);
+    this.filterChain = [
+      {
+        inputs: '0:a',
+        filter: 'volume',
+        options: {
+          'volume': 0.2,
+        },
+        outputs: 'a0'
+      },
+      {
+        inputs: 'a0',
+        filter: 'lowpass',
+        options: {
+          'f': 1000,
+          'p': 2
+        },
+        outputs: 'a1'
+      }
+    ];
+    this.finalOutputLabel = 'a1';
+    this.configureAndRun();
+  }
+
 
 
 
