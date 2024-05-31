@@ -9,7 +9,9 @@ class ClipAdjustor {
   }
 
   adjustClipTimings(recipe) {
+    logger.info('Adjusting clip timings...');
     const currentRecipeObj = recipe.recipeObj;
+    //
     // Calculate initial durations and ranges
     currentRecipeObj.tracks.forEach(track => {
       track.duration = 0;  // Initialize as numerical
@@ -18,6 +20,7 @@ class ClipAdjustor {
       track.clips.forEach(clip => {
         // if we already have a duration, use it
         if ('duration' in clip) {
+          logger.debug(`ClipAdjustor.adjustClipTimings: Using clip duration: ${clip.duration}`)
           let clipDuration = parseFloat(clip.duration);
           track.duration += clipDuration;
           track.minLength += clipDuration;
@@ -25,6 +28,7 @@ class ClipAdjustor {
         } 
         // if we have no duration but a range, use it
         else if ('minLength' in clip && 'maxLength' in clip) {
+          logger.debug(`ClipAdjustor.adjustClipTimings: Using clip minLength and maxLength: ${clip.minLength} - ${clip.maxLength}`)
           let minLen = parseFloat(clip.minLength);
           let maxLen = parseFloat(clip.maxLength);
           track.minLength += minLen;
@@ -33,28 +37,35 @@ class ClipAdjustor {
         }
       });
     });
+    //
     // Find the longest track by max possible duration
     let longestTrack = currentRecipeObj.tracks.reduce((max, track) => track.maxLength > max.maxLength ? track : max, currentRecipeObj.tracks[0]);
-    // Adjust silences in other tracks to match the longest track's duration
+    //
+    // Adjust durations for all tracks to match the longest track's duration
     currentRecipeObj.tracks.forEach(track => {
-      if (track !== longestTrack) {
-        // Difference needed to match longest track
-        let trackDurationFlexMax = longestTrack.maxLength - track.minLength; 
-        if (trackDurationFlexMax > 0) {
-          let trackDurationFlexAvail = track.maxLength - track.minLength;
-          // if we can't extend flexible clips to match longest track
-          if (trackDurationFlexAvail >= trackDurationFlexMax) {
-            // if longest track is longer than the adjustable space we have,
-            //  just adjust silence duration as much as we can
-            this._adjustSilences(track, trackDurationFlexMax);
-          } else {
-            // if adjustable space can fill the max duration, 
-            //  adjust silence durations to fill the track
-            this._adjustSilences(track, trackDurationFlexAvail);
-          }
+      // If the track is not the longest, calculate the difference needed to match the longest track
+      let trackDurationAdjustNeeded = longestTrack.maxLength - track.minLength;
+      //
+      track.clips.forEach(clip => {
+        if (!('duration' in clip) && 'minLength' in clip && 'maxLength' in clip) {
+          // Set initial duration for clips without a duration
+          clip.duration = Math.random() * (clip.maxLength - clip.minLength) + clip.minLength;
+          logger.debug(`ClipAdjustor.adjustClipTimings: Setting initial clip duration: ${clip.duration}`);
+        }
+      });
+      //
+      // Adjust the durations of flexible clips to match the longest track
+      if (track !== longestTrack && trackDurationAdjustNeeded > 0) {
+        let trackDurationFlexAvail = track.maxLength - track.minLength;
+
+        if (trackDurationFlexAvail >= trackDurationAdjustNeeded) {
+          this._adjustSilences(track, trackDurationAdjustNeeded);
+        } else {
+          this._adjustSilences(track, trackDurationFlexAvail);
         }
       }
     });
+
     return longestTrack.maxLength; // Return the longest track's duration
   }
 
@@ -63,7 +74,8 @@ class ClipAdjustor {
   //  that totals trackDurationAdjustNeeded
   _adjustSilences(track, trackDurationAdjustNeeded) {
     // Filter flexible clips with defined minLength and maxLength
-    const flexibleClips = track.clips.filter(clip => clip.minLength !== undefined && clip.maxLength !== undefined);
+    const flexibleClips = track.clips.filter(clip => clip.duration === undefined);
+    logger.debug(`ClipAdjustor._adjustSilences: Found ${flexibleClips.length} flexible clips`);
   
     // Calculate the total duration range for all flexible clips
     const totalDurationRange = flexibleClips.reduce((sum, clip) => sum + (clip.maxLength - clip.minLength), 0);
@@ -71,6 +83,7 @@ class ClipAdjustor {
     // STEP 1: Randomly assign durations to each flexible clip within its minLength and maxLength bounds
     flexibleClips.forEach(clip => {
       clip.duration = Math.random() * (clip.maxLength - clip.minLength) + clip.minLength;
+      logger.debug(`ClipAdjustor._adjustSilences: Setting clip duration to ${clip.duration}`);
     });
   
     // STEP 2: Adjust durations to ensure the total duration of all clips equals trackDurationAdjustNeeded

@@ -17,7 +17,7 @@ export const fetchQueuePlaylist = createAsyncThunk(
   'queue/fetchQueuePlaylist',
   async (_, { rejectWithValue }) => {
     try {
-      console.log(`Fetching queue playlist from ${queuePlaylistRoute}`);
+      // console.log(`Fetching queue playlist from ${queuePlaylistRoute}`);
       const response = await axios.get(queuePlaylistRoute);
       return response.data; // Assuming the server response contains the array of playlist objects
     } catch (error) {

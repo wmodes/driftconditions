@@ -176,7 +176,7 @@ const config = {
       },
       {
         label: 'Vocal Music',
-        value: 'vocalMusic',
+        value: 'vocalmusic',
         moreInfo: "Music that prominently features vocals, as opposed to instrumental"
       },
       {

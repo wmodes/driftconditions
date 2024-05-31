@@ -22,7 +22,7 @@
 #     volume = 'min(1, max(0.01, cos(PI * t / 5)))': eval=frame[a0];" \
 # -map "[a0]" -c:a libmp3lame -q:a 2 output.mp3
 
-# working fade in/out
+# working fade in/out with second audio
 # ffmpeg -i audio.mp3 -i static.flac -filter_complex \
 # "[0:a] \
 #     volume = 'min(1, max(0.01, cos(PI * t / 5)))': eval=frame[a0]; \
@@ -93,7 +93,7 @@
 #         amix=inputs=3:duration=first" \
 # -c:a libmp3lame -q:a 2 output.mp3
 
-#using volume fade in/out distorted audio (reduced filters)
+#using volume fade in/out with distorted audio - reduced filters and looped static
 ffmpeg -i audio2.mp3 -i static2.mp3 -filter_complex \
     "[0:a] \
         volume='1 - min(1,max(0,((cos(PI*(t)*1/13)*1+cos(PI*(t)*1/7)*0.5+cos(PI*(t)*1/3)*0.25)-0.5)*0.75+0.5))':eval=frame[audio0]; \
