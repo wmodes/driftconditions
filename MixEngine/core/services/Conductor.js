@@ -65,15 +65,7 @@ class Conductor {
           this.clipSelector.resetTags();
           const trackTags = this.recipeParser.getTagsFromTracks(selectedRecipe);
           this.clipSelector.addTags(trackTags);
-          //
-          // Get list of criteria
-          // UPDATE: Unneeded - just use the recipeObj directly
-          // const criteriaList = this.recipeParser.getListOfClipsNeeded(selectedRecipe);
-          // logger.info(`criteriaList: ${JSON5.stringify(criteriaList, null, 2)}`);
-          //
           // Select files based on clips as criteria
-          // TODO: rather than return a new list, just add files to recipe
-          // const selectedClips = await this.clipSelector.selectClips(criteriaList);
           const clipResults = await this.clipSelector.selectAudioClips(selectedRecipe);
           logger.debug(`recipe after clip selection: ${JSON5.stringify(selectedRecipe.recipeObj, null, 2)}`);
           //

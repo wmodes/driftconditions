@@ -14,7 +14,9 @@ import config from '../config/config';
 // pull variables from the config object
 const classificationFields = config.audio.classificationFields;
 
-// Function to track unsaved changes and handle navigation
+/**
+ * Custom hook to track unsaved changes and handle navigation.
+ */
 export const useUnsavedChangesEvents = () => {
   const dispatch = useDispatch();
   const unsavedChanges = useSelector(state => state.form.unsavedChanges);
@@ -56,12 +58,19 @@ export const useUnsavedChangesEvents = () => {
   }, [unsavedChanges, dispatch]);
 };
 
-// Function to handle navigation
+/**
+ * Custom hook to handle navigation with unsaved changes.
+ * @returns {function} - A function to navigate safely.
+ */
 export const useSafeNavigate = () => { 
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const unsavedChanges = useSelector(state => state.form.unsavedChanges);
   
+  /**
+   * Handles safe navigation.
+   * @param {string} path - The path to navigate to.
+   */
   const handleSafeNavigation = (path) => {
     // console.log('formUtils:useSafeNavigation:path', path);
     if (!unsavedChanges || window.confirm('You have unsaved changes. Are you sure you want to leave?')) {
@@ -75,10 +84,20 @@ export const useSafeNavigate = () => {
   return handleSafeNavigation;
 };
 
-// SafeLink component to handle navigation with unsaved changes
+/**
+ * SafeLink component to handle navigation with unsaved changes.
+ * @param {Object} props - The props object.
+ * @param {string} props.to - The destination path.
+ * @param {React.ReactNode} props.children - The children nodes.
+ * @returns {JSX.Element} - The SafeLink component.
+ */
 export const SafeLink = ({ to, children }) => {
   const safeNavigate = useSafeNavigate();
   
+  /**
+   * Handles click event.
+   * @param {Object} event - The click event.
+   */
   const handleClick = (event) => {
     event.preventDefault();
     safeNavigate(to);
@@ -87,8 +106,14 @@ export const SafeLink = ({ to, children }) => {
   return <Link to={to} onClick={handleClick}>{children}</Link>;
 };
 
-// provide a dropdown list of tags to select from
-//
+/**
+ * TagSelect component to provide a dropdown list of tags to select from.
+ * @param {Object} props - The props object.
+ * @param {Array} props.options - The available tag options.
+ * @param {function} props.onTagChange - The function to call when tags change.
+ * @param {Array} props.initialValues - The initial selected tag values.
+ * @returns {JSX.Element} - The TagSelect component.
+ */
 export const TagSelect = ({ options, onTagChange, initialValues }) => {
   // Convert initialValues to the format expected by ReactTags
   const initialTags = arrayToReactTags(initialValues);
@@ -102,22 +127,38 @@ export const TagSelect = ({ options, onTagChange, initialValues }) => {
   // eslint-disable-next-line
   }, []) ; // Empty dependency array to run only once on mount
 
+  /**
+   * Handles deleting a tag.
+   * @param {number} i - The index of the tag to delete.
+   */
   const handleDelete = (i) => {
     const updatedTags = tags.filter((tag, index) => index !== i);
     setTags(updatedTags);
     onTagChange(ReactTagsToArray(updatedTags)); // Update parent component's state with new tags array
   };
 
+  /**
+   * Handles adding a new tag.
+   * @param {Object} tag - The new tag to add.
+   */
   const handleAddition = (tag) => {
     const updatedTags = [...tags, tag];
     setTags(updatedTags);
     onTagChange(ReactTagsToArray(updatedTags)); // Update parent component's state with new tags array
   };
 
+  /**
+   * Handles changing the selected item.
+   * @param {Object} event - The change event.
+   */
   const handleChange = (event) => {
     setSelectedItem(event.target.value);
   };
 
+  /**
+   * Handles adding the selected item as a new tag.
+   * @param {Object} event - The click event.
+   */
   const handleAddClick = (event) => {
     event.stopPropagation(); // Stop the event from bubbling up
     if (selectedItem) {
@@ -169,6 +210,13 @@ export const TagSelect = ({ options, onTagChange, initialValues }) => {
   );
 };
 
+/**
+ * TagInput component to handle tag input.
+ * @param {Object} props - The props object.
+ * @param {function} props.onTagChange - The function to call when tags change.
+ * @param {Array} props.initialTags - The initial tags.
+ * @returns {JSX.Element} - The TagInput component.
+ */
 export const TagInput = ({ onTagChange, initialTags }) => {
   // Convert initialValues to the format expected by ReactTags
   const convertedTags = arrayToReactTags(initialTags);
@@ -203,12 +251,20 @@ export const TagInput = ({ onTagChange, initialTags }) => {
     };
   }, []); // Ensure this effect runs only once
 
+  /**
+   * Handles deleting a tag.
+   * @param {number} i - The index of the tag to delete.
+   */
   const handleDelete = (i) => {
     const updatedTags = tags.filter((tag, index) => index !== i);
     setTags(updatedTags);
     onTagChange(ReactTagsToArray(updatedTags));
   };
 
+  /**
+   * Handles adding a new tag.
+   * @param {Object} newTag - The new tag to add.
+   */
   const handleAddition = (newTag) => {
     const updatedTags = [...tags, NormalizeReactTag(newTag)];
     setTags(updatedTags);
@@ -243,17 +299,13 @@ export const TagInput = ({ onTagChange, initialTags }) => {
   );
 };
 
-// export const InfoButton = ({ infoText, id }) => {
-//   return (
-//     <span className="info-button">
-//       <span id={id} className="info-icon">i</span>
-//       <Tooltip anchorSelect={id} place="top">
-//         {infoText}
-//       </Tooltip>
-//     </span>
-//   );
-// };
-
+/**
+ * InfoButton component to display an information button with a tooltip.
+ * @param {Object} props - The props object.
+ * @param {string} props.infoText - The text to display in the tooltip.
+ * @param {string} props.id - The id for the tooltip.
+ * @returns {JSX.Element} - The InfoButton component.
+ */
 export const InfoButton = ({ infoText, id }) => {
   return (
     <span 
@@ -270,7 +322,19 @@ export const InfoButton = ({ infoText, id }) => {
   );
 };
 
+/**
+ * ClassificationCheckboxes component to render a list of checkboxes for classification fields.
+ * @param {Object} props - The props object.
+ * @param {Object} props.classification - The classification object with boolean values.
+ * @param {function} props.handleChange - The function to call when a checkbox value changes.
+ * @returns {JSX.Element} - The ClassificationCheckboxes component.
+ */
 export const ClassificationCheckboxes = ({ classification, handleChange }) => {
+  // Convert keys in classification object to lowercase
+  const lowerCaseClassification = convertKeysToLowercase(classification);
+
+  console.log('ClassificationCheckboxes:classification', lowerCaseClassification);
+
   return (
     <div className="form-checkbox">
       {classificationFields.map(field => (
@@ -279,10 +343,9 @@ export const ClassificationCheckboxes = ({ classification, handleChange }) => {
             type="checkbox"
             id={field.value}
             name={field.value}
-            checked={classification[field.value] || false}
+            checked={lowerCaseClassification[field.value] || false}
             onChange={handleChange}
-          />
-          <label htmlFor={field.value}>
+          /> <label htmlFor={field.value}>
             {field.label}
           </label>
           <InfoButton infoText={field.moreInfo} id={`info-${field.value}`} />
@@ -292,14 +355,21 @@ export const ClassificationCheckboxes = ({ classification, handleChange }) => {
   );
 };
 
-//
-// Helpers
-//
+/**
+ * Converts an array of React tags to an array of strings.
+ * @param {Array} tagObj - The array of React tags.
+ * @returns {Array} - The array of strings.
+ */
 function ReactTagsToArray(tagObj) {
   if (!tagObj) return [];
   return tagObj.map(tag => tag.text);
 }
 
+/**
+ * Converts an array of strings to an array of React tags.
+ * @param {Array} tagsArray - The array of strings.
+ * @returns {Array} - The array of React tags.
+ */
 function arrayToReactTags(tagsArray) {
   if (!tagsArray || !Array.isArray(tagsArray)) return [];
   return tagsArray.map((tag, index) => ({
@@ -308,9 +378,26 @@ function arrayToReactTags(tagsArray) {
   }));
 }
 
+/**
+ * Normalizes a React tag.
+ * @param {Object} tag - The React tag.
+ * @returns {Object} - The normalized React tag.
+ */
 function NormalizeReactTag(tag) {
   return {
     id: normalizeTag(tag.text),
     text: normalizeTag(tag.text)
   };
 }
+
+/**
+ * Converts the keys of an object to lowercase.
+ * @param {Object} obj - The object to convert.
+ * @returns {Object} - The object with lowercase keys.
+ */
+const convertKeysToLowercase = (obj) => {
+  return Object.keys(obj).reduce((acc, key) => {
+    acc[key.toLowerCase()] = obj[key];
+    return acc;
+  }, {});
+};

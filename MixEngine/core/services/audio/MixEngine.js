@@ -2,10 +2,10 @@
  * @file MixEngine.js - Main audio processing engine for mixing audio clips
  */
 
+const logger = require('config/logger').custom('MixEngine', 'debug');
 const { database: db } = require('config');
 const ffmpeg = require('fluent-ffmpeg');
 const JSON5 = require('json5');
-const logger = require('config/logger').custom('MixEngine', 'info');
 const path = require('path');
 
 const { config } = require('config');
@@ -21,7 +21,7 @@ const exprsConfig = config.exprs;
 class MixEngine {
   constructor() {
     this.exprs = this._substituteExpressions(exprsConfig);
-    // logger.debug(`MixEngine:constructor: exprs: ${JSON5.stringify(this.exprs, null, 2)}`);
+    logger.debug(`MixEngine:constructor: exprs: ${JSON5.stringify(this.exprs, null, 2)}`);
     this.filterChain = [];
     // store the current input, track, and clip
     this.currentInputNum = 0;
@@ -46,9 +46,10 @@ class MixEngine {
    * @private
    */
   _substituteExpressions(exprsConfig) {
-    const exprs = { ...exprsConfig };
-    for (let key in exprs) {
-      exprs[key] = this._replacePlaceholders(exprs[key], exprs);
+    const exprs = {};
+    for (let key in exprsConfig) {
+      const lowerCaseKey = key.toLowerCase();
+      exprs[lowerCaseKey] = this._replacePlaceholders(exprsConfig[key], exprsConfig);
     }
     return exprs;
   }
@@ -93,6 +94,7 @@ class MixEngine {
     // Reset state
     this._resetState();
     const recipeObj = recipe.recipeObj;
+    console.debug(`MixEngine:makeMix: recipeObj: ${JSON5.stringify(recipeObj, null, 2)}`);
     //
     // Setup ffmpeg command
     const ffmpegCmd = ffmpeg();
@@ -197,21 +199,19 @@ class MixEngine {
   _buildTrackFilters(track) {
     // clear our clip counter
     this.currentClipNum = 0;
-    // gather clip output labels
+    // gather clip output labels for concatenation
     let clipOutputLabels = [];
     //
     // track base label
-    const trackBaseLabel = `track_${this.currentTrackNum}`;
+    const trackBaseLabel = `track-${this.currentTrackNum}`;
     // Keep track of the track label so far
-    let mostRecentTrackLabel = '';
-    let newTrackLabel = '';
+    let nextInputSrc = '';
     //
     // we start with a track object
     // and go through the clips in the track
-    newTrackLabel = trackBaseLabel + '_base';
+    //
     track.clips.forEach(clip => {
       // build the filters for each clip
-      // this will include volume adjustment, silence generation, and any filters
       const currentClipOutput = this._buildClipFilters(clip);
       //
       // add the clip output to the clipOutputLabels array
@@ -222,94 +222,78 @@ class MixEngine {
     });
     //
     // Concat inputs including silence
+    let newTrackLabel = trackBaseLabel + '_concat';
     this.filterChain.push({
+      inputs: clipOutputLabels,
       filter: 'concat',
       options: {
         n: clipOutputLabels.length,
         v: 0,
         a: 1
       },
-      inputs: clipOutputLabels,
       outputs: newTrackLabel
     });
     // set the track label for the next step
-    mostRecentTrackLabel = newTrackLabel;
+    nextInputSrc = newTrackLabel;
     //
     // Set volume of track
-    if (track.volume) {
-      logger.debug(`MixEngine:_buildTrackFilters(): track.volume: ${track.volume} typeof: ${typeof track.volume}`);
-      newTrackLabel = trackBaseLabel + '_volume';
-      // 
-      // Handle track volume adjustment
-      let volOptions = {};
-      // If we have a number, set volume of input
-      if (typeof track.volume === 'number') {
-        volOptions.volume = (track.volume || 100) / 100;
-      } 
-      // if we have a volume command, handle it
-      else if (typeof track.volume === 'string') {
-        // test if track Volume is cmd(param), if so extract cmd and param
-        const volCmdWithParam = track.volume.match(/^(-?\w+)\(([^)]+)\)$/);
-        let volCmd = '';
-        let volCmdParam = '';
-        if (volCmdWithParam) {
-          const [_, cmd, param] = volCmdWithParam;
-          volCmd = cmd;
-          volCmdParam = param;
-        } else {
-          volCmd = track.volume;
-          // perhaps we will have other stuff here
-        }
-        logger.debug(`MixEngine:_buildTrackFilters(): volCmd: ${volCmd}, volCmdParam: ${volCmdParam}`);
-        let n = 1;
-        switch (volCmd) {
-          case 'noise':
-            volOptions = {
-              volume: this._buildNoiseFilter(volCmdParam),
-              eval: 'frame'
-            };
-            this.amixDuration = 'shortest';
-            break;
-          default:
-            volOptions.volume = 1.0;
-            break;
-        }
-      } else {
-        volOptions.volume = 1.0;
-      }
-      //
-      // now create track filter volume entry
-      this.filterChain.push({
-        inputs: mostRecentTrackLabel,
-        filter: 'volume',
-        options: volOptions,
-        outputs: newTrackLabel
-      });
-      // set the track label for the next step
-      mostRecentTrackLabel = newTrackLabel;
+    if ('volume' in track) {
+      logger.debug(`MixEngine:_buildTrackFilters(): Applying volume filter to track ${track.volume}`);
+      nextInputSrc = this._volumeFilter(
+        nextInputSrc, 
+        trackBaseLabel, 
+        track.volume
+      );
     }
     //
     // effects
-    //
-    // looping effect
-    if (track.effects && track.effects.includes("loop")) { 
-      newTrackLabel = trackBaseLabel + '_loop';
-      this.filterChain.push({
-        inputs: mostRecentTrackLabel,
-        filter: 'aloop',
-        options: {
-          loop: -1,
-          size: 2e9,
-        },
-        outputs: newTrackLabel
-      });
-      // ensure that we don't loop forever
-      this.amixDuration = 'shortest';
-      // set the track label for the next step
-      mostRecentTrackLabel = newTrackLabel;
-    }
+    if (track.effects) {
+      logger.debug(`MixEngine:_buildTrackFilters(): Applying effects to track ${track.effects}`);
+      track.effects.forEach(effect => {
+        // loop effect
+        if (effect.toLowerCase().startsWith('loop')) {
+          logger.debug(`MixEngine:_buildTrackFilters(): Applying loop effect to track ${effect}`);
+          nextInputSrc = this._loopEffect(
+            nextInputSrc, 
+            trackBaseLabel, 
+            this._getParams(effect)
+          );
+        }
+        // wave effect
+        else if (effect.toLowerCase().startsWith('wave')) {
+          logger.debug(`MixEngine:_buildtrackFilters(): Applying wave effect to track ${effect}`);
+          nextInputSrc = this._waveEffect(
+            nextInputSrc, 
+            trackBaseLabel, 
+            this._getParams(effect)
+          );
+        }
+        // detune effect
+        else if (effect.toLowerCase().startsWith('detune')) {
+          logger.debug(`MixEngine:_buildtrackFilters(): Applying detune effect to track ${effect}`);
+          nextInputSrc = this._detuneEffect(
+            nextInputSrc, 
+            trackBaseLabel, 
+            this._getParams(effect)
+          );
+        }
+        // shortest, longest, and first effects
+        // (these don't really apply to tracks)
+        else if (effect.toLowerCase() == 'first') {
+          this.amixDuration = 'first';
+        }
+        else if (effect.toLowerCase() == 'shortest') {
+          this.amixDuration = 'shortest';
+        }
+        else if (effect.toLowerCase() == 'longest') {
+          // TODO: this needs to be handled with care because this combined with a loop effect 
+          // can create an infinite loop 
+          this.amixDuration = 'longest';
+        }
+      }); // end of effects
+    } // end of track
     // set the final track label
-    this.trackFinalLabels.push(mostRecentTrackLabel);
+    this.trackFinalLabels.push(nextInputSrc);
   }
 
   /**
@@ -366,99 +350,237 @@ class MixEngine {
    * @private
    */
   _buildClipFilters(clip) {
+    logger.debug(`MixEngine:_buildClipFilters(): clip: ${JSON5.stringify(clip, null, 2)}`);
     //
-    // track base label
-    const clipBaseLabel = `clip_${this.currentTrackNum}_${this.currentClipNum}`;
+    // clip base label
+    const clipBaseLabel = `clip-${this.currentTrackNum}-${this.currentClipNum}`;
     // Keep track of the track label so far
-    let mostRecentClipLabel = '';
-    let newClipLabel = '';
-    // start processing the clip
-    newClipLabel = clipBaseLabel + '_base';
+    let nextInputSrc = '';
+    //
+    // Handle silence generation
     if (clip.classification.includes("silence")) {
-        // Handle silence generation
-        const silenceDuration = clip.duration || 10; // Default to 10 seconds
-        this.filterChain.push({
-            filter: 'aevalsrc',
-            options: {
-              exprs: 0,
-              duration: silenceDuration
-            },
-            outputs: newClipLabel
-        });
-        logger.debug(`MixEngine:_buildClip(): Generating silence of duration ${silenceDuration} seconds with label ${newClipLabel}`);
-        // set the track label for the next step
-        mostRecentClipLabel = newClipLabel;
-        return mostRecentClipLabel;
-    } else {
-        // 
-        // Handle clip volume adjustment
-        let volOptions = {};
-        // If we have a number, set volume of input
-        if (typeof clip.volume === 'number') {
-          volOptions.volume = (clip.volume || 100) / 100;
-        } 
-        // if we have a volume command, handle it
-        else if (typeof clip.volume === 'string') {
-          // test if clip Volume is cmd(param), if so extract cmd and param
-          const volCmdWithParam = clip.volume.match(/^(-?\w+)\(([^)]+)\)$/);
-          if (volCmdWithParam) {
-            const [_, volCmd, volCmdParam] = volCmdWithParam;
-          } else {
-            volCmd = clip.volume;
-            // perhaps we will have other stuff here
-          }
-          let n = 1;
-          switch (volCmd) {
-            case 'noise':
-              volOptions = {
-                volume: this._buildNoiseFilter(volCmdParam),
-                eval: 'frame'
-              };
-              this.amixDuration = 'shortest';
-              break;
-            default:
-              volOptions.volume = 1.0;
-              break;
-          }
-        } else {
-          volOptions.volume = 1.0;
-        }
-        //
-        // now create clip filter volume entry
-        this.filterChain.push({
-          inputs: `${this.currentInputNum}:a`,
-          filter: 'volume',
-          options: volOptions,
-          outputs: newClipLabel
-        });
-        // set the clip label for the next step
-        mostRecentClipLabel = newClipLabel;
-        //
-        // effects
-        //
-        // looping effect
-        if (clip.effects && clip.effects.includes("loop")) { 
-          newClipLabel = clipBaseLabel + '_loop';
-          this.filterChain.push({
-            inputs: mostRecentClipLabel,
-            filter: 'aloop',
-            options: {
-              loop: -1,
-              size: 2e9,
-            },
-            outputs: newClipLabel
-          });
-          // ensure that we don't loop forever
-          this.amixDuration = 'shortest';
-          // set the track label for the next step
-          mostRecentClipLabel = newClipLabel;
-        }
-        // increment the input number
-        this.currentInputNum++;
-        // return the most recent clip label
-        return mostRecentClipLabel;
+      logger.debug(`MixEngine:_buildClipFilters(): Generating silence for clip ${clipBaseLabel}`);
+      nextInputSrc = this._silenceFilter(clipBaseLabel, clip.duration);
+      // return without incrementing the input number
+      return nextInputSrc;
     }
+    nextInputSrc = `${this.currentInputNum}:a`;
+    //
+    // Handle clip volume adjustment
+    if ('volume' in clip) {
+      logger.debug(`MixEngine:_buildClipFilters(): Applying volume filter to clip ${clip.volume}`);
+      nextInputSrc = this._volumeFilter(
+        nextInputSrc, 
+        clipBaseLabel, 
+        clip.volume
+      );
+    }
+    //
+    // effects
+    if (clip.effects) {
+      logger.debug(`MixEngine:_buildClipFilters(): Applying effects to clip ${clip.effects}`);
+      clip.effects.forEach(effect => {
+        // loop effect
+        if (effect.toLowerCase().startsWith('loop')) {
+          logger.debug(`MixEngine:_buildClipFilters(): Applying loop effect to clip ${effect}`);
+          nextInputSrc = this._loopEffect(
+            nextInputSrc, 
+            clipBaseLabel, 
+            this._getParams(effect)
+          );
+        }
+        // wave effect
+        else if (effect.toLowerCase().startsWith('wave')) {
+          logger.debug(`MixEngine:_buildClipFilters(): Applying wave effect to clip ${effect}`);
+          nextInputSrc = this._waveEffect(
+            nextInputSrc, 
+            clipBaseLabel, 
+            this._getParams(effect)
+          );
+        }
+        // detune effect
+        else if (effect.toLowerCase().startsWith('detune')) {
+          logger.debug(`MixEngine:_buildClipFilters(): Applying detune effect to clip ${effect}`);
+          nextInputSrc = this._detuneEffect(
+            nextInputSrc, 
+            clipBaseLabel, 
+            this._getParams(effect)
+          );
+        }
+        // shortest, longest, and first effects
+        // (these don't really apply to clips)
+        else if (effect.toLowerCase() == 'first') {
+          this.amixDuration = 'first';
+        }
+        else if (effect.toLowerCase() == 'shortest') {
+          this.amixDuration = 'shortest';
+        }
+        else if (effect.toLowerCase() == 'longest') {
+          // TODO: this needs to be handled with care because this combined with a loop effect 
+          // can create an infinite loop 
+          this.amixDuration = 'longest';
+        }
+      }); // end of effects
+    } // end of clip
+    // increment the input number
+    this.currentInputNum++;
+    // return the most recent clip label
+    return nextInputSrc;
   }
+
+  /**
+   * Extracts the parameters from a string formatted as "someWord(param)" or "someWord{param1, param2)".
+   * @param {string} input - The input string.
+   * @returns {string[]} - An array of extracted parameters or an empty array if not found.
+   * @private
+   */
+  _getParams(input) {
+    // Match "someWord(param)" or "someWord{param1, param2}"
+    const match = input.match(/^[a-zA-Z]+\(([^)]+)\)$/) || input.match(/^[a-zA-Z]+\{([^}]+)\}$/);
+    if (match) {
+      // Split the captured parameters by comma and trim whitespace
+      return match[1].split(',').map(param => param.trim());
+    }
+    return [];
+  }
+
+  /**
+   * Generate silence clip of a given duration.
+   * @param {number} duration 
+   * @sideeffect adds filter to this.filterChain
+   * @returns {string} The label of the most recent clip
+   * @private
+   */
+  _silenceFilter(baseLabel, duration) {
+    // generate label
+    const newLabel = baseLabel + '_silence';
+    // create filter
+    this.filterChain.push({
+        filter: 'aevalsrc',
+        options: {
+          exprs: 0,
+          duration: duration
+        },
+        outputs: newLabel
+    });
+    logger.debug(`MixEngine:_silenceFilter(): Generating silence of duration ${duration} seconds with label ${newLabel}`);
+    // return the most recent clip label
+    return newLabel;
+  }
+
+  /**
+   * Builds a filter that handles volume adjustment
+   * @param {number} volume
+   * @sideeffect adds filter to this.filterChain
+   * @returns {string} most recent output label
+   * @private
+   */
+  _volumeFilter(inputSrc, baseLabel, volume) {
+    // generate label
+    let newLabel = baseLabel + '_volume';
+    // compile options
+    let volOptions = {};
+    // If we have a number or number-string
+    // this should handle 99.9% of cases
+    if (!isNaN(Number(volume))) {
+      volOptions.volume = (volume || 100) / 100;
+      this.filterChain.push({
+        inputs: inputSrc,
+        filter: 'volume',
+        options: {
+          volume: (volume || 100) / 100,
+        },
+        outputs: newLabel
+      });
+      return newLabel;
+    } 
+    // if we have a volume command, handle it
+    // this is a wierdo leftover from the old system
+    // replaced by 'wave' effects
+    if (volume.toLowerCase().startsWith('noise')) {
+      // TODO: This will be replaced by effects
+      newLabel = this._waveEffect(
+        inputSrc, 
+        baseLabel, 
+        this._getParams(volume)
+      );
+      return(newLabel);
+    }
+    // we shouldn't get here unless we have weirdness
+    // what da fuq is this?
+    else {
+      logger.error(`MixEngine:_volumeFilter(): Invalid volume command: ${volume}`);
+    }    
+    // if we get here, it means we didn't do anything, return the original label
+    // In the words of Fleewood Mac:
+    // never break the chain
+    return inputSrc;
+  }
+
+  /**
+   * Builds a filter that handles loop effect
+   * @param {string} inputSrc
+   * @param {string} baseLabel
+   * @param {string} params
+   * @sideeffect adds filter to this.filterChain
+   * @returns {string} most recent output label
+   * @private
+   */
+  _loopEffect(inputSrc, baseLabel, params) {
+    const newLabel = baseLabel + '_loop';
+    // unless otherwise specified, loop forever
+    var numLoops = -1;
+    if (params.length > 0) {
+      numLoops = parseInt(params[0]);
+    }
+    this.filterChain.push({
+      inputs: inputSrc,
+      filter: 'aloop',
+      options: {
+        loop: numLoops,
+        size: 2e9,
+      },
+      outputs: newLabel
+    });
+    // ensure that we don't loop forever
+    this.amixDuration = 'shortest';
+    // return the most recent label
+    return newLabel;
+  }
+
+  /**
+   * Builds a filter that handles wave effect
+   * @param {string} inputSrc
+   * @param {string} baseLabel
+   * @param {string} params
+   * @sideeffect adds filter to this.filterChain
+   * @returns {string} most recent output label
+   * @private
+   */
+  _waveEffect(inputSrc, baseLabel,params) {
+    // here 'noise' refers to coherent noise filters, a harmonic series based on sine and cosine functions
+    //
+    logger.debug(`MixEngine:_waveEffect(): params: ${params}`);
+    // generate label
+    const newLabel = baseLabel + '_wave';
+    // which wave function to use?
+    let waveFunc = this.exprs.noise;
+    if (params.length > 0 && params[0].toLowerCase() in this.exprs) {
+      waveFunc = this.exprs[params[0]];
+    }
+    this.filterChain.push({
+      inputs: inputSrc,
+      filter: 'volume',
+      options: {
+        volume: waveFunc,
+        eval: 'frame'
+      },
+      outputs: newLabel
+    });
+    // return the most recent label
+    return newLabel;
+  }
+
 
   /**
    * Mixes all tracks from the recipe.

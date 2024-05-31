@@ -54,8 +54,8 @@ const config = {
     database: 'interference',
   },
   audio: {
-    selectPoolPercentSize: 25,
-    selectPoolMinSize: 5,
+    selectPoolPercentSize: 10,
+    selectPoolMinSize: 25,
     classification: [
       'Ambient', 
       'Atmospheric', 
@@ -102,7 +102,7 @@ const config = {
     },
   },
   recipes: {
-    selectPoolPercentSize: 25,
+    selectPoolPercentSize: 10,
     selectPoolMinSize: 5,
     classification: [
       'Ambient', 
@@ -163,9 +163,11 @@ const config = {
   },
   filters: {
     noise: {
-      // general noise filter
+      // here 'noise' refers to coherent noise filters, a harmonic series based on sine and cosine
+      // general harmonic sumation filter:
       // min(1, max(0, ((cos(PI * t * n / f0) * a0 + cos(PI * t * n / f1) * a1 + cos(PI * t * n / f2) * a2) + o ) * s  * p + q))
-      // https://graphtoy.com/?f1(x,t)=min(1,max(0,((cos(PI*(x+t)*1/13)*1+cos(PI*(x+t)*1/7)*0.5+cos(PI*(x+t)*1/3)*0.25)-0.5)*0.75*1+0.5))&v1=true&f2(x,t)=min(1,max(0,((cos(PI*(x+t)*1/13)*1+cos(PI*(x+t)*1/7)*0.5+cos(PI*(x+t)*1/3)*0.25)-0.5)*0.75*-1+0.5))&v2=true&f3(x,t)=4*(0.5-abs(0.5-f1(x,t)))*(0.5-abs(0.5-f2(x,t)))&v3=true&f4(x,t)=&v4=true&f5(x,t)=&v5=false&f6(x,t)=&v6=false&grid=1&coords=0,0,3.1599750516729905
+      // GraphToy demo: https://shorturl.at/T82uY
+      //
       presets: {
         // min(1, max(0, ((cos(PI * t * 1 / 13) * 1 + cos(PI * t * 1 / 7) * 0.5 + cos(PI * t * 1 / 3) * 0.25) - 0.5 ) * 0.75 * 1 + 0.5))
         default: {f: [13, 7, 3], a: [1, 0.5, 0.25], n: 1, s: 0.75, p: 1, o: -0.5, q: 0.5},
@@ -177,9 +179,28 @@ const config = {
     },
   },
   exprs: {
-    noise: 'min(1,max(0,((cos(PI*(t)*1/13)*1+cos(PI*(t)*1/7)*0.5+cos(PI*(t)*1/3)*0.25)-0.5)*0.75*1+0.5))',
+    // here 'noise' refers to coherent noise filters, a harmonic series based on sine and cosine
+    // general harmonic sumation filter:
+    // min(1, max(0, ((cos(PI * t * n / f0) * a0 + cos(PI * t * n / f1) * a1 + cos(PI * t * n / f2) * a2) + o ) * s  * p + q))
+    // GraphToy demo: https://shorturl.at/T82uY
+    //
+    // basic noise filter
+    noise: 'min(1,max(0,((cos(PI*t*0.25/13)*1+cos(PI*t*0.25/7)*0.5+cos(PI*t*0.25/3)*0.25)-0.5)*0.75*1+0.5))',
+    default: '%{noise}',
+    // basic noise filter, but inverted
     inverseNoise: '1 - %{noise}',
-    transitions: '4*(0.5-abs(0.5-%{noise}))*(0.5-abs(0.5-%{inverseNoise}))',
+    '1/noise': '%{inverseNoise}',
+    // these transitional filters fill the space between noise and inverseNoise
+    transition: '4*(0.5-abs(0.5-%{noise}))*(0.5-abs(0.5-%{inverseNoise}))',
+    liminal: '%{transition}',
+    interstitial: '%{transition}',
+    // subtle noise has ampitude of 0.25 and offset +0.75
+    subtleNoise: 'min(1,max(0,((cos(PI*(t)*1/13)*1+cos(PI*(t)*1/7)*0.5+cos(PI*(t)*1/3)*0.25)-0.5)*0.25*1+0.75))',
+    // here for backward compatibility
+    interrupted: 'min(1,max(0,((cos(PI*t*1/13)*1+cos(PI*t*1/7)*0.5+cos(PI*t*1/3)*0.25)-0.5)*0.75*-1+0.5))',
+    interrupter: '1-%{interrupted}',
+    fadeInNOut: 'min(1,max(0,((cos(PI*t*1/13)*1+cos(PI*t*1/7)*0.5+cos(PI*t*1/3)*0.25)+1)*1*1+0.5))',
+    fadeInNOutInverse: '1-%{fadeInNOut}',
   }
 };
 
