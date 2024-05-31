@@ -134,6 +134,10 @@ class MixEngine {
     });
   }  
 
+  /*
+   * BUILD INPUTS
+   */
+
   /**
    * Sets the file path for the mix output.
    *
@@ -189,6 +193,11 @@ class MixEngine {
       this.currentTrackNum++;
     });
   }  
+
+  /*
+   * TRACK FILTERS
+   */
+
 
   /**
    * Concatenates clips within a track and applies volume adjustment to the entire track if specified.
@@ -268,6 +277,15 @@ class MixEngine {
             this._getParams(effect)
           );
         }
+        // faraway effect
+        else if (effect.toLowerCase().startsWith('faraway')) {
+          logger.debug(`MixEngine:_buildtrackFilters(): Applying faraway effect to track ${effect}`);
+          nextInputSrc = this._farawayEffect(
+            nextInputSrc, 
+            trackBaseLabel, 
+            this._getParams(effect)
+          );
+        }
         // detune effect
         else if (effect.toLowerCase().startsWith('detune')) {
           logger.debug(`MixEngine:_buildtrackFilters(): Applying detune effect to track ${effect}`);
@@ -342,6 +360,10 @@ class MixEngine {
     return noiseFilter;
   }
 
+  /*
+   * CLIP FILTERS
+   */
+
   /**
    * Builds the ffmpeg input and initial filter for each clip, including handling for silence.
    *
@@ -398,6 +420,15 @@ class MixEngine {
             this._getParams(effect)
           );
         }
+        // faraway effect
+        else if (effect.toLowerCase().startsWith('faraway')) {
+          logger.debug(`MixEngine:_buildClipFilters(): Applying faraway effect to clip ${effect}`);
+          nextInputSrc = this._farawayEffect(
+            nextInputSrc, 
+            clipBaseLabel, 
+            this._getParams(effect)
+          );
+        }
         // detune effect
         else if (effect.toLowerCase().startsWith('detune')) {
           logger.debug(`MixEngine:_buildClipFilters(): Applying detune effect to clip ${effect}`);
@@ -427,6 +458,10 @@ class MixEngine {
     // return the most recent clip label
     return nextInputSrc;
   }
+
+  /*
+   * SPECIALTY FILTERS
+   */
 
   /**
    * Extracts the parameters from a string formatted as "someWord(param)" or "someWord{param1, param2)".
@@ -581,6 +616,58 @@ class MixEngine {
     return newLabel;
   }
 
+/**
+ * Builds a filter that handles faraway effect
+ * @param {string} inputSrc
+ * @param {string} baseLabel
+ * @param {string[]} params - An array of parameters, case insensitive.
+ * @sideeffect adds filter to this.filterChain
+ * @returns {string} most recent output label
+ * @private
+ */
+_farawayEffect(inputSrc, baseLabel, params) {
+  logger.debug(`MixEngine:_farawayEffect(): params: ${params}`);
+  // Generate initial labels
+  let currentLabel = inputSrc;
+  const volumeLabel = baseLabel + '_faraway_volume';
+  const lowpassLabel = baseLabel + '_faraway_lowpass';
+  // Check if "vol" parameter is provided (case insensitive)
+  const hasVolumeParam = params.some(param => param.toLowerCase() === 'vol');
+  // Apply volume filter if "vol" parameter is provided
+  if (hasVolumeParam) {
+    this.filterChain.push({
+      inputs: currentLabel,
+      filter: 'volume',
+      options: {
+        'volume': 0.2
+      },
+      outputs: volumeLabel
+    });
+    currentLabel = volumeLabel; // Update current label to volume label
+  }
+  // Apply lowpass filter
+  this.filterChain.push({
+    inputs: currentLabel,
+    filter: 'lowpass',
+    options: {
+      'f': 1000,
+      'p': 2
+    },
+    outputs: lowpassLabel
+  });
+  // Return the most recent label
+  return lowpassLabel;
+}
+
+
+
+
+
+
+
+  /*
+   * FINAL MIX FILTERSS
+   */
 
   /**
    * Mixes all tracks from the recipe.
@@ -608,16 +695,9 @@ class MixEngine {
     }
   }
 
-  /**
-   * Sanitizes a filename by removing invalid characters.
-   *
-   * @param {string} filename - The filename to sanitize.
-   * @returns {string} The sanitized filename.
-   * @private
+  /*
+   * FINAL RUNNING FFMPEG
    */
-  _sanitizeFilename(filename) {
-    return filename.replace(/[^a-z0-9_\-().\s]+/gi, '').replace(/\s+/g, '_');
-  }
 
   /**
    * Configures and runs the ffmpeg command with the built filter chain.
@@ -648,6 +728,21 @@ class MixEngine {
         })
         .run()
     });
+  }
+
+  /*
+   * HELPER METHODS
+   */
+
+  /**
+   * Sanitizes a filename by removing invalid characters.
+   *
+   * @param {string} filename - The filename to sanitize.
+   * @returns {string} The sanitized filename.
+   * @private
+   */
+  _sanitizeFilename(filename) {
+    return filename.replace(/[^a-z0-9_\-().\s]+/gi, '').replace(/\s+/g, '_');
   }
 
   /**
