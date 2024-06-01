@@ -212,7 +212,7 @@ class MixEngine {
     let clipOutputLabels = [];
     //
     // track base label
-    const trackBaseLabel = `track-${this.currentTrackNum}`;
+    const baseLabel = `track-${this.currentTrackNum}`;
     // Keep track of the track label so far
     let nextInputSrc = '';
     //
@@ -231,7 +231,7 @@ class MixEngine {
     });
     //
     // Concat inputs including silence
-    let newTrackLabel = trackBaseLabel + '_concat';
+    let newTrackLabel = baseLabel + '_concat';
     this.filterChain.push({
       inputs: clipOutputLabels,
       filter: 'concat',
@@ -250,7 +250,7 @@ class MixEngine {
       logger.debug(`MixEngine:_buildTrackFilters(): Applying volume filter to track ${track.volume}`);
       nextInputSrc = this._volumeFilter(
         nextInputSrc, 
-        trackBaseLabel, 
+        baseLabel, 
         track.volume
       );
     }
@@ -264,7 +264,7 @@ class MixEngine {
           logger.debug(`MixEngine:_buildTrackFilters(): Applying loop effect to track ${effect}`);
           nextInputSrc = this._loopEffect(
             nextInputSrc, 
-            trackBaseLabel, 
+            baseLabel, 
             this._getParams(effect)
           );
         }
@@ -273,7 +273,16 @@ class MixEngine {
           logger.debug(`MixEngine:_buildtrackFilters(): Applying wave effect to track ${effect}`);
           nextInputSrc = this._waveEffect(
             nextInputSrc, 
-            trackBaseLabel, 
+            baseLabel, 
+            this._getParams(effect)
+          );
+        }
+        // backward effect
+        else if (/^(backward|reverse)/i.test(effect)) {
+          logger.debug(`MixEngine:_buildClipFilters(): Applying backward effect to clip ${effect}`);
+          nextInputSrc = this._backwardEffect(
+            nextInputSrc, 
+            baseLabel, 
             this._getParams(effect)
           );
         }
@@ -282,7 +291,7 @@ class MixEngine {
           logger.debug(`MixEngine:_buildtrackFilters(): Applying faraway effect to track ${effect}`);
           nextInputSrc = this._farawayEffect(
             nextInputSrc, 
-            trackBaseLabel, 
+            baseLabel, 
             this._getParams(effect)
           );
         }
@@ -291,7 +300,7 @@ class MixEngine {
           logger.debug(`MixEngine:_buildtrackFilters(): Applying detune effect to track ${effect}`);
           nextInputSrc = this._detuneEffect(
             nextInputSrc, 
-            trackBaseLabel, 
+            baseLabel, 
             this._getParams(effect)
           );
         }
@@ -375,14 +384,14 @@ class MixEngine {
     logger.debug(`MixEngine:_buildClipFilters(): clip: ${JSON5.stringify(clip, null, 2)}`);
     //
     // clip base label
-    const clipBaseLabel = `clip-${this.currentTrackNum}-${this.currentClipNum}`;
+    const baseLabel = `clip-${this.currentTrackNum}-${this.currentClipNum}`;
     // Keep track of the track label so far
     let nextInputSrc = '';
     //
     // Handle silence generation
     if (clip.classification.includes("silence")) {
-      logger.debug(`MixEngine:_buildClipFilters(): Generating silence for clip ${clipBaseLabel}`);
-      nextInputSrc = this._silenceFilter(clipBaseLabel, clip.duration);
+      logger.debug(`MixEngine:_buildClipFilters(): Generating silence for clip ${baseLabel}`);
+      nextInputSrc = this._silenceFilter(baseLabel, clip.duration);
       // return without incrementing the input number
       return nextInputSrc;
     }
@@ -393,7 +402,7 @@ class MixEngine {
       logger.debug(`MixEngine:_buildClipFilters(): Applying volume filter to clip ${clip.volume}`);
       nextInputSrc = this._volumeFilter(
         nextInputSrc, 
-        clipBaseLabel, 
+        baseLabel, 
         clip.volume
       );
     }
@@ -407,7 +416,7 @@ class MixEngine {
           logger.debug(`MixEngine:_buildClipFilters(): Applying loop effect to clip ${effect}`);
           nextInputSrc = this._loopEffect(
             nextInputSrc, 
-            clipBaseLabel, 
+            baseLabel, 
             this._getParams(effect)
           );
         }
@@ -416,7 +425,16 @@ class MixEngine {
           logger.debug(`MixEngine:_buildClipFilters(): Applying wave effect to clip ${effect}`);
           nextInputSrc = this._waveEffect(
             nextInputSrc, 
-            clipBaseLabel, 
+            baseLabel, 
+            this._getParams(effect)
+          );
+        }
+        // backward effect
+        else if (/^(backward|reverse)/i.test(effect)) {
+          logger.debug(`MixEngine:_buildClipFilters(): Applying backward effect to clip ${effect}`);
+          nextInputSrc = this._backwardEffect(
+            nextInputSrc, 
+            baseLabel, 
             this._getParams(effect)
           );
         }
@@ -425,7 +443,7 @@ class MixEngine {
           logger.debug(`MixEngine:_buildClipFilters(): Applying faraway effect to clip ${effect}`);
           nextInputSrc = this._farawayEffect(
             nextInputSrc, 
-            clipBaseLabel, 
+            baseLabel, 
             this._getParams(effect)
           );
         }
@@ -434,7 +452,7 @@ class MixEngine {
           logger.debug(`MixEngine:_buildClipFilters(): Applying detune effect to clip ${effect}`);
           nextInputSrc = this._detuneEffect(
             nextInputSrc, 
-            clipBaseLabel, 
+            baseLabel, 
             this._getParams(effect)
           );
         }
@@ -604,8 +622,6 @@ class MixEngine {
     } else {
       logger.debug('MixEngine:_waveEffect(): No params provided.');
     }
-
-
     this.filterChain.push({
       inputs: inputSrc,
       filter: 'volume',
@@ -682,6 +698,27 @@ class MixEngine {
     return reverbLabel;
   }
 
+  /**
+   * Builds a filter that plays audio backward.
+   * @param {string} inputSrc
+   * @param {string} baseLabel
+   * @param {string} params
+   * @sideeffect adds filter to this.filterChain
+   * @returns {string} most recent output label
+   * @private
+   */
+  _backwardEffect(inputSrc, baseLabel, params) {
+    const newLabel = baseLabel + '_backward';
+
+    this.filterChain.push({
+      inputs: inputSrc,
+      filter: 'areverse',
+      outputs: newLabel
+    });
+
+    // Return the most recent label
+    return newLabel;
+  }
 
 
 
