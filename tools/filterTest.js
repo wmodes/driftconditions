@@ -787,9 +787,20 @@ class FilterTest {
           'p': 2
         },
         outputs: 'a1'
+      },
+      {
+        inputs: 'a1',
+        filter: 'aecho',
+        options: {
+          'in_gain': 0.8,
+          'out_gain': 0.9,
+          'delays': 50,
+          'decays': 0.2
+        },
+        outputs: 'a2'
       }
     ];
-    this.finalOutputLabel = 'a1';
+    this.finalOutputLabel = 'a2';
     this.configureAndRun();
   }
 
