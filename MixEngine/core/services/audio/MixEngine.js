@@ -49,8 +49,21 @@ class MixEngine {
     const exprs = {};
     for (let key in exprsConfig) {
       const lowerCaseKey = key.toLowerCase();
-      exprs[lowerCaseKey] = this._replacePlaceholders(exprsConfig[key], exprsConfig);
+      exprs[lowerCaseKey] = exprsConfig[key];
     }
+
+    let hasUnresolvedPlaceholders = true;
+    while (hasUnresolvedPlaceholders) {
+      hasUnresolvedPlaceholders = false;
+      for (let key in exprs) {
+        const resolvedExpr = this._replacePlaceholders(exprs[key], exprs);
+        if (resolvedExpr !== exprs[key]) {
+          hasUnresolvedPlaceholders = true;
+          exprs[key] = resolvedExpr;
+        }
+      }
+    }
+    
     return exprs;
   }
 
@@ -63,7 +76,7 @@ class MixEngine {
    * @private
    */
   _replacePlaceholders(str, exprs) {
-    return str.replace(/%\{(\w+)\}/g, (_, exprKey) => exprs[exprKey]);
+    return str.replace(/%\{(\w+)\}/g, (_, exprKey) => exprs[exprKey.toLowerCase()] || '');
   }
 
   /**
