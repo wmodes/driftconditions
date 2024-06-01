@@ -582,14 +582,30 @@ class MixEngine {
   _waveEffect(inputSrc, baseLabel,params) {
     // here 'noise' refers to coherent noise filters, a harmonic series based on sine and cosine functions
     //
-    logger.debug(`MixEngine:_waveEffect(): params: ${params}`);
+    logger.debug(`MixEngine:_waveEffect(): params: ${JSON5.stringify(params)} count: ${params.length}`);
     // generate label
     const newLabel = baseLabel + '_wave';
     // which wave function to use?
     let waveFunc = this.exprs.noise;
-    if (params.length > 0 && params[0].toLowerCase() in this.exprs) {
-      waveFunc = this.exprs[params[0]];
+    logger.debug('MixEngine:_waveEffect(): Default waveFunc set to noise.');
+    logger.debug(`waveFunc: ${this.exprs.noise}`);
+
+    if (params.length > 0) {
+      const paramKey = params[0].toLowerCase();
+      logger.debug(`MixEngine:_waveEffect(): Checking if paramKey "${paramKey}" exists in exprs.`);
+  
+      if (paramKey in this.exprs) {
+        waveFunc = this.exprs[paramKey];
+        logger.debug(`MixEngine:_waveEffect(): Found paramKey "${paramKey}" in exprs. Setting waveFunc.`);
+        logger.debug(`waveFunc: ${this.exprs.noise}`);
+      } else {
+        logger.debug(`MixEngine:_waveEffect(): paramKey "${paramKey}" not found in exprs.`);
+      }
+    } else {
+      logger.debug('MixEngine:_waveEffect(): No params provided.');
     }
+
+
     this.filterChain.push({
       inputs: inputSrc,
       filter: 'volume',
