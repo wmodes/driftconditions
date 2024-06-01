@@ -260,7 +260,7 @@ class MixEngine {
       logger.debug(`MixEngine:_buildTrackFilters(): Applying effects to track ${track.effects}`);
       track.effects.forEach(effect => {
         // loop effect
-        if (effect.toLowerCase().startsWith('loop')) {
+        if (/^(loop|repeat)/i.test(effect)) {
           logger.debug(`MixEngine:_buildTrackFilters(): Applying loop effect to track ${effect}`);
           nextInputSrc = this._loopEffect(
             nextInputSrc, 
@@ -269,7 +269,7 @@ class MixEngine {
           );
         }
         // wave effect
-        else if (effect.toLowerCase().startsWith('wave')) {
+        else if (/^(noise|wave)/i.test(effect)) {
           logger.debug(`MixEngine:_buildtrackFilters(): Applying wave effect to track ${effect}`);
           nextInputSrc = this._waveEffect(
             nextInputSrc, 
@@ -278,7 +278,7 @@ class MixEngine {
           );
         }
         // faraway effect
-        else if (effect.toLowerCase().startsWith('faraway')) {
+        else if (/^(faraway|distant)/i.test(effect)) {
           logger.debug(`MixEngine:_buildtrackFilters(): Applying faraway effect to track ${effect}`);
           nextInputSrc = this._farawayEffect(
             nextInputSrc, 
@@ -403,7 +403,7 @@ class MixEngine {
       logger.debug(`MixEngine:_buildClipFilters(): Applying effects to clip ${clip.effects}`);
       clip.effects.forEach(effect => {
         // loop effect
-        if (effect.toLowerCase().startsWith('loop')) {
+        if (/^(loop|repeat)/i.test(effect)) {
           logger.debug(`MixEngine:_buildClipFilters(): Applying loop effect to clip ${effect}`);
           nextInputSrc = this._loopEffect(
             nextInputSrc, 
@@ -412,7 +412,7 @@ class MixEngine {
           );
         }
         // wave effect
-        else if (effect.toLowerCase().startsWith('wave')) {
+        else if (/^(noise|wave)/i.test(effect)) {
           logger.debug(`MixEngine:_buildClipFilters(): Applying wave effect to clip ${effect}`);
           nextInputSrc = this._waveEffect(
             nextInputSrc, 
@@ -421,7 +421,7 @@ class MixEngine {
           );
         }
         // faraway effect
-        else if (effect.toLowerCase().startsWith('faraway')) {
+        else if (/^(faraway|distant)/i.test(effect)) {
           logger.debug(`MixEngine:_buildClipFilters(): Applying faraway effect to clip ${effect}`);
           nextInputSrc = this._farawayEffect(
             nextInputSrc, 
@@ -437,19 +437,6 @@ class MixEngine {
             clipBaseLabel, 
             this._getParams(effect)
           );
-        }
-        // shortest, longest, and first effects
-        // (these don't really apply to clips)
-        else if (effect.toLowerCase() == 'first') {
-          this.amixDuration = 'first';
-        }
-        else if (effect.toLowerCase() == 'shortest') {
-          this.amixDuration = 'shortest';
-        }
-        else if (effect.toLowerCase() == 'longest') {
-          // TODO: this needs to be handled with care because this combined with a loop effect 
-          // can create an infinite loop 
-          this.amixDuration = 'longest';
         }
       }); // end of effects
     } // end of clip
@@ -616,48 +603,69 @@ class MixEngine {
     return newLabel;
   }
 
-/**
- * Builds a filter that handles faraway effect
- * @param {string} inputSrc
- * @param {string} baseLabel
- * @param {string[]} params - An array of parameters, case insensitive.
- * @sideeffect adds filter to this.filterChain
- * @returns {string} most recent output label
- * @private
- */
-_farawayEffect(inputSrc, baseLabel, params) {
-  logger.debug(`MixEngine:_farawayEffect(): params: ${params}`);
-  // Generate initial labels
-  let currentLabel = inputSrc;
-  const volumeLabel = baseLabel + '_faraway_volume';
-  const lowpassLabel = baseLabel + '_faraway_lowpass';
-  // Check if "vol" parameter is provided (case insensitive)
-  const hasVolumeParam = params.some(param => param.toLowerCase() === 'vol');
-  // Apply volume filter if "vol" parameter is provided
-  if (hasVolumeParam) {
+  /**
+   * Builds a filter that handles faraway effect
+   * @param {string} inputSrc
+   * @param {string} baseLabel
+   * @param {string[]} params - An array of parameters, case insensitive.
+   * @sideeffect adds filter to this.filterChain
+   * @returns {string} most recent output label
+   * @private
+   */
+  _farawayEffect(inputSrc, baseLabel, params) {
+    logger.debug(`MixEngine:_farawayEffect(): params: ${params}`);
+    
+    // Generate initial labels
+    let currentLabel = inputSrc;
+    const volumeLabel = baseLabel + '_faraway_volume';
+    const lowpassLabel = baseLabel + '_faraway_lowpass';
+    const reverbLabel = baseLabel + '_faraway_reverb';
+
+    // Check if "vol" parameter is provided (case insensitive)
+    const hasVolumeParam = params.some(param => param.toLowerCase() === 'vol');
+
+    // Apply volume filter if "vol" parameter is provided
+    if (hasVolumeParam) {
+      this.filterChain.push({
+        inputs: currentLabel,
+        filter: 'volume',
+        options: {
+          'volume': 0.3
+        },
+        outputs: volumeLabel
+      });
+      currentLabel = volumeLabel; // Update current label to volume label
+    }
+
+    // Apply lowpass filter
     this.filterChain.push({
       inputs: currentLabel,
-      filter: 'volume',
+      filter: 'lowpass',
       options: {
-        'volume': 0.2
+        'f': 1000,
+        'p': 2
       },
-      outputs: volumeLabel
+      outputs: lowpassLabel
     });
-    currentLabel = volumeLabel; // Update current label to volume label
+    currentLabel = lowpassLabel; // Update current label to lowpass label
+
+    // Apply subtle reverb effect
+    this.filterChain.push({
+      inputs: currentLabel,
+      filter: 'aecho',
+      options: {
+        'in_gain': 0.8,
+        'out_gain': 0.9,
+        'delays': 50,
+        'decays': 0.2
+      },
+      outputs: reverbLabel
+    });
+
+    // Return the most recent label
+    return reverbLabel;
   }
-  // Apply lowpass filter
-  this.filterChain.push({
-    inputs: currentLabel,
-    filter: 'lowpass',
-    options: {
-      'f': 1000,
-      'p': 2
-    },
-    outputs: lowpassLabel
-  });
-  // Return the most recent label
-  return lowpassLabel;
-}
+
 
 
 
