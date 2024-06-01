@@ -6,6 +6,7 @@ const ffmpeg = require('fluent-ffmpeg');
 const readline = require('readline');
 
 const config = require('./config');
+const { title } = require('process');
 const inputFiles = config.filterTest.inputs;
 const outputFile = config.filterTest.output;
 const ffmpegOutput = config.filterTest.ffmpeg;
@@ -29,6 +30,7 @@ class FilterTest {
         method: 'volumeFadeInOutWithLoopedStatic' },
       { title: 'Detune between stations', method: 'detuneBetweenStations'},
       { title: 'Faraway sounds with lowpass filter', method: 'farawayFilter'},
+      { title: 'Backward audio', method: 'backwardFilter'}
     ];
     this.filterChain = [];
     this.finalOutputLabel = '';
@@ -804,6 +806,21 @@ class FilterTest {
     this.configureAndRun();
   }
 
+  /**
+   * Apply a backward filter to the input files.
+   */
+  backwardFilter() {
+    this.loadInputs(['music']);
+    this.filterChain = [
+      {
+        inputs: '0:a',
+        filter: 'areverse',
+        outputs: 'a0'
+      }
+    ];
+    this.finalOutputLabel = 'a0';
+    this.configureAndRun();
+  }
 
 
 

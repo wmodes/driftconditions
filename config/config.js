@@ -196,8 +196,10 @@ const config = {
     interstitial: '%{transition}',
     // subtle noise has ampitude of 0.25 and offset +0.75
     subtleNoise: 'min(1,max(0,((cos(PI*(t)*0.25/13)*1+cos(PI*(t)*0.25/7)*0.5+cos(PI*(t)*0.25/3)*0.25)-0.5)*0.25*1+0.75))',
+    sunbleNoiseInverse: '1 - %{subtleNoise}',
+    subtleFade: '%{subtleNoise}',
     // here for backward compatibility
-    interrupted: 'min(1,max(0,((cos(PI*t*0.25/13)*1+cos(PI*t*0.25/7)*0.5+cos(PI*t*0.25/3)*0.25)-0.5)*0.75*-1+0.5))',
+    interrupted: '%{noise}',
     interrupter: '1-%{interrupted}',
     fadeInNOut: 'min(1,max(0,((cos(PI*t*0.25/13)*1+cos(PI*t*0.25/7)*0.5+cos(PI*t*0.25/3)*0.25)+1)*1+0.5))',
     fadeInNOutInverse: '1-%{fadeInNOut}',
