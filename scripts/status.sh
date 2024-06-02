@@ -1,21 +1,25 @@
 #!/bin/bash
 
 # Restart Caddy service
-sudo systemctl status caddy
-echo "Caddy service has been restarted."
+echo "# CADDY SERVICE"
+sudo systemctl status caddy -n 0 --no-pager
+printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -
 
 # Restart adminserver.service
-sudo systemctl status adminserver.service
-echo "AdminServer service has been restarted."
+echo "# ADMINSERVER SERVICE"
+sudo systemctl status adminserver.service -n 0 --no-pager
+printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -
 
 # Restart mixengine.service
-sudo systemctl status mixengine.service
-echo "MixEngine service has been restarted."
+echo "# MIXENGINE SERVICE"
+sudo systemctl status mixengine.service -n 0 --no-pager
+printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -
 
 # Restart icecast
-sudo systemctl status icecast2
-echo "Icecast service has been restarted."
+echo "# ICECAST SERVICE"
+sudo systemctl status icecast2 -n 0 --no-pager
+printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -
 
 # Restart liquidsoap
-sudo systemctl status liquidsoap
-echo "Liquidsoap service has been restarted."
+echo
+sudo systemctl status liquidsoap -n 0 --no-pager
