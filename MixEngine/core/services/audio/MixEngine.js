@@ -94,11 +94,6 @@ class MixEngine {
       return replacement;
     });
   }
-}
-
-// Example usage:
-const engine = new MixEngine(exprsConfig);
-
 
   /**
    * Resets the internal state of the MixEngine.
