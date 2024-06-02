@@ -21,10 +21,10 @@ const exprsConfig = config.exprs;
 class MixEngine {
   constructor() {
     this.exprs = this._substituteExpressions(exprsConfig);
-    logger.debug(`MixEngine:constructor: exprs:`);
+    console.log(`MixEngine:constructor: exprs:`);
     for (let key in this.exprs) {
       if (this.exprs.hasOwnProperty(key)) {
-        logger.debug(`${key}: ${this.exprs[key]}`);
+        console.log(`${key}: ${this.exprs[key]}`);
       }
     }
     this.filterChain = [];
