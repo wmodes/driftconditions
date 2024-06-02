@@ -1,6 +1,5 @@
 #!/bin/bash
 
-clear
 {
 echo "# SYSTEM STATUS #"
 printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -
@@ -28,4 +27,4 @@ printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -
 # Restart liquidsoap
 echo "## LIQUIDSOAP SERVICE ##"
 sudo systemctl status liquidsoap -n 0 --no-pager
-} | less
+} | less -r
