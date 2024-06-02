@@ -21,7 +21,7 @@ const exprsConfig = config.exprs;
 class MixEngine {
   constructor() {
     this.exprs = this._substituteExpressions(exprsConfig);
-    logger.debug(`MixEngine:constructor: exprs: ${JSON5.stringify(this.exprs, null, 2)}`);
+    logger.debug(`MixEngine:constructor: exprs: ${JSON.stringify(this.exprs, null, 2)}`);
     this.filterChain = [];
     // store the current input, track, and clip
     this.currentInputNum = 0;
