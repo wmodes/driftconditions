@@ -14,7 +14,6 @@ const mixFileDir = config.content.mixFileDir;
 const ffmpegOutput = config.ffmpeg.output;
 const filterConfig = config.filters;
 const exprsConfig = config.exprs;
-const logger = require('your-logger-module'); // Replace with your actual logger module
 
 /**
  * Class representing the MixEngine.
