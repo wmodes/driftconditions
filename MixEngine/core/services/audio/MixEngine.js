@@ -14,6 +14,7 @@ const mixFileDir = config.content.mixFileDir;
 const ffmpegOutput = config.ffmpeg.output;
 const filterConfig = config.filters;
 const exprsConfig = config.exprs;
+const logger = require('your-logger-module'); // Replace with your actual logger module
 
 /**
  * Class representing the MixEngine.
@@ -21,10 +22,10 @@ const exprsConfig = config.exprs;
 class MixEngine {
   constructor() {
     this.exprs = this._substituteExpressions(exprsConfig);
-    console.log(`MixEngine:constructor: exprs:`);
+    logger.debug('MixEngine:constructor: exprs:');
     for (let key in this.exprs) {
       if (this.exprs.hasOwnProperty(key)) {
-        console.log(`${key}: ${this.exprs[key]}`);
+        logger.debug(`${key}: ${this.exprs[key]}`);
       }
     }
     this.filterChain = [];
@@ -33,7 +34,7 @@ class MixEngine {
     this.currentTrackNum = 0;
     this.currentClipNum = 0;
     // store the track output labels
-    this.trackFinalLabels = []; 
+    this.trackFinalLabels = [];
     // final output label
     this.finalOutputLabel = '';
     // output file name
@@ -61,6 +62,7 @@ class MixEngine {
     while (hasUnresolvedPlaceholders) {
       hasUnresolvedPlaceholders = false;
       for (let key in exprs) {
+        logger.debug(`Resolving expression for key: ${key}`);
         const resolvedExpr = this._replacePlaceholders(exprs[key], exprs);
         if (resolvedExpr !== exprs[key]) {
           hasUnresolvedPlaceholders = true;
@@ -68,7 +70,12 @@ class MixEngine {
         }
       }
     }
-    
+
+    logger.debug('Substituted exprs:');
+    for (let key in exprs) {
+      logger.debug(`${key}: ${exprs[key]}`);
+    }
+
     return exprs;
   }
 
@@ -81,8 +88,18 @@ class MixEngine {
    * @private
    */
   _replacePlaceholders(str, exprs) {
-    return str.replace(/%\{(\w+)\}/g, (_, exprKey) => exprs[exprKey.toLowerCase()] || '');
+    logger.debug(`Replacing placeholders in: ${str}`);
+    return str.replace(/%\{(\w+)\}/g, (_, exprKey) => {
+      const replacement = exprs[exprKey.toLowerCase()] || '';
+      logger.debug(`Replacing %{${exprKey}} with ${replacement}`);
+      return replacement;
+    });
   }
+}
+
+// Example usage:
+const engine = new MixEngine(exprsConfig);
+
 
   /**
    * Resets the internal state of the MixEngine.
