@@ -16,15 +16,29 @@
 
 [Unit]
 Description=MixEngine Node.js Express backend service
-After=network.target
+After=network.target mysql.service
+Requires=mysql.service
 
 [Service]
 Type=simple
 User=debian
 WorkingDirectory=/home/debian/interference/MixEngine
+
+# Commands to run before the service starts
+ExecStartPre=/bin/echo 'Starting MixEngine service...'
+
+# The main service command
 ExecStart=/usr/bin/npm start
+
+# Commands to run after the service stops
+ExecStopPost=/bin/echo 'MixEngine service stopped.'
+
+# Restart service on failure
 Restart=on-failure
 RestartSec=5
+
+# Environment variables (optional)
+Environment=NODE_ENV=production
 
 [Install]
 WantedBy=multi-user.target
