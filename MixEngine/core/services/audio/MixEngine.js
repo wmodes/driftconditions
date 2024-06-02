@@ -51,15 +51,24 @@ class MixEngine {
    * @private
    */
   _substituteExpressions(exprsConfig) {
-    let exprs = this._keysToLowercase(exprsConfig); // Convert keys to lowercase at the start
+    // Convert all keys to lowercase
+    let exprs = this._keysToLowercase(exprsConfig);
+    logger.debug(`MixEngine:_substituteExpressions: exprs: ${JSON5.stringify(exprs, null, 2)}`);
+    // Get list of keys with placeholders that need substitution
     let exprsSubstNeeded = this._getListOfExprSubstNeeded(exprs);
+    logger.debug(`MixEngine:_substituteExpressions: exprsSubstNeeded: ${JSON.stringify(exprsSubstNeeded)}`);
     let loopNum = 0;
 
+    // while (exprsSubstNeeded != [] && loopNum < 5)
     while (exprsSubstNeeded.length > 0 && loopNum < 5) {
+      // iterate over exprsSubstNeeded
       for (let key of exprsSubstNeeded) {
+        // call _replacePlaceholder passing exprsObj, exprKey
         this._replacePlaceholder(exprs, key);
       }
+      // Get updated list of keys with placeholders that need substitution
       exprsSubstNeeded = this._getListOfExprSubstNeeded(exprs);
+      // increment loopNum
       loopNum++;
     }
 
@@ -91,20 +100,22 @@ class MixEngine {
     }
 
   /**
-   * Gets a list of keys that contain unresolved placeholders.
+   * Gets a list of keys in the expressions object that contain placeholders.
    *
    * @param {Object} exprsObj - The expressions object.
-   * @returns {string[]} - Array of keys with unresolved placeholders.
+   * @returns {string[]} An array of keys that contain placeholders.
    * @private
    */
   _getListOfExprSubstNeeded(exprsObj) {
-    const keyArray = [];
+    const keys = [];
+    // iterate over each key to see if there is an unresolved placeholder
     for (let key in exprsObj) {
-      if (/%\{\w+\}/.test(exprsObj[key])) {
-        keyArray.push(key);
+      if (exprsObj.hasOwnProperty(key) && /%\{\w+\}/.test(exprsObj[key])) {
+        // if value contains placeholder, add to key array
+        keys.push(key);
       }
     }
-    return keyArray;
+    return keys;
   }
 
   /**
@@ -115,10 +126,12 @@ class MixEngine {
    * @private
    */
   _replacePlaceholder(exprsObj, exprKey) {
+    // get value of exprKey from exprsObj
     const value = exprsObj[exprKey];
+    // replace placeholders with values corresponding to key in exprsObj
     exprsObj[exprKey] = value.replace(/%\{(\w+)\}/g, (_, placeholderKey) => {
       const replacement = exprsObj[placeholderKey.toLowerCase()] || '';
-      logger.debug(`Replacing %{${placeholderKey}} with ${replacement}`);
+      logger.debug(`Replacing %{${placeholderKey}} with ${replacement} in ${exprKey}`);
       return replacement;
     });
   }
