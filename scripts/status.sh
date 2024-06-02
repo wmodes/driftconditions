@@ -1,7 +1,8 @@
 #!/bin/bash
 
 clear
-echo "# SYTEM STATUS #"
+{
+echo "# SYSTEM STATUS #"
 printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -
 
 # Restart Caddy service
@@ -27,3 +28,4 @@ printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -
 # Restart liquidsoap
 echo "## LIQUIDSOAP SERVICE ##"
 sudo systemctl status liquidsoap -n 0 --no-pager
+} | less
