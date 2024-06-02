@@ -51,49 +51,74 @@ class MixEngine {
    * @private
    */
   _substituteExpressions(exprsConfig) {
-    const exprs = {};
-    const resolvedExprs = {};
+    let exprs = this._keysToLowercase(exprsConfig); // Convert keys to lowercase at the start
+    let exprsSubstNeeded = this._getListOfExprSubstNeeded(exprs);
+    let loopNum = 0;
 
-    for (let key in exprsConfig) {
-      const lowerCaseKey = key.toLowerCase();
-      exprs[lowerCaseKey] = exprsConfig[key];
-    }
-
-    let hasUnresolvedPlaceholders = true;
-    while (hasUnresolvedPlaceholders) {
-      hasUnresolvedPlaceholders = false;
-      for (let key in exprs) {
-        logger.debug(`Resolving expression for key: ${key}`);
-        const resolvedExpr = this._replacePlaceholders(exprs[key], resolvedExprs);
-        if (resolvedExpr !== exprs[key]) {
-          hasUnresolvedPlaceholders = true;
-          exprs[key] = resolvedExpr;
-        }
-        resolvedExprs[key] = resolvedExpr;
+    while (exprsSubstNeeded.length > 0 && loopNum < 5) {
+      for (let key of exprsSubstNeeded) {
+        this._replacePlaceholder(exprs, key);
       }
+      exprsSubstNeeded = this._getListOfExprSubstNeeded(exprs);
+      loopNum++;
     }
 
     logger.debug('Substituted exprs:');
-    for (let key in resolvedExprs) {
-      logger.debug(`${key}: ${resolvedExprs[key]}`);
+    for (let key in exprs) {
+      if (exprs.hasOwnProperty(key)) {
+        logger.debug(`${key}: ${exprs[key]}`);
+      }
     }
 
-    return resolvedExprs;
+    return exprs;
+  }
+
+  /**
+   * Converts all keys in the object to lowercase.
+   *
+   * @param {Object} obj - The object with keys to convert.
+   * @returns {Object} The object with lowercase keys.
+   * @private
+   */
+    _keysToLowercase(obj) {
+      const lowerCaseObj = {};
+      for (let key in obj) {
+        if (obj.hasOwnProperty(key)) {
+          lowerCaseObj[key.toLowerCase()] = obj[key];
+        }
+      }
+      return lowerCaseObj;
+    }
+
+  /**
+   * Gets a list of keys that contain unresolved placeholders.
+   *
+   * @param {Object} exprsObj - The expressions object.
+   * @returns {string[]} - Array of keys with unresolved placeholders.
+   * @private
+   */
+  _getListOfExprSubstNeeded(exprsObj) {
+    const keyArray = [];
+    for (let key in exprsObj) {
+      if (/%\{\w+\}/.test(exprsObj[key])) {
+        keyArray.push(key);
+      }
+    }
+    return keyArray;
   }
 
   /**
    * Replaces placeholders in a string with corresponding values from expressions.
    *
-   * @param {string} str - The string with placeholders.
-   * @param {Object} exprs - The expressions object.
-   * @returns {string} The string with replaced placeholders.
+   * @param {Object} exprsObj - The expressions object.
+   * @param {string} exprKey - The key of the expression to replace placeholders in.
    * @private
    */
-  _replacePlaceholders(str, exprs) {
-    logger.debug(`Replacing placeholders in: ${str}`);
-    return str.replace(/%\{(\w+)\}/g, (_, exprKey) => {
-      const replacement = exprs[exprKey.toLowerCase()] || '';
-      logger.debug(`Replacing %{${exprKey}} with ${replacement}`);
+  _replacePlaceholder(exprsObj, exprKey) {
+    const value = exprsObj[exprKey];
+    exprsObj[exprKey] = value.replace(/%\{(\w+)\}/g, (_, placeholderKey) => {
+      const replacement = exprsObj[placeholderKey.toLowerCase()] || '';
+      logger.debug(`Replacing %{${placeholderKey}} with ${replacement}`);
       return replacement;
     });
   }
