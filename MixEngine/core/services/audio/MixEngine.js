@@ -52,6 +52,8 @@ class MixEngine {
    */
   _substituteExpressions(exprsConfig) {
     const exprs = {};
+    const resolvedExprs = {};
+
     for (let key in exprsConfig) {
       const lowerCaseKey = key.toLowerCase();
       exprs[lowerCaseKey] = exprsConfig[key];
@@ -62,20 +64,21 @@ class MixEngine {
       hasUnresolvedPlaceholders = false;
       for (let key in exprs) {
         logger.debug(`Resolving expression for key: ${key}`);
-        const resolvedExpr = this._replacePlaceholders(exprs[key], exprs);
+        const resolvedExpr = this._replacePlaceholders(exprs[key], resolvedExprs);
         if (resolvedExpr !== exprs[key]) {
           hasUnresolvedPlaceholders = true;
           exprs[key] = resolvedExpr;
         }
+        resolvedExprs[key] = resolvedExpr;
       }
     }
 
     logger.debug('Substituted exprs:');
-    for (let key in exprs) {
-      logger.debug(`${key}: ${exprs[key]}`);
+    for (let key in resolvedExprs) {
+      logger.debug(`${key}: ${resolvedExprs[key]}`);
     }
 
-    return exprs;
+    return resolvedExprs;
   }
 
   /**
