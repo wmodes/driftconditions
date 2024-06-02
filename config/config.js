@@ -196,6 +196,8 @@ const config = {
     interstitial: '%{transition}',
     // subtle noise has ampitude of 0.15 and offset +0.85
     subtleNoise: 'min(1,max(0,((cos(PI*(t)*0.25/13)*1+cos(PI*(t)*0.25/7)*0.5+cos(PI*(t)*0.25/3)*0.25)-0.5)*0.2*1+0.8))',
+    // subtle noise with a different period
+    subtleNoise2: 'min(1,max(0,((cos(PI*(t)*0.25/17)*1+cos(PI*(t)*0.25/13)*0.5+cos(PI*(t)*0.25/7)*0.25)-0.5)*0.2*1+0.8))',
     subtleNoiseInverse: '1 - %{subtleNoise}',
     subtleFade: '%{subtleNoise}',
     // here for backward compatibility
