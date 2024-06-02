@@ -186,6 +186,8 @@ const config = {
     //
     // basic noise filter
     noise: 'min(1,max(0,((cos(PI*t*0.25/13)*1+cos(PI*t*0.25/7)*0.5+cos(PI*t*0.25/3)*0.25)-0.5)*0.75*1+0.5))',
+    // basic noise with a different period
+    noise2: 'min(1,max(0,((cos(PI*t*0.25/17)*1+cos(PI*t*0.25/13)*0.5+cos(PI*t*0.25/7)*0.25)-0.5)*0.75*1+0.5))',
     default: '%{noise}',
     // basic noise filter, but inverted
     inverseNoise: '1 - %{noise}',
