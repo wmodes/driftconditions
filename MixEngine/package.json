@@ -34,6 +34,7 @@
     "globals": "^15.0.0"
   },
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "postinstall": "rm -rf node_modules/config && ln -s ../config node_modules/config"
   }
 }
