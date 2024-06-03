@@ -34,7 +34,7 @@
     "globals": "^15.0.0"
   },
   "scripts": {
-    "preinstall": "rm -rf node_modules/config",
+    "preinstall": "rm -rf node_modules/config && ln -s ../../config node_modules/config",
     "start": "node server.js"
   }
 }
