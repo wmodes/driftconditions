@@ -22,13 +22,11 @@ const exprsConfig = config.exprs;
  */
 class MixEngine {
   constructor() {
-    logger.debug(`MixEngine:constructor: exprsConfig: ${JSON5.stringify(exprsConfig, null, 2)}`)
+    logger.debug(`MixEngine:constructor: config: ${JSON5.stringify(config, null, 2)}`);
     this.exprs = this._substituteExpressions(exprsConfig);
-    logger.debug('MixEngine:constructor: exprs:');
+    logger.debug('MixEngine:constructor: exprs: ...');
     for (let key in this.exprs) {
-      if (this.exprs.hasOwnProperty(key)) {
-        logger.debug(`${key}: ${this.exprs[key]}`);
-      }
+      logger.debug(`${key}: ${this.exprs[key]}`);
     }
     this.filterChain = [];
     // store the current input, track, and clip
@@ -56,10 +54,9 @@ class MixEngine {
   _substituteExpressions(exprsConfig) {
     // Convert all keys to lowercase
     let exprs = this._keysToLowercase(exprsConfig);
-    logger.debug(`MixEngine:_substituteExpressions: exprs: ${JSON5.stringify(exprs, null, 2)}`);
     // Get list of keys with placeholders that need substitution
     let exprsSubstNeeded = this._getListOfExprSubstNeeded(exprs);
-    logger.debug(`MixEngine:_substituteExpressions: exprsSubstNeeded: ${JSON.stringify(exprsSubstNeeded)}`);
+    // logger.debug(`MixEngine:_substituteExpressions: exprsSubstNeeded: ${JSON.stringify(exprsSubstNeeded)}`);
     let loopNum = 0;
 
     // while (exprsSubstNeeded != [] && loopNum < 5)
@@ -74,14 +71,12 @@ class MixEngine {
       // increment loopNum
       loopNum++;
     }
-
-    logger.debug('Substituted exprs:');
-    for (let key in exprs) {
-      if (exprs.hasOwnProperty(key)) {
-        logger.debug(`${key}: ${exprs[key]}`);
-      }
-    }
-
+    // logger.debug('Substituted exprs:');
+    // for (let key in exprs) {
+    //   if (exprs.hasOwnProperty(key)) {
+    //     logger.debug(`${key}: ${exprs[key]}`);
+    //   }
+    // }
     return exprs;
   }
 
@@ -134,7 +129,7 @@ class MixEngine {
     // replace placeholders with values corresponding to key in exprsObj
     exprsObj[exprKey] = value.replace(/%\{(\w+)\}/g, (_, placeholderKey) => {
       const replacement = exprsObj[placeholderKey.toLowerCase()] || '';
-      logger.debug(`Replacing %{${placeholderKey}} with ${replacement} in ${exprKey}`);
+      // logger.debug(`Replacing %{${placeholderKey}} with ${replacement} in ${exprKey}`);
       return replacement;
     });
   }
