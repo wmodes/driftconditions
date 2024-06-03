@@ -8,6 +8,8 @@ const ffmpeg = require('fluent-ffmpeg');
 const JSON5 = require('json5');
 const path = require('path');
 
+// clear the require cache to get the latest config
+delete require.cache[require.resolve('config')];
 const { config } = require('config');
 const contentFileDir = config.content.contentFileDir;
 const mixFileDir = config.content.mixFileDir;
