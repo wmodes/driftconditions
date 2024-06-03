@@ -26,4 +26,4 @@ printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -
 
 # Restart liquidsoap
 echo "## LIQUIDSOAP SERVICE ##"
-sudo systemctl status liquidsoap -n 0 --no-pager | sed "s/$/\x1b[0m/"
+sudo systemctl status liquidsoap -n 0 --no-pager
