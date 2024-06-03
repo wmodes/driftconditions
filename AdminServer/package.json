@@ -6,6 +6,7 @@
   "license": "MIT",
   "main": "server.js",
   "scripts": {
+    "preinstall": "rm -rf node_modules/config && ln -s ../../config node_modules/config",
     "start": "node server.js"
   },
   "dependencies": {
