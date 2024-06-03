@@ -185,28 +185,28 @@ const config = {
     // GraphToy demo: https://shorturl.at/T82uY
     //
     // basic noise filter
-    noise: 'min(1,max(0,((cos(PI*t*0.25/13)*1+cos(PI*t*0.25/7)*0.5+cos(PI*t*0.25/3)*0.25)-0.5)*0.75*1+0.5))',
+    'noise': 'min(1,max(0,((cos(PI*t*0.25/13)*1+cos(PI*t*0.25/7)*0.5+cos(PI*t*0.25/3)*0.25)-0.5)*0.75*1+0.5))',
     // basic noise with a different period
-    noise2: 'min(1,max(0,((cos(PI*t*0.25/17)*1+cos(PI*t*0.25/13)*0.5+cos(PI*t*0.25/7)*0.25)-0.5)*0.75*1+0.5))',
-    default: '%{noise}',
+    'noise2': 'min(1,max(0,((cos(PI*t*0.25/17)*1+cos(PI*t*0.25/13)*0.5+cos(PI*t*0.25/7)*0.25)-0.5)*0.75*1+0.5))',
+    'default': '%{noise}',
     // basic noise filter, but inverted
-    inverseNoise: '1 - %{noise}',
+    'inverseNoise': '1 - %{noise}',
     '1/noise': '%{inverseNoise}',
     // these transitional filters fill the space between noise and inverseNoise
-    transition: '4*(0.5-abs(0.5-%{noise}))*(0.5-abs(0.5-%{inverseNoise}))',
-    liminal: '%{transition}',
-    interstitial: '%{transition}',
+    'transition': '4*(0.5-abs(0.5-%{noise}))*(0.5-abs(0.5-%{inverseNoise}))',
+    'liminal': '%{transition}',
+    'interstitial': '%{transition}',
     // subtle noise has ampitude of 0.15 and offset +0.85
-    subtleNoise: 'min(1,max(0,((cos(PI*(t)*0.25/13)*1+cos(PI*(t)*0.25/7)*0.5+cos(PI*(t)*0.25/3)*0.25)-0.5)*0.2*1+0.8))',
+    'subtleNoise': 'min(1,max(0,((cos(PI*(t)*0.25/13)*1+cos(PI*(t)*0.25/7)*0.5+cos(PI*(t)*0.25/3)*0.25)-0.5)*0.2*1+0.8))',
     // subtle noise with a different period
-    subtleNoise2: 'min(1,max(0,((cos(PI*(t)*0.25/17)*1+cos(PI*(t)*0.25/13)*0.5+cos(PI*(t)*0.25/7)*0.25)-0.5)*0.2*1+0.8))',
-    subtleNoiseInverse: '1 - %{subtleNoise}',
-    subtleFade: '%{subtleNoise}',
+    'subtleNoise2': 'min(1,max(0,((cos(PI*(t)*0.25/17)*1+cos(PI*(t)*0.25/13)*0.5+cos(PI*(t)*0.25/7)*0.25)-0.5)*0.2*1+0.8))',
+    'subtleNoiseInverse': '1 - %{subtleNoise}',
+    'subtleFade': '%{subtleNoise}',
     // here for backward compatibility
-    interrupted: '%{noise}',
-    interrupter: '1-%{interrupted}',
-    fadeInNOut: 'min(1,max(0,((cos(PI*t*0.25/13)*1+cos(PI*t*0.25/7)*0.5+cos(PI*t*0.25/3)*0.25)+1)*1+0.5))',
-    fadeInNOutInverse: '1-%{fadeInNOut}',
+    'interrupted': '%{noise}',
+    'interrupter': '1-%{interrupted}',
+    'fadeInNOut': 'min(1,max(0,((cos(PI*t*0.25/13)*1+cos(PI*t*0.25/7)*0.5+cos(PI*t*0.25/3)*0.25)+1)*1+0.5))',
+    'fadeInNOutInverse': '1-%{fadeInNOut}',
   }
 };
 
