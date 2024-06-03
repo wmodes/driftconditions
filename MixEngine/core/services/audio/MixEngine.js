@@ -22,6 +22,7 @@ const exprsConfig = config.exprs;
  */
 class MixEngine {
   constructor() {
+    logger.debug(`MixEngine:constructor: exprsConfig: ${JSON5.stringify(exprsConfig, null, 2)}`)
     this.exprs = this._substituteExpressions(exprsConfig);
     logger.debug('MixEngine:constructor: exprs:');
     for (let key in this.exprs) {
