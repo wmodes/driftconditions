@@ -2,17 +2,17 @@
 #
 # Link into systemctl with:
 # % sudo ln -sf /home/debian/interference/setupfiles/mixengine.service /etc/systemd/system/mixengine.service
-# % systemctl daemon-reload
+# % sudo systemctl daemon-reload
 #
 # Start:
 # % sudo systemctl start mixengine.service
 #
 # Restart:
-# % sudo systemctl start mixengine.service
+# % sudo systemctl restart mixengine.service
 #
 # View journal:
 # % journalctl -u mixengine.service --no-pager | less
-# (though ordinary servver messsage sould be reported in interference/logs/mixengine.log)
+# (though ordinary server messages should be reported in interference/logs/mixengine.log)
 
 [Unit]
 Description=MixEngine Node.js Express backend service
