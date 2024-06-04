@@ -12,7 +12,7 @@ import FeatherIcon from 'feather-icons-react';
 import { SafeLink, useSafeNavigate } from '../utils/formUtils';
 
 export default function Navigation() {
-  const { user } = useSelector((state) => state.auth);
+  const user = useSelector((state) => state.auth.user);
   // console.log("nav: user", user)
   const dispatch = useDispatch();
   // const navigate = useNavigate();
@@ -22,6 +22,7 @@ export default function Navigation() {
 
   const handleLogout = async () => {
     await dispatch(logout());
+    closeMenu();
     navigate('/');
   };
 

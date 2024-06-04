@@ -62,10 +62,9 @@ export const logout = createAsyncThunk(
       {}, 
       { withCredentials: true }
     );
-    // console.log('Logout response:', response);
-    return {}; // Return an empty object or any relevant data on successful logout
+    // Return a specific payload to indicate successful logout
+    return { message: 'Logged out successfully' };
   } catch (error) {
-    // console.error('Logout error:', error);
     return thunkAPI.rejectWithValue(error.message);
   }
 });
@@ -142,10 +141,13 @@ export const authSlice = createSlice({
       })
       // logout
       .addCase(logout.fulfilled, (state) => {
-        // console.log('Executing logout.fulfilled reducer');
-        // Reset the authentication state
         state.loading = false;
         state.error = null;
+        state.user = {}; // Reset the user object upon successful logout
+      })
+      .addCase(logout.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       })
       // checkPageAuth
       .addCase(checkPageAuth.fulfilled, (state, action) => {

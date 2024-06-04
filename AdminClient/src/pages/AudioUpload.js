@@ -142,8 +142,13 @@ function AudioUpload() {
         setError('');
         setUploadedAudioID(response.audioID);
         dispatch(setUnsavedChanges(false));
-        // Redirect to the edit page for the newly uploaded audio
-        navigateOG(`/audio/edit/${response.audioID}`);
+        if (editPerm) {
+          // Redirect to the edit page for the newly uploaded audio
+          navigateOG(`/audio/edit/${response.audioID}`);
+        } else {
+          // Redirect to the audio view page for the newly uploaded audio
+          navigateOG(`/audio/view/${response.audioID}`);
+        }
       })
       .catch(error => {
         setIsLoading(false); // Stop loading
@@ -183,6 +188,13 @@ function AudioUpload() {
           <form onSubmit={handleSubmit}>
             <h2 className='title'>Upload Audio</h2>
             {renderBreadcrumbs()}
+
+            <div className="form-group">
+              <label className="form-label" htmlFor="file">Audio File: <Required /></label>
+              <input className="form-upload" type="file" id="file" onChange={handleFileChange} />
+              <p className="form-note">{fieldNotes.filetypes}</p>
+            </div>
+
             <div className="form-group">
               <label className="form-label" htmlFor="title">Title: <Required /></label>
               <input name="title" className="form-field" type="text" id="title" value={record.title} onChange={handleChange} />
@@ -195,12 +207,6 @@ function AudioUpload() {
                 <option value="Trashed" disabled={!editPerm}>Trashed</option>
               </select>
               <p className="form-note mt-1">{fieldNotes.status}</p>
-            </div>
-
-            <div className="form-group">
-              <label className="form-label" htmlFor="file">Audio File: <Required /></label>
-              <input className="form-upload" type="file" id="file" onChange={handleFileChange} />
-              <p className="form-note">{fieldNotes.filetypes}</p>
             </div>
 
             <div className="form-group">
