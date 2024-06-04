@@ -1,7 +1,7 @@
 // AudioView - View details of an audio file
 
 import React, { useEffect, useState, useRef } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { audioInfo } from '../store/audioSlice';
 import { initWaveSurfer, destroyWaveSurfer } from '../utils/waveUtils';
@@ -19,6 +19,24 @@ function AudioView() {
   const { audioID } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
+
+  // get auth state from Redux store
+  const { user: userAuth } = useSelector((state) => state.auth);
+  const [editPerm, setEditPerm] = useState(false);
+  const [listPerm, setListPerm] = useState(false);
+
+  // Check if the user has permission to edit audio
+  useEffect(() => {
+    // Check if the user has permission to edit audio
+    if (userAuth.permissions.indexOf('audioEdit') !== -1) {
+      // console.log('User has permission to edit audio');
+      setEditPerm(true);
+    }
+    if (userAuth.permissions.indexOf('audioList') !== -1) {
+      // console.log('User has permission to edit audio');
+      setListPerm(true);
+    }
+  }, [userAuth.permissions]);
 
   const [isDomReady, setIsDomReady] = useState(false);
   const waveSurferRef = useRef(null);
@@ -83,19 +101,21 @@ function AudioView() {
     };
   }, [isDomReady, record.filename]);
 
-  // Function to render advanced pagination buttons with navigation controls
   const renderBreadcrumbs = () => {
     return (
       <div className="breadcrumb-box">
-        <span className="link" onClick={() => navigate('/audio/list')}>
-          <FeatherIcon icon="arrow-left" />List
-        </span>
-        <span className="link" onClick={() => navigate(`/audio/edit/${audioID}`)}>
-          Edit
-        </span>
+        <ul className="breadcrumb">
+          {listPerm && (
+            <li className="link"><Link to="/audio/list">List</Link></li>
+          )}
+          <li className="link"><Link to="/audio/upload">Add New</Link></li>
+          {editPerm && (
+            <li className="link"><Link to={'/audio/edit/' + audioID}>Edit</Link></li>
+          )}
+        </ul>
       </div>
     );
-  };
+  };  
 
   return ( 
     <div className="view-wrapper">
