@@ -7,7 +7,7 @@ import { useDispatch } from 'react-redux';
 import FeatherIcon from 'feather-icons-react';
 import AudioPlayer from '../components/AudioPlayer'; 
 import Playlist from '../components/Playlist';
-import { generateRandomTexts, getProjectName, getHeroImageURL} from '../utils/randomUtils'; 
+import { generateRandomTexts, getProjectName, getHeroImageURL, getLocation } from '../utils/randomUtils'; 
 
 import config from '../config/config';
 // pull variables from the config object
@@ -19,6 +19,7 @@ const Homepage = () => {
   const [generatedText, setGeneratedText] = useState([]);
   
   const projectName = getProjectName();
+  const location = getLocation();
 
   useEffect(() => {
     // Assuming generateRandomTexts is a function that accepts projectName and returns an array of text strings
@@ -69,9 +70,13 @@ const Homepage = () => {
                 <p className="pullquote" key={2} dangerouslySetInnerHTML={createMarkup(generatedText[2])}></p>
                 <p key={3} dangerouslySetInnerHTML={createMarkup(generatedText[3])}></p> 
               </div>
-              <div className="contact">
-                <p>Need to reach us? <a className="link" 
-                href="mailto:info@driftconditions.org">Okay.</a></p>
+              <div className="footer-box">
+                <p className="what-is-this">
+                  { projectName } is a procedurally-generated audio stream mixed on-the-fly 24/7 from { location }.
+                </p>
+                <p className="contact">
+                  Need to reach us? <a className="link"                 href="mailto:info@driftconditions.org">Okay.</a>
+                </p>
               </div>
             </div> {/* end narrative-wrapper */}
 

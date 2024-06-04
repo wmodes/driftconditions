@@ -82,6 +82,23 @@ var grammarDefinition = {
   "projAdj": [
     "Static", "Toxic", "Halcyon", "Safety", "Radio", "Drift", "Dusk",
     "General", "Dynamic", "Licensed", "NonLicensed", "Auxiliary", "Analytical"
+  ],
+  "location": [
+    "a 50-year-old camper van on the lonely basin and range off Highway 50",
+    "a motel in the alien sands of Rachel, Nevada",
+    "the heart of the Mojave Desert, near the ghost town of Rhyolite",
+    "the mountaintops of the Sierra Nevada",
+    "the heart of the flatlands along the winding Misssouri River",
+    "a shantyboat on the bayous of the Achaflaya Basin",
+    "a boathouse on the Minnesota backwaters of the Upper Mississippi",
+    "a desert shack on the high desert of the Great Basin between Pyramid Lake and the Black Rock Playa",
+    "a historic bungalow at the foot of Harmar Hill in Marieta, Ohio on the shores of the Ohio River",
+    "Florence, Alabama on the sunny banks of the Tennessee River",
+    "a woodcutter's cabin in the rolling woodlands of the Ozarks",
+    "at the end of a red dirt road in the piney woods of East Texas",
+    "a converted barn in the rolling hills of the Blue Ridge Mountains",
+    "a hunting lodge in the high desert of the Colorado Plateau near Four Corners",
+    "a sunny cabin in the San Juan archipelago in the otherwise foggy Pacific Northwest",
   ]
 }
 
@@ -145,6 +162,15 @@ export const getHeroImageURL = () => {
   const imageIndex = generateHash() % homepageImages.length;
   const imageUrl = `${homepageImageURLBase}/${homepageImages[imageIndex]}`;
   return imageUrl;
+}
+
+//
+// Choosing a location
+//
+
+export const getLocation = () => {
+  const location = grammar.flatten('#location#');
+  return location;
 }
 
 //

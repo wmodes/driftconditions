@@ -244,14 +244,6 @@ svg {
   font-size: 1.5rem;
 }
 
-.homepage-box .contact {
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: solid 0.25px #888;
-  font-size: 0.9rem;
-  text-align: center;
-}
-
 .hero-image-container {
   border-radius: 5%;
   overflow: hidden;
@@ -287,6 +279,21 @@ svg {
 
 .playlist a {
   color: var(--link-color);
+}
+
+/*
+ *  Footer Elements
+ */
+
+.footer-box {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: solid 0.25px #888;
+  font-size: 0.9rem;
+}
+
+.footer-box .contact {
+  text-align: center;
 }
 
 /*
