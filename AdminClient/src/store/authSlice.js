@@ -143,7 +143,8 @@ export const authSlice = createSlice({
       .addCase(logout.fulfilled, (state) => {
         state.loading = false;
         state.error = null;
-        state.user = {}; // Reset the user object upon successful logout
+        state.user = null; // Reset the user object upon successful logout
+        state.authChecked = false; // Reset authChecked to false
       })
       .addCase(logout.rejected, (state, action) => {
         state.loading = false;

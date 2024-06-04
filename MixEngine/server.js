@@ -1,5 +1,18 @@
 // server.js - primary server code including:
 
+// Add global error handlers at the very top of the file
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+  // Optionally, perform cleanup and exit process if necessary
+  process.exit(1); // Exit the process with a failure code
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection:', reason);
+  // Optionally, perform cleanup and exit process if necessary
+  process.exit(1); // Exit the process with a failure code
+});
+
 require('module-alias/register');
 const express = require('express');
 const app = express();
