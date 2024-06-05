@@ -346,7 +346,7 @@ class MixEngine {
           );
         }
         // backward effect
-        else if (/^(backward|reverse)/i.test(effect)) {
+        else if (/^(backward|backwards|reverse|reversed)/i.test(effect)) {
           logger.debug(`MixEngine:_buildClipFilters(): Applying backward effect to clip ${effect}`);
           nextInputSrc = this._backwardEffect(
             nextInputSrc, 
