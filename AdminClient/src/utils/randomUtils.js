@@ -86,7 +86,7 @@ var grammarDefinition = {
   "location": [
     "a 50-year-old camper van on the lonely basin and range off Highway 50",
     "a motel in the alien sands of Rachel, Nevada",
-    "the heart of the Mojave Desert, near the ghost town of Rhyolite",
+    "the heart of the Mojave Desert, near the ghost town of R hyolite",
     "the mountaintops of the Sierra Nevada",
     "the heart of the flatlands along the winding Misssouri River",
     "a shantyboat on the bayous of the Achaflaya Basin",
@@ -95,7 +95,7 @@ var grammarDefinition = {
     "a historic bungalow at the foot of Harmar Hill in Marieta, Ohio on the shores of the Ohio River",
     "Florence, Alabama on the sunny banks of the Tennessee River",
     "a woodcutter's cabin in the rolling woodlands of the Ozarks",
-    "at the end of a red dirt road in the piney woods of East Texas",
+    "the end of a red dirt road in the piney woods of East Texas",
     "a converted barn in the rolling hills of the Blue Ridge Mountains",
     "a hunting lodge in the high desert of the Colorado Plateau near Four Corners",
     "a sunny cabin in the San Juan archipelago in the otherwise foggy Pacific Northwest",
