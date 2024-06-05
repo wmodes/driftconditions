@@ -22,10 +22,21 @@ http://driftconditions.org:80 {
 # AdminClient
 https://driftconditions.org {
     root * /home/debian/interference/AdminClient/build
+    file_server
     encode gzip
     tls wmodes@gmail.com
+    try_files {path} /index.html
 
-    # Serve the Icecast report
+    # Enable access logs with default log format
+    log {
+        output file /var/log/caddy/access.log {
+            roll_size 100mb
+            roll_keep 7
+            roll_keep_for 720h
+        }
+    }
+
+    # Serve icecast stats separately
     handle /icecast/* {
         root * /home/debian/interference/icecast
         file_server
@@ -35,21 +46,6 @@ https://driftconditions.org {
     handle /fallback/* {
         root * /home/debian/interference/fallback
         file_server
-    }
-
-    # Handle all other routes with the React app
-    handle {
-        try_files {path} /index.html
-        file_server
-    }
-
-    # Enable access logs with default log format
-    log {
-        output file /var/log/caddy/access.log {
-            roll_size 100mb
-            roll_keep 7
-            roll_keep_for 720h
-        }
     }
 
     # Serve static files and handle errors
