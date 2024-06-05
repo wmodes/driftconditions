@@ -117,7 +117,7 @@ router.post('/list',  verifyToken, async (req, res) => {
 // If a username is provided, it shows that user, 
 // otherwise it extracts the user ID from the token, and returns the user's information.
 // This is a protected route, only accessible to authenticated users.
-router.post('/profile', verifyToken, async (req, res) => {
+router.post('/profile', async (req, res) => {
   try {
     // Get the username from the body if provided
     var targetUsername = req.body.username;
