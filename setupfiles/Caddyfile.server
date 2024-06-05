@@ -42,6 +42,12 @@ https://driftconditions.org {
         file_server
     }
 
+    # Serve the Icecast report
+    handle /icecast/* {
+        root * /home/debian/interference/icecast
+        file_server
+    }
+
     # Serve static files and handle errors
     handle_errors {
         @notfound {
