@@ -16,6 +16,7 @@ function Signup() {
     password: '',
     firstname: '',
     lastname: '',
+    location: '',
     email: '',
   });
 
@@ -43,7 +44,7 @@ function Signup() {
     // Prevents the default form submission.
     e.preventDefault();
     // Dispatches the signup action with user details.
-    dispatch(signup(record))
+    dispatch(signup({record}))
     .then((res) => {
       console.log("data received:", res);
       navigate('/signin');
@@ -79,6 +80,8 @@ function Signup() {
             <input className="form-field" type="text" name="firstname" value={record.firstname} onChange={handleChange} />
             <label className="form-label"  htmlFor="lastname">Last Name: <Required /></label>
             <input className="form-field" type="text" name="lastname" value={record.lastname} onChange={handleChange} />
+            <label className="form-label" htmlFor="location">Location:</label>
+            <input className="form-field" type="text" name="location" value={record.location} onChange={handleChange} />
             <label className="form-label"  htmlFor="email">Email <Required /></label>
             <input className="form-field" type="text" name="email" value={record.email} onChange={handleChange} />
             <div className='button-box'>

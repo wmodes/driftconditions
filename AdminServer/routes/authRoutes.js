@@ -14,7 +14,7 @@
 // foundational imports
 const express = require('express');
 const router = express.Router();
-const logger = require('config/logger').custom('AdminServer', 'info');
+const logger = require('config/logger').custom('AdminServer', 'debug');
 const { database: db } = require('config');
 
 // authentication imports
@@ -38,15 +38,15 @@ const saltRounds = config.bcrypt.saltRounds;
 // hashes the password for secure storage, and inserts the new user into the database.
 // Uses bcrypt for password hashing to securely store user credentials.
 router.post('/signup', async (req, res) => {
-  const { username, password, firstname, lastname, email } = req.body;
+  const { username, password, firstname, lastname, location, email } = req.body;
   
   try {
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, saltRounds);
     
     // Construct db query to insert user into the database
-    const query = 'INSERT INTO users (username, password, firstname, lastname, email) VALUES (?, ?, ?, ?, ?)';
-    const values = [username, hashedPassword, firstname, lastname, email];
+    const query = 'INSERT INTO users (username, password, firstname, lastname, location, email) VALUES (?, ?, ?, ?, ?, ?)';
+    const values = [username, hashedPassword, firstname, lastname, location, email];
 
     const [result] = await db.query(query, values);
     

@@ -123,72 +123,48 @@ router.post('/profile', async (req, res) => {
     var targetUsername = req.body.username;
     logger.debug(`userRoutes:/profile: passed username: ${targetUsername}`);
 
-    // get userID and username from token
-    // useful for checking if the user is trying to view their own profile
-    // and in case we haven't been provided a username
-    const requestingUserInfo = jwt.verify(req.cookies.token, jwtSecretKey);
-    logger.debug(`userRoutes:/profile: requestingUserInfo: ${JSON.stringify(requestingUserInfo, null, 2)}`);
-    const requestingUserID = requestingUserInfo.userID;
-    const requestingUsername = requestingUserInfo.username;
+    // Initialize variables for requesting user info
+    let requestingUserInfo = null;
+    let requestingUsername = null;
 
-    // If no username is provided, use the user info from the token
-   if (!targetUsername) {
-     targetUsername = requestingUsername;
-   }
-
-    // Define access and fields returned based on the user's permission level
-   let lookupStatus = null;
-    //
-    // is user trying to view their own profile?
-    if (requestingUsername === targetUsername) {
-      lookupStatus = "self";
-    } 
-    // is user trying to view someone else's profile?
-    else {
-      // First, check if they have permission to do so
-      if (await hasPermission(requestingUserInfo, 'userLookup')) { 
-        logger.debug(`userRoutes:/profile: User lookup granted for ${requestingUsername}`);
-        lookupStatus = "basic";
-      } 
-      else {
-        logger.debug(`Permission denied for userlookup ${{ requestingUserID }}`);
-        return res.status(403).send("Forbidden: You do not have permission to view this user's information");
+    // If no username is provided, verify the token and extract user info
+    if (!targetUsername) {
+      if (!req.cookies.token) {
+        return res.status(400).json({ success: false, message: "No target user specified and no token provided" });
       }
+      requestingUserInfo = jwt.verify(req.cookies.token, jwtSecretKey);
+      logger.debug(`userRoutes:/profile: requestingUserInfo: ${JSON.stringify(requestingUserInfo, null, 2)}`);
+      requestingUsername = requestingUserInfo.username;
+      targetUsername = requestingUsername;
     }
-    // Next, check if user can view extended info
-    if (await hasPermission(requestingUserInfo, 'userEdit')) { 
-      logger.debug(`userRoutes:/profile: Extended user lookup granted for ${requestingUsername}`);
-      lookupStatus = "extended";
-    } 
-    logger.debug(`userRoutes:/profile: lookupStatus: ${lookupStatus}`);
-    // from here, user is either viewing their own profile or has permission to view another's
 
-    // fetch the target user's information based on username
+    // Check if the user is trying to view their own profile
+    let lookupStatus = (requestingUsername === targetUsername) ? "self" : "basic";
+    logger.debug(`userRoutes:/profile: lookupStatus: ${lookupStatus}`);
+
+    // Fetch the target user's information based on username
     let userInfo = await getUserInfo({ username: targetUsername });
     logger.debug(`userRoutes:/profile: userInfo: ${JSON.stringify(userInfo, null, 2)}`);
     if (!userInfo) {
       return res.status(404).json({ success: false, message: "User not found" });
     }
 
-    // create copies of immutable fields
+    // Create copies of immutable fields
     userInfo.roleNameShow = userInfo.roleName;
     userInfo.statusShow = userInfo.status;
 
     // Define the fields to be returned based on the user's permission level
     let allowedFields = [];
     switch (lookupStatus) {
-      case "extended":
-        // return everything except password
-        allowedFields = ['userID', 'username', 'status', 'statusShow', 'email', 'firstname', 'lastname', 'email', 'url', 'bio', 'location', 'roleName', 'roleNameShow', 'addedOn'];
-        break;
       case "self":
-        // return everything except password
+        // Return everything except password
         allowedFields = ['userID', 'username', 'statusShow', 'email', 'firstname', 'lastname', 'email', 'url', 'bio', 'location', 'roleNameShow', 'addedOn'];
         break;
       case "basic":
       default:
         allowedFields = ['userID', 'username', 'firstname', 'lastname', 'url', 'bio', 'location', 'roleNameShow', 'addedOn'];
     }
+
     // Filter userInfo to include only the specified fields
     const userInfoReturned = Object.keys(userInfo).reduce((acc, key) => {
       if (allowedFields.includes(key)) {
