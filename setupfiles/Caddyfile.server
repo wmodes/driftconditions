@@ -36,12 +36,6 @@ https://driftconditions.org {
         }
     }
 
-    # Serve icecast stats separately
-    handle /icecast/* {
-        root * /home/debian/interference/icecast
-        file_server
-    }
-
     # Serve static assets for fallback separately
     handle /fallback/* {
         root * /home/debian/interference/fallback
