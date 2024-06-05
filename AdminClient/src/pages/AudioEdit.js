@@ -145,6 +145,8 @@ function AudioEdit() {
     };
   }, [isDomReady, record.filename]); 
 
+  // Check if required fields are filled and at least one classification is true
+  const isFormValid = record.title && record.copyrightCert && record.classification && record.tags && Object.values(record.classification).includes(true);
   const Required = () => <span className="required">*</span>;
 
   // const prepLabel = (text) => text
@@ -177,19 +179,19 @@ function AudioEdit() {
               <input className="form-field" type="text" id="title" name="title" value={record.title || ""} onChange={handleChange} />
               
               <div className="mb-2">
-                <label className="form-label">Filename:</label> <span className="non-editable">{record.filename}</span>
+                <label className="form-label">Filename: <Required /></label> <span className="non-editable">{record.filename}</span>
               </div>
               
               <div className="mb-2">
-                <label className="form-label">Author:</label> <span className="non-editable">{record.creatorUsername}</span>
+                <label className="form-label">Author: <Required /></label> <span className="non-editable">{record.creatorUsername}</span>
               </div>
               
               <div className="mb-2">
-                <label className="form-label">Date:</label> <span className="non-editable">{record.createDate}</span>
+                <label className="form-label">Date: <Required /></label> <span className="non-editable">{record.createDate}</span>
               </div>
 
 
-              <label className="form-label" htmlFor="status">Status:</label>
+              <label className="form-label" htmlFor="status">Status: <Required /></label>
               <select name="status" value={record.status} onChange={handleChange} className="form-select">
                 <option value="Review">Under Review</option>
                 <option value="Approved">Approved</option>
@@ -205,14 +207,14 @@ function AudioEdit() {
 
             <div className="form-group">
 
-              <label className="form-label" htmlFor="title">Classification:</label>
+              <label className="form-label" htmlFor="title">Classification: <Required /></label>
               <ClassificationCheckboxes
                 classification={record.classification}
                 handleChange={handleChange}
               />
               <p className="form-note">{fieldNotes.classification}</p>
 
-              <label className="form-label" htmlFor="tags">Tags:</label>
+              <label className="form-label" htmlFor="tags">Tags: <Required /></label>
               {record?.tags !== undefined && (        
                 <TagInput
                   initialTags={record.tags}
@@ -227,7 +229,7 @@ function AudioEdit() {
 
             <div className='button-box'>
               <button className='button cancel' type="button" onClick={() => navigate(`/audio/view/${audioID}`)}>Cancel</button>
-              <button className='button submit' type="submit">Save Changes</button>
+              <button className='button submit' type="submit" disabled={!isFormValid}>Save Changes</button>
             </div>
 
             <div className='message-box'>

@@ -157,8 +157,8 @@ function AudioUpload() {
       });
   };
 
-  // Check if required fields are filled
-  const isFormValid = record.title && file && record.copyrightCert;
+  // Check if required fields are filled and at least one classification is true
+  const isFormValid = record.title && file && record.copyrightCert && record.classification && record.tags && Object.values(record.classification).includes(true);
   const Required = () => <span className="required">*</span>;
 
   // const prepLabel = (text) => text
@@ -199,7 +199,7 @@ function AudioUpload() {
               <label className="form-label" htmlFor="title">Title: <Required /></label>
               <input name="title" className="form-field" type="text" id="title" value={record.title} onChange={handleChange} />
 
-              <label className="form-label" htmlFor="status">Status:</label>
+              <label className="form-label" htmlFor="status">Status: <Required /></label>
               <select name="status" value={record.status} onChange={handleChange} className="form-select">
                 <option value="Review">Under Review</option>
                 <option value="Approved" disabled={!editPerm}>Approved</option>
@@ -210,14 +210,14 @@ function AudioUpload() {
             </div>
 
             <div className="form-group">
-              <label className="form-label" htmlFor="title">Classification:</label>
+              <label className="form-label" htmlFor="title">Classification: <Required /></label>
               <ClassificationCheckboxes
                 classification={record.classification}
                 handleChange={handleChange}
               />
               <p className="form-note">{fieldNotes.classification}</p>
 
-              <label className="form-label" htmlFor="tags">Tags:</label>
+              <label className="form-label" htmlFor="tags">Tags: <Required /></label>
               {/* <input className="form-field" type="text" id="tags" name="tags" value={record.tags || ''} onChange={handleChange} /> */}      
               <TagInput
                 initialRecord={record.tags}
