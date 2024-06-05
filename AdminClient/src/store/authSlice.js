@@ -22,17 +22,18 @@ const checkRoute = serverBaseURL + config.adminServer.routes.check;
 // signup thunk for registering a new user. Utilizes Axios for posting user data to the server.
 // On success or failure, it either returns the user data or rejects with an error message.
 export const signup = createAsyncThunk(signupRoute, 
-  async ({username, password, firstname, lastname, email}, thunkAPI) => {
-  try {
-    const response = await axios.post(
-      signupRoute, 
-      {username, password, firstname, lastname, email}
-    );
-    return response.data;
-  } catch (error) {
-    return thunkAPI.rejectWithValue(error.message);  
+  async ({record}, thunkAPI) => {
+    try {
+      const response = await axios.post(
+        signupRoute, 
+        record,
+      );
+      return response.data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.message);  
+    }
   }
-});
+);
 
 // signin thunk for logging in a user. It sends username and password to the server,
 // and handles the response similarly to the signup thunk.
