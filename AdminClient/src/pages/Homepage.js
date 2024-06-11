@@ -2,8 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-// import { fetchQueuePlaylist } from '../store/queueSlice';
-// import { renderPlaylist } from '../utils/queueUtils';
 import FeatherIcon from 'feather-icons-react';
 import AudioPlayer from '../components/AudioPlayer'; 
 import Playlist from '../components/Playlist';
