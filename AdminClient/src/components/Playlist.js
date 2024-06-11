@@ -73,10 +73,16 @@ const Playlist = () => {
         )}
         {mixPlaylist.map((clip, index) => (
           <div key={index} className="clip">
-            <span className="clip-title">{clip.title} </span>
+            {seeMore ? (
+              <span className="clip-title">
+                <Link to={`/audio/view/${clip.audioID}`}>{clip.title}</Link>
+              </span>
+            ) : (
+              <span className="clip-title">{clip.title}</span>
+            )}
             {clip.creatorUsername && (
               <span className="clip-creator">
-                (Contrib: <Link to={`/profile/${clip.creatorUsername}`}>{clip.creatorUsername}</Link>)
+                &nbsp;(Contrib: <Link to={`/profile/${clip.creatorUsername}`}>{clip.creatorUsername}</Link>)
               </span>
             )}
           </div>
