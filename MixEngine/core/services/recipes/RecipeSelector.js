@@ -5,7 +5,9 @@ const logger = require('config/logger').custom('RecipeSelector', 'info');
 
 const { config } = require('config');
 // Extract values from the config object
-const { selectPoolPercentSize, selectPoolMinSize } = config.recipes;
+const { 
+  selectPoolPercentSize, selectPoolMinSize, 
+  classificationScoreWeight, newnessScoreWeight } = config.recipes;
 
 class RecipeSelector {
 
@@ -140,12 +142,12 @@ class RecipeSelector {
   // Score a recipe based on newness and classification (and other criteria if we wish)
   //  check status: confirmed working
   _calculateScore(recipe) {
-    const newnessScoreNorm = this._calculateNewnessScore(recipe);
-    const classificationScoreNorm = this._calculateClassificationScore(recipe);
-    // combine scores for different criteria here 
-    //  (average for now, but a weighted average makes more sense)
-    const score = (newnessScoreNorm + classificationScoreNorm) / 2;
-    logger.debug(`Recipe scored: ${recipe.title}, newness: ${newnessScoreNorm}, classification: ${classificationScoreNorm}, score: ${score}`);
+    const newnessScore = this._calculateNewnessScore(recipe);
+    const classificationScore = this._calculateClassificationScore(recipe);
+    // combine scores for different criteria as weighted average
+    const totalWeight = newnessScoreWeight + classificationScoreWeight;
+    const score = (newnessScore * newnessScoreWeight + classificationScore * classificationScoreWeight) / totalWeight;
+    logger.debug(`Recipe scored: ${recipe.title}, newness: ${newnessScore}, classification: ${classificationScore}, score: ${score}`);
     return score;
   }
 
