@@ -363,6 +363,24 @@ class MixEngine {
             this._getParams(effect)
           );
         }
+        // faraway effect
+        else if (/^(faraway|distant)/i.test(effect)) {
+          logger.debug(`MixEngine:_buildtrackFilters(): Applying faraway effect to track ${effect}`);
+          nextInputSrc = this._farawayEffect(
+            nextInputSrc, 
+            baseLabel, 
+            this._getParams(effect)
+          );
+        }
+        // telephone effect
+        else if (/^(telephone|phone)/i.test(effect)) {
+          logger.debug(`MixEngine:_buildtrackFilters(): Applying telephone effect to track ${effect}`);
+          nextInputSrc = this._telephoneEffect(
+            nextInputSrc, 
+            baseLabel, 
+            this._getParams(effect)
+          );
+        }
         // detune effect
         else if (effect.toLowerCase().startsWith('detune')) {
           logger.debug(`MixEngine:_buildtrackFilters(): Applying detune effect to track ${effect}`);
@@ -510,6 +528,15 @@ class MixEngine {
         else if (/^(faraway|distant)/i.test(effect)) {
           logger.debug(`MixEngine:_buildClipFilters(): Applying faraway effect to clip ${effect}`);
           nextInputSrc = this._farawayEffect(
+            nextInputSrc, 
+            baseLabel, 
+            this._getParams(effect)
+          );
+        }
+        // telephone effect
+        else if (/^(telephone|phone)/i.test(effect)) {
+          logger.debug(`MixEngine:_buildtrackFilters(): Applying telephone effect to track ${effect}`);
+          nextInputSrc = this._telephoneEffect(
             nextInputSrc, 
             baseLabel, 
             this._getParams(effect)
@@ -786,6 +813,57 @@ class MixEngine {
 
     // Return the most recent label
     return newLabel;
+  }
+
+  /**
+   * Builds a filter that handles telephone effect
+   * @param {string} inputSrc
+   * @param {string} baseLabel
+   * @param {string[]} params - An array of parameters, case insensitive.
+   * @sideeffect adds filter to this.filterChain
+   * @returns {string} most recent output label
+   * @private
+   */
+  _telephoneEffect(inputSrc, baseLabel, params) {
+    logger.debug(`MixEngine:_telephoneEffect(): params: ${params}`);
+
+    // Generate initial labels
+    let currentLabel = inputSrc;
+    const bandpassLabel = baseLabel + '_telephone_bandpass';
+    const distortionLabel = baseLabel + '_telephone_distortion';
+
+    // Apply bandpass filter
+    this.filterChain.push({
+      inputs: currentLabel,
+      filter: 'bandpass',
+      options: {
+        'f': 1000,   // Center frequency at 1000 Hz
+        'width_type': 'h',
+        'width': 2000 // Bandwidth of 2000 Hz (approx. 300-3400 Hz for telephone)
+      },
+      outputs: bandpassLabel
+    });
+    currentLabel = bandpassLabel; // Update current label to bandpass label
+
+    // Apply distortion effect to simulate telephone distortion
+    this.filterChain.push({
+      inputs: currentLabel,
+      filter: 'acompressor',
+      options: {
+        'level_in': 1.0,
+        'level_out': 0.8,
+        'attack': 20,
+        'release': 250,
+        'threshold': -20,
+        'ratio': 10,
+        'makeup': 1.0,
+        'knee': 5
+      },
+      outputs: distortionLabel
+    });
+
+    // Return the most recent label
+    return distortionLabel;
   }
 
 
