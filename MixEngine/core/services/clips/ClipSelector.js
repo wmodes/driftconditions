@@ -5,9 +5,10 @@ const JSON5 = require('json5');
 const logger = require('config/logger').custom('ClipSelector', 'info');
 
 const { config } = require('config');
+const { 
+  selectPoolPercentSize, selectPoolMinSize,
+  newnessScoreWeight, tagScoreWeight } = config.audio;
 const clipLengthRanges = config.audio.clipLength;
-const selectPoolPercentSize = config.audio.selectPoolPercentSize;
-const selectPoolMinSize = config.audio.selectPoolMinSize;
 
 class ClipSelector {
   constructor() {
@@ -280,9 +281,9 @@ _setSilenceBasics(clip) {
   _calculateScore(clip) {
     const newnessScore = this._calculateNewnessScore(clip);
     const tagScore = this._calculateTagScore(clip);
-    // combine scores for different criteria here 
-    //  (average for now, but a weighted average makes more sense)
-    const score = (newnessScore + tagScore) / 2;
+    // combine scores for different criteria as weighted average
+    const totalWeight = newnessScoreWeight + tagScoreWeight;
+    const score = (newnessScore * newnessScoreWeight + tagScore * tagScoreWeight) / totalWeight;
     logger.debug(`Clip scored: ${clip.title}, newness: ${newnessScore}, tagScore: ${tagScore}, score: ${score}`);
     return score;
   }

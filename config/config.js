@@ -56,6 +56,8 @@ const config = {
   audio: {
     selectPoolPercentSize: 10,
     selectPoolMinSize: 25,
+    newnessScoreWeight: 1,
+    tagScoreWeight: 0.5,
     classification: [
       'Ambient', 
       'Atmospheric', 
@@ -104,6 +106,8 @@ const config = {
   recipes: {
     selectPoolPercentSize: 5,
     selectPoolMinSize: 3,
+    newnessScoreWeight: 1,
+    classificationScoreWeight: 0.25,
     classification: [
       'Ambient', 
       'Atmospheric', 
