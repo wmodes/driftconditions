@@ -6,7 +6,7 @@ At this point we have a working Express server and React client talking to a MyS
 
 ### Local/dev
 
-- https://localhost:3000 - React build of AdminClient
+- https://localhost:3000 - React build of AdminClient 
 - http://localhost:3001 - Dev version of AdminClient
 - https://localhost:8080 - Secure reverse proxy to AdminServer
 - http://localhost:8081 - AdminServer
@@ -20,13 +20,13 @@ At this point we have a working Express server and React client talking to a MyS
 
 - http://driftconditions.org:80 - redirects to https on port 443
 - https://driftconditions.org:443 - React build of AdminClient
-- https://driftconditions.org:8080 - Secure reverse proxy to AdminServer
-- http://driftconditions.org:8081 - AdminServer (firewalled)
-- https://driftconditions.org:8082 - Secure reverse proxy to MixEngine
-- http://driftconditions.org:8083 - MixEngine (firewalled)
-- mysql://driftconditions.org:3306 - MySQL server (firewalled)
-- httpss://driftconditions.org:8000 - Icecast secure stream
-- http://driftconditions.org:8001 - Icecast stream (stream source & listener)
+- https://driftconditions.org:8080 - Secure reverse proxy to AdminServer (ufw limited)
+- http://driftconditions.org:8081 - AdminServer (ufw limited)
+- https://driftconditions.org:8082 - Secure reverse proxy to MixEngine (ufw limited)
+- http://driftconditions.org:8083 - MixEngine (ufw limited)
+- mysql://driftconditions.org:3306 - MySQL server (ufw limited)
+- httpss://driftconditions.org:8000 - Icecast secure stream (ufw limited)
+- http://driftconditions.org:8001 - Icecast stream (stream source & listener - ufw blocked)
 
 ## Scripts
 
@@ -222,6 +222,35 @@ Here is a list of technologies we are relying on:
 
 This module is essential for managing the settings and configurations that dictate how the application behaves in different environments, and it abstracts away the complexities of environment-specific configurations.
 
+## Generalized Noise Equation for ffmpeg
 
+Here 'noise' refers to coherent noise filters, a harmonic series based on sine and cosine general harmonic sumation filter:
+
+```
+min(1, max(0, ((
+    cos(PI * t * fs / f0 + fo) * a0 + 
+    cos(PI * t * fs / f1 + fo) * a1 + 
+    cos(PI * t * fs / f2 + fo) * a2) + ao ) * as  * po + q))
+```
+
+where:
+
+* **[f0, f1, f2]** designate increasingly finer frequencies, default [17, 7, 3]
+* **[a0, a1, a2]** scale the wave to decreased amplidtude, default [1, 0.5, 0.25]
+* **fs** is a general frequency scaler, default 0.25, an nice large period
+* **fo** is a general frequency offset, default 0, to create different period offsets
+* **as** is a general amplitude scaler, default 0.75, creates a 3/4 height wave
+* **ao** is a general amplitude offset, default 0.5, offset 1/2 from 0
+* **po** is polarity [-1, 1], default 1, used to create an inverse wave
+* **q** offsets the entire wave, default 0.5, centered at 1/2
 
 securenet
+
+voscast
+128 Kbps
+Maximum Bitrate 
+$16.95 /mo
+
+FastCast4u
+128kbps: $18.75 per month / $149.25 per year / $224.25 per 2 years
+

@@ -102,8 +102,8 @@ const config = {
     },
   },
   recipes: {
-    selectPoolPercentSize: 10,
-    selectPoolMinSize: 5,
+    selectPoolPercentSize: 5,
+    selectPoolMinSize: 3,
     classification: [
       'Ambient', 
       'Atmospheric', 
@@ -161,11 +161,101 @@ const config = {
       shortwave: "short-wave-static.mp3",
     },
   },
-
-  exprs: {
+  exprs2:{
     /* here 'noise' refers to coherent noise filters, a harmonic series based of sine and cosine
         general harmonic sumation filter:
-        min(1, max(0, ((cos(PI * t * n / f0) * a0 + cos(PI * t * n / f1) * a1 + cos(PI * t * n / f2) * a2) + o ) * s  * p + q))
+        min(1, max(0, ((cos(PI * t * n / f0) * a0 + cos(PI * t * n / f1) * a1 + cos(PI * t * n / f2) * a2) + o ) * as  * po + q))
+      (see /notes.md)
+      GraphToy demo: https://shorturl.at/T82uY
+    */
+
+    // basic noise filter
+    default: {
+      base: 'min(1,max(0,((cos(PI*t*fs/13+fo)*1+cos(PI*t*fs/7+fo)*0.5+cos(PI*t*fs/3+fo)*as)-ao)*as*p+q)',
+      defaults: {
+        fs: 0.25, // frequencyScale
+        fo: 0, // frequencyOffset
+        as: 0.75, // amplitudeScale
+        ao: 0.5, // amplitudeOffset
+        po: 1, // polarity
+        q: 0.5, // wave offset
+      },
+      aliases: ['noise', 'interrupted'],
+    },
+    // basic inverse noise filter
+    inverse: {
+      base: '%{default}',
+      defaults: {
+        fs: 0.25, // frequencyScale
+        fo: 0, // frequencyOffset
+        as: 0.75, // amplitudeScale
+        ao: 0.5, // amplitudeOffset
+        po: -1, // polarity
+        q: 0.5, // wave offset
+      },
+      aliases: ['inverseNoise', 'invert', 'inverted'],
+    },
+    // subtle noise filter
+    subtle: {
+      base: '%{default}',
+      defaults: {
+        fs: 0.25, // frequencyScale
+        fo: 0, // frequencyOffset
+        as: 0.3, // amplitudeScale
+        ao: 0.7, // amplitudeOffset
+        po: 1, // polarity
+        q: 0.5, // wave offset
+      },
+      aliases: ['subtleNoise'],
+    },
+    // subtle inverse noise filter
+    subtleInverse: {
+      base: '%{default}',
+      defaults: {
+        fs: 0.25, // frequencyScale
+        fo: 0, // frequencyOffset
+        as: 0.3, // amplitudeScale
+        ao: 0.7, // amplitudeOffset
+        po: -1, // polarity
+        q: 0.5, // wave offset
+      },
+      aliases: ['subtleNoiseInverse'],
+    },
+    // transitional noise filter
+    'transition': {
+      base: '4*(0.5-abs(0.5-%{default}))*(0.5-abs(0.5-%{inverse}))',
+      defaults: {
+        fs: 0.25, // frequencyScale
+        fo: 0, // frequencyOffset
+        as: 0.75, // amplitudeScale
+        ao: 0.5, // amplitudeOffset
+        po: 1, // polarity
+        q: 0.5, // wave offset
+      },
+      aliases: ['liminal', 'interstitial'],
+    },
+  },
+
+  exprs: {
+    /* 
+      Here 'noise' refers to coherent noise filters, a harmonic series based on sine and cosine general harmonic sumation filter:
+
+      min(1, max(0, ((
+          cos(PI * t * fs / f0 + fo) * a0 + 
+          cos(PI * t * fs / f1 + fo) * a1 + 
+          cos(PI * t * fs / f2 + fo) * a2) + ao ) * as  * po + q))
+
+      where:
+
+        [f0, f1, f2] designate increasingly finer frequencies, default [17, 7, 3]
+        [a0, a1, a2] scale the wave to decreased amplidtude, default [1, 0.5, 0.25]
+        fs is a general frequency scaler, default 0.25, an nice large period
+        fo is a general frequency offset, default 0, to create different period offsets
+        as is a general amplitude scaler, default 0.75, creates a 3/4 height wave
+        ao is a general amplitude offset, default 0.5, offset 1/2 from 0
+        po is polarity [-1, 1], default 1, used to create an inverse wave
+        q offsets the entire wave, default 0.5, centered at 1/2
+      
       GraphToy demo: https://shorturl.at/T82uY
     */
 
