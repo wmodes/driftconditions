@@ -33,7 +33,7 @@ export const useAuthCheckAndNavigate = (context) => {
   useEffect(() => {
     const performAuthCheck = async () => {
       // No need to check auth for error pages
-      const noAuthPages = ['error', 'notauth'];
+      const noAuthPages = [ 'error', 'notauth' ];
       // Immediately set authChecked to true for no-auth pages and return
       if (noAuthPages.includes(context.toLowerCase())) {
         dispatch(setAuthChecked({ authChecked: true })); 
@@ -44,23 +44,29 @@ export const useAuthCheckAndNavigate = (context) => {
       try {
         const actionResult = await dispatch(checkPageAuth({context}));
         const result = actionResult.payload;
-        // console.log("Auth check result:", result);
-        dispatch(setAuthChecked({ authChecked: true }));
 
-        // Based on the result, navigate accordingly
-        if (result.status === 403 && result.data.error.reason === "not_authenticated") {
-          if (context !== "homepage") {
+        // Handle the result
+        if (result.error) {
+          // Handle not_authenticated error
+          if (result.error.reason === "not_authenticated" && context !== "homepage") {
             navigate('/signin');
+          } 
+          // Handle not_authorized error
+          else if (result.error.reason === "not_authorized") {
+            navigate('/notauth');
           }
-        } else if (result.status === 403 && result.data.error.reason === "not_authorized") {
-          navigate('/notauth');
+        } else {
+          // Successful auth check
+          dispatch(setAuthChecked({ authChecked: true }));
         }
       } catch (error) {
-        dispatch(setAuthChecked({ authChecked: true }));
+        // Handle dispatch error
         console.error("Auth check failed:", error);
+        // if we are not on the homepage send to signin
         if (context !== "homepage") {
           navigate('/signin'); // Fallback navigation in case of error
         }
+        // if we ARE on the homepage, allow the user to continues
       }
     };
 
