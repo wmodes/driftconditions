@@ -3,7 +3,7 @@
 // Import the config object from the config.js file
 import config from '../config/config';
 
-var tracery = require('tracery-grammar');
+var tracery = require('tracery-improved');
 
 var grammarDefinition = {
   "origin": [
