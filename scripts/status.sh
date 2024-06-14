@@ -4,6 +4,11 @@ echo
 echo "# SYSTEM STATUS #"
 printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -
 
+# mysql service
+echo "## MYSQL SERVICE ##"
+sudo systemctl status mysql -n 0 --no-pager
+printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -
+
 # Restart Caddy service
 echo "## CADDY SERVICE ##"
 sudo systemctl status caddy -n 0 --no-pager
