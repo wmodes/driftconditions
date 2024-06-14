@@ -33,11 +33,10 @@ const Playlist = () => {
   const { user: userAuth } = useSelector((state) => state.auth);
 
   useEffect(() => {
-    if (userAuth.permissions && userAuth.permissions.includes('recipeView')) {
+    // console.log(`Playlist component: userAuth.permissions: ${userAuth.permissions}`)
+    if (userAuth && userAuth.permissions && userAuth.permissions.includes('recipeView')) {
       setSeeMore(true);
-    } else {
-      setError(true);
-    }
+    } 
 
     const loadFullPlaylist = async () => {
       try {
@@ -54,7 +53,7 @@ const Playlist = () => {
     const intervalId = setInterval(loadFullPlaylist, 120000);
 
     return () => clearInterval(intervalId); // Cleanup on unmount
-  }, [dispatch, userAuth.permissions]);
+  }, [dispatch, userAuth]);
 
   const renderMix = (mix) => {
     const recipeID = mix.recipeID;
