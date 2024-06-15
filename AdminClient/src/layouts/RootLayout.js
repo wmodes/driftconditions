@@ -39,17 +39,21 @@ const RootLayout = () => {
     return (<Waiting />);
   }
 
-  const showPlayer = () => {
+  const togglePlayer = () => {
     setIsPlayerVisible(true);
     if (audioPlayerRef.current) {
-      audioPlayerRef.current.play(); // Trigger play method on the AudioPlayer
+      if (isPlaying) {
+        audioPlayerRef.current.pause(); // Trigger pause method on the AudioPlayer
+      } else {
+        audioPlayerRef.current.play(); // Trigger play method on the AudioPlayer
+      }
     }
   };
 
   return (
     <div>
       <Navigation />
-      <Outlet context={{ showPlayer, isPlaying, setIsPlaying }} />
+      <Outlet context={{ togglePlayer, isPlaying, setIsPlaying }} />
       <AudioPlayer ref={audioPlayerRef} isVisible={isPlayerVisible} setIsPlaying={setIsPlaying} />
     </div>
   );

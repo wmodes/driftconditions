@@ -16,7 +16,7 @@ const Homepage = () => {
   const projectName = getProjectName();
   const location = getLocation();
 
-  const { showPlayer, isPlaying } = useOutletContext();
+  const { togglePlayer, isPlaying } = useOutletContext();
 
   useEffect(() => {
     // Assuming generateRandomTexts is a function that accepts projectName and returns an array of text strings
@@ -47,7 +47,7 @@ const Homepage = () => {
               <FeatherIcon icon="volume-2" />&nbsp;listen</h2>
               <p>Listen to { projectName }. The broadcast is assembled live, on-the-fly, and will never be heard exactly the same again.</p>
                 <div className={`faux-player ${isPlaying ? 'playing' : ''}`}>
-                  <div className="audio-overlay" onClick={showPlayer}>
+                  <div className="audio-overlay" onClick={togglePlayer}>
                     <div className="play-button"><FeatherIcon icon="play" /></div>
                     <div className="pause-button"><FeatherIcon icon="pause" /></div>
                     <div className="text">Listen live</div>

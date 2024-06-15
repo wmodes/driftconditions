@@ -52,6 +52,11 @@ const AudioPlayer = forwardRef(({ isVisible, setIsPlaying }, ref) => {
       if (audioRef.current) {
         audioRef.current.play();
       }
+    },
+    pause: () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
     }
   }));
 
