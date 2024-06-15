@@ -289,13 +289,19 @@ svg {
  *  Audio Player
  */
 
+.faux-player {
+  display: flex;
+  justify-content: center;
+}
+
 .faux-player .audio-overlay {
   position: relative;
   display: flex;
   flex-direction: row;
   gap: 0.25rem;
   justify-content: space-between;
-  width: 100%;
+  width: 75%;
+  min-width: 200px;
   height: 40px;
   padding: 10px;
   background-color: white;
@@ -325,6 +331,7 @@ svg {
 }
 
 .faux-player .play-line {
+  position: relative;
   width: 100%;
   height: 3px;
   margin-top: 11px;
@@ -333,7 +340,7 @@ svg {
 
 .faux-player .play-line svg {
   position: relative;
-  left: 10%;
+  left: -30%;
   margin-top: -24px;
   width: 0.8rem;
   height: 0.8rem;
@@ -351,14 +358,11 @@ svg {
 }
 
 .faux-player.playing .play-line {
-  width: 100%;
-  height: 3px;
-  margin-top: 11px;
   background-color: #444;
 }
 
 .faux-player.playing .play-line svg {
-  left: 75%;
+  left: 20%;
 }
 
 /* player */
