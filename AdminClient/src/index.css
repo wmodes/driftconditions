@@ -376,6 +376,7 @@ svg {
   background-color: rgba(51, 102, 153, 0.75);
   padding: 5px;
   text-align: center;
+  z-index: 1000;
 }
 
 .player.hidden {
