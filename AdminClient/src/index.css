@@ -340,7 +340,7 @@ svg {
 
 .faux-player .play-line svg {
   position: relative;
-  left: -30%;
+  left: 10%;
   margin-top: -24px;
   width: 0.8rem;
   height: 0.8rem;
@@ -362,7 +362,7 @@ svg {
 }
 
 .faux-player.playing .play-line svg {
-  left: 20%;
+  left: 50%;
 }
 
 /* player */
