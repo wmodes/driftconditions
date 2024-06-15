@@ -1,29 +1,27 @@
 // client/src/pages/Homepage.js
 
 import React, { useState, useEffect } from 'react';
-import { useDispatch } from 'react-redux';
+import { useOutletContext } from 'react-router-dom';
 import FeatherIcon from 'feather-icons-react';
-import AudioPlayer from '../components/AudioPlayer'; 
 import Playlist from '../components/Playlist';
-import { generateRandomTexts, getProjectName, getHeroImageURL, getLocation } from '../utils/randomUtils'; 
-
-import config from '../config/config';
-// pull variables from the config object
-const streamURL = config.stream.url;
+import { 
+  generateRandomTexts, getProjectName, 
+  getHeroImageURL, getLocation 
+} from '../utils/randomUtils'; 
 
 const Homepage = () => {
-  const dispatch = useDispatch();
   const [playlist, setPlaylist] = useState([]); 
   const [generatedText, setGeneratedText] = useState([]);
   
   const projectName = getProjectName();
   const location = getLocation();
 
+  const { showPlayer, isPlaying } = useOutletContext();
+
   useEffect(() => {
     // Assuming generateRandomTexts is a function that accepts projectName and returns an array of text strings
     const generatedText = generateRandomTexts(projectName);
     setGeneratedText(generatedText);
-    
   }, [projectName]);
 
   // Function to safely set inner HTML
@@ -44,22 +42,22 @@ const Homepage = () => {
               </div>
             </div>
 
-            <div className='player-wrapper mb-8'>
+            <div className='minor-section mb-8'>
               <h2 className='title'>
               <FeatherIcon icon="volume-2" />&nbsp;listen</h2>
-              <div className="player text-center">
-                <p>Listen to { projectName } live. The broadcast is assembled live, on-the-fly, and will never be heard exactly the same again.</p>
-                <div className="flex justify-center w-full">
-                  {/* <audio controls className="inline-block">
-                    <source src="https://driftconditions.org:8000/stream" type="audio/mpeg" />
-                    Your browser does not support the audio element.
-                  </audio>                  */}
-                  <AudioPlayer url={streamURL} />
-                </div> {/* end flex */}
-              </div> {/* end player */}
+              <p>Listen to { projectName }. The broadcast is assembled live, on-the-fly, and will never be heard exactly the same again.</p>
+                <div className={`faux-player ${isPlaying ? 'playing' : ''}`}>
+                  <div className="audio-overlay" onClick={showPlayer}>
+                    <div className="play-button"><FeatherIcon icon="play" /></div>
+                    <div className="pause-button"><FeatherIcon icon="pause" /></div>
+                    <div className="text">Listen live</div>
+                    <div className="play-line"><FeatherIcon icon="circle" /></div>
+                    <div className="volume"><FeatherIcon icon="volume-2" /></div>
+                  </div>
+                </div>
             </div> {/* end player-wrapper */}
 
-            <div className='narrative-wrapper'>
+            <div className='minor-section'>
               <h2 className='title'>
               <FeatherIcon icon="radio" />&nbsp;tune in</h2>
               <div className="text">
@@ -88,9 +86,9 @@ const Homepage = () => {
             </div>
           </div> {/* end column2 */}
 
-        </div> {/* end homepage-box */}
-      </div> {/* end homepage-box-wrapper */}
-    </div> /* end profile-edit-wrapper */
+        </div> 
+      </div> 
+    </div> 
   );
 };
 

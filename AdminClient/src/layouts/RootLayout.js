@@ -1,13 +1,13 @@
 // RootLayout.js - The root component of the app
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { useLocation } from 'react-router-dom';
+import { useLocation, Outlet } from 'react-router-dom';
 import { getPageContext, useAuthCheckAndNavigate } from '../utils/authUtils';
+import AudioPlayer from '../components/AudioPlayer'; 
 import { getProjectName } from '../utils/randomUtils';
 import { setProjectName } from '../store/appSlice';
 import Navigation from '../components/Navigation';
-import { Outlet } from 'react-router-dom';
 import Waiting from '../utils/appUtils';
 
 const RootLayout = () => {
@@ -16,6 +16,10 @@ const RootLayout = () => {
   const projectName = getProjectName();
   const authChecked = useSelector(state => state.auth.authChecked);
   const currentPath = location.pathname;
+
+  const [isPlayerVisible, setIsPlayerVisible] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const audioPlayerRef = useRef(null); // Create a ref for AudioPlayer
   
   // Get the page context based on the current path
   const pageContext = getPageContext(currentPath);
@@ -28,17 +32,25 @@ const RootLayout = () => {
     if (!projectName) {
       const projectName = getProjectName();
       dispatch(setProjectName({projectName}));
-    }
+    } 
   }, [dispatch, projectName]);
 
   if (!authChecked) {
     return (<Waiting />);
   }
 
+  const showPlayer = () => {
+    setIsPlayerVisible(true);
+    if (audioPlayerRef.current) {
+      audioPlayerRef.current.play(); // Trigger play method on the AudioPlayer
+    }
+  };
+
   return (
     <div>
       <Navigation />
-      <Outlet />
+      <Outlet context={{ showPlayer, isPlaying, setIsPlaying }} />
+      <AudioPlayer ref={audioPlayerRef} isVisible={isPlayerVisible} setIsPlaying={setIsPlaying} />
     </div>
   );
 }

@@ -1,0 +1,62 @@
+
+.content {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+.content>div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+  height: 500px;
+  width: 80%;
+}
+
+.column-one {
+  flex-basis: 30%;
+}
+
+.column-two {
+  flex-basis: 60%;
+}
+
+audio {
+  background-color: white;
+  border: 0 solid #e5e7eb;
+}
+
+.faux-player .audio-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  cursor: pointer;
+  z-index: 10; /* Ensure the overlay is on top of the audio element */
+}
+
+.player {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100vw;
+  background-color: rgba(51, 102, 153, 0.5);
+  padding: 5px;
+  text-align: center;
+}
+
+.player audio {
+  width: 60%;
+  height: 40px;
+}

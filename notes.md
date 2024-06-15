@@ -25,7 +25,7 @@ At this point we have a working Express server and React client talking to a MyS
 - https://driftconditions.org:8082 - Secure reverse proxy to MixEngine (ufw limited)
 - http://driftconditions.org:8083 - MixEngine (ufw limited)
 - mysql://driftconditions.org:3306 - MySQL server (ufw limited)
-- httpss://driftconditions.org:8000 - Icecast secure stream (ufw limited)
+- https://driftconditions.org:8000 - Icecast secure stream (ufw limited)
 - http://driftconditions.org:8001 - Icecast stream (stream source & listener - ufw blocked)
 
 ## Scripts

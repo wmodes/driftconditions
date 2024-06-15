@@ -1,11 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useImperativeHandle, forwardRef, useRef  } from 'react';
 
 import config from '../config/config';
 // pull variables from the config object
 const restartTime = config.stream.restartTime;
+const streamURL = config.stream.url;
 
-const AudioPlayer = ({ url }) => {
-  const [playerKey, setPlayerKey] = useState(0); // key to force re-render of the audio element
+const AudioPlayer = forwardRef(({ isVisible, setIsPlaying }, ref) => {
+  // key to force re-render of the audio element
+  const [playerKey, setPlayerKey] = useState(0); 
+  // Create a ref for the audio element
+  const audioRef = useRef(null);
 
   // Function to restart the audio after a delay
   const audioRestart = () => {
@@ -22,38 +26,55 @@ const AudioPlayer = ({ url }) => {
 
   const handleError = (error) => {
     console.error('Error occurred while playing audio:', error);
+    setIsPlaying(false);
     audioRestart(); // Call to restart the audio on error
   };
 
   const handleStart = () => {
     console.log('Playback has started');
+    setIsPlaying(true);
   };
 
   const handlePause = () => {
     console.log('Playback has paused');
+    setIsPlaying(false);
   };
 
   const handleEnded = () => {
     console.log('Playback has ended');
+    setIsPlaying(false);
     audioRestart(); // Call to restart the audio on error
   };
 
+  // Expose the play method to the parent component using forwardRef
+  useImperativeHandle(ref, () => ({
+    play: () => {
+      if (audioRef.current) {
+        audioRef.current.play();
+      }
+    }
+  }));
+
   return (
-    <audio
-      key={playerKey}
-      src={url}
-      controls
-      autoPlay
-      onCanPlay={handleReady}
-      onPlay={handleStart}
-      onPause={handlePause}
-      onEnded={handleEnded}
-      onError={handleError}
-      style={{ width: '100%' }}
-    >
-      Your browser does not support the audio element.
-    </audio>
+    <div className={`player text-center ${isVisible ? 'visible' : 'hidden'}`}>
+      <div className="flex justify-center w-full">
+        <audio
+          ref={audioRef}
+          key={playerKey}
+          src={streamURL}
+          controls
+          autoPlay
+          onCanPlay={handleReady}
+          onPlay={handleStart}
+          onPause={handlePause}
+          onEnded={handleEnded}
+          onError={handleError}
+        >
+          Your browser does not support the audio element.
+        </audio>
+      </div>
+    </div>
   );
-};
+});
 
 export default AudioPlayer;
