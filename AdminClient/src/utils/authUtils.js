@@ -65,8 +65,11 @@ export const useAuthCheckAndNavigate = (context) => {
         // if we are not on the homepage send to signin
         if (context !== "homepage") {
           navigate('/signin'); // Fallback navigation in case of error
-        }
+        } 
         // if we ARE on the homepage, allow the user to continues
+        else {
+          dispatch(setAuthChecked({ authChecked: true }));
+        }
       }
     };
 
