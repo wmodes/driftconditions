@@ -244,6 +244,8 @@ where:
 * **po** is polarity [-1, 1], default 1, used to create an inverse wave
 * **q** offsets the entire wave, default 0.5, centered at 1/2
 
+
+## Streaming services
 securenet
 
 voscast
@@ -254,3 +256,18 @@ $16.95 /mo
 FastCast4u
 128kbps: $18.75 per month / $149.25 per year / $224.25 per 2 years
 
+## Mix Length Logic
+
+```
+// go through tracks, recording the length of each as an array; for looped tracks or tracks with looped clips, use Infinity
+// if 'trim' effect is present in a track,set mixLengthTrack to track number
+// if 'first' effect is present in a track, set mixLengthTrack to track 0
+// if 'longest' effect is present in a track, set mixLengthTrack to 'longest'
+// if 'shortest' effect is present in a track, set mixLengthTrack to 'shortest'
+// after creating amix, run determineMixLength (a new method)
+    // if mixLengthTrack is a track number that is infinite, set mixLengthTrack to 'longest'
+    // if mixLengthTrack is 'longest', set the mixLength to length of longest non-infinite track
+    // if mixLengthTrack is 'shortest', set the mixLength to length of shortest track
+    // return length of mix
+// run _buildTrimFilter which uses mixLength 
+```
