@@ -41,8 +41,7 @@ class MixEngine {
     this.mixFilename = '';
     this.mixFilepath = '';
     // tracking mix duration
-    this.amixDuration = 'longest';
-    this.mixDurationTrack = '';
+    this.mixDurationTrack = 'longest';
     this.trackDurations = [];
   }
 
@@ -59,7 +58,7 @@ class MixEngine {
     this.finalOutputLabel = '';
     this.mixFilename = '';
     this.mixFilepath = '';
-    this.amixDuration = 'longest';
+    this.mixDurationTrack = 'longest';
     this.trackDurations = [];
   }
 
@@ -147,8 +146,6 @@ class MixEngine {
     // clear some counters
     this.currentInputNum = 0;
     this.currentTrackNum = 0;
-    // set amix duration
-    this.amixDuration = 'longest';
     // track the outputs of each track, later we will mix these
     let trackOutputs = [];
     //
@@ -262,6 +259,15 @@ class MixEngine {
             this._getParams(effect)
           );
         }
+        // norm effect
+        else if (/^(norm|normalize|loudnorm)/i.test(effect)) {
+          logger.debug(`MixEngine:_buildTrackFilters(): Applying norm effect to track ${effect}`);
+          nextInputSrc = this._normEffect(
+            nextInputSrc,
+            baseLabel,
+            this._getParams(effect)
+          );
+        }
         // wave effect
         else if (/^(noise|wave)/i.test(effect)) {
           logger.debug(`MixEngine:_buildtrackFilters(): Applying wave effect to track ${effect}`);
@@ -275,15 +281,6 @@ class MixEngine {
         else if (/^(backward|backwards|reverse|reversed)/i.test(effect)) {
           logger.debug(`MixEngine:_buildClipFilters(): Applying backward effect to clip ${effect}`);
           nextInputSrc = this._backwardEffect(
-            nextInputSrc, 
-            baseLabel, 
-            this._getParams(effect)
-          );
-        }
-        // faraway effect
-        else if (/^(faraway|distant)/i.test(effect)) {
-          logger.debug(`MixEngine:_buildtrackFilters(): Applying faraway effect to track ${effect}`);
-          nextInputSrc = this._farawayEffect(
             nextInputSrc, 
             baseLabel, 
             this._getParams(effect)
@@ -435,6 +432,15 @@ class MixEngine {
           nextInputSrc = this._loopEffect(
             nextInputSrc, 
             baseLabel, 
+            this._getParams(effect)
+          );
+        }
+        // norm effect
+        else if (/^(norm|normalize|loudnorm)/i.test(effect)) {
+          logger.debug(`MixEngine:_buildTrackFilters(): Applying norm effect to track ${effect}`);
+          nextInputSrc = this._normEffect(
+            nextInputSrc,
+            baseLabel,
             this._getParams(effect)
           );
         }
@@ -609,8 +615,6 @@ class MixEngine {
       },
       outputs: newLabel
     });
-    // ensure that we don't loop forever
-    this.amixDuration = 'shortest';
     // return the most recent label
     return newLabel;
   }
@@ -797,6 +801,55 @@ class MixEngine {
     // Return the most recent label
     return distortionLabel;
   }
+
+  /**
+   * Builds a filter that handles loudness normalization (loudnorm).
+   * @param {string} inputSrc
+   * @param {string} baseLabel
+   * @param {string[]} params - An array of parameters (voice, music, bed) that set the I, TP, and LRA values.
+   * @sideeffect adds filter to this.filterChain
+   * @returns {string} most recent output label
+   * @private
+   */
+  _normEffect(inputSrc, baseLabel, params) {
+    logger.debug(`MixEngine:_normEffect(): params: ${JSON5.stringify(params)} count: ${params.length}`);
+    // generate label
+    const newLabel = baseLabel + '_norm';
+    // Default options
+    let options = { I: -1.5, TP: -2 };
+
+    // Set values based on preset
+    //  (I) Integrated loudness target 
+    //  (TP) True peak limit 
+    //  (LRA) Loudness range target - optional
+    if (params.length > 0) {
+      const preset = params[0].toLowerCase();
+      switch (preset) {
+        case 'spoken':
+        case 'voice':
+          options = { I: -16, TP: -1.5, LRA: 7 };
+          break;
+        case 'music':
+          options = { I: -14, TP: -1 };
+          break;
+        case 'musicbed':  
+        case 'bed':
+          options = { I: -20, TP: -2 };
+          break;
+        default:
+          logger.debug(`MixEngine:_normEffect(): Unknown preset ${preset}, using default values.`);
+      }
+    }
+    this.filterChain.push({
+      inputs: inputSrc,
+      filter: 'loudnorm',
+      options: options,
+      outputs: newLabel
+    });
+    // return the most recent label
+    return newLabel;
+  }
+
 
 
 

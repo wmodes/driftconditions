@@ -244,20 +244,20 @@ const config = {
   //
   tracks: [
     {
-      track: 0,
       // This is a track.
-      //
+      track: 0,
       // Tracks are played simultaneously like a multi-track recording.
       // You can have up to 5 tracks, and there must be at least one.
       //
-      // This is the volume (0-100) of the entire track
+      // Volume (0-100) of the entire track
       volume: 100,
       effects: [
-        // Audio processing effects applied to the track (or clip).
-        // Supported: loop, wave, backward, distant, detune, trim, shortest, longest
-        // Some take args like 'wave(subtle)'
-        // other wave args: noise, noise2, inverse, transition, subtle, subtle2
-        //
+        // Audio processing effects applied to the track (or clip). Supported:
+        //   * length: trim, shortest, longest, loop|repeat
+        //   * modulation: wave|noise, wave(noise), wave(noise2), wave(inverse), 
+        //     wave(subtle), wave(subtle2), wave(liminal|transition)
+        //   * normalization: norm, norm(voice), norm(music), norm(bed)
+        //   * other: distant|faraway, telephone, backward|reversed,
       ],
       clips:[
         {
@@ -268,15 +268,12 @@ const config = {
           // help pick a random audio file for that matches the clip. 
           //
           classification: [
-            // Classification is a broad category that describes the type 
-            // of audio. Possible values are: Ambient, Atmospheric,  
-            // Environmental, Premixed, Soundscape, Archival, Spoken, 
-            // Narrative, Instructional, VocalMusic, Instrumental, 
-            // Experimental, Digital, Effect, and/or Other
-            // Note that you can have more than one classification.
+            // Classification is a broad category that describes the type of audio:
+            // ambient, atmospheric, environmental, premixed, soundscape, 
+            // archival, spoken, narrative, instructional, vocalmusic, instrumental, 
+            // experimental, digital, effect, and/or other
             //
-            'VocalMusic', 
-            'Instrumental', 
+            'vocalmusic', 'instrumental', 
           ],
           tags: [
             // Tags are descriptive words or phrases that help identify the audio.
@@ -284,16 +281,24 @@ const config = {
             "vintage", "jazz"
           ],
           length: [
-            // Length is a rough estimate of the duration of the audio.
-            // Possible values are: 'tiny', 'short', 'medium', 'long', 'huge'
+            // Length is a rough estimate of the duration of the audio. Possible values:
+            //   * tiny: (0-10s) - most sound effects
+            //   * short: (10s-2m) - most sound effects and some music
+            //   * medium: (2m-5m) - most music
+            //   * long: (5m-10m) - longer music and some soundscapes
+            //   * huge: (10m-60m) - long soundscapes, environmental recordings, and ambient
             //
             'short', 'medium'
           ],
-          // This is the volume (0-100) of the individual clip
+          // This is the volume (0-100) of the individual clip (optional)
           volume: 100,
           effects: [
-            // Audio processing effects applied to the individual clip.
-            // Supported: loop, wave, backward, distant
+            // Audio processing effects applied to the individual clip. Supported:
+            //   * length: loop|repeat
+            //   * modulation: wave|noise, wave(noise), wave(noise2), wave(inverse), 
+            //     wave(subtle), wave(subtle2), wave(liminal|transition)
+            //   * normalization: norm, norm(voice), norm(music), norm(bed)
+            //   * other: distant|faraway, telephone, backward|reversed,
             //
           ]
         }
@@ -309,23 +314,35 @@ const config = {
       // New track, add up to 5.
       volume: 100,
       effects: [
+        // Audio processing effects applied to the track (or clip). Supported:
+        //   * length: trim, shortest, longest, loop|repeat
+        //   * modulation: wave|noise, wave(noise), wave(noise2), wave(inverse), 
+        //     wave(subtle), wave(subtle2), wave(liminal|transition)
+        //   * normalization: norm, norm(voice), norm(music), norm(bed)
+        //   * other: distant|faraway, telephone, backward|reversed,
       ],
       clips:[
         {
           classification: [
-            // Possible values are: Ambient, Atmospheric,  Environmental, Premixed, 
-            // Soundscape, Archival, Spoken, Narrative, Instructional, VocalMusic, 
-            // Instrumental, Experimental, Digital, Effect, and/or Other
+            // Classification is a broad category that describes the type of audio:
+            // ambient, atmospheric, environmental, premixed, soundscape, 
+            // archival, spoken, narrative, instructional, vocalmusic, instrumental, 
+            // experimental, digital, effect, and/or other
             'Archival', 
           ],
-          tags: [
-            "television", "old-time-radio"
-          ],
+          tags: [ "television", "old-time-radio" ],
           length: [
-            // Possible values are: 'tiny', 'short', 'medium', 'long', 'huge'
+            // Length is a rough estimate of the duration of the audio. Possible values:
+            //   * tiny: (0-10s) - most sound effects
+            //   * short: (10s-2m) - most sound effects and some music
+            //   * medium: (2m-5m) - most music
+            //   * long: (5m-10m) - longer music and some soundscapes
+            //   * huge: (10m-60m) - long soundscapes, environmental recordings, and ambient
+            //
             'medium', 'long'
           ],
           volume: 100,
+          effects: [ ],
         }
       ]
     },`,
@@ -334,17 +351,18 @@ const config = {
     newClip: `
         {
           // "NEW CLIP: Add as many clips as you like to a track.",
-          classification: [ "ambient",  "premixed"],
-          tags: ["static"], length: ["long", "huge"], 
-          volume: 100
+          classification: [ "effect" ],
+          tags: [ "static" ], length: [ "medium", "long" ], 
+          volume: 100,
+          effects: [ "loop" ],
         },`,
 
     // starting pattern for adding a new clip (indentation matters here)
     newSilence: `
         {
-          // SILENCE: Just a clip with classification: 'silence'.
+          // silent clip with adjustable length
           classification: "silence",
-          length: ["tiny", "short"],
+          length: [ "tiny", "short" ],
         },`,
 
   },
