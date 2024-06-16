@@ -254,7 +254,7 @@ const config = {
       volume: 100,
       effects: [
         // Audio processing effects applied to the track (or clip).
-        // Supported: loop, wave, backward, distant, detune, shortest, longest, first
+        // Supported: loop, wave, backward, distant, detune, trim, shortest, longest
         // Some take args like 'wave(subtle)'
         // other wave args: noise, noise2, inverse, transition, subtle, subtle2
         //

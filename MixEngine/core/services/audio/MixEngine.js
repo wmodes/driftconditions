@@ -2,7 +2,7 @@
  * @file MixEngine.js - Main audio processing engine for mixing audio clips
  */
 
-const logger = require('config/logger').custom('MixEngine', 'info');
+const logger = require('config/logger').custom('MixEngine', 'debug');
 const { database: db } = require('config');
 const ffmpeg = require('fluent-ffmpeg');
 const JSON5 = require('json5');
@@ -40,98 +40,10 @@ class MixEngine {
     // output file name
     this.mixFilename = '';
     this.mixFilepath = '';
-    // amix duration
+    // tracking mix duration
     this.amixDuration = 'longest';
-  }
-
-  /**
-   * Substitutes expressions in the configuration.
-   *
-   * @param {Object} exprsConfig - The expressions configuration.
-   * @returns {Object} The substituted expressions.
-   * @private
-   */
-  _substituteExpressions(exprsConfig) {
-    // Convert all keys to lowercase
-    let exprs = this._keysToLowercase(exprsConfig);
-    // Get list of keys with placeholders that need substitution
-    let exprsSubstNeeded = this._getListOfExprSubstNeeded(exprs);
-    // logger.debug(`MixEngine:_substituteExpressions: exprsSubstNeeded: ${JSON.stringify(exprsSubstNeeded)}`);
-    let loopNum = 0;
-
-    // while (exprsSubstNeeded != [] && loopNum < 5)
-    while (exprsSubstNeeded.length > 0 && loopNum < 5) {
-      // iterate over exprsSubstNeeded
-      for (let key of exprsSubstNeeded) {
-        // call _replacePlaceholder passing exprsObj, exprKey
-        this._replacePlaceholder(exprs, key);
-      }
-      // Get updated list of keys with placeholders that need substitution
-      exprsSubstNeeded = this._getListOfExprSubstNeeded(exprs);
-      // increment loopNum
-      loopNum++;
-    }
-    // logger.debug('Substituted exprs:');
-    // for (let key in exprs) {
-    //   if (exprs.hasOwnProperty(key)) {
-    //     logger.debug(`${key}: ${exprs[key]}`);
-    //   }
-    // }
-    return exprs;
-  }
-
-  /**
-   * Converts all keys in the object to lowercase.
-   *
-   * @param {Object} obj - The object with keys to convert.
-   * @returns {Object} The object with lowercase keys.
-   * @private
-   */
-    _keysToLowercase(obj) {
-      const lowerCaseObj = {};
-      for (let key in obj) {
-        if (obj.hasOwnProperty(key)) {
-          lowerCaseObj[key.toLowerCase()] = obj[key];
-        }
-      }
-      return lowerCaseObj;
-    }
-
-  /**
-   * Gets a list of keys in the expressions object that contain placeholders.
-   *
-   * @param {Object} exprsObj - The expressions object.
-   * @returns {string[]} An array of keys that contain placeholders.
-   * @private
-   */
-  _getListOfExprSubstNeeded(exprsObj) {
-    const keys = [];
-    // iterate over each key to see if there is an unresolved placeholder
-    for (let key in exprsObj) {
-      if (exprsObj.hasOwnProperty(key) && /%\{\w+\}/.test(exprsObj[key])) {
-        // if value contains placeholder, add to key array
-        keys.push(key);
-      }
-    }
-    return keys;
-  }
-
-  /**
-   * Replaces placeholders in a string with corresponding values from expressions.
-   *
-   * @param {Object} exprsObj - The expressions object.
-   * @param {string} exprKey - The key of the expression to replace placeholders in.
-   * @private
-   */
-  _replacePlaceholder(exprsObj, exprKey) {
-    // get value of exprKey from exprsObj
-    const value = exprsObj[exprKey];
-    // replace placeholders with values corresponding to key in exprsObj
-    exprsObj[exprKey] = value.replace(/%\{(\w+)\}/g, (_, placeholderKey) => {
-      const replacement = exprsObj[placeholderKey.toLowerCase()] || '';
-      // logger.debug(`Replacing %{${placeholderKey}} with ${replacement} in ${exprKey}`);
-      return replacement;
-    });
+    this.mixDurationTrack = '';
+    this.trackDurations = [];
   }
 
   /**
@@ -148,6 +60,7 @@ class MixEngine {
     this.mixFilename = '';
     this.mixFilepath = '';
     this.amixDuration = 'longest';
+    this.trackDurations = [];
   }
 
   /**
@@ -162,7 +75,7 @@ class MixEngine {
     // Reset state
     this._resetState();
     const recipeObj = recipe.recipeObj;
-    console.debug(`MixEngine:makeMix: recipeObj: ${JSON5.stringify(recipeObj, null, 2)}`);
+    logger.debug(`MixEngine:makeMix: recipeObj: ${JSON5.stringify(recipeObj, null, 2)}`);
     //
     // Setup ffmpeg command
     const ffmpegCmd = ffmpeg();
@@ -244,6 +157,13 @@ class MixEngine {
     //
     // Build the final mix filter
     this._buildMixFilter(recipeObj);
+    //
+    // Determine the duration of the mix
+    const mixDuration = this._determineMixDuration();
+    //
+    // Build the trim filer
+    this._buildTrimFilter(mixDuration);
+    //
     logger.debug(`MixEngine:_buildComplexFilter: filterChain: ${JSON5.stringify(this.filterChain, null, 2)}`);
   }
 
@@ -286,13 +206,17 @@ class MixEngine {
     //
     // we start with a track object
     // and go through the clips in the track
-    //
     track.clips.forEach(clip => {
       // build the filters for each clip
-      const currentClipOutput = this._buildClipFilters(clip);
+      const currentClipLabel = this._buildClipFilters(clip);
       //
       // add the clip output to the clipOutputLabels array
-      clipOutputLabels.push(currentClipOutput);
+      clipOutputLabels.push(currentClipLabel);
+      //
+      // if the clip has an infinite duration, we need to adjust the track duration
+      if (clip.duration === Infinity) {
+        track.duration = Infinity;
+      }
       //
       // increment the clip number
       this.currentClipNum++;
@@ -330,6 +254,8 @@ class MixEngine {
         // loop effect
         if (/^(loop|repeat)/i.test(effect)) {
           logger.debug(`MixEngine:_buildTrackFilters(): Applying loop effect to track ${effect}`);
+          // if we have a loop effect, we need to adjust the duration of the clip
+          track.duration = Infinity;
           nextInputSrc = this._loopEffect(
             nextInputSrc, 
             baseLabel, 
@@ -391,22 +317,26 @@ class MixEngine {
           );
         }
         // shortest, longest, and first effects
-        // (these don't really apply to tracks)
         else if (effect.toLowerCase() == 'first') {
-          this.amixDuration = 'first';
+          this.mixDurationTrack = 0;
         }
         else if (effect.toLowerCase() == 'shortest') {
-          this.amixDuration = 'shortest';
+          this.mixDurationTrack = 'shortest';
         }
         else if (effect.toLowerCase() == 'longest') {
-          // TODO: this needs to be handled with care because this combined with a loop effect 
-          // can create an infinite loop 
-          this.amixDuration = 'longest';
+          this.mixDurationTrack = 'longest';
+        }
+        // trim effect
+        else if (effect.toLowerCase() == 'trim') {
+          this.mixDurationTrack = this.currentTrackNum;
         }
       }); // end of effects
-    } // end of track
+    } 
     // set the final track label
     this.trackFinalLabels.push(nextInputSrc);
+    //
+    // set the track duration
+    this.trackDurations.push(track.duration);
   }
 
   /**
@@ -500,6 +430,8 @@ class MixEngine {
         // loop effect
         if (/^(loop|repeat)/i.test(effect)) {
           logger.debug(`MixEngine:_buildClipFilters(): Applying loop effect to clip ${effect}`);
+          // if we have a loop effect, we need to adjust the duration of the clip
+          clip.duration = Infinity;
           nextInputSrc = this._loopEffect(
             nextInputSrc, 
             baseLabel, 
@@ -873,7 +805,7 @@ class MixEngine {
 
 
   /*
-   * FINAL MIX FILTERSS
+   * FINAL MIX FILTERS
    */
 
   /**
@@ -893,13 +825,32 @@ class MixEngine {
         filter: 'amix',
         options: {
           inputs: this.trackFinalLabels.length,
-          duration: this.amixDuration
         },
         inputs: this.trackFinalLabels,
         outputs: finalOutputLabel
       });
       this.finalOutputLabel = finalOutputLabel;
     }
+  }
+
+  /**
+   * Builds the trim filter for the mix based on the determined duration.
+   *
+   * @param {number} mixDuration - The length of the mix in seconds.
+   * @private
+   */
+  _buildTrimFilter(mixDuration) {
+    this.filterChain.push({
+      inputs: this.finalOutputLabel,
+      filter: 'atrim',
+      options: {
+        duration: mixDuration
+      },
+      outputs: this.finalOutputLabel + '_trimmed'
+    });
+
+    this.finalOutputLabel += '_trimmed';
+    logger.debug(`MixEngine:_buildTrimFilter(): Applied trim filter with duration ${mixDuration} seconds`);
   }
 
   /*
@@ -942,6 +893,96 @@ class MixEngine {
    */
 
   /**
+   * Substitutes expressions in the configuration.
+   *
+   * @param {Object} exprsConfig - The expressions configuration.
+   * @returns {Object} The substituted expressions.
+   * @private
+   */
+  _substituteExpressions(exprsConfig) {
+    // Convert all keys to lowercase
+    let exprs = this._keysToLowercase(exprsConfig);
+    // Get list of keys with placeholders that need substitution
+    let exprsSubstNeeded = this._getListOfExprSubstNeeded(exprs);
+    // logger.debug(`MixEngine:_substituteExpressions: exprsSubstNeeded: ${JSON.stringify(exprsSubstNeeded)}`);
+    let loopNum = 0;
+
+    // while (exprsSubstNeeded != [] && loopNum < 5)
+    while (exprsSubstNeeded.length > 0 && loopNum < 5) {
+      // iterate over exprsSubstNeeded
+      for (let key of exprsSubstNeeded) {
+        // call _replacePlaceholder passing exprsObj, exprKey
+        this._replacePlaceholder(exprs, key);
+      }
+      // Get updated list of keys with placeholders that need substitution
+      exprsSubstNeeded = this._getListOfExprSubstNeeded(exprs);
+      // increment loopNum
+      loopNum++;
+    }
+    // logger.debug('Substituted exprs:');
+    // for (let key in exprs) {
+    //   if (exprs.hasOwnProperty(key)) {
+    //     logger.debug(`${key}: ${exprs[key]}`);
+    //   }
+    // }
+    return exprs;
+  }
+
+  /**
+   * Converts all keys in the object to lowercase.
+   *
+   * @param {Object} obj - The object with keys to convert.
+   * @returns {Object} The object with lowercase keys.
+   * @private
+   */
+    _keysToLowercase(obj) {
+      const lowerCaseObj = {};
+      for (let key in obj) {
+        if (obj.hasOwnProperty(key)) {
+          lowerCaseObj[key.toLowerCase()] = obj[key];
+        }
+      }
+      return lowerCaseObj;
+    }
+
+  /**
+   * Gets a list of keys in the expressions object that contain placeholders.
+   *
+   * @param {Object} exprsObj - The expressions object.
+   * @returns {string[]} An array of keys that contain placeholders.
+   * @private
+   */
+  _getListOfExprSubstNeeded(exprsObj) {
+    const keys = [];
+    // iterate over each key to see if there is an unresolved placeholder
+    for (let key in exprsObj) {
+      if (exprsObj.hasOwnProperty(key) && /%\{\w+\}/.test(exprsObj[key])) {
+        // if value contains placeholder, add to key array
+        keys.push(key);
+      }
+    }
+    return keys;
+  }
+
+  /**
+   * Replaces placeholders in a string with corresponding values from expressions.
+   *
+   * @param {Object} exprsObj - The expressions object.
+   * @param {string} exprKey - The key of the expression to replace placeholders in.
+   * @private
+   */
+  _replacePlaceholder(exprsObj, exprKey) {
+    // get value of exprKey from exprsObj
+    const value = exprsObj[exprKey];
+    // replace placeholders with values corresponding to key in exprsObj
+    exprsObj[exprKey] = value.replace(/%\{(\w+)\}/g, (_, placeholderKey) => {
+      const replacement = exprsObj[placeholderKey.toLowerCase()] || '';
+      // logger.debug(`Replacing %{${placeholderKey}} with ${replacement} in ${exprKey}`);
+      return replacement;
+    });
+  }
+
+  /**
    * Sanitizes a filename by removing invalid characters.
    *
    * @param {string} filename - The filename to sanitize.
@@ -953,26 +994,34 @@ class MixEngine {
   }
 
   /**
-   * Gets the duration of the mix based on the longest track in the recipe.
+   * Determines the length of the mix based on the specified track or effect.
    *
-   * @param {Object} recipeObj - The recipe object.
-   * @returns {number} The duration of the mix in seconds.
+   * @returns {number} The length of the mix in seconds.
    * @private
    */
-  _getMixDuration(recipeObj) {
-    // find longest track
-    let longestTrack = 0;
-    recipeObj.tracks.forEach(track => {
-      let trackDuration = 0;
-      track.clips.forEach(clip => {
-        trackDuration += clip.duration;
-      });
-      if (trackDuration > longestTrack) {
-        longestTrack = trackDuration;
-      }
-    });
-    return longestTrack;
-  }  
+  _determineMixDuration() {
+    logger.debug(`MixEngine:_determineMixDuration(): trackDurations: ${this.trackDurations}`);
+    // Check if mixLengthTrack is a track number and is infinite
+    if (typeof this.mixDurationTrack === 'number' && this.trackDurations[this.mixDurationTrack] === Infinity) {
+      this.mixDurationTrack = 'longest';
+    }
+
+    // Determine the mix length based on the specified criteria
+    let mixDuration = 0;
+    switch (this.mixDurationTrack) {
+      case 'longest':
+        mixDuration = Math.max(...this.trackDurations.filter(duration => duration !== Infinity));
+        break;
+      case 'shortest':
+        mixDuration = Math.min(...this.trackDurations.filter(duration => duration !== Infinity));
+        break;
+      default:
+        mixDuration = this.trackDurations[this.mixDurationTrack];
+    }
+
+    logger.debug(`MixEngine:_determineMixDuration(): mixDurationTrack: ${this.mixDurationTrack}, mixDuration: ${mixDuration}`);
+    return mixDuration;
+  }
 
 }
 
