@@ -70,6 +70,7 @@ const Homepage = () => {
                 <p className="what-is-this">
                   { projectName } is a procedurally-generated audio stream mixed on-the-fly 24/7 from { location }.
                 </p>
+                <p>You have audio you think would fit { projectName }? Signup for an account, and then hit us up.</p>
                 <p className="contact">
                   Need to reach us? <a className="link"                 href="mailto:info@driftconditions.org">Okay.</a>
                 </p>
