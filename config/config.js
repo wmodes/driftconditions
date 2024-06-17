@@ -226,8 +226,8 @@ const config = {
       aliases: ['subtleNoiseInverse'],
     },
     // transitional noise filter
-    'transition': {
-      base: '4*(0.5-abs(0.5-%{default}))*(0.5-abs(0.5-%{inverse}))',
+    transition: {
+      base: 'min(1,max(0,(4*(0.5-abs(0.5-%{default}))*(0.5-abs(0.5-%{inverse}))+0.25)))',
       defaults: {
         fs: 0.25, // frequencyScale
         fo: 0, // frequencyOffset
@@ -274,7 +274,7 @@ const config = {
     'inverse': '%{inverseNoise}',
     'inverted': '%{inverseNoise}',
     // these transitional filters fill the space between noise and inverseNoise
-    'transition': '4*(0.5-abs(0.5-%{noise}))*(0.5-abs(0.5-%{inverseNoise}))',
+    'transition': 'min(1,max(0,(4*(0.5-abs(0.5-%{noise}))*(0.5-abs(0.5-%{inverseNoise}))+0.25)))',
     'liminal': '%{transition}',
     'interstitial': '%{transition}',
     // subtle noise has ampitude of 0.15 and offset +0.85
