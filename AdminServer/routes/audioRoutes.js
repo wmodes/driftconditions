@@ -9,7 +9,7 @@
 // foundational imports
 const express = require('express');
 const router = express.Router();
-const logger = require('config/logger').custom('AdminServer', 'info');
+const logger = require('config/logger').custom('AdminServer', 'debug');
 const { database: db } = require('config');
 
 // authentication imports
@@ -45,6 +45,7 @@ const upload = multer({ dest: tmpFileDir });
 //
 router.post('/list', verifyToken, async (req, res) => {
   try {
+    logger.debug(`audioRoutes:/list: req.body: ${JSON.stringify(req.body, null, 2)}`);
 
     // Construct sort and filter parameters
     const sort = req.body.sort || 'date';
@@ -58,12 +59,12 @@ router.post('/list', verifyToken, async (req, res) => {
     // Determine sort column from provided sort parameter
     const sortOptions = {
       id: 'audioID',
-      title: 'LOWER(title)',
-      status: 'LOWER(status)',
+      title: 'title',
+      status: 'status',
       author: 'creatorID', 
       date: 'createDate',
     };
-    const sortColumn = sortOptions[sort] || 'createDate';
+    const sortColumn = sortOptions[sort.toLowerCase()] || 'createDate';
 
     // Define filter options
     const filterOptions = {
@@ -97,18 +98,25 @@ router.post('/list', verifyToken, async (req, res) => {
     let filterQuery = filterCondition.query;
     let filterValues = filterCondition.values;
 
-    // Execute countQuery to get the total number of records
-    const [countResult] = await db.query(`
-      SELECT COUNT(*) AS totalRecords
+    // construct query and value strings
+    const queryStr1 = `
+      SELECT
+        COUNT(*) AS totalRecords
       FROM audio a
       WHERE 1=1 ${filterQuery};
-    `, filterValues);
+    `;
+    const queryValues1 = filterValues;
+    logger.debug(`audioRoutes:/list: queryStr1: ${queryStr1}, queryValues1: ${JSON.stringify(queryValues1)}`);
+
+    // Execute countQuery to get the total number of records
+    const [countResult] = await db.query(queryStr1, queryValues1);
     
     const totalRecords = countResult[0].totalRecords;
 
     // Get the audio list with filter, sort, and pagination
-    const [audioList] = await db.query(`
-      SELECT 
+    // Construct the query string
+    const queryStr2 = `
+      SELECT
         a.*,
         u1.username AS creatorUsername,
         u2.username AS editorUsername
@@ -118,7 +126,12 @@ router.post('/list', verifyToken, async (req, res) => {
       WHERE 1=1 ${filterQuery}
       ORDER BY ${sortColumn} ${order}
       LIMIT ? OFFSET ?;
-    `, [...filterValues, recordsPerPage, offset]);
+    `;
+    const queryValues2 = [...filterValues, recordsPerPage, offset];
+    logger.debug(`audioRoutes:/list: queryStr2: ${queryStr2}, queryValues2: ${JSON.stringify(queryValues2)}`);
+
+    // Execute the query
+    const [audioList] = await db.query(queryStr2, queryValues2);
 
     // Respond with the fetched data
     res.status(200).json({
