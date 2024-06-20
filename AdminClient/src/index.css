@@ -582,6 +582,10 @@ svg {
   justify-content: flex-end;
 }
 
+.list-wrapper .audioPlayer {
+  display: none;
+}
+
 .filter-box {
   margin-bottom: 0.3rem;
 }
