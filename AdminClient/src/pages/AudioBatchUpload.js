@@ -208,6 +208,7 @@ function AudioBatchUpload() {
       <div className="breadcrumb-box">
         <ul className="breadcrumb">
           <li className="link"><SafeLink to="/audio/list">List</SafeLink></li>
+          <li className="link"><SafeLink to="/audio/upload/batch">Batch Upload</SafeLink></li>
         </ul>
       </div>
     );
