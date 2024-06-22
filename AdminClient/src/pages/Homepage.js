@@ -70,7 +70,12 @@ const Homepage = () => {
                 <p className="what-is-this">
                   { projectName } is a procedurally-generated audio stream mixed on-the-fly 24/7 from { location }.
                 </p>
-                <p>You have audio you think would fit { projectName }? Signup for an account, and then hit us up.</p>
+                <p>
+                  You have audio you think would fit {projectName}? Signup for an account, and then{' '}
+                  <a  className="link" target="_new" href="mailto:info@driftconditions.org?subject=please%20promote%20me%20to%20a%20contributor">
+                    hit us up
+                  </a>.
+                </p>
                 <p className="contact">
                   Need to reach us? <a className="link"                 href="mailto:info@driftconditions.org">Okay.</a>
                 </p>
