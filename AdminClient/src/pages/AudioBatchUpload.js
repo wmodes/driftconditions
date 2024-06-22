@@ -159,6 +159,7 @@ function AudioBatchUpload() {
       setError('');
       setSuccessMessage('Uploads successful');
       setIsSubmitted(true);
+      dispatch(setUnsavedChanges(false));
     }
   };
 
