@@ -84,7 +84,7 @@ function AudioBatchUpload() {
     setFiles(prevFiles => [...prevFiles, ...selectedFiles]);
     setUploadStatus(prevStatus => [
       ...prevStatus,
-      ...selectedFiles.map(() => ({ status: 'Pending', error: null }))
+      ...selectedFiles.map(() => ({ status: 'Pending', error: null, uploaded: false }))
     ]);
     setError(''); // Clear any previous error message
   };
@@ -99,9 +99,10 @@ function AudioBatchUpload() {
    * @returns {Array<Object>} - Array of objects containing file information.
    */
   const prepareBatchFiles = () => {
-    return files.map(file => ({
+    return files.map((file, index) => ({
       file,
-      title: generateTitle(file)
+      title: generateTitle(file),
+      uploaded: uploadStatus[index] ? uploadStatus[index].uploaded : false
     }));
   };
 
@@ -112,7 +113,12 @@ function AudioBatchUpload() {
     const batchFiles = prepareBatchFiles();
     const uploadResults = [];
 
-    for (const [index, { file, title }] of batchFiles.entries()) {
+    for (const [index, { file, title, uploaded }] of batchFiles.entries()) {
+      // Skip files that have already been uploaded
+      if (uploaded) {
+        continue;
+      }
+
       const adjustedRecord = {
         ...record,
         title,
@@ -125,7 +131,7 @@ function AudioBatchUpload() {
         uploadResults.push({ success: true });
         setUploadStatus(prevStatus => {
           const newStatus = [...prevStatus];
-          newStatus[index] = { status: 'Uploaded', error: null };
+          newStatus[index] = { status: 'Uploaded', error: null, uploaded: true };
           return newStatus;
         });
         setSuccessMessage(`Upload successful for ${file.name}!`);
@@ -136,7 +142,7 @@ function AudioBatchUpload() {
         uploadResults.push({ success: false });
         setUploadStatus(prevStatus => {
           const newStatus = [...prevStatus];
-          newStatus[index] = { status: 'Error', error: error.message || `Failed to upload ${file.name}.` };
+          newStatus[index] = { status: 'Error', error: error.message || `Failed to upload ${file.name}.`, uploaded: false };
           return newStatus;
         });
         setError(error.message || `Failed to upload ${file.name}.`);
@@ -159,7 +165,6 @@ function AudioBatchUpload() {
       setError('');
       setSuccessMessage('Uploads successful');
       setIsSubmitted(true);
-      dispatch(setUnsavedChanges(false));
     }
   };
 
