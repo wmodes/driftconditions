@@ -43,6 +43,7 @@ export default function Navigation() {
       items: [
         { text: "All Audio", link: "/audio/list", permission: "audioList" },
         { text: "Add New Audio", link: "/audio/upload", permission: "audioUpload" },
+        { text: "Batch New Audio", link: "/audio/upload/batch", permission: "audioBatch" },
       ],
     },
     {

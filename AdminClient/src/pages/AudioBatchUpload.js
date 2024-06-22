@@ -1,8 +1,6 @@
 /**
- * @file AudioUpload.js - A page for uploading audio files
+ * @file AudioBatchUpload.js - A page for uploading multiple audio files with the same attributes
  */
-
-// AudioUpload.js - A page for uploading audio files
 
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -19,16 +17,15 @@ import { useUnsavedChangesEvents, SafeLink, useSafeNavigate } from '../utils/for
 
 // Import the config object from the config.js file
 import config from '../config/config'; 
-// pull variables from the config object
 const allowedFileTypes = config.audio.allowedFileTypes;
 const classificationOptions = config.audio.classification;
 const classificationFields = config.audio.classificationFields;
 const fieldNotes = config.audio.fieldNotes;
 
-function AudioUpload() {
+function AudioBatchUpload() {
   const dispatch = useDispatch();  
   const navigateOG = useNavigate();
-  const navigate = useSafeNavigate;
+  const navigate = useSafeNavigate();
 
   // Call the useUnsavedChanges hook to track unsaved changes and handle navigation
   useUnsavedChangesEvents();
@@ -36,6 +33,7 @@ function AudioUpload() {
   // get auth state from Redux store
   const { user: userAuth } = useSelector((state) => state.auth);
   const [editPerm, setEditPerm] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   // Check if the user has permission to edit audio
   useEffect(() => {
@@ -45,26 +43,21 @@ function AudioUpload() {
   }, [userAuth.permissions]);
 
   // Local state for managing form inputs
-  const [file, setFile] = useState(null);
-  const [uploadedAudioID, setUploadedAudioID] = useState(null);
+  const [files, setFiles] = useState([]);
+  const [uploadStatus, setUploadStatus] = useState([]); // Track the upload status of each file
 
   // Success and error handling
   const [isLoading, setIsLoading] = useState(false);
-  const [successMessage, setSuccessMessage] = useState(''); // New state for success message
+  const [successMessage, setSuccessMessage] = useState('');
   const [error, setError] = useState('');
 
   // State for managing form inputs
   const [record, setRecord] = useState({
     status: 'Review',
-    // turn classificationOptions into an object with keys for each option (set to false)
     classification: setClassificationFormOptions(classificationOptions, false),
     copyrightCert: 0,
   });
 
-  /**
-   * Handle form input changes.
-   * @param {Event} e - The event object.
-   */
   const handleChange = (e) => {
     dispatch(setUnsavedChanges(true));
     const { name, value, type, checked } = e.target;
@@ -85,78 +78,123 @@ function AudioUpload() {
     }
   };
 
-  /**
-   * Generate and set the title based on the file name.
-   * @param {File} file - The file object.
-   */
-  const generateAndSetTitle = (file) => {
-    if (!record.title) {
-      const title = generateTitle(file);
-      setRecord(prevState => ({ ...prevState, title }));
-    }
-  };
-
-  /**
-   * Handle file input changes.
-   * @param {Event} e - The event object.
-   */
   const handleFileChange = (e) => {
     dispatch(setUnsavedChanges(true));
-    const selectedFile = e.target.files[0];
-    if (selectedFile && allowedFileTypes.includes(selectedFile.type)) {
-      setFile(selectedFile);
-      generateAndSetTitle(selectedFile);
-      setError(''); // Clear any previous error message
-    } else {
-      e.target.value = ''; // Clears the file input
-      console.error("Invalid file type:", selectedFile?.type);
-      setError('Invalid file type. Please select a valid audio file.');
-    }
+    const selectedFiles = Array.from(e.target.files);
+    setFiles(prevFiles => [...prevFiles, ...selectedFiles]);
+    setUploadStatus(prevStatus => [
+      ...prevStatus,
+      ...selectedFiles.map(() => ({ status: 'Pending', error: null }))
+    ]);
+    setError(''); // Clear any previous error message
   };
 
-  /**
-   * Handle tag input changes.
-   * @param {Array} newTags - The updated tags array.
-   */
   const handleTagChange = (newTags) => {
     dispatch(setUnsavedChanges(true));
     setRecord(prevState => ({ ...prevState, tags: newTags }));
   };
 
   /**
-   * Handle form submission.
-   * @param {Event} e - The event object.
+   * Helper function to create an array of objects containing file information.
+   * @returns {Array<Object>} - Array of objects containing file information.
    */
-  const handleSubmit = e => {
-    e.preventDefault();
-    setIsLoading(true); // Start loading
-    const adjustedRecord = {
-      ...record,
-      classification: formatClassificationForDB(record.classification),
-      copyrightCert: record.copyrightCert ? 1 : 0
-    };
-    dispatch(audioUpload({ audioRecord: adjustedRecord, file }))
-      .unwrap()
-      .then(response => {
-        setIsLoading(false); // Stop loading
-        setSuccessMessage('Upload successful!');
-        setError('');
-        setUploadedAudioID(response.audioID);
-        dispatch(setUnsavedChanges(false));
-        if (editPerm) {
-          navigateOG(`/audio/edit/${response.audioID}`);
-        } else {
-          navigateOG(`/audio/view/${response.audioID}`);
-        }
-      })
-      .catch(error => {
-        setIsLoading(false); // Stop loading
-        console.error("Upload error:", error);
-        setError(error.message || 'Failed to upload audio.');
-      });
+  const prepareBatchFiles = () => {
+    return files.map(file => ({
+      file,
+      title: generateTitle(file)
+    }));
   };
 
-  const isFormValid = record.title && file && record.copyrightCert && record.classification && record.tags && Object.values(record.classification).includes(true);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    const batchFiles = prepareBatchFiles();
+    const uploadResults = [];
+
+    for (const [index, { file, title }] of batchFiles.entries()) {
+      const adjustedRecord = {
+        ...record,
+        title,
+        classification: formatClassificationForDB(record.classification),
+        copyrightCert: record.copyrightCert ? 1 : 0
+      };
+
+      try {
+        const response = await dispatch(audioUpload({ audioRecord: adjustedRecord, file })).unwrap();
+        uploadResults.push({ success: true });
+        setUploadStatus(prevStatus => {
+          const newStatus = [...prevStatus];
+          newStatus[index] = { status: 'Uploaded', error: null };
+          return newStatus;
+        });
+        setSuccessMessage(`Upload successful for ${file.name}!`);
+        setError('');
+
+      } catch (error) {
+        console.error("Upload error:", error);
+        uploadResults.push({ success: false });
+        setUploadStatus(prevStatus => {
+          const newStatus = [...prevStatus];
+          newStatus[index] = { status: 'Error', error: error.message || `Failed to upload ${file.name}.` };
+          return newStatus;
+        });
+        setError(error.message || `Failed to upload ${file.name}.`);
+      }
+    }
+
+    setIsLoading(false);
+
+    // Determine final success or error message
+    const totalSuccess = uploadResults.filter(result => result.success).length;
+    const totalFailure = uploadResults.filter(result => !result.success).length;
+
+    if (totalSuccess > 0 && totalFailure > 0) {
+      setError('Some upload errors');
+      setSuccessMessage('');
+    } else if (totalFailure > 0) {
+      setError('Upload error');
+      setSuccessMessage('');
+    } else {
+      setError('');
+      setSuccessMessage('Uploads successful');
+      setIsSubmitted(true);
+    }
+  };
+
+  const isSubmitReady = files.length > 0 && record.copyrightCert && record.classification && record.tags && Object.values(record.classification).includes(true) && !isSubmitted;
+
+  /**
+   * Render the progress of each file upload.
+   * @returns {JSX.Element} - JSX element displaying the upload progress.
+   */
+  const renderUploadProgress = () => {
+    const batchFiles = prepareBatchFiles();
+
+    if (!batchFiles.length) {
+      return <p>No files selected</p>;
+    }
+
+    return (
+      <div className="upload-progress">
+        {batchFiles.map((batchFile, index) => (
+          <div key={index} className="file-status">
+            <span className="file-name">{batchFile.title}</span>
+            <span className="file-status">
+              {uploadStatus[index] && uploadStatus[index].status === 'Uploaded' ? (
+                <span className="uploaded">Uploaded</span>
+              ) : uploadStatus[index] && uploadStatus[index].status === 'Error' ? (
+                <span className="error">{uploadStatus[index].error}</span>
+              ) : (
+                <span className="pending">Pending</span>
+              )}
+            </span>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   const Required = () => <span className="required">*</span>;
 
   const renderBreadcrumbs = () => {
@@ -169,28 +207,26 @@ function AudioUpload() {
     );
   };
 
-  if (isLoading) {
-    return (<Waiting message="Please wait, uploading..." />);
-  }
-
   return (
     <div className="edit-wrapper">
       <div className="display-box-wrapper">
         <div className="display-box">
           <form onSubmit={handleSubmit}>
-            <h2 className='title'>Upload Audio</h2>
+            <h2 className='title'>Upload Batch Audio</h2>
             {renderBreadcrumbs()}
 
             <div className="form-group">
-              <label className="form-label" htmlFor="file">Audio File: <Required /></label>
-              <input className="form-upload" type="file" id="file" onChange={handleFileChange} />
+              <label className="form-label" htmlFor="file">Audio Files: <Required /></label>
+              <input className="form-upload" type="file" id="file" onChange={handleFileChange} multiple />
               <p className="form-note">{fieldNotes.filetypes}</p>
             </div>
 
             <div className="form-group">
-              <label className="form-label" htmlFor="title">Title: <Required /></label>
-              <input name="title" className="form-field" type="text" id="title" value={record.title} onChange={handleChange} />
+              <label className="form-label">Upload Status:</label>
+              {renderUploadProgress()}
+            </div>
 
+            <div className="form-group">
               <label className="form-label" htmlFor="status">Status: <Required /></label>
               <select name="status" value={record.status} onChange={handleChange} className="form-select">
                 <option value="Review">Under Review</option>
@@ -229,20 +265,12 @@ function AudioUpload() {
                 />
                 <label htmlFor="copyrightCert"> {fieldNotes.copyright} <Required /></label>
               </div>
-
             </div>
             
             <div className='button-box'>
               <button className='button cancel' type="button" onClick={() => navigate(`/audio/upload`)}>Cancel</button>
-              <button className='button submit' type="submit" disabled={!isFormValid}>Upload</button>
+              <button className='button submit' type="submit" disabled={!isSubmitReady}>Upload</button>
             </div>
-            {uploadedAudioID && (
-              <div className="edit-box">
-                <Link to={`/audio/edit/${uploadedAudioID}`} className="edit-button">
-                  Edit
-                </Link>
-              </div>
-            )}
             <div className='message-box'>
               {successMessage && <p className="success">{successMessage}</p>}
               {error && <p className="error">{error}</p>}
@@ -268,8 +296,8 @@ const generateTitle = (file) => {
   let title = fileName.replace(/\.[^/.]+$/, ''); // Remove file extension
   // Replace underscores with spaces
   title = title.replace(/_/g, ' ');
-  // Replace punctuation characters with a single space, excluding apostrophes, dashes, and parentheses within words
-  title = title.replace(/[^\w\s'()-]+/g, ' ');
+  // Replace punctuation characters with a single space, excluding apostrophes and dashes within words
+  title = title.replace(/[^\w\s'-]+/g, ' ');
   // Make Title Case
   title = title.replace(/\w\S*/g, function(txt) {
     return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
@@ -277,4 +305,4 @@ const generateTitle = (file) => {
   return title;
 };
 
-export default AudioUpload;
+export default AudioBatchUpload;
