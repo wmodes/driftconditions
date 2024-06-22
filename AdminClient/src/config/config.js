@@ -47,6 +47,7 @@ const config = {
       userEdit: null,
       roleList: '/role/list',
       audioUpload: '/audio/upload',
+      audioBatch: '/audio/upload/batch',
       audioList: '/audio/list',
       audioView: '/audio/view',
       audioEdit: '/audio/edit',

@@ -789,6 +789,37 @@ svg {
   text-wrap: nowrap;
 }
 
+/* Batch uploads */
+
+.upload-progress {
+  margin-top: 1rem;
+}
+
+.upload-progress .file-status {
+  display: flex;
+  justify-content: space-between;
+  /* margin-bottom: 0.5rem; */
+}
+
+.upload-progress .file-name {
+  flex: 1;
+  text-align: left;
+}
+
+.upload-progress .file-status {
+  text-align: right;
+}
+
+.upload-progress .pending {
+  color: var(--error-text-color);
+}
+
+.upload-progress .uploaded {
+  color: var(--success-text-color);
+}
+
+/* Info button */
+
 .info-button {
   padding-left: 5px;
   cursor: pointer;   

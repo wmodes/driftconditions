@@ -20,6 +20,7 @@
   import UserList from './pages/UserList';
   import RoleList from './pages/RoleList';
   import AudioUpload from './pages/AudioUpload';
+  import AudioBatchUpload from './pages/AudioBatchUpload';
   import AudioList from './pages/AudioList';
   import AudioView from './pages/AudioView';
   import AudioEdit from './pages/AudioEdit';
@@ -60,6 +61,7 @@
         <Route path='/profile/edit' element={<ProfileEdit />} /> 
         <Route path='/user/list' element={<UserList />} />
         <Route path='/role/list' element={<RoleList />} />
+        <Route path='/audio/upload/batch' element={<AudioBatchUpload />} />
         <Route path='/audio/upload' element={<AudioUpload />} />
         <Route path='/audio/list' element={<AudioList />} /> 
         <Route path='/audio/view/:audioID' element={<AudioView />} />
