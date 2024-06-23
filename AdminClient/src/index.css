@@ -799,7 +799,6 @@ svg {
   display: flex;
   justify-content: space-between;
   align-items: center; /* Ensure elements are vertically centered */
-  margin-bottom: 0.5rem;
 }
 
 .upload-progress .file-name {

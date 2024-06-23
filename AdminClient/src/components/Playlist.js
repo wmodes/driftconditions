@@ -50,7 +50,7 @@ const Playlist = () => {
     };
 
     loadFullPlaylist();
-    const intervalId = setInterval(loadFullPlaylist, 120000);
+    const intervalId = setInterval(loadFullPlaylist, 60000);
 
     return () => clearInterval(intervalId); // Cleanup on unmount
   }, [dispatch, userAuth]);
