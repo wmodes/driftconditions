@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { audioUpload } from '../store/audioSlice';
 import Waiting from '../utils/appUtils';
+import { zoomies } from 'ldrs';
 
 import { setClassificationFormOptions, formatClassificationForDB } from '../utils/formatUtils';
 import { ClassificationCheckboxes, TagInput } from '../utils/formUtils';
@@ -21,6 +22,9 @@ const allowedFileTypes = config.audio.allowedFileTypes;
 const classificationOptions = config.audio.classification;
 const classificationFields = config.audio.classificationFields;
 const fieldNotes = config.audio.fieldNotes;
+
+// Register the loading ring component
+zoomies.register();
 
 function AudioBatchUpload() {
   const dispatch = useDispatch();  
@@ -108,7 +112,7 @@ function AudioBatchUpload() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
+    setIsLoading(false);
 
     const batchFiles = prepareBatchFiles();
     const uploadResults = [];
@@ -118,6 +122,13 @@ function AudioBatchUpload() {
       if (uploaded) {
         continue;
       }
+
+      // Set the status to uploading
+      setUploadStatus(prevStatus => {
+        const newStatus = [...prevStatus];
+        newStatus[index] = { status: 'Uploading', error: null, uploaded: false };
+        return newStatus;
+      });
 
       const adjustedRecord = {
         ...record,
@@ -148,8 +159,6 @@ function AudioBatchUpload() {
         setError(error.message || `Failed to upload ${file.name}.`);
       }
     }
-
-    setIsLoading(false);
 
     // Determine final success or error message
     const totalSuccess = uploadResults.filter(result => result.success).length;
@@ -185,13 +194,15 @@ function AudioBatchUpload() {
     return (
       <div className="upload-progress">
         {batchFiles.map((batchFile, index) => (
-          <div key={index} className="file-status">
+          <div key={index} className="file-progress">
             <span className="file-name">{batchFile.title}</span>
             <span className="file-status">
               {uploadStatus[index] && uploadStatus[index].status === 'Uploaded' ? (
                 <span className="uploaded">Uploaded</span>
               ) : uploadStatus[index] && uploadStatus[index].status === 'Error' ? (
                 <span className="error">{uploadStatus[index].error}</span>
+              ) : uploadStatus[index] && uploadStatus[index].status === 'Uploading' ? (
+                <span className="uploading"><l-zoomies color="#336699"></l-zoomies></span>
               ) : (
                 <span className="pending">Pending</span>
               )}
@@ -220,7 +231,7 @@ function AudioBatchUpload() {
       <div className="display-box-wrapper">
         <div className="display-box">
           <form onSubmit={handleSubmit}>
-            <h2 className='title'>Upload Batch Audio</h2>
+            <h2 className='title'>Upload Batch Audio</h2><l-zoomies color="#336699"></l-zoomies>
             {renderBreadcrumbs()}
 
             <div className="form-group">

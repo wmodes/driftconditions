@@ -795,22 +795,31 @@ svg {
   margin-top: 1rem;
 }
 
-.upload-progress .file-status {
+.upload-progress .file-progress {
   display: flex;
   justify-content: space-between;
-  /* margin-bottom: 0.5rem; */
+  align-items: center; /* Ensure elements are vertically centered */
+  margin-bottom: 0.5rem;
 }
 
 .upload-progress .file-name {
   flex: 1;
   text-align: left;
+  white-space: nowrap; /* Prevent text from wrapping */
+  overflow: hidden; /* Hide overflowing text */
+  text-overflow: ellipsis; /* Add ellipsis */
 }
 
 .upload-progress .file-status {
   text-align: right;
+  min-width: 6rem;
 }
 
 .upload-progress .pending {
+  color: var(--error-text-color);
+}
+
+.upload-progress .uploading {
   color: var(--error-text-color);
 }
 
