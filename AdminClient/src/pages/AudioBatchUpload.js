@@ -231,7 +231,7 @@ function AudioBatchUpload() {
       <div className="display-box-wrapper">
         <div className="display-box">
           <form onSubmit={handleSubmit}>
-            <h2 className='title'>Upload Batch Audio</h2><l-zoomies color="#336699"></l-zoomies>
+            <h2 className='title'>Upload Batch Audio</h2>
             {renderBreadcrumbs()}
 
             <div className="form-group">
