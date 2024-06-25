@@ -228,6 +228,7 @@ function UserList() {
                         Role
                       </button>
                     </th>
+                    <th>Status</th>
                     <th>
                       <button className="link" onClick={() => handleSort('date')}>
                         Date Added
@@ -256,6 +257,7 @@ function UserList() {
                       <td>{user.url}</td>
                       <td>{user.location}</td>
                       <td>{user.roleName}</td>
+                      <td>{user.status}</td>
                       <td>{formatDateAsFriendlyDate(user.addedOn)}</td>
                     </tr>
                   ))}
