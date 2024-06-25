@@ -78,7 +78,7 @@ function RecipeList() {
       .then(() => {
         setSuccessMessage(`Recipe ${recipeID} deleted successfully.`);
         const queryParams = getCurrentQueryParams();
-        console.log('queryParams:', queryParams);
+        // console.log('queryParams:', queryParams);
         // Rerender the list by fetching updated data
         dispatch(recipeListAction({queryParams}))
         .unwrap()

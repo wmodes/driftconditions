@@ -63,7 +63,7 @@ function ProfileEdit() {
     setIsLoading(true);
     e.preventDefault();
     if (newPassword !== confirmPassword) {
-      console.log('Passwords do not match.');
+      // console.log('Passwords do not match.');
       // Set an error state or alert the user
       setError('Passwords do not match.');
       setIsLoading(false);
@@ -109,7 +109,7 @@ function ProfileEdit() {
     return (<Waiting />);
   }
 
-  console.log(`ProfileEdit: Profile to render: ${JSON.stringify(profile, null, 2)}`);
+  // console.log(`ProfileEdit: Profile to render: ${JSON.stringify(profile, null, 2)}`);
 
   // Renders the user's profile information
   return (

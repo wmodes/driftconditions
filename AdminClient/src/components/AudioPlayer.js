@@ -21,7 +21,7 @@ const AudioPlayer = forwardRef(({ isVisible, setIsPlaying }, ref) => {
   };
 
   const handleReady = () => {
-    console.log('Player is ready');
+    // console.log('Player is ready');
   };
 
   const handleError = (error) => {

@@ -333,7 +333,7 @@ export const ClassificationCheckboxes = ({ classification, handleChange }) => {
   // Convert keys in classification object to lowercase
   const lowerCaseClassification = convertKeysToLowercase(classification);
 
-  console.log('ClassificationCheckboxes:classification', lowerCaseClassification);
+  // console.log('ClassificationCheckboxes:classification', lowerCaseClassification);
 
   return (
     <div className="form-checkbox">

@@ -50,7 +50,7 @@ export const profileEdit = createAsyncThunk(
   profileEditRoute, 
   async ({profile}, thunkAPI) => {
     try {
-      console.log(`userSlice: profileEdit: username: ${profile.username}`);
+      // console.log(`userSlice: profileEdit: username: ${profile.username}`);
       const response = await axios.post(
         profileEditRoute, 
         profile, 
