@@ -126,7 +126,7 @@ function UserList() {
         setCriticalError('');
         setError('');
         const queryParams = getCurrentQueryParams();
-        console.log('queryParams:', queryParams);
+        // console.log('queryParams:', queryParams);
         // Rerender the list by fetching updated data
         dispatch(userListAction({queryParams}))
         .unwrap()

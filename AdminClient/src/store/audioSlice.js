@@ -18,8 +18,8 @@ const audioTrashRoute = serverBaseURL + config.adminServer.routes.audioTrash;
 export const audioUpload = createAsyncThunk(
   audioUploadRoute,
   async ({audioRecord, file}, thunkAPI) => {
-    console.log("Thunk received audioRecord:", audioRecord);
-    console.log("Thunk received file:", file);
+    // console.log("Thunk received audioRecord:", audioRecord);
+    // console.log("Thunk received file:", file);
 
     // Prepare FormData
     const formData = new FormData();

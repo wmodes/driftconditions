@@ -30,7 +30,7 @@ function Signup() {
   // Handle form input changes and update the record state
   const handleChange = (e) => {
     const { name, value: initialValue } = e.target;
-    console.log(`Signup: handleChange: name: ${name}, value: ${initialValue}`)
+    // console.log(`Signup: handleChange: name: ${name}, value: ${initialValue}`)
     let value = initialValue;
     if (name === 'username') {
       // Convert username to lowercase and remove spaces and all non-alphanumeric characters
@@ -46,7 +46,7 @@ function Signup() {
     // Dispatches the signup action with user details.
     dispatch(signup({record}))
     .then((res) => {
-      console.log("data received:", res);
+      // console.log("data received:", res);
       navigate('/signin');
     })
     .catch((error) => {

@@ -89,7 +89,7 @@ function AudioList() {
       .then(() => {
         setSuccessMessage(`Audio ${audioID} trashed successfully.`);
         const queryParams = getCurrentQueryParams();
-        console.log('queryParams:', queryParams);
+        // console.log('queryParams:', queryParams);
         // Rerender the list by fetching updated data
         dispatch(audioListAction({queryParams}))
         .unwrap()

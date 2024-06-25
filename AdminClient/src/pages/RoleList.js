@@ -59,7 +59,7 @@ function RolesList() {
 
   const handleSubmit = async (e, roleId) => {
     e.preventDefault(); // Prevent form from causing a page reload
-    console.log('Updated role:', editedRecord);
+    // console.log('Updated role:', editedRecord);
     // console.log('Updated role:', updatedRole);
     await dispatch(roleUpdate({roleRecord: editedRecord}))
       .unwrap()
