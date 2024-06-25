@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { profileInfo, profileEdit } from '../store/userSlice';
+import FeatherIcon from 'feather-icons-react';
 import Waiting from '../utils/appUtils';
 
 function ProfileEdit() { 
@@ -138,13 +139,23 @@ function ProfileEdit() {
             {profile.email !== undefined && (
               <div>
                 <label className="form-label" htmlFor="email">Email: <Required /></label>
-                <input className="form-field" type="text" id="email" name="email" value={profile.email} onChange={handleChange} />
+                <div className="flex gap-2">
+                  <input className="form-field" type="text" id="email" name="email" value={profile.email} onChange={handleChange} />{' '}
+                  <a href={`mailto:${profile.email}?subject=RE: driftconditions.org`} target="_blank" rel="noopener noreferrer" className="pt-1">
+                    <FeatherIcon icon="mail" color="#336699" />
+                  </a>
+                </div>
               </div>
             )}
             {profile.url !== undefined && (
               <div>
                 <label className="form-label" htmlFor="url">URL:</label>
-                <input className="form-field" type="text" id="url" name="url" value={profile.url} onChange={handleChange} />
+                <div className="flex gap-2">
+                <input className="form-field" type="text" id="url" name="url" value={profile.url} onChange={handleChange} />{' '}
+                <a href={profile.url} target="_blank" rel="noopener noreferrer" className="pt-1">
+                    <FeatherIcon icon="link" color="#336699" />
+                  </a>
+                </div>
               </div>
             )}
             {profile.bio !== undefined && (
