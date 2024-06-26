@@ -32,12 +32,25 @@ output.icecast(%mp3,
 )
 
 # VosCast Icecast output settings
-output.icecast(%mp3,
-  host = "s4.voscast.com",
-  port = 9155,
-  password = "B4nD86nEMp",
-  mount = "/",
-  description = "DriftConditions explores the intersection of intention and chance through an ever-evolving tapestry of audio. Each broadcast delves into a hidden world of code-generated sounds, echoing whispers, and serendipitous static, offering listeners a unique journey through an auditory landscape unconstrained by traditional narratives.",
+# output.icecast(%mp3,
+#  host = "s4.voscast.com",
+#  port = 9155,
+#  password = "B4nD86nEMp",
+#  mount = "/",
+#  description = "DriftConditions explores the intersection of intention and chance through an ever-evolving tapestry of audio. Each broadcast delves into a hidden world of code-generated sounds, echoing whispers, and serendipitous static, offering listeners a unique journey through an auditory landscape unconstrained by traditional narratives.",
+#  name = "DriftConditions: Whispers in the Static",
+#  genre = "Experimental, Ambient, Soundscape",
+#  url = "https://driftconditions.org/",
+#  public = true,
+#  encoding = "UTF-8",
+#  safe_crossfaded_dynamic
+# )
+
+# FastCast4u configuration (commented out)
+output.shoutcast(%mp3,
+  host = "usa19.fastcast4u.com",
+  port = 6850,
+  password = "f@stcast4u!",
   name = "DriftConditions: Whispers in the Static",
   genre = "Experimental, Ambient, Soundscape",
   url = "https://driftconditions.org/",
@@ -45,16 +58,3 @@ output.icecast(%mp3,
   encoding = "UTF-8",
   safe_crossfaded_dynamic
 )
-
-# FastCast4u configuration (commented out)
-# output.shoutcast(%mp3,
-#   host = "usa19.fastcast4u.com",
-#   port = 6850,
-#   password = "f@stcast4u!",
-#   name = "DriftConditions: Whispers in the Static",
-#   genre = "Experimental, Ambient, Soundscape",
-#   url = "https://driftconditions.org/",
-#   public = true,
-#   encoding = "UTF-8",
-#   safe_crossfaded_dynamic
-# )
