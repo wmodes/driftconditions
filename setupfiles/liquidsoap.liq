@@ -43,7 +43,6 @@ output.icecast(%mp3,
   url = "https://driftconditions.org/",
   public = true,
   encoding = "UTF-8",
-  bitrate = 128,
   safe_crossfaded_dynamic
 )
 
