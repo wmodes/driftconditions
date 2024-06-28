@@ -67,7 +67,8 @@ const config = {
     }
   },
   stream: {
-    url: 'https://driftconditions.org:8000/stream',
+    // url: 'https://driftconditions.org:8000/stream',
+    url: 'https://usa14.fastcast4u.com/proxy/wmodes?mp=/1',
     restartTime: 5000,
   },
   list: {
