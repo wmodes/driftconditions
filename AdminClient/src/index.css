@@ -208,6 +208,13 @@ svg {
   }
 }
 
+/* how it works page */
+
+.keep-together {
+  display: block;
+  page-break-inside: avoid;
+}
+
 .newspaper-columns {
   column-width: 20rem;
   column-gap: 2rem;
