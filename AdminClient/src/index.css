@@ -208,6 +208,29 @@ svg {
   }
 }
 
+.newspaper-columns {
+  column-width: 20rem;
+  column-gap: 2rem;
+}
+
+figure {
+  display: inline-block; /* Or use 'block' if needed */
+  page-break-inside: avoid; /* Prevent breaking inside columns in paginated contexts */
+}
+
+figure img {
+  width: 100%;
+  height: auto;
+  border-radius: 2.5%;
+}
+
+figcaption {
+  font-size: 0.75rem;
+  font-style: italic;
+  text-align: center;
+  padding-bottom: 0.25rem;
+}
+
 .homepage-box .column1 {
   flex: 1;
   padding: 1rem;
@@ -219,10 +242,18 @@ svg {
 }
 
 .homepage-box h2.title {
-  padding-bottom: 1rem; 
   font-size: 1.75rem; 
   text-align: center;
   letter-spacing: 0.5em;
+  padding-bottom: 1rem; 
+}
+
+.homepage-box h3.title {
+  font-size: 1.25rem;
+  text-align: left;
+  padding-bottom: 0.25rem;
+  font-weight: 100; /* This makes the font weight lighter */
+  font-stretch: condensed; /* This condenses the font */
 }
 
 .homepage-box .text {
