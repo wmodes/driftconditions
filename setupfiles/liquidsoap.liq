@@ -46,10 +46,10 @@ output.icecast(%mp3,
 #  safe_crossfaded_dynamic
 # )
 
-# FastCast4u configuration (commented out)
+# FastCast4u configuration
 output.shoutcast(%mp3,
-  host = "usa19.fastcast4u.com",
-  port = 6850,
+  host = "usa14.fastcast4u.com",
+  port = 7118,
   password = "f@stcast4u!",
   name = "DriftConditions: Whispers in the Static",
   genre = "Experimental, Ambient, Soundscape",
