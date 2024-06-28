@@ -1,6 +1,6 @@
 # Interference
 
-Interference is a online streaming audio source that captures the chaos and serendipity of late-night radio tuning in an uncanny audio stream generated on the fly by code. Overlapping fragmented stories, ambient sounds, and mysterious crosstalk weave a vivid sonic tapestry that draws listeners into an immersive and unpredictable listening experience. Inspired by the unpredictability of real-world radio interference, Interference explores the boundaries between intention and happenstance, inviting listeners to eavesdrop on a hidden world of voices and atmospheres unconstrained by traditional narrative structures. With each new listening session, Interference offers a fresh journey through its evocative auditory landscape.
+Interference is an online audio source that captures the chaos and serendipity of late-night radio tuning in an uncanny audio stream generated on the fly by code. Overlapping fragmented stories, ambient sounds, and mysterious crosstalk weave a vivid sonic tapestry that draws listeners into an immersive and unpredictable listening experience. Inspired by the unpredictability of real-world radio interference, Interference explores the boundaries between intention and happenstance, inviting listeners to eavesdrop on a hidden world of voices and atmospheres unconstrained by traditional narrative structures. With each new listening session, Interference offers a fresh journey through its evocative auditory landscape.
 
 ## Presentation
 

@@ -246,15 +246,11 @@ where:
 
 
 ## Streaming services
-securenet
-
-voscast
-128 Kbps
-Maximum Bitrate 
-$16.95 /mo
 
 FastCast4u
 128kbps: $18.75 per month / $149.25 per year / $224.25 per 2 years
+Stream address:
+https://usa14.fastcast4u.com/proxy/wmodes?mp=/1
 
 ## Mix Length Logic
 
