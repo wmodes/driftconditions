@@ -47,6 +47,9 @@ var grammarDefinition = {
     "a symphony of dissonance",
     "veiled whispers"        
   ],
+  "evocativeNounPhrase": [
+    "#plainENP#", "<b>#plainENP#</b>"
+  ],
   "plainENP": [
     "a fresh journey through its evocative auditory landscape",
     "a hidden world of voices and atmospheres unconstrained by traditional narrative structures",
@@ -64,9 +67,6 @@ var grammarDefinition = {
     "the unpredictability of late-night radio",
     "the warmth of voice and the chill of the unknown",
     "an uncanny audio stream generated on the fly by code"
-  ],
-  "evocativeNounPhrase": [
-    "#plainENP#", "<b>#plainENP#</b>"
   ],
   "projectName": [
     "#projNoun##projNoun#", "#projAdj##projNoun#", "#projAdj##projPlural#", "#projNoun##projPlural#"
@@ -91,7 +91,6 @@ var grammarDefinition = {
     "the heart of the flatlands along the winding Misssouri River",
     "a shantyboat on the bayous of the Achaflaya Basin",
     "a boathouse on the Minnesota backwaters of the Upper Mississippi",
-    "a desert shack on the high desert of the Great Basin between Pyramid Lake and the Black Rock Playa",
     "a historic bungalow at the foot of Harmar Hill in Marieta, Ohio on the shores of the Ohio River",
     "Florence, Alabama on the sunny banks of the Tennessee River",
     "a woodcutter's cabin in the rolling woodlands of the Ozarks",
@@ -99,6 +98,7 @@ var grammarDefinition = {
     "a converted barn in the rolling hills of the Blue Ridge Mountains",
     "a hunting lodge in the high desert of the Colorado Plateau near Four Corners",
     "a sunny cabin in the San Juan archipelago in the otherwise foggy Pacific Northwest",
+    "a converted workshop quonset hut in Gerlach, Nevada",
   ]
 }
 

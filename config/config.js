@@ -175,7 +175,7 @@ const config = {
 
     // basic noise filter
     default: {
-      base: 'min(1,max(0,((cos(PI*t*fs/13+fo)*1+cos(PI*t*fs/7+fo)*0.5+cos(PI*t*fs/3+fo)*as)-ao)*as*p+q)',
+      base: 'min(1,max(0,((cos(PI*t*fs/13+fo)*1+cos(PI*t*fs/7+fo)*0.5+cos(PI*t*fs/3+fo)*0.25)-ao)*as*p+q)',
       defaults: {
         fs: 0.25, // frequencyScale
         fo: 0, // frequencyOffset
