@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { setUnsavedChanges } from '../store/formSlice';
-import { WithContext as ReactTags } from 'react-tag-input';
+import { WithContext as ReactTags, SEPARATORS } from 'react-tag-input';
 import { normalizeTag } from './formatUtils';
 import { Tooltip } from 'react-tooltip';
 import FeatherIcon from 'feather-icons-react';
@@ -191,7 +191,7 @@ export const TagSelect = ({ options, onTagChange, initialValues }) => {
           tags={tags}
           handleDelete={handleDelete}
           handleAddition={handleAddition}
-          delimiters={[188, 13, ',']} // Enter and comma keys as delimiters
+          separators={[188, 13, ',']} // Enter and comma keys as delimiters
           placeholder=""
           autofocus={false}
           classNames={{
@@ -222,11 +222,10 @@ export const TagInput = ({ onTagChange, initialTags }) => {
   const convertedTags = arrayToReactTags(initialTags);
 
   const [tags, setTags] = useState(convertedTags);
-  // const inputRef = useRef(null); // Create a ref for the input field
 
   useEffect(() => {
     // Call onTagChange with initial tags when the component mounts
-    // onTagChange(ReactTagsToArray(tags));
+    onTagChange(ReactTagsToArray(tags));
   }, []); // Empty dependency array to run only once on mount
 
   // make sure that when we click in the select-results div, the input field is focused
@@ -266,16 +265,21 @@ export const TagInput = ({ onTagChange, initialTags }) => {
    * @param {Object} newTag - The new tag to add.
    */
   const handleAddition = (newTag) => {
-    const updatedTags = [...tags, NormalizeReactTag(newTag)];
-    setTags(updatedTags);
-    onTagChange(ReactTagsToArray(updatedTags));
+    const normalizedTag = NormalizeReactTag(newTag);
+    console.log('TagInput:handleAddition:newTag', newTag, 'normalizedTag:', normalizedTag);
+    console.log('TagInput:handleAddition:existing tags:', tags)
+
+    // Check if the normalized tag already exists
+    if (!tags.some(tag => tag.text === normalizedTag.text)) {
+      const updatedTags = [...tags, normalizedTag];
+      setTags(updatedTags);
+      onTagChange(ReactTagsToArray(updatedTags));
+    }
   };
 
   return (
     <div className="form-tags input">
       <div className="select-results">
-        {/* Ensure ReactTags component passes the inputRef to the actual input element */}
-        {/* <div>{formatTagsAsString(ReactTagsToArray(tags))}</div> */}
         <ReactTags
           tags={tags}
           handleDelete={handleDelete}
