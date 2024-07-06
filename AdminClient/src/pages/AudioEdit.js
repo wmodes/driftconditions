@@ -45,7 +45,7 @@ function AudioEdit() {
   // State for managing form inputs
   const [record, setRecord] = useState({
     // turn classificationOptions into an object with keys for each option (set to false)
-    classification: setClassificationFormOptions(classificationOptions, false),
+    classification: {},
     copyrightCert: 0,
   });
 
