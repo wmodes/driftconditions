@@ -14,7 +14,7 @@ import {
   setClassificationFormOptions, formatClassificationForDB } from '../utils/formatUtils';
 // import { ClassificationCheckboxes } from '../utils/formUtils';
 // import FeatherIcon from 'feather-icons-react';
-import Waiting from '../utils/appUtils';
+import { Waiting } from '../utils/appUtils';
 
 // Import the config object from the config.js file
 import config from '../config/config';

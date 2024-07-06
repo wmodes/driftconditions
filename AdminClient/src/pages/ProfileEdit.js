@@ -5,7 +5,7 @@ import { useDispatch } from 'react-redux';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { profileInfo, profileEdit } from '../store/userSlice';
 import FeatherIcon from 'feather-icons-react';
-import Waiting from '../utils/appUtils';
+import { Waiting } from '../utils/appUtils';
 
 function ProfileEdit() { 
   // Use useParams to access the route parameters

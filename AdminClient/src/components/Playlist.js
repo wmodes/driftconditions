@@ -9,18 +9,6 @@ import { Link } from 'react-router-dom';
 import { fetchQueuePlaylist } from '../store/queueSlice';
 
 /**
- * Helper function to format date and time in the user's local time zone.
- *
- * @param {string} datetime - The date and time string in UTC.
- * @returns {string} The formatted time string in the user's local time zone.
- */
-const formatTime = (datetime) => {
-  const date = new Date(datetime);
-  // Replace standard space with a non-breaking space character
-  return date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true }).replace(' ', '\u00A0');
-};
-
-/**
  * Render a playlist of mixes with their respective clips.
  *
  * @returns {JSX.Element[]} A list of JSX elements representing the rendered playlist.
@@ -111,6 +99,22 @@ const Playlist = () => {
     </div>
   );
   
+};
+
+//
+// Helper functions
+//
+
+/**
+ * Helper function to format date and time in the user's local time zone.
+ *
+ * @param {string} datetime - The date and time string in UTC.
+ * @returns {string} The formatted time string in the user's local time zone.
+ */
+const formatTime = (datetime) => {
+  const date = new Date(datetime);
+  // Replace standard space with a non-breaking space character
+  return date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true }).replace(' ', '\u00A0');
 };
 
 export default Playlist;

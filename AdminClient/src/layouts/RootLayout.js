@@ -8,7 +8,7 @@ import AudioPlayer from '../components/AudioPlayer';
 import { getProjectName } from '../utils/randomUtils';
 import { setProjectName } from '../store/appSlice';
 import Navigation from '../components/Navigation';
-import Waiting from '../utils/appUtils';
+import { Waiting } from '../utils/appUtils';
 
 const RootLayout = () => {
   const location = useLocation();

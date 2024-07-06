@@ -8,7 +8,7 @@ import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { audioUpload } from '../store/audioSlice';
-import Waiting from '../utils/appUtils';
+import { Waiting } from '../utils/appUtils';
 
 import { setClassificationFormOptions, formatClassificationForDB } from '../utils/formatUtils';
 import { ClassificationCheckboxes, TagInput } from '../utils/formUtils';
