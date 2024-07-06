@@ -248,23 +248,23 @@ class MixEngine {
     if (track.effects) {
       logger.debug(`MixEngine:_buildTrackFilters(): Applying effects to track ${track.effects}`);
       track.effects.forEach(effect => {
+        // norm effect
+        if (/^(norm|normalize|loudnorm)/i.test(effect)) {
+          logger.debug(`MixEngine:_buildTrackFilters(): Applying norm effect to track ${effect}`);
+          nextInputSrc = this._normEffect(
+            nextInputSrc,
+            baseLabel,
+            this._getParams(effect)
+          );
+        }
         // loop effect
-        if (/^(loop|repeat)/i.test(effect)) {
+        else if (/^(loop|repeat)/i.test(effect)) {
           logger.debug(`MixEngine:_buildTrackFilters(): Applying loop effect to track ${effect}`);
           // if we have a loop effect, we need to adjust the duration of the clip
           track.duration = Infinity;
           nextInputSrc = this._loopEffect(
             nextInputSrc, 
             baseLabel, 
-            this._getParams(effect)
-          );
-        }
-        // norm effect
-        else if (/^(norm|normalize|loudnorm)/i.test(effect)) {
-          logger.debug(`MixEngine:_buildTrackFilters(): Applying norm effect to track ${effect}`);
-          nextInputSrc = this._normEffect(
-            nextInputSrc,
-            baseLabel,
             this._getParams(effect)
           );
         }
@@ -424,23 +424,23 @@ class MixEngine {
     if (clip.effects) {
       logger.debug(`MixEngine:_buildClipFilters(): Applying effects to clip ${clip.effects}`);
       clip.effects.forEach(effect => {
+        // norm effect
+        if (/^(norm|normalize|loudnorm)/i.test(effect)) {
+          logger.debug(`MixEngine:_buildTrackFilters(): Applying norm effect to track ${effect}`);
+          nextInputSrc = this._normEffect(
+            nextInputSrc,
+            baseLabel,
+            this._getParams(effect)
+          );
+        }
         // loop effect
-        if (/^(loop|repeat)/i.test(effect)) {
+        else if (/^(loop|repeat)/i.test(effect)) {
           logger.debug(`MixEngine:_buildClipFilters(): Applying loop effect to clip ${effect}`);
           // if we have a loop effect, we need to adjust the duration of the clip
           clip.duration = Infinity;
           nextInputSrc = this._loopEffect(
             nextInputSrc, 
             baseLabel, 
-            this._getParams(effect)
-          );
-        }
-        // norm effect
-        else if (/^(norm|normalize|loudnorm)/i.test(effect)) {
-          logger.debug(`MixEngine:_buildTrackFilters(): Applying norm effect to track ${effect}`);
-          nextInputSrc = this._normEffect(
-            nextInputSrc,
-            baseLabel,
             this._getParams(effect)
           );
         }
