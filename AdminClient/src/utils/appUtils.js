@@ -1,13 +1,22 @@
+/**
+ * @file A set of utilities for displaying a loading animation and generating unique identifiers.
+ */
 
-
-import React from 'react';
+import { useState } from 'react';
 import { tailChase } from 'ldrs';
+import { v4 as uuidv4 } from 'uuid';
 
 // Assuming tailChase.register() is necessary for <l-tail-chase> to work,
 // and is idempotent (safe to call multiple times).
 tailChase.register();
 
-const Waiting = ({ message = "Loading..." }) => {
+/**
+ * Waiting component that displays a loading animation and an optional message.
+ * @param {Object} props - The props object.
+ * @param {string} [props.message="Loading..."] - The message to display.
+ * @returns {JSX.Element} The Waiting component.
+ */
+export const Waiting = ({ message = "Loading..." }) => {
   return (
     <div className="flex flex-col justify-center items-center h-screen">
       <div>
@@ -20,4 +29,11 @@ const Waiting = ({ message = "Loading..." }) => {
   );
 }
 
-export default Waiting;
+/**
+ * Custom hook to generate a unique identifier.
+ * @returns {string} Unique identifier.
+ */
+export const useUniqueId = () => {
+  const [uniqueId] = useState(uuidv4());
+  return uniqueId;
+};
