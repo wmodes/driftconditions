@@ -194,7 +194,7 @@ function AudioUpload() {
               <label className="form-label" htmlFor="status">Status: <Required /></label>
               <select name="status" value={record.status} onChange={handleChange} className="form-select">
                 <option value="Review">Under Review</option>
-                <option value="Approved" disabled={!editPerm}>Approved</option>
+                <option value="Approved" disabled={!editPerm} selected={editPerm}>Approved</option>
                 <option value="Disapproved" disabled={!editPerm}>Disapproved</option>
                 <option value="Trashed" disabled={!editPerm}>Trashed</option>
               </select>
