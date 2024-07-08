@@ -74,7 +74,7 @@ const Homepage = () => {
                 <Link className="link" to="/howitworks">Curious how it works?</Link> You're our kinda people. 
                 </p>
                 <p>
-                  You have audio you think would fit {projectName}? <Link  className="link" to="https://driftconditions.org/signup">Signup for an account,</Link> and then{' '}
+                  You have audio you think would fit {projectName}? <Link  className="link" to="/signup">Signup for an account,</Link> and then{' '}
                   <a  className="link" target="_new" href="mailto:info@driftconditions.org?subject=please%20promote%20me%20to%20a%20contributor">
                     hit us up
                   </a>.
