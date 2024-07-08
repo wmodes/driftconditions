@@ -1,7 +1,7 @@
 // client/src/pages/Homepage.js
 
 import React, { useState, useEffect } from 'react';
-import { useOutletContext } from 'react-router-dom';
+import { useOutletContext, Link } from 'react-router-dom';
 import FeatherIcon from 'feather-icons-react';
 import Playlist from '../components/Playlist';
 import { 
@@ -71,16 +71,16 @@ const Homepage = () => {
                   { projectName } is a procedurally-generated audio stream mixed on-the-fly 24/7 from { location }.
                 </p>
                 <p>
-                <a className="link" href="/howitworks">Curious how it works?</a> You're our kinda people. 
+                <Link className="link" to="/howitworks">Curious how it works?</Link> You're our kinda people. 
                 </p>
                 <p>
-                  You have audio you think would fit {projectName}? <a  className="link" href="https://driftconditions.org/signup">Signup for an account,</a> and then{' '}
+                  You have audio you think would fit {projectName}? <Link  className="link" to="https://driftconditions.org/signup">Signup for an account,</Link> and then{' '}
                   <a  className="link" target="_new" href="mailto:info@driftconditions.org?subject=please%20promote%20me%20to%20a%20contributor">
                     hit us up
                   </a>.
                 </p>
                 <p className="contact">
-                  Need to reach us for some other reason? <a className="link"                 href="mailto:info@driftconditions.org">Okay.</a>
+                  Need to reach us for some other reason? <Link className="link"                 to="mailto:info@driftconditions.org">Okay.</Link>
                 </p>
               </div>
             </div> {/* end narrative-wrapper */}

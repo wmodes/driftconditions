@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import FeatherIcon from 'feather-icons-react';
 
 const HowItWorks = () => {
@@ -81,7 +82,7 @@ const HowItWorks = () => {
                 <div className='keep-together'>
                   <h3 className='title'>User Contribution</h3>
                   <p>
-                    The station relies on user audio contributions. Do you have audio that you think would fit perfectly within the unique soundscape of the station? We welcome your contributions. By <a  className="link" href="https://driftconditions.org/signup">signing up for an account</a> and letting us know you would like to be a contributor, you can upload your own audio clips and participate in creating the ever-evolving auditory experience. Once you've signed up, <a className="link" target="_new" href="mailto:info@driftconditions.org?subject=please%20promote%20me%20to%20a%20contributor">reach out to us to get started.</a> Your input helps shape the dynamic and immersive environment that makes the station so special.
+                    The station relies on user audio contributions. Do you have audio that you think would fit perfectly within the unique soundscape of the station? We welcome your contributions. By <Link  className="link" to="/signup">signing up for an account</Link> and letting us know you would like to be a contributor, you can upload your own audio clips and participate in creating the ever-evolving auditory experience. Once you've signed up, <a className="link" target="_new" href="mailto:info@driftconditions.org?subject=please%20promote%20me%20to%20a%20contributor">reach out to us to get started.</a> Your input helps shape the dynamic and immersive environment that makes the station so special.
                   </p>
                 </div>
 
