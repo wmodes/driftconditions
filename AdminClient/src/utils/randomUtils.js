@@ -71,17 +71,17 @@ var grammarDefinition = {
   "projectName": [
     "#projNoun##projNoun#", "#projAdj##projNoun#", "#projAdj##projPlural#", "#projNoun##projPlural#"
   ],
+  "projAdj": [
+    "Static", "Toxic", "Halcyon", "Safety", "Radio", "Drift", "Dusk",
+    "General", "Dynamic", "Licensed", "NonLicensed", "Auxiliary", "Analytical"
+  ],
   "projNoun": [
     "Static", "Drift", "Radio", "Nocturne", "Event", "Interference", "Dusk", "Frequency", "Elegy", "Diaspora", "Project", "Aether", "Flow", "Schema", "Protocol", "Shutdown", "Matrix", "Feedstock", "Fidelity", "Dissonance", "Resonance", "Feedback", "Modulation", "Amplitude", "Noise", "Tone", "Timbre", "Pitch", "Dynamics", "Articulation", "Phrasing",
     "Control", "Process", "System", "Equipment", "Operation", "Variable", "Instrumentation", "Utility", "Procedure", "Safety", "Analysis", "Catalyst", "Drawing", "Standard", "Specification", "Manual", "Design"
   ],
   "projPlural": [
     "Conditions", "Variations", "Matrices", "Schemas", "Protocols", "Fidelities", "Frequencies",
-    "Processes", "Systems", "Operations", "Variables", "Utilities", "Procedures", "Analyses", "Catalysts", "Standards", "Specifications"
-  ],
-  "projAdj": [
-    "Static", "Toxic", "Halcyon", "Safety", "Radio", "Drift", "Dusk",
-    "General", "Dynamic", "Licensed", "NonLicensed", "Auxiliary", "Analytical"
+    "Processes", "Systems", "Operations", "Variables", "Utilities", "Procedures", "Catalysts", "Standards", "Specifications"
   ],
   "location": [
     "a 50-year-old camper van on the lonely basin and range off Highway 50",
