@@ -90,14 +90,14 @@ const Playlist = () => {
 
   return (
     <div className="playlist text-center">
-      {fullPlaylist.slice(1).map((mix) => (
+      {fullPlaylist.slice(1).map((mix, index) => (
         <div key={mix.mixID} className="playlist-item">
-          <div className="time">{formatTime(mix.dateUsed)}</div>
+          <div className="time">{formatTime(fullPlaylist[index].dateUsed)}</div>
           {renderMix(mix)}
         </div>
       ))}
     </div>
-  );
+  );  
   
 };
 
