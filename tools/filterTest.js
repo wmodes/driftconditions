@@ -30,7 +30,8 @@ class FilterTest {
         method: 'volumeFadeInOutWithLoopedStatic' },
       { title: 'Detune between stations', method: 'detuneBetweenStations'},
       { title: 'Faraway sounds with lowpass filter', method: 'farawayFilter'},
-      { title: 'Backward audio', method: 'backwardFilter'}
+      { title: 'Backward audio', method: 'backwardFilter'},
+      { title: 'Music Bed Volume Modulation', method: 'musicBedVolume' }
     ];
     this.filterChain = [];
     this.finalOutputLabel = '';
@@ -821,6 +822,85 @@ class FilterTest {
     this.finalOutputLabel = 'a0';
     this.configureAndRun();
   }
+
+  /**
+   * Apply a volume modulation to the music bed based on the volume of the talk track.
+   */
+  musicBedVolume() {
+    this.loadInputs(['talk', 'music']);
+    this.filterChain = [
+      // Track 1: 30 seconds of silence, the talk track, then 30 seconds of silence
+      {
+        filter: 'aevalsrc',
+        options: {
+          exprs: '0',
+          duration: 30
+        },
+        outputs: 'silence_start'
+      },
+      {
+        filter: 'aevalsrc',
+        options: {
+          exprs: '0',
+          duration: 30
+        },
+        outputs: 'silence_end'
+      },
+      {
+        inputs: ['silence_start', '0:a', 'silence_end'],
+        filter: 'concat',
+        options: {
+          n: 3,
+          v: 0,
+          a: 1
+        },
+        outputs: 'talk_with_silence'
+      },
+      // Split talk_with_silence into two streams
+      {
+        inputs: 'talk_with_silence',
+        filter: 'asplit',
+        options: {
+          outputs: 2
+        },
+        outputs: ['talk_with_silence_1', 'talk_with_silence_2']
+      },
+      // Track 2: music volume modulated by the talk track
+      {
+        inputs: ['1:a', 'talk_with_silence_1'],
+        filter: 'sidechaincompress',
+        options: {
+          threshold: '-30dB', // Threshold above which compression is applied
+          ratio: 16,          // Compression ratio
+          attack: 2000,       // Attack time in milliseconds (smooth transition in)
+          release: 4000,      // Release time in milliseconds (maintain ducking during pauses)
+          makeup: 1,          // Makeup gain
+          knee: 8,            // Knee width
+          link: 'maximum',    // Linking method (average, maximum, sum)
+          detection: 'rms',   // Detection method (rms or peak)
+          mode: 'downward'    // Compression mode (downward or upward)
+        },
+        outputs: 'music_compressed'
+      },
+      // Combine both tracks
+      {
+        inputs: ['talk_with_silence_2', 'music_compressed'],
+        filter: 'amix',
+        options: {
+          inputs: 2,
+          duration: 'first',
+        },
+        outputs: 'out'
+      }
+    ];
+    this.finalOutputLabel = 'out';
+    this.configureAndRun();
+}
+
+
+
+
+
 
 
 
