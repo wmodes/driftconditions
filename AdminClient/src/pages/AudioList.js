@@ -1,21 +1,19 @@
 // AudioList.js - Edit audio details
 
-// TODO: Add search field
-
 import React, { useEffect, useState, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { audioList as audioListAction, audioTrash as audioTrashAction } from '../store/audioSlice';
+import { 
+  audioList as audioListAction, 
+  audioTrash as audioTrashAction,
+  audioUpdate
+} from '../store/audioSlice';
 import { parseQuery, stringifyQuery } from '../utils/queryUtils';
 import { renderPagination } from '../utils/listUtils'; 
 import { formatDateAsFriendlyDate, formatListAsString } from '../utils/formatUtils';
 import { ReactComponent as AudioOn } from '../images/volume-animate.svg';
 
-// TODO: test and debug user filter
-
-// Import the config object from the config.js file
 import config from '../config/config';
-// pull variables from the config object
 const recordsPerPage = config.list.recordsPerPage;
 const retryLimit = config.adminServer.retryLimit;
 const audioBaseURL = config.adminServer.audioBaseURL;
@@ -25,22 +23,26 @@ function AudioList() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Local state for managing audio list and pagination
   const [audioList, setAudioList] = useState([]);
   const [totalRecords, setTotalRecords] = useState(0);
-  const [page, setpage] = useState(1);
+  const [page, setPage] = useState(1);
   const [playingAudio, setPlayingAudio] = useState({ src: "", playing: false });
-
-  // Success and error handling
   const [isLoading, setIsLoading] = useState(true);
   const [retryAttempt, setRetryAttempt] = useState(0);
-  const [successMessage, setSuccessMessage] = useState(''); // State for success message
+  const [successMessage, setSuccessMessage] = useState('');
   const [error, setError] = useState('');
+  const [editAudioID, setEditAudioID] = useState(null);
+  const [editedRecord, setEditedRecord] = useState({
+    audioID: null,
+    title: '',
+    status: '',
+    classification: '',
+    tags: '',
+    comments: ''
+  });
+  const [updateTrigger, setUpdateTrigger] = useState(false);
 
-  // Parse current URL search params
   const currentFilters = parseQuery(location.search);
-
-  // ref to audio player element
   const audioRef = useRef(null);
 
   const getCurrentQueryParams = () => {
@@ -56,11 +58,10 @@ function AudioList() {
   useEffect(() => {
     if (retryAttempt >= retryLimit) return;
     setIsLoading(true); // Start loading
-  
-    // Directly extract params from URL each time the effect runs
+    
     const queryParams = getCurrentQueryParams();
   
-    dispatch(audioListAction({queryParams}))
+    dispatch(audioListAction({ queryParams }))
       .unwrap()
       .then(response => {
         setAudioList(response.audioList || []);
@@ -74,28 +75,18 @@ function AudioList() {
         setIsLoading(false); // Stop loading on error
         setRetryAttempt(prevAttempt => prevAttempt + 1); // Increment retry attempt
       });
-  // Only dependency is location.search to react to changes in search parameters
-  // eslint-disable-next-line
-  }, [dispatch, location.search, retryAttempt]);
-
-  // Placeholder for roles check function
-  // const hasPermission = (action) => {
-  //   return ['editor', 'mod', 'admin'].includes(userRole); // Simplified, adjust as needed
-  // };
+  // Add updateTrigger as a dependency
+  }, [dispatch, location.search, retryAttempt, updateTrigger]);  
 
   const audioTrash = async (audioID) => {
     dispatch(audioTrashAction({ audioID }))
-      .unwrap() 
+      .unwrap()
       .then(() => {
         setSuccessMessage(`Audio ${audioID} trashed successfully.`);
         const queryParams = getCurrentQueryParams();
-        // console.log('queryParams:', queryParams);
-        // Rerender the list by fetching updated data
-        dispatch(audioListAction({queryParams}))
+        dispatch(audioListAction({ queryParams }))
         .unwrap()
         .then(response => {
-          // console.log('response:', response);
-          // console.log('response.audioList:', response.audioList, 'response.totalRecords:', response.totalRecords);
           setAudioList(response.audioList || []);
           setTotalRecords(response.totalRecords);
         })
@@ -106,7 +97,7 @@ function AudioList() {
       })
       .catch(error => {
         console.error("Error trashing audio:", error);
-        setError('Failed to trash audio.'); // Update error state
+        setError('Failed to trash audio.');
       });
   };
 
@@ -133,43 +124,55 @@ function AudioList() {
   };
 
   const handlePageChange = (newPage) => {
-    setpage(newPage);
+    setPage(newPage);
     const newQueryParams = { ...currentFilters, page: newPage };
-    navigate({ search: stringifyQuery(newQueryParams) }); // Update URL without reloading the page
+    navigate({ search: stringifyQuery(newQueryParams) });
     setSuccessMessage('');
-    setError('');
     setError('');
   };
 
-  //
-  // audio preview
-  //
+  const openEditRow = (audioID) => {
+    setEditAudioID(editAudioID === audioID ? null : audioID);
+    const audioToEdit = audioList.find(audio => audio.audioID === audioID);
+    if (audioToEdit) {
+      setEditedRecord(audioToEdit);
+    }
+  };
 
   const togglePlayAudio = (filename, event) => {
     const newSrc = `${audioBaseURL}/${filename}`;
-    // First, remove 'active' class from all buttons
     document.querySelectorAll('.listen button').forEach(btn => {
       btn.classList.remove('active');
     });
   
     if (playingAudio.src === newSrc && playingAudio.playing) {
-      // If this audio is currently playing, stop it
       audioRef.current.pause();
       setPlayingAudio({ src: "", playing: false });
-      // No need to add 'active' class since audio is stopped
     } else {
-      // Change the source only if different
       if (audioRef.current.src !== newSrc) {
         audioRef.current.src = newSrc;
       }
-      // Play new audio
       audioRef.current.play();
       setPlayingAudio({ src: newSrc, playing: true });
-      // Add 'active' class to the button that fired the event
       event.currentTarget.classList.add('active');
     }
-  };  
+  };    
   
+  const handleSubmit = async (e) => {
+    e.preventDefault(); // Prevent form from causing a page reload
+    await dispatch(audioUpdate({ audioRecord: editedRecord }))
+      .unwrap()
+      .then(response => {
+        setSuccessMessage('Audio updated successfully');
+        setError('');
+        setEditAudioID(null); // Close the edit form
+        setUpdateTrigger(prev => !prev); // Toggle the trigger to cause re-fetch
+      })
+      .catch(error => {
+        console.error("Error updating audio:", error);
+        setError(error.message || 'Failed to update audio');
+      });
+  };  
 
   return (
     <div className="list-wrapper">
@@ -248,50 +251,123 @@ function AudioList() {
                   </tr>
                 </thead>
                 <tbody>
-                  {audioList.map(audio => (
-                    <tr key={audio.audioID}>
-                      <td className="id">{audio.audioID}</td>
-                      <td className="title">
-                        <div>{audio.title}</div>
-                        <div>
-                          <ul className="action-list">
-                            <li><Link to={`/audio/view/${audio.audioID}`}>View</Link></li>
-                            <li><Link to={`/audio/edit/${audio.audioID}`}>Edit</Link></li>
-                            <li><button className="link" onClick={() => audioTrash(audio.audioID)}>Trash</button></li>
-                          </ul>
-                        </div>
-                      </td>
-                      <td className="author">
-                        <div className="authorline">
-                          Upload:&nbsp;
-                          <button className="link" 
-                            onClick={() => handleFilter('user', audio.creatorUsername)}>
-                            {audio.creatorUsername}
-                          </button> 
-                          &nbsp;on {formatDateAsFriendlyDate(audio.createDate)}
-                        </div>
-                        {audio.editorUsername && (
-                          <div className="authorline">
-                            Edit:&nbsp;
-                            <button className="link" 
-                              onClick={() => handleFilter('user', audio.editorUsername)}>
-                              {audio.editorUsername}
-                            </button> 
-                            &nbsp;on {formatDateAsFriendlyDate(audio.editDate)}
+                  {audioList.map((audio, index) => (
+                    <React.Fragment key={audio.audioID}>
+                      <tr className={index % 2 === 0 ? 'row-even' : 'row-odd'}>
+                        <td className="id">{audio.audioID}</td>
+                        <td className="title">
+                          <div>{audio.title}</div>
+                          <div>
+                            <ul className="action-list">
+                              <li><Link to={`/audio/view/${audio.audioID}`}>View</Link></li>
+                              <li><Link to={`/audio/edit/${audio.audioID}`}>Edit</Link></li>
+                              <li><button className="link" onClick={() => openEditRow(audio.audioID)}>Quick Edit</button></li>
+                              <li><button className="link" onClick={() => audioTrash(audio.audioID)}>Trash</button></li>
+                            </ul>
                           </div>
-                        )}
-                      </td>
-                      <td className="duration">{parseFloat(audio.duration).toFixed(2)}s</td>
-                      <td className="status">{audio.status}</td>
-                      <td className="classification">{formatListAsString(audio.classification)}</td>
-                      <td className="tags">{formatListAsString(audio.tags)}</td>
-                      <td className="listen">
-                        <button className="icon" onClick={(e) => togglePlayAudio(audio.filename, e)}>
-                          {/* <FeatherIcon className="icon default" icon="volume" /> */}
-                          <AudioOn className="icon active" />
-                        </button>
-                      </td>
-                    </tr>
+                        </td>
+                        <td className="author">
+                          <div className="authorline">
+                            Upload:&nbsp;
+                            <button className="link" 
+                              onClick={() => handleFilter('user', audio.creatorUsername)}>
+                              {audio.creatorUsername}
+                            </button> 
+                            &nbsp;on {formatDateAsFriendlyDate(audio.createDate)}
+                          </div>
+                          {audio.editorUsername && (
+                            <div className="authorline">
+                              Edit:&nbsp;
+                              <button className="link" 
+                                onClick={() => handleFilter('user', audio.editorUsername)}>
+                                {audio.editorUsername}
+                              </button> 
+                              &nbsp;on {formatDateAsFriendlyDate(audio.editDate)}
+                            </div>
+                          )}
+                        </td>
+                        <td className="duration">{parseFloat(audio.duration).toFixed(2)}s</td>
+                        <td className="status">{audio.status}</td>
+                        <td className="classification">{formatListAsString(audio.classification)}</td>
+                        <td className="tags">{formatListAsString(audio.tags)}</td>
+                        <td className="listen">
+                          <button className="icon" onClick={(e) => togglePlayAudio(audio.filename, e)}>
+                            <AudioOn className="icon active" />
+                          </button>
+                        </td>
+                      </tr>
+                      {/* quick edit fields */}
+                      {editAudioID === audio.audioID && (
+                        <tr className={`${index % 2 === 0 ? 'row-even' : 'row-odd'} quick-edit`}>
+                          <td colSpan="8">
+                            <form onSubmit={(e) => handleSubmit(e)}>
+                              <div className="space-y-4">
+                                <div className="flex items-center space-x-2">
+                                  <label className="block text-sm font-medium text-gray-700" htmlFor="title">Title:</label>
+                                  <input
+                                    type="text"
+                                    name="title"
+                                    value={editedRecord.title || ''}
+                                    onChange={(e) => setEditedRecord({ ...editedRecord, title: e.target.value })}
+                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm"
+                                  />
+                                </div>
+                                <div className="flex items-center space-x-4">
+                                  <div className="flex items-center space-x-2 flex-none">
+                                    <label className="block text-sm font-medium text-gray-700" htmlFor="status">Status:</label>
+                                    <select
+                                      name="status"
+                                      value={editedRecord.status || ''}
+                                      onChange={(e) => setEditedRecord({ ...editedRecord, status: e.target.value })}
+                                      className="mt-1 block rounded-md border-gray-300 shadow-sm sm:text-sm"
+                                    >
+                                      <option value="Approved">Approved</option>
+                                      <option value="Review">Review</option>
+                                      <option value="Disapproved">Disapproved</option>
+                                      <option value="Trash">Trash</option>
+                                    </select>
+                                  </div>
+                                  <div className="flex items-center space-x-2 flex-grow">
+                                    <label className="block text-sm font-medium text-gray-700" htmlFor="classification">Classification:</label>
+                                    <input
+                                      type="text"
+                                      name="classification"
+                                      value={editedRecord.classification || ''}
+                                      onChange={(e) => setEditedRecord({ ...editedRecord, classification: e.target.value })}
+                                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm"
+                                    />
+                                  </div>
+                                  <div className="flex items-center space-x-2 flex-grow">
+                                    <label className="block text-sm font-medium text-gray-700" htmlFor="tags">Tags:</label>
+                                    <input
+                                      type="text"
+                                      name="tags"
+                                      value={editedRecord.tags || ''}
+                                      onChange={(e) => setEditedRecord({ ...editedRecord, tags: e.target.value })}
+                                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm"
+                                    />
+                                  </div>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  <label className="block text-sm font-medium text-gray-700" htmlFor="comments">Comments:</label>
+                                  <textarea
+                                    name="comments"
+                                    value={editedRecord.comments || ''}
+                                    onChange={(e) => setEditedRecord({ ...editedRecord, comments: e.target.value })}
+                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm"
+                                  />
+                                </div>
+                                <div className="flex justify-end">
+                                  <button className="bg-blue-500 text-white rounded-md py-2 px-4 hover:bg-blue-600" type="submit">
+                                    Update
+                                  </button>
+                                </div>
+                              </div>
+                            </form>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
                   ))}
                 </tbody>
               </table>
@@ -304,7 +380,7 @@ function AudioList() {
         </div>
       </div>
     </div>
-  );
+  );  
 }
 
 export default AudioList;

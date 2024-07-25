@@ -5,15 +5,14 @@ import { useOutletContext, Link } from 'react-router-dom';
 import FeatherIcon from 'feather-icons-react';
 import Playlist from '../components/Playlist';
 import { 
-  generateRandomTexts, getProjectName, 
-  getHeroImageURL, getLocation 
+  generateRandomTexts, getHeroImageURL, getLocation 
 } from '../utils/randomUtils'; 
 
 const Homepage = () => {
   const [playlist, setPlaylist] = useState([]); 
   const [generatedText, setGeneratedText] = useState([]);
   
-  const projectName = getProjectName();
+  const projectName = 'DriftConditions';
   const location = getLocation();
 
   const { togglePlayer, isPlaying } = useOutletContext();

@@ -704,12 +704,12 @@ figcaption {
 
 /* Role table */
 
-.big-table.role-table .row-odd {
-  background-color: var(--table-background-2-color); 
+.big-table .row-odd {
+  background-color: var(--table-background-2-color) !important; 
 }
 
-.big-table.role-table .row-even {
-  background-color: var(--table-background-color);
+.big-table .row-even {
+  background-color: var(--table-background-color) !important;
 }
 
 .role-table .role-id {
@@ -735,6 +735,18 @@ figcaption {
 
 .role-table .edit-row form {
   padding: 0.5rem 0;
+}
+
+/* audio table */
+
+tr.row-even.quick-edit input {
+  border: 1px solid var(--table-border-color);
+  padding: .25rem;
+}
+
+tr.row-even.quick-edit textarea {
+  border: 1px solid var(--table-border-color);
+  padding: .25rem;
 }
 
 /*

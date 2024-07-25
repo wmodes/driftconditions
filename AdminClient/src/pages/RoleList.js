@@ -109,13 +109,14 @@ function RolesList() {
                       {role.roleName}
                       <div>
                           <ul className="action-list">
-                            <li><button className="link" onClick={() => openEditRow(role)}>edit</button></li>
+                            <li><button className="link" onClick={() => openEditRow(role)}>Edit</button></li>
                           </ul>
                         </div>
                     </td>
                     <td className="perms">{formatListAsString(role.permissions)}</td>
                     <td className="comments">{role.comments}</td>
                   </tr>
+                  {/* quick edit fields */}
                   {editRoleID === role.roleID && (
                     <tr className={`edit-row ${oddOrEvenRow(role.roleID)}`}>
                       <td colSpan="5">
