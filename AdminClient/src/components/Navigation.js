@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 // import { Link, useNavigate } from 'react-router-dom';
 import { logout } from '../store/authSlice';
-import { getProjectName } from '../utils/randomUtils';
 import FeatherIcon from 'feather-icons-react';
 
 // unsavedChanges: global state, listeners, and handlers
@@ -18,7 +17,7 @@ export default function Navigation() {
   // const navigate = useNavigate();
   const navigate = useSafeNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const projectName = getProjectName();
+  const projectName = 'DriftConditions';
 
   const handleLogout = async () => {
     await dispatch(logout());
