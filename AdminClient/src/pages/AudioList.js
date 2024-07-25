@@ -300,70 +300,72 @@ function AudioList() {
                       {editAudioID === audio.audioID && (
                         <tr className={`${index % 2 === 0 ? 'row-even' : 'row-odd'} quick-edit`}>
                           <td colSpan="8">
-                            <form onSubmit={(e) => handleSubmit(e)}>
-                              <div className="space-y-4">
-                                <div className="flex items-center space-x-2">
-                                  <label className="block text-sm font-medium text-gray-700" htmlFor="title">Title:</label>
-                                  <input
-                                    type="text"
-                                    name="title"
-                                    value={editedRecord.title || ''}
-                                    onChange={(e) => setEditedRecord({ ...editedRecord, title: e.target.value })}
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm"
-                                  />
-                                </div>
-                                <div className="flex items-center space-x-4">
-                                  <div className="flex items-center space-x-2 flex-none">
-                                    <label className="block text-sm font-medium text-gray-700" htmlFor="status">Status:</label>
-                                    <select
-                                      name="status"
-                                      value={editedRecord.status || ''}
-                                      onChange={(e) => setEditedRecord({ ...editedRecord, status: e.target.value })}
-                                      className="mt-1 block rounded-md border-gray-300 shadow-sm sm:text-sm"
-                                    >
-                                      <option value="Approved">Approved</option>
-                                      <option value="Review">Review</option>
-                                      <option value="Disapproved">Disapproved</option>
-                                      <option value="Trash">Trash</option>
-                                    </select>
-                                  </div>
-                                  <div className="flex items-center space-x-2 flex-grow">
-                                    <label className="block text-sm font-medium text-gray-700" htmlFor="classification">Classification:</label>
+                            <div className="form-group">
+                              <form onSubmit={(e) => handleSubmit(e)}>
+                                <div className="space-y-1">
+                                  <div className="flex items-center space-x-2">
+                                    <label className="block text-sm font-medium text-gray-700" htmlFor="title">Title:</label>
                                     <input
                                       type="text"
-                                      name="classification"
-                                      value={editedRecord.classification || ''}
-                                      onChange={(e) => setEditedRecord({ ...editedRecord, classification: e.target.value })}
+                                      name="title"
+                                      value={editedRecord.title || ''}
+                                      onChange={(e) => setEditedRecord({ ...editedRecord, title: e.target.value })}
                                       className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm"
                                     />
                                   </div>
-                                  <div className="flex items-center space-x-2 flex-grow">
-                                    <label className="block text-sm font-medium text-gray-700" htmlFor="tags">Tags:</label>
-                                    <input
-                                      type="text"
-                                      name="tags"
-                                      value={editedRecord.tags || ''}
-                                      onChange={(e) => setEditedRecord({ ...editedRecord, tags: e.target.value })}
+                                  <div className="flex items-center space-x-4">
+                                    <div className="flex items-center space-x-2 flex-none">
+                                      <label className="block text-sm font-medium text-gray-700" htmlFor="status">Status:</label>
+                                      <select
+                                        name="status"
+                                        value={editedRecord.status || ''}
+                                        onChange={(e) => setEditedRecord({ ...editedRecord, status: e.target.value })}
+                                        className="mt-1 block rounded-md border-gray-300 shadow-sm sm:text-sm"
+                                      >
+                                        <option value="Approved">Approved</option>
+                                        <option value="Review">Review</option>
+                                        <option value="Disapproved">Disapproved</option>
+                                        <option value="Trash">Trash</option>
+                                      </select>
+                                    </div>
+                                    <div className="flex items-center space-x-2 flex-grow">
+                                      <label className="block text-sm font-medium text-gray-700" htmlFor="classification">Classification:</label>
+                                      <input
+                                        type="text"
+                                        name="classification"
+                                        value={editedRecord.classification || ''}
+                                        onChange={(e) => setEditedRecord({ ...editedRecord, classification: e.target.value })}
+                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm"
+                                      />
+                                    </div>
+                                    <div className="flex items-center space-x-2 flex-grow">
+                                      <label className="block text-sm font-medium text-gray-700" htmlFor="tags">Tags:</label>
+                                      <input
+                                        type="text"
+                                        name="tags"
+                                        value={editedRecord.tags || ''}
+                                        onChange={(e) => setEditedRecord({ ...editedRecord, tags: e.target.value })}
+                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm"
+                                      />
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center space-x-2">
+                                    <label className="block text-sm font-medium text-gray-700" htmlFor="comments">Comments:</label>
+                                    <textarea
+                                      name="comments"
+                                      value={editedRecord.comments || ''}
+                                      onChange={(e) => setEditedRecord({ ...editedRecord, comments: e.target.value })}
                                       className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm"
                                     />
                                   </div>
+                                  <div className="flex justify-end">
+                                    <button className="bg-blue-500 text-white rounded-md py-2 px-4 hover:bg-blue-600" type="submit">
+                                      Update
+                                    </button>
+                                  </div>
                                 </div>
-                                <div className="flex items-center space-x-2">
-                                  <label className="block text-sm font-medium text-gray-700" htmlFor="comments">Comments:</label>
-                                  <textarea
-                                    name="comments"
-                                    value={editedRecord.comments || ''}
-                                    onChange={(e) => setEditedRecord({ ...editedRecord, comments: e.target.value })}
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm"
-                                  />
-                                </div>
-                                <div className="flex justify-end">
-                                  <button className="bg-blue-500 text-white rounded-md py-2 px-4 hover:bg-blue-600" type="submit">
-                                    Update
-                                  </button>
-                                </div>
-                              </div>
-                            </form>
+                              </form>
+                            </div>
                           </td>
                         </tr>
                       )}
