@@ -816,7 +816,7 @@ class MixEngine {
     // generate label
     const newLabel = baseLabel + '_norm';
     // Default options
-    let options = { I: -1.5, TP: -2 };
+    let options = { I: -14, TP: -1 };
 
     // Set values based on preset
     //  (I) Integrated loudness target 
