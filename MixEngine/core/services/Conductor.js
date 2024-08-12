@@ -3,7 +3,7 @@
  */
 
 const { database: db } = require('config');
-const logger = require('config/logger').custom('Conductor', 'info');
+const logger = require('config/logger').custom('Conductor', 'debug');
 const JSON5 = require('json5');
 const RecipeSelector = require('@services/recipes/RecipeSelector');
 const RecipeParser = require('@services/recipes/RecipeParser');
@@ -60,6 +60,9 @@ class Conductor {
           // Normalize the recipe
           // this.testRecipeNormalize()
           this.recipeParser.normalizeRecipe(selectedRecipe);
+          //
+          // Mark the mix length track
+          this.recipeParser.markMixLengthTrack(selectedRecipe);
           //
           // Set tags for clip selection
           this.clipSelector.resetTags();
