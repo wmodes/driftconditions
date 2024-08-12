@@ -129,6 +129,48 @@ class RecipeParser {
     return obj;
   }
 
+  /**
+  * Mark the track that determines the mix length based on effects.
+  * @param {object} recipe - The recipe object containing track information.
+  */
+  markMixLengthTrack(recipe) {
+    let trackToMark = null;
+
+    // Iterate over each track to find the one that sets the mix length
+    recipe.recipeObj.tracks.forEach((track, index) => {
+      if (track.effects && Array.isArray(track.effects)) {
+        track.effects.forEach(effect => {
+          if (effect === 'first' && trackToMark === null) {
+            // Mark the first track if 'first' effect is found and no track has been marked yet
+            trackToMark = 0;
+          } else if (effect === 'shortest') {
+            // Mark this track for 'shortest' effect (override any previous)
+            trackToMark = 'shortest';
+          } else if (effect === 'longest') {
+            // Mark this track for 'longest' effect (override any previous)
+            trackToMark = 'longest';
+          } else if (effect === 'trim') {
+            // Mark the track that has the 'trim' effect
+            trackToMark = index;
+          }
+        });
+      }
+    });
+
+    // If no specific effect is found, default to the longest track
+    if (trackToMark === null || trackToMark === 'longest') {
+      let longestTrack = recipe.recipeObj.tracks.reduce((max, track) => track.maxLength > max.maxLength ? track : max, recipe.recipeObj.tracks[0]);
+      longestTrack.mixLength = true;
+    } else if (trackToMark === 'shortest') {
+      // Find and mark the shortest track
+      let shortestTrack = recipe.recipeObj.tracks.reduce((min, track) => track.maxLength < min.maxLength ? track : min, recipe.recipeObj.tracks[0]);
+      shortestTrack.mixLength = true;
+    } else {
+      // Otherwise, mark the specific track identified
+      recipe.recipeObj.tracks[trackToMark].mixLength = true;
+    }
+  }
+
   getTagsFromTracks(recipe) {
     const tagsList = [];
   
