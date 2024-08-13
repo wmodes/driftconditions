@@ -73,7 +73,7 @@ class ClipSelector {
         clip.audioID = selectedAudioClip.audioID;
         clip.title = selectedAudioClip.title;
         clip.filename = selectedAudioClip.filename;
-        clip.duration = selectedAudioClip.duration;
+        clip.duration = parseFloat(selectedAudioClip.duration);
         clip.creatorID = selectedAudioClip.creatorID;
         clip.creatorUsername = selectedAudioClip.creatorUsername;
       };

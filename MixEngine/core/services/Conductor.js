@@ -3,7 +3,7 @@
  */
 
 const { database: db } = require('config');
-const logger = require('config/logger').custom('Conductor', 'debug');
+const logger = require('config/logger').custom('Conductor', 'info');
 const JSON5 = require('json5');
 const RecipeSelector = require('@services/recipes/RecipeSelector');
 const RecipeParser = require('@services/recipes/RecipeParser');

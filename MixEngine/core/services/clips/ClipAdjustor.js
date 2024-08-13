@@ -1,132 +1,207 @@
-const logger = require('config/logger').custom('ClipAdjustor', 'debug');
+/**
+ * @file ClipAdjustor class to adjust the timing and duration of audio clips within a track 
+ *       to ensure that the total duration matches the desired length specified in a recipe.
+ */
+
+const logger = require('config/logger').custom('ClipAdjustor', 'info');
 
 class ClipAdjustor {
-  adjustClipTimings(recipe) {
-    logger.info('Adjusting clip timings...');
-    const currentRecipeObj = recipe.recipeObj;
+  /**
+   * Constructor to initialize the ClipAdjustor class.
+   */
+  constructor() {
+    /**
+     * The target duration of the track marked with `mixLength: true`.
+     * @type {number}
+     */
+    this.mixDuration = 0;
 
-    // Calculate initial durations and ranges
-    currentRecipeObj.tracks.forEach(track => {
-      track.duration = 0;  // Initialize as numerical
-      track.minLength = 0;
-      track.maxLength = 0;
-      track.clips.forEach(clip => {
-        // If we already have a duration, use it
-        if ('duration' in clip) {
-          logger.debug(`ClipAdjustor.adjustClipTimings: Using clip duration: ${clip.duration}`);
-          let clipDuration = parseFloat(clip.duration) || 0;
-          track.duration += clipDuration;
-          track.minLength += clipDuration;
-          track.maxLength += clipDuration;
-        }
-        // If we have no duration but a range, use it
-        else if ('minlength' in clip && 'maxlength' in clip) {
-          logger.debug(`ClipAdjustor.adjustClipTimings: Using clip minlength and maxlength: ${clip.minlength} - ${clip.maxlength}`);
-          let minLen = parseFloat(clip.minlength) || 0;
-          let maxLen = parseFloat(clip.maxlength) || 0;
-          track.minLength += minLen;
-          track.maxLength += maxLen;
-          track.duration += minLen; // Assume minLength for initial calculation
-        }
-      });
-    });
-
-    // Find the track marked with mixLength: true
-    let mixLengthTrack = currentRecipeObj.tracks.find(track => track.mixLength === true);
-
-    // If no track is marked, use the longest track as fallback
-    if (!mixLengthTrack) {
-      mixLengthTrack = currentRecipeObj.tracks.reduce(
-        (max, track) => (track.maxLength > max.maxLength ? track : max), 
-        currentRecipeObj.tracks[0]
-      );
-    }
-
-    // Adjust durations for all tracks to match the mixLengthTrack's duration
-    currentRecipeObj.tracks.forEach(track => {
-      // If the track is not the mixLengthTrack, calculate the difference needed to match the mixLengthTrack
-      let trackDurationAdjustNeeded = parseFloat(mixLengthTrack.maxLength) - parseFloat(track.minLength);
-
-      track.clips.forEach(clip => {
-        if (!('duration' in clip) && 'minlength' in clip && 'maxlength' in clip) {
-          // Set initial duration for clips without a duration
-          clip.duration = Math.random() * (parseFloat(clip.maxlength) - parseFloat(clip.minlength)) + parseFloat(clip.minlength);
-          logger.debug(`ClipAdjustor.adjustClipTimings: Setting initial clip duration: ${clip.duration}`);
-        }
-      });
-
-      // Adjust the durations of flexible clips to match the mixLengthTrack
-      if (track !== mixLengthTrack && trackDurationAdjustNeeded > 0) {
-        let trackDurationFlexAvail = parseFloat(track.maxLength) - parseFloat(track.minLength);
-
-        if (trackDurationFlexAvail >= trackDurationAdjustNeeded) {
-          this._adjustSilences(track, trackDurationAdjustNeeded);
-        } else {
-          this._adjustSilences(track, trackDurationFlexAvail);
-        }
-      }
-
-      // Recalculate the track duration based on updated clip durations
-      track.duration = track.clips.reduce((totalDuration, clip) => totalDuration + parseFloat(clip.duration) || 0, 0);
-      logger.debug(`ClipAdjustor.adjustClipTimings: Updated track duration: ${track.duration}`);
-    });
-
-    return parseFloat(mixLengthTrack.maxLength); // Return the mixLengthTrack's duration
+    /**
+     * Array to store tracks that contain adjustable/silence clips.
+     * @type {Array<Object>}
+     */
+    this.adjustableTracks = [];
   }
 
-  // Private method to adjust silences proportionally
-  _adjustSilences(track, trackDurationAdjustNeeded) {
-    const flexibleClips = track.clips.filter(clip => clip.duration === undefined);
-    logger.debug(`ClipAdjustor._adjustSilences: Found ${flexibleClips.length} flexible clips`);
-  
-    // Calculate the total duration range for all flexible clips
-    const totalDurationRange = flexibleClips.reduce((sum, clip) => {
-      const minLen = parseFloat(clip.minlength) || 0;
-      const maxLen = parseFloat(clip.maxlength) || 0;
+  /**
+   * Adjusts the timing and duration of each clip in the tracks to match the desired track length.
+   * Calls the relevant internal methods to perform the adjustments.
+   * @param {Object} recipe - The recipe object containing track and clip information.
+   * @returns {number} - The duration of the track that has `mixLength` set to true.
+   */
+  adjustClipTimings(recipe) {
+    logger.debug('ClipAdjustor.adjustClipTimings: Starting adjustment process');
+    this._totalInitialDurations(recipe);
+    this._findMixDuration(recipe);
+    this._findAdjustableTracks(recipe);
+    this._adjustAdjustableTracks();
+    logger.debug('ClipAdjustor.adjustClipTimings: Adjustment process complete');
+    return this.mixDuration;
+  }
 
-      if (isNaN(minLen) || isNaN(maxLen)) {
-        logger.warn(`ClipAdjustor._adjustSilences: Found NaN in minLength or maxLength: minLen=${minLen}, maxLen=${maxLen}`);
-      }
-
-      return sum + (maxLen - minLen);
-    }, 0);
-
-    // STEP 1: Randomly assign durations to each flexible clip within its minlength and maxlength bounds
-    flexibleClips.forEach(clip => {
-      const minLen = parseFloat(clip.minlength) || 0;
-      const maxLen = parseFloat(clip.maxlength) || 0;
-
-      if (minLen !== maxLen) {
-        clip.duration = Math.random() * (maxLen - minLen) + minLen;
-      } else {
-        clip.duration = minLen;
-      }
-
-      if (isNaN(clip.duration)) {
-        logger.warn(`ClipAdjustor._adjustSilences: Setting clip duration resulted in NaN: minLen=${minLen}, maxLen=${maxLen}, clip.duration=${clip.duration}`);
-      } else {
-        logger.debug(`ClipAdjustor._adjustSilences: Setting clip duration to ${clip.duration}`);
-      }
+  /**
+   * Totals all the non-adjustable clips in each track and assigns it to track.duration.
+   * @private
+   * @param {Object} recipe - The recipe object containing track and clip information.
+   */
+  _totalInitialDurations(recipe) {
+    logger.debug('ClipAdjustor._totalInitialDurations: Starting to calculate initial durations for all tracks');
+    recipe.recipeObj.tracks.forEach(track => {
+      track.duration = track.clips
+        .filter(clip => 'duration' in clip)
+        .reduce((total, clip) => total + parseFloat(clip.duration), 0);
+      logger.debug(`ClipAdjustor._totalInitialDurations: Track total duration set: ${track.duration}`);
     });
+  }
 
-    // STEP 2: Adjust durations to ensure the total duration of all clips equals trackDurationAdjustNeeded
-    let totalClipDuration = flexibleClips.reduce((sum, clip) => sum + parseFloat(clip.duration) || 0, 0);
-    let attempts = 0;
+  /**
+   * Finds the track marked `mixLength: true` and sets its duration as `mixDuration`.
+   * @private
+   * @param {Object} recipe - The recipe object containing track and clip information.
+   */
+  _findMixDuration(recipe) {
+    logger.debug('ClipAdjustor._findMixDuration: Searching for track with mixLength=true');
+    const mixLengthTrack = recipe.recipeObj.tracks.find(track => track.mixLength === true);
 
-    while (totalClipDuration !== trackDurationAdjustNeeded && attempts < 100) {
-      const adjustmentFactor = trackDurationAdjustNeeded / totalClipDuration;
+    if (mixLengthTrack) {
+      this.mixDuration = parseFloat(mixLengthTrack.duration);
+      logger.debug(`ClipAdjustor._findMixDuration: Found mixLengthTrack with duration: ${this.mixDuration}`);
+    } else {
+      logger.warn('ClipAdjustor._findMixDuration: No track marked with mixLength: true. Using the longest track as fallback.');
+      const longestTrack = recipe.recipeObj.tracks.reduce(
+        (max, track) => (track.duration > max.duration ? track : max), 
+        recipe.recipeObj.tracks[0]
+      );
+      this.mixDuration = parseFloat(longestTrack.duration);
+      logger.debug(`ClipAdjustor._findMixDuration: Fallback mixDuration set to longest track duration: ${this.mixDuration}`);
+    }
+  }
 
+  /**
+   * Finds tracks with adjustable/silence clips and saves them in `adjustableTracks`.
+   * @private
+   * @param {Object} recipe - The recipe object containing track and clip information.
+   */
+  _findAdjustableTracks(recipe) {
+    logger.debug('ClipAdjustor._findAdjustableTracks: Searching for tracks with adjustable/silence clips');
+    
+    // Correcting the property names to match the JSON structure (minLength and maxLength)
+    this.adjustableTracks = recipe.recipeObj.tracks.filter(track =>
+      track.clips.some(clip => 'minLength' in clip && 'maxLength' in clip)
+    );
+
+    logger.debug(`ClipAdjustor._findAdjustableTracks: Found ${this.adjustableTracks.length} adjustable tracks`);
+  }
+
+
+  /**
+   * Iterates through each of the adjustableTracks, passing the track and `mixDuration` to `_adjustSilences`.
+   * @private
+   */
+  _adjustAdjustableTracks() {
+    logger.debug('ClipAdjustor._adjustAdjustableTracks: Adjusting each of the adjustable tracks');
+    this.adjustableTracks.forEach(track => {
+      logger.debug(`ClipAdjustor._adjustAdjustableTracks: Adjusting track with initial duration: ${track.duration}`);
+      this._adjustSilences(track);
+    });
+  }
+
+  /**
+   * Adjusts the durations of flexible clips (e.g., silences) within a track based on the difference
+   * between the track's duration and `mixDuration`, using random assignments until the total duration is within an acceptable range.
+   * @private
+   * @param {Object} track - The track object containing the clips to be adjusted.
+   */
+  _adjustSilences(track) {
+    logger.debug('ClipAdjustor._adjustSilences: Starting adjustment of silences');
+
+    // Calculate the initial totalTrackDuration and totalMaxFlexibleDuration
+    const totalTrackDuration = this._calculateTotalTrackDuration(track);
+    const totalMaxFlexibleDuration = track.clips
+      .filter(clip => !('duration' in clip) && 'minLength' in clip && 'maxLength' in clip)
+      .reduce((total, clip) => total + parseFloat(clip.maxLength), 0);
+
+    logger.debug(`ClipAdjustor._adjustSilences: totalTrackDuration=${totalTrackDuration}, totalMaxFlexibleDuration=${totalMaxFlexibleDuration}`);
+
+    // If the totalTrackDuration + the total maxLength of adjustable tracks is less than 33% of mixDuration
+    // to prevent an infinite loop if we can't fill the space
+    if (totalTrackDuration + totalMaxFlexibleDuration < this.mixDuration * 0.33) {
+      logger.debug(`ClipAdjustor._adjustSilences: Not enough flexible material to fill space, setting all flexible tracks to maxLength`);
+      // Set all flexible clips to maxLength 
+      track.clips.filter(clip => !('duration' in clip) && 'minLength' in clip && 'maxLength' in clip)
+        .forEach(clip => {
+          clip.duration = parseFloat(clip.maxLength);
+          logger.debug(`ClipAdjustor._adjustSilences: Clip set to maxLength duration=${clip.duration}`);
+        });
+    } else {
+      // Start by setting each adjustable clip to minLength.
+      logger.debug(`ClipAdjustor._adjustSilences: Proceeding with random adjustment strategy`);
+      
+      const flexibleClips = track.clips.filter(clip => !('duration' in clip) && 'minLength' in clip && 'maxLength' in clip);
       flexibleClips.forEach(clip => {
-        clip.duration *= adjustmentFactor;
+        clip.duration = parseFloat(clip.minLength);
       });
 
-      totalClipDuration = flexibleClips.reduce((sum, clip) => sum + parseFloat(clip.duration) || 0, 0);
-      attempts++;
+      // Get the totalTrackDuration 
+      let updatedTrackDuration = this._calculateTotalTrackDuration(track);
+
+      // If the totalTrackDuration is less than mixDuration to prevent an infinite loop if we have too much material
+      if (updatedTrackDuration < this.mixDuration) {
+        logger.debug(`ClipAdjustor._adjustSilences: Initial updatedTrackDuration (${updatedTrackDuration}) is less than mixDuration (${this.mixDuration}), starting random adjustment loop`);
+
+        // Create an infinite while loop
+        while (true) {
+          // Iterate over the adjustable clips in the track
+          flexibleClips.forEach(clip => {
+            // Pick a random value within minLength and maxLength and assign it to the clip duration
+            const minLen = parseFloat(clip.minLength);
+            const maxLen = parseFloat(clip.maxLength);
+            clip.duration = minLen + Math.random() * (maxLen - minLen);
+            logger.debug(`ClipAdjustor._adjustSilences: Clip adjusted to random duration=${clip.duration}`);
+          });
+
+          // Calculate the totalTrackDuration (including both silence and fixed clips)
+          updatedTrackDuration = this._calculateTotalTrackDuration(track);
+
+          // If the totalTrackDuration is greater than mixLengthDuration, loop again
+          if (updatedTrackDuration > this.mixDuration) {
+            logger.debug(`ClipAdjustor._adjustSilences: updatedTrackDuration (${updatedTrackDuration}) exceeds mixDuration (${this.mixDuration}), trying again`);
+            // Reset to minLength and try again
+            flexibleClips.forEach(clip => {
+              clip.duration = parseFloat(clip.minLength);
+            });
+            continue; // Go to the next iteration
+          }
+
+          // If the totalTrackDuration is within 33% of mixLengthDuration, break out of the loop
+          if (updatedTrackDuration >= this.mixDuration * 0.67) {
+            logger.debug(`ClipAdjustor._adjustSilences: updatedTrackDuration (${updatedTrackDuration}) is within 33% of mixDuration (${this.mixDuration}), breaking loop`);
+            break; // Break the loop if within 33% of mixDuration
+          }
+        }
+      } else {
+        logger.debug(`ClipAdjustor._adjustSilences: No adjustment needed as updatedTrackDuration (${updatedTrackDuration}) is not less than mixDuration (${this.mixDuration})`);
+      }
     }
 
-    if (totalClipDuration !== trackDurationAdjustNeeded) {
-      logger.warn(`Failed to adjust durations to match trackDurationAdjustNeeded. Expected: ${trackDurationAdjustNeeded}, Actual: ${totalClipDuration}`);
-    }
+    // Final track duration after adjustment
+    track.duration = this._calculateTotalTrackDuration(track);
+    logger.debug(`ClipAdjustor._adjustSilences: Final track duration after adjustment: ${track.duration}`);
+  }
+
+  /**
+ * Calculates and returns the total duration of a track, including both fixed and adjustable clips.
+ * @private
+ * @param {Object} track - The track object containing the clips to be calculated.
+ * @returns {number} - The total duration of the track.
+ */
+  _calculateTotalTrackDuration(track) {
+    const totalTrackDuration = track.clips
+      .filter(clip => 'duration' in clip)
+      .reduce((total, clip) => total + parseFloat(clip.duration), 0);
+    
+    logger.debug(`ClipAdjustor._calculateTotalTrackDuration: Calculated totalTrackDuration=${totalTrackDuration}`);
+    return totalTrackDuration;
   }
 
 }
