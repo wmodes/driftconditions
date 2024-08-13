@@ -3,7 +3,7 @@
  *       to ensure that the total duration matches the desired length specified in a recipe.
  */
 
-const logger = require('config/logger').custom('ClipAdjustor', 'info');
+const logger = require('config/logger').custom('ClipAdjustor', 'debug');
 
 class ClipAdjustor {
   /**
