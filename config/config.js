@@ -56,8 +56,8 @@ const config = {
   audio: {
     selectPoolPercentSize: 10,
     selectPoolMinSize: 25,
-    newnessScoreWeight: 1,
-    tagScoreWeight: 0.5,
+    newnessScoreWeight: 0.75,
+    tagScoreWeight: 1,
     classification: [
       'Ambient', 
       'Atmospheric', 
