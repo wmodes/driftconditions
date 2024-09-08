@@ -1,30 +1,50 @@
-# Interference
+# DriftConditions
 
-Interference is an online audio source that captures the chaos and serendipity of late-night radio tuning in an uncanny audio stream generated on the fly by code. Overlapping fragmented stories, ambient sounds, and mysterious crosstalk weave a vivid sonic tapestry that draws listeners into an immersive and unpredictable listening experience. Inspired by the unpredictability of real-world radio interference, Interference explores the boundaries between intention and happenstance, inviting listeners to eavesdrop on a hidden world of voices and atmospheres unconstrained by traditional narrative structures. With each new listening session, Interference offers a fresh journey through its evocative auditory landscape.
+*DriftConditions* is an online audio source that captures the chaos and serendipity of late-night radio tuning in an uncanny audio stream generated on the fly by code. Overlapping fragmented stories, ambient sounds, and mysterious crosstalk weave a vivid sonic tapestry that draws listeners into an immersive and unpredictable listening experience. Inspired by the unpredictability of real-world radio interference, *DriftConditions* explores the boundaries between intention and happenstance, inviting listeners to eavesdrop on a hidden world of voices and atmospheres unconstrained by traditional narrative structures. Each new listening session offers a fresh journey through its evocative auditory landscape.
 
 ## Presentation
 
-Visitors to Interference can tune in to an ongoing audio feed. 
+Visitors to *DriftConditions* can tune in to an ongoing audio feed from an interactive web frontend.
 
 ## Procedural Generation
 
-As much as possible, when there was a question of how to do something, I chose to trust the magic of Tne Algorithm and rely on procedural generation. Elements that are procedurally generated:
+As much as possible, I chose to trust the magic of The Algorithm and rely on procedural generation. Elements that are procedurally generated:
 
-* **Project name:** The system uses Tracery to generate that session's project name
-* **Hero image:** Beyond some AI-generated images, it uses a hash to generate that session and week's hero image
-* **Descriptive text:** It uses Tracery to generate the descriptive text each time you visit the homepage.
-* **Recipes:** It uses a stochastic acceptance pattern with higher scores given to least-recently-used recipes. 
-* **Clips:** For selecting audio clips, it uses a stochastic acceptance pattern with higher scores given to those matching the criteria specified by the recipe and least-recently-used clips.
-* **Mixes:** It uses a sine-based noise function to modulate certain effects applied to audio.
+* **Hero image:** Beyond some AI-generated images, it uses a hash to generate the session and week's hero image.
+* **Descriptive text:** The system uses the *Tracery* library to generate descriptive text each time you visit the homepage.
+* **Recipes:** A stochastic acceptance pattern is used, with higher scores given to least-recently-used recipes.
+* **Clips:** A stochastic acceptance pattern selects audio clips, with higher scores given to clips matching the criteria specified by the recipe and least-recently-used clips.
+* **Mixes:** A sine-based noise function modulates certain audio effects applied to clips.
+
+## The Magic of Procedural Generation
+The magic lies in its ability to generate this unique experience on the fly, relying on a sophisticated system that combines human creativity with algorithmic precision. Behind the scenes, users can contribute and edit audio recipes. These recipes are like blueprints for the soundscapes you hear, specifying how different audio clips should be combined and processed.
+
+## Creating the Audio Feed
+
+The real magic happens when these recipes are used to construct the audio feed. Picture a multi-track editing software where each track contains one or more clips. Attributes of each track and clip—such as classification, tags, and length—help the system pick clips that fit together harmoniously. This ensures that every broadcast is a seamless blend of sounds that loosely match the intended style and mood.
+
+## Ever-Evolving Soundscapes
+
+The system maintains its ever-evolving tapestry of audio by relying heavily on procedural generation. For instance, the name of each session, the hero image, and even the descriptive text on the homepage are generated anew each time you visit. This approach mirrors the unpredictability of real-world radio interference, where the boundaries between intention and happenstance blur, creating a dynamic and captivating listening experience.
+
+## Dynamic Audio Effects
+
+As you listen, you might notice the audio stream fading in and out with different sources. This effect is achieved through a technique similar to Perlin noise, a type of coherent noise used in computer graphics to create natural-looking textures. This technique helps modulate various audio effects, creating a sound that is both unpredictable and harmoniously pleasing.
 
 ## Behind the Scenes
 
-Behind the scenes, Interference allows users to contribute and edit audio and compositional recipes. These recipes use audio sources to construct the audio feed on the fly.
+Several components work together to bring this experience to life. A user-friendly interface allows users to upload and manage clips, and create and edit recipes. A backend server supports these admin functions, ensuring smooth operation and content management. The real powerhouse, called the MixEngine, generates the audio mixes based on the recipes and randomly selected clips, generating long and impressive ffmpeg filter chains to process audio. Finally, a streaming component assembles these mixes into a continuous audio stream, delivering a seamless and immersive audio experience.
 
-* **AdminClient:** React/CRA client that serves as a frontend to the system, including authentication and authorization.
-* **AdminServer:** Express server that serves as the backend to the admin system, including allowing users to upload and manage clips, and create and edit recipes.
-* **MixEngine:** Backend server generates the mixes based on recipes and randomly selected audio clips.
-* **IceCast:** Assembles the mixes in a continuous audio steam. 
+* **AdminClient:** React/CRA client that serves as a frontend, including authentication and authorization.
+* **AdminServer:** Express server managing clip uploads, recipe creation, and editing.
+* **MixEngine:** Backend server that generates mixes based on recipes and randomly selected audio clips.
+* **IceCast:** Assembles the mixes into a continuous audio stream.
+
+## User Contribution
+
+The station relies on user audio contributions. Do you have audio that you think would fit perfectly within the unique soundscape of the station? We welcome your contributions. By signing up for an account and letting us know you would like to be a contributor, you can upload your own audio clips and participate in creating the ever-evolving auditory experience. Once you've signed up, reach out to us to get started. Your input helps shape the dynamic and immersive environment that makes the station so special.
+
+When submitting audio, we ask users to certify that their contributions contain no copyrighted works for which they do not have the right to use. We appreciate the use of public domain materials, creative commons licensed content, or other works for which users have clear rights. User contributions help enrich the station's unique soundscape while respecting the work of other artists.
 
 ## Technologies
 
@@ -104,151 +124,9 @@ Here is a list of technologies we are relying on:
 
 This module is essential for managing the settings and configurations that dictate how the application behaves in different environments, and it abstracts away the complexities of environment-specific configurations.
 
-## Port Management
-
-### Local/dev
-
-- https://localhost:3000 - React build of AdminClient
-- http://localhost:3001 - Dev version of AdminClient
-- https://localhost:8080 - Secure reverse proxy to AdminServer
-- http://localhost:8081 - AdminServer
-- https://localhost:8082 - Secure reverse proxy to MixEngine
-- http://localhost:8083 - MixEngine
-- mysql://localhost:3306 - MySQL server
-- https://localhost:8000 - Icecast secure stream
-- http://localhost:8001 - Icecast stream (stream source & listener)
-
-### Server
-
-- http://driftconditions.org:80 - redirects to https on port 443
-- https://driftconditions.org:443 - React build of AdminClient
-- https://driftconditions.org:8080 - Secure reverse proxy to AdminServer
-- http://driftconditions.org:8081 - AdminServer (firewalled)
-- https://driftconditions.org:8082 - Secure reverse proxy to MixEngine
-- http://driftconditions.org:8083 - MixEngine (firewalled)
-- mysql://driftconditions.org:3306 - MySQL server (firewalled)
-- httpss://driftconditions.org:8000 - Icecast secure stream
-- http://driftconditions.org:8001 - Icecast stream (stream source & listener)
-
-## Scripts
-
-- scripts/rebuild-client.sh - rebuild AdminClient
-- scripts/restart.sh - restart all servers (except mysql which never needs it)
-
-## Start Up
-
-Note that on the server, systemctl takes care of startup upon boot
-
-### Local Live Testing (without building)
-
-Start the mysql server (probably already running):
-```
-% brew services start mysql
-```
-
-Start AdminServer in its own terminal:
-```
-% cd AdminServer
-% npm start
-```
-
-Start MixEngine in its own terminal:
-```
-% cd MixEngine
-% npm start
-```
-
-Start AdminClient in its own terminal:
-```
-% cd AdminServer
-% npm start
-```
-
-Start reverse proxies for AdminServer and MixEngine in its own terminal:
-```
-% cd interference
-% sudo caddy run --config setupfiles/Caddyfile.local
-```
-Access client at http://localhost:3001
-
-Start liquidsoap in its own terminal:
-```
-% cd interference
-% liquidsoap setupfiles/liquidsoap.liq
-```
-
-Start Icecast server with:
-```
-% icecast -c /usr/local/etc/icecast.xml
-```
-
-### Local build testing
-
-Start AdminServer in its own terminal:
-```
-% cd AdminServer
-% npm start
-```
-
-Start MixEngine in its own terminal:
-```
-% cd MixEngine
-% npm start
-```
-
-Start Caddy including AdminClient build along with the reverse proxies in its own terminal:
-```
-% cd interference
-% sudo caddy run --config setupfiles/Caddyfile.local
-```
-Access client at https://localhost:3000
-
-Start Icecast server with:
-```
-% icecast -c /usr/local/etc/icecast.xml
-```
-
-Start liquidsoap in its own terminal:
-```
-% cd interference
-% liquidsoap setupfiles/liquidsoap.liq
-```
-
-### Server build testing
-
-Start/restart AdminServer (one or the other, depending):
-```
-% sudo systemctl start adminserver.service
-% sudo systemctl restart adminserver.service
-```
-
-Start/restart MixEngine (one or the other, depending):
-```
-% sudo systemctl start mixengine.service
-% sudo systemctl restart mixengine.service
-```
-
-Start/restart Caddy including AdminClient build along with the reverse proxies:
-```
-% sudo systemctl start caddy
-% sudo systemctl restart caddy
-```
-
-Start/restart Icecast:
-```
-sudo systemctl start icecast2
-sudo systemctl restart icecast2
-```
-
-Start/restart liquidsoap:
-```
-% sudo systemctl start liquidsoap.service
-% sudo systemctl restart liquidsoap.service
-```
-
 ## Recipes
 
-Here is the JSON-like structure that comprises a recipe:
+Here is the base JSON-like structure that comprises a recipe:
 
 ```
 {
@@ -264,18 +142,20 @@ Here is the JSON-like structure that comprises a recipe:
   //
   tracks: [
     {
-      track: 0,
       // This is a track.
-      //
+      track: 0,
       // Tracks are played simultaneously like a multi-track recording.
       // You can have up to 5 tracks, and there must be at least one.
       //
-      // This is the volume (0-100) of the entire track
+      // Volume (0-100) of the entire track
       volume: 100,
       effects: [
-        // Audio processing effects applied to the track.
-        // Currently only loop is supported, but more will be added.
-        //
+        // Audio processing effects applied to the track (or clip). Supported:
+        //   * length: trim, shortest, longest, loop|repeat
+        //   * modulation: wave|noise, wave(noise), wave(noise2), wave(inverse), 
+        //     wave(subtle), wave(subtle2), wave(liminal|transition)
+        //   * normalization: norm, norm(voice), norm(music), norm(bed)
+        //   * other: distant|faraway, telephone, backward|reversed,
       ],
       clips:[
         {
@@ -286,15 +166,12 @@ Here is the JSON-like structure that comprises a recipe:
           // help pick a random audio file for that matches the clip. 
           //
           classification: [
-            // Classification is a broad category that describes the type 
-            // of audio. Possible values are: Ambient, Atmospheric,  
-            // Environmental, Premixed, Soundscape, Archival, Spoken, 
-            // Narrative, Instructional, VocalMusic, Instrumental, 
-            // Experimental, Digital, Effect, and/or Other
-            // Note that you can have more than one classification.
+            // Classification is a broad category that describes the type of audio:
+            // ambient, atmospheric, environmental, premixed, soundscape, 
+            // archival, spoken, narrative, instructional, vocalmusic, instrumental, 
+            // experimental, digital, effect, and/or other
             //
-            'VocalMusic', 
-            'Instrumental', 
+            'vocalmusic', 'instrumental', 
           ],
           tags: [
             // Tags are descriptive words or phrases that help identify the audio.
@@ -302,16 +179,24 @@ Here is the JSON-like structure that comprises a recipe:
             "vintage", "jazz"
           ],
           length: [
-            // Length is a rough estimate of the duration of the audio.
-            // Possible values are: 'tiny', 'short', 'medium', 'long', 'huge'
+            // Length is a rough estimate of the duration of the audio. Possible values:
+            //   * tiny: (0-10s) - most sound effects
+            //   * short: (10s-2m) - most sound effects and some music
+            //   * medium: (2m-5m) - most music
+            //   * long: (5m-10m) - longer music and some soundscapes
+            //   * huge: (10m-60m) - long soundscapes, environmental recordings, and ambient
             //
             'short', 'medium'
           ],
-          // This is the volume (0-100) of the individual clip
+          // This is the volume (0-100) of the individual clip (optional)
           volume: 100,
           effects: [
-            // Audio processing effects applied to the individual clip.
-            // Currently only loop is supported, but more will be added.
+            // Audio processing effects applied to the individual clip. Supported:
+            //   * length: loop|repeat
+            //   * modulation: wave|noise, wave(noise), wave(noise2), wave(inverse), 
+            //     wave(subtle), wave(subtle2), wave(liminal|transition)
+            //   * normalization: norm, norm(voice), norm(music), norm(bed)
+            //   * other: distant|faraway, telephone, backward|reversed,
             //
           ]
         }
@@ -320,3 +205,54 @@ Here is the JSON-like structure that comprises a recipe:
   ]
 }
 ```
+
+And here is a sample recipe that generates a "Drony Story":
+
+```
+{
+  tracks: [
+    {
+      // drony music bed
+      track: 0,
+      volume: 60,
+      effects: [ "loop", "crossfade" ],
+      clips: [
+        {
+          classification: [ "Ambient" ],
+          tags: [ "drone", "ambient" ],
+          length: [ "long", "huge" ],
+          effects: [ "norm(bed)" ],
+        }
+      ]
+    },
+    {
+      // narrative or spoken word - trim to this length
+      track: 1,
+      volume: 100,
+      effects: [ "trim" ],
+      clips: [
+        {
+          classification: "silence",
+          length: [ "short", "medium" ]
+        },
+        {
+          classification: [ "narrative", "spoken" ],
+          tag: [
+            "story", "reading", "novel", "fiction", "interview", "oral-history", "storycorps", 
+          ],
+          length: [ "medium", "long" ],
+          effects: [ "norm(spoken)" ],
+        },
+        {
+          classification: "silence",
+          length: [ "short", "medium" ]
+        },
+      ]
+    }
+  ]
+}
+```
+
+# Installation
+
+Clone the repo, and check `NOTES.md` for critical or useful technical notes.
