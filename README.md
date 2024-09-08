@@ -6,7 +6,7 @@
 
 Listen to DriftConditions. The broadcast is assembled live, on-the-fly, and will never be heard exactly the same again.
 
-> https://driftconditions.org/
+* https://driftconditions.org/
 
 ## Presentation
 
