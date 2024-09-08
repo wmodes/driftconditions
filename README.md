@@ -2,6 +2,12 @@
 
 *DriftConditions* is an online audio source that captures the chaos and serendipity of late-night radio tuning in an uncanny audio stream generated on the fly by code. Overlapping fragmented stories, ambient sounds, and mysterious crosstalk weave a vivid sonic tapestry that draws listeners into an immersive and unpredictable listening experience. Inspired by the unpredictability of real-world radio interference, *DriftConditions* explores the boundaries between intention and happenstance, inviting listeners to eavesdrop on a hidden world of voices and atmospheres unconstrained by traditional narrative structures. Each new listening session offers a fresh journey through its evocative auditory landscape.
 
+## Live Demo
+
+Listen to DriftConditions. The broadcast is assembled live, on-the-fly, and will never be heard exactly the same again.
+
+> https://driftconditions.org/
+
 ## Presentation
 
 Visitors to *DriftConditions* can tune in to an ongoing audio feed from an interactive web frontend.
