@@ -4,7 +4,7 @@
 
 ## Live Demo
 
-Listen to DriftConditions. The broadcast is assembled live, on-the-fly, and will never be heard exactly the same again.
+Listen to the DriftConditions live stream. The broadcast is assembled live, on-the-fly, and will never be heard exactly the same again.
 
 * https://driftconditions.org/
 
