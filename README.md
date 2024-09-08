@@ -17,23 +17,25 @@ As much as possible, I chose to trust the magic of The Algorithm and rely on pro
 * **Mixes:** A sine-based noise function modulates certain audio effects applied to clips.
 
 ## The Magic of Procedural Generation
-The magic lies in its ability to generate this unique experience on the fly, relying on a sophisticated system that combines human creativity with algorithmic precision. Behind the scenes, users can contribute and edit audio recipes. These recipes are like blueprints for the soundscapes you hear, specifying how different audio clips should be combined and processed.
+The magic lies in its ability to generate this unique experience on the fly, relying on a sophisticated system that combines human creativity with algorithmic precision. Behind the scenes, contributors can add new audio content, while moderators can add and edit audio recipes. These recipes are like blueprints for the soundscapes you hear, specifying how different audio clips should be combined and processed.
 
 ## Creating the Audio Feed
 
-The real magic happens when these recipes are used to construct the audio feed. Picture a multi-track editing software where each track contains one or more clips. Attributes of each track and clip—such as classification, tags, and length—help the system pick clips that fit together harmoniously. This ensures that every broadcast is a seamless blend of sounds that loosely match the intended style and mood.
+The real magic happens when these recipes are used to construct the audio feed. Similar to multi-track editing software, each track contains one or more clips. Attributes of each track and clip — such as classification, tags, and length — help the system pick clips that fit together harmoniously. This ensures that every broadcast is a seamless blend of sounds that loosely match the intended style and mood of the recipe.
 
 ## Ever-Evolving Soundscapes
 
-The system maintains its ever-evolving tapestry of audio by relying heavily on procedural generation. For instance, the name of each session, the hero image, and even the descriptive text on the homepage are generated anew each time you visit. This approach mirrors the unpredictability of real-world radio interference, where the boundaries between intention and happenstance blur, creating a dynamic and captivating listening experience.
+The system maintains an ever-evolving tapestry of audio by relying heavily on procedural generation. This approach mirrors the unpredictability of real-world radio interference, where the boundaries between intention and happenstance blur, creating a dynamic and unpredictable listening experience.
 
 ## Dynamic Audio Effects
 
-As you listen, you might notice the audio stream fading in and out with different sources. This effect is achieved through a technique similar to Perlin noise, a type of coherent noise used in computer graphics to create natural-looking textures. This technique helps modulate various audio effects, creating a sound that is both unpredictable and harmoniously pleasing.
+As mixes are created, effects are applied according to each recipe. For instance, you might notice the audio elements fading in and out creating odd interference patterns. This effect is achieved through a technique similar to Perlin noise — a type of coherent noise used in computer graphics to create natural-looking textures — modulating various audio effects.
 
 ## Behind the Scenes
 
-Several components work together to bring this experience to life. A user-friendly interface allows users to upload and manage clips, and create and edit recipes. A backend server supports these admin functions, ensuring smooth operation and content management. The real powerhouse, called the MixEngine, generates the audio mixes based on the recipes and randomly selected clips, generating long and impressive ffmpeg filter chains to process audio. Finally, a streaming component assembles these mixes into a continuous audio stream, delivering a seamless and immersive audio experience.
+Several components work together to bring this experience to life. A user-friendly interface allows contributors to upload and manage clips, and create and edit recipes. A backend server supports these admin functions, ensuring smooth operation and content management. The MixEngine, generates the audio mixes based on the recipes and stochastically selected clips, generating long and impressive ffmpeg filter chains to process audio. Finally, a streaming component assembles these mixes into a continuous audio stream, delivering a seamless and immersive audio experience.
+
+Here are the major elements of the project:
 
 * **AdminClient:** React/CRA client that serves as a frontend, including authentication and authorization.
 * **AdminServer:** Express server managing clip uploads, recipe creation, and editing.
@@ -42,13 +44,13 @@ Several components work together to bring this experience to life. A user-friend
 
 ## User Contribution
 
-The station relies on user audio contributions. Do you have audio that you think would fit perfectly within the unique soundscape of the station? We welcome your contributions. By signing up for an account and letting us know you would like to be a contributor, you can upload your own audio clips and participate in creating the ever-evolving auditory experience. Once you've signed up, reach out to us to get started. Your input helps shape the dynamic and immersive environment that makes the station so special.
+The station relies on user audio contributions. We welcome user audio contributions. By signing up for an account and letting us know you would like to be a contributor, you can upload your own audio clips and participate in creating the ever-evolving auditory experience. Once you've signed up, reach out to us to get started. Your input helps shape the dynamic and immersive environment that makes the station special.
 
 When submitting audio, we ask users to certify that their contributions contain no copyrighted works for which they do not have the right to use. We appreciate the use of public domain materials, creative commons licensed content, or other works for which users have clear rights. User contributions help enrich the station's unique soundscape while respecting the work of other artists.
 
 ## Technologies
 
-Here is a list of technologies we are relying on:
+Here is a list of technologies the project relies on:
 
 ### AdminServer:
 
