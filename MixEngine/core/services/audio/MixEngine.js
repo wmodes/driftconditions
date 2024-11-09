@@ -1,3 +1,4 @@
+/* eslint-disable quotes */
 /**
  * @file MixEngine.js - Main audio processing engine for mixing audio clips
  */

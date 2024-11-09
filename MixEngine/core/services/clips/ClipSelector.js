@@ -1,3 +1,4 @@
+/* eslint-disable spaced-comment */
 // clipSelector.js - A class module for fetching and selecting audio clips based on certain criteria
 
 const { database: db } = require('config');
