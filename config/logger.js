@@ -42,7 +42,7 @@ function createLogger(moduleName) {
         ),
       }),
       // File transport using logfile from config
-      new winston.transports.File({ filename: config.adminServer.logfile }),
+      // new winston.transports.File({ filename: config.adminServer.logfile }),
     ],
   });
 }
