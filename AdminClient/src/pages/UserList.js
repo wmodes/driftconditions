@@ -39,7 +39,8 @@ function UserList() {
   const getCurrentQueryParams = () => {
     const searchParams = new URLSearchParams(location.search);
     return {
-      page: parseInt(searchParams.get('page') || '1', 10),
+      page: parseInt(searchParams.get('page') || '1', 10),        // default to page 1
+      recordsPerPage: parseInt(searchParams.get('recordsPerPage') || config.list.recordsPerPage, 10), // default records per page
       sort: searchParams.get('sort') || 'date',
       order: searchParams.get('order') || 'DESC',
       filter: searchParams.get('filter') || 'all',
