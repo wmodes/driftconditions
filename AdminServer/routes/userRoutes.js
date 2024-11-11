@@ -36,62 +36,44 @@ router.post('/list', verifyToken, async (req, res) => {
     const orderArg = req.body.order;
     var filterArg = req.body.filter || 'all';
     const rolenameArg = req.body.role;
-    const pageArg = parseInt(req.body.page || 1, 10);
-    const recordsPerPage = parseInt(req.body.recordsPerPage || 15, 10);
-    const offset = (pageArg - 1) * recordsPerPage;
-    logger.debug('req.body:', req.body);
+    const pageArg = req.body.page ? parseInt(req.body.page, 10) : null;
+    const recordsPerPage = req.body.recordsPerPage ? parseInt(req.body.recordsPerPage, 10) : null;
+    const offset = pageArg && recordsPerPage ? (pageArg - 1) * recordsPerPage : null;
 
-    // Adjusted for user fields
     const sortOptions = {
-      user: {
-        field: 'userID',
-        order: orderArg || 'ASC'
-      },
-      username: {
-        field: 'LOWER(username)',
-        order: orderArg || 'ASC'
-      },
-      role: {
-        field: 'LOWER(roleName)',
-        order: orderArg || 'ASC'
-      },
-      date: {
-        field: 'addedOn',
-        order: orderArg || 'DESC'
-      }
-      // TODO: Add "Disable" sort option
+      user: { field: 'userID', order: orderArg || 'ASC' },
+      username: { field: 'LOWER(username)', order: orderArg || 'ASC' },
+      role: { field: 'LOWER(roleName)', order: orderArg || 'ASC' },
+      date: { field: 'addedOn', order: orderArg || 'DESC' }
     };
-    // if sortArg is not in sortOptions, default to 'user'
     if (!sortOptions[sortArg]) sortArg = 'user';
     const sortCondition = sortOptions[sortArg];
     const sortColumn = sortCondition.field;
     const sortOrder = sortCondition.order;
 
-    // Define filter options
     const filterOptions = {
-      all: {
-        query: '', // No additional query needed for 'all', showing all users
-        values: []
-      },
-      role: {
-        query: 'AND roleName = ?',
-        values: [rolenameArg]
-      }
+      all: { query: '', values: [] },
+      role: { query: 'AND roleName = ?', values: [rolenameArg] }
     };
-    // Redirect 'role' filter to 'all' if roleFilter is not provided
     if (filterArg === 'role' && !rolenameArg) filterArg = 'all';
-    // Fallback to 'all' if filter is undefined or not in options
     let filterCondition = filterOptions[filterArg] || filterOptions['all'];
     let filterQuery = filterCondition.query;
     let filterValues = filterCondition.values;
 
     const [countResult] = await db.query(`
-    SELECT COUNT(*) AS totalRecords
-    FROM users
-    WHERE status != "Disabled" ${filterQuery};
-  `, filterValues);
+      SELECT COUNT(*) AS totalRecords
+      FROM users
+      WHERE status != "Disabled" ${filterQuery};
+    `, filterValues);
 
     const totalRecords = countResult[0].totalRecords;
+
+    // Only add LIMIT and OFFSET if page and recordsPerPage are provided
+    let limitOffsetQuery = '';
+    if (pageArg && recordsPerPage) {
+      limitOffsetQuery = `LIMIT ? OFFSET ?`;
+      filterValues = [...filterValues, recordsPerPage, offset];
+    }
 
     const [userList] = await db.query(`
       SELECT 
@@ -108,8 +90,8 @@ router.post('/list', verifyToken, async (req, res) => {
       FROM users
       WHERE status != "Disabled" ${filterQuery}
       ORDER BY ${sortColumn} ${sortOrder}
-      LIMIT ? OFFSET ?;
-    `, [...filterValues, recordsPerPage, offset]);
+      ${limitOffsetQuery};
+    `, filterValues);
 
     res.status(200).json({
       totalRecords,
