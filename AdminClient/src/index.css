@@ -619,15 +619,11 @@ figcaption {
 
 /* list controls */
 
-.top-controls, .bottom-controls {
+.top-controls, .bottom-controls, .right-side {
   font-size: 0.9rem;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-}
-
-.bottom-controls {
-  justify-content: flex-end;
 }
 
 .list-wrapper .audioPlayer {
@@ -665,6 +661,8 @@ figcaption {
 .pagination button:disabled svg {
   stroke: var(--button-disabled-text-color);
 }
+
+
 
 /* Specific field widths for the audio table */
 

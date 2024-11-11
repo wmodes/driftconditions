@@ -9,6 +9,8 @@ import { parseQuery, stringifyQuery } from '../utils/queryUtils';
 import { renderPagination } from '../utils/listUtils';
 import { formatDateAsFriendlyDate } from '../utils/formatUtils';
 
+import FeatherIcon from 'feather-icons-react';
+
 // Import the config object
 import config from '../config/config';
 // Pull variables from the config object
@@ -187,6 +189,14 @@ function UserList() {
     );
   };
 
+  const renderDownload = () => {
+    return (
+      <div className="download-box">
+        <Link className="link" to="/user/download"><FeatherIcon icon="download" /></Link>
+      </div>
+    );
+  }
+
   return (
     <div className="list-wrapper">
       <div className="display-box-wrapper">
@@ -202,7 +212,10 @@ function UserList() {
             <dir>
               <div className="top-controls">
                 {renderFilters()}
-                {renderPagination(totalRecords, recordsPerPage, page, handlePageChange)}
+                <div className="right-side">
+                  {renderPagination(totalRecords, recordsPerPage, page, handlePageChange)}
+                  {renderDownload()}
+                </div>
               </div>
               <table className="user-table big-table">
                 <thead>
@@ -265,7 +278,10 @@ function UserList() {
               </table>
               <div className="bottom-controls">
                 {renderFilters()}
-                {renderPagination(totalRecords, recordsPerPage, page, handlePageChange)}
+                <div className="right-side">
+                  {renderPagination(totalRecords, recordsPerPage, page, handlePageChange)}
+                  {renderDownload()}
+                </div>
               </div>
             </dir>
           ) : null}

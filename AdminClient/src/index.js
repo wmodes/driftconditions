@@ -18,6 +18,7 @@
   import Profile from './pages/Profile';
   import ProfileEdit from './pages/ProfileEdit';
   import UserList from './pages/UserList';
+  import UserDownload from './pages/UserDownload';
   import RoleList from './pages/RoleList';
   import AudioUpload from './pages/AudioUpload';
   import AudioBatchUpload from './pages/AudioBatchUpload';
@@ -61,6 +62,7 @@
         <Route path="/profile/edit/:username" element={<ProfileEdit />} />
         <Route path='/profile/edit' element={<ProfileEdit />} /> 
         <Route path='/user/list' element={<UserList />} />
+        <Route path='/user/download' element={<UserDownload />} />
         <Route path='/role/list' element={<RoleList />} />
         <Route path='/audio/upload/batch' element={<AudioBatchUpload />} />
         <Route path='/audio/upload' element={<AudioUpload />} />
