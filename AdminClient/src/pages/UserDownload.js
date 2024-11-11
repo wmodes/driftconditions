@@ -10,7 +10,8 @@ function UserDownload() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    dispatch(userListAction({ queryParams: { page: 1, sort: 'date', order: 'DESC' } }))
+    // Omitting 'page' and 'offset' so all records are retrieved
+    dispatch(userListAction({ queryParams: { sort: 'date', order: 'DESC' } }))
       .unwrap()
       .then(response => {
         setUserList(response.userList || []);
