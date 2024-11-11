@@ -43,6 +43,7 @@ const config = {
       profile: '/profile',
       profileEdit: '/profile/edit',
       userList: '/user/list',
+      userDownload: '/user/download',
       userLookup: null,
       userEdit: null,
       roleList: '/role/list',
