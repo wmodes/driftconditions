@@ -44,7 +44,7 @@ const config = {
       profileEdit: '/profile/edit',
       userList: '/user/list',
       userDownload: '/user/download',
-      userLookup: null,
+      userLookup: null, 
       userEdit: null,
       roleList: '/role/list',
       audioUpload: '/audio/upload',
