@@ -146,6 +146,9 @@ const config = {
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     callbackUrl: 'https://localhost:8080/api/auth/callback/google',
   },
+  client: {
+    url: process.env.CLIENT_URL,
+  },
   authToken: {
     jwtSecretKey: process.env.JWT_SECRET_KEY,
     tokenExpires: '7d',

@@ -35,6 +35,7 @@ const recaptchaScoreThreshold = config.recaptcha.scoreThreshold;
 const googleClientId = config.google.clientId;
 const googleClientSecret = config.google.clientSecret;
 const googleCallbackUrl = config.google.callbackUrl;
+const clientUrl = config.client.url;
 
 // helper: verify reCAPTCHA v3 token with Google
 // returns the score (0.0-1.0) or throws on failure
@@ -349,6 +350,135 @@ async function getRolePermissions(userID) {
     logger.error(`authRoutes:getRolePermissions: Error fetching role permissions: ${error}`);
     throw error; // Rethrow to handle it in the calling function
   }
+}
+
+
+// OAuth callback route — handles provider redirect after user authenticates
+// GET /api/auth/callback/:provider
+router.get('/callback/:provider', async (req, res) => {
+  const provider = req.params.provider;
+  // clientUrl is where the frontend is served (separate from the API server)
+  const clientOrigin = clientUrl;
+
+  try {
+    // 1. Validate CSRF state
+    const returnedState = req.query.state;
+    const storedState = req.cookies.oauth_state;
+    if (!returnedState || !storedState || returnedState !== storedState) {
+      logger.error('authRoutes:/callback: CSRF state mismatch');
+      return res.redirect(`${clientOrigin}/signin?error=INVALID_STATE`);
+    }
+    res.clearCookie('oauth_state', { path: '/', sameSite: 'Lax', secure: true });
+
+    const { discovery, authorizationCodeGrant } = await import('openid-client');
+
+    // Google uses OIDC discovery
+    const issuerUrl = new URL('https://accounts.google.com');
+    const oidcConfig = await discovery(issuerUrl, googleClientId, googleClientSecret);
+
+    // Build the full callback URL (openid-client extracts code/state from it)
+    // Must use the API server origin, not the frontend client URL
+    const apiOrigin = new URL(googleCallbackUrl).origin;
+    const currentUrl = new URL(req.originalUrl, apiOrigin);
+
+    // Exchange code for tokens; also validates state
+    const tokens = await authorizationCodeGrant(oidcConfig, currentUrl, {
+      expectedState: storedState,
+    });
+
+    // 2. Extract profile from ID token claims
+    const claims = tokens.claims();
+    const oauthId = String(claims.sub);
+    const email = claims.email;
+    const displayName = claims.name || email.split('@')[0];
+    logger.debug(`authRoutes:/callback: provider=${provider}, email=${email}, oauthId=${oauthId}`);
+
+    // 3. Resolve user: check userIdentities → check email → create new
+    let user = null;
+    let isNewUser = false;
+
+    const [identityRows] = await db.query(
+      `SELECT ui.userId, u.username, u.roleName
+       FROM userIdentities ui JOIN users u ON u.userID = ui.userId
+       WHERE ui.oauthProvider = ? AND ui.oauthId = ?`,
+      [provider, oauthId]
+    );
+
+    if (identityRows.length > 0) {
+      // Existing OAuth user
+      user = { userID: identityRows[0].userId, username: identityRows[0].username, roleName: identityRows[0].roleName };
+      logger.debug(`authRoutes:/callback: existing OAuth user: ${user.username}`);
+    } else {
+      const [emailRows] = await db.query(
+        'SELECT userID, username, roleName FROM users WHERE email = ? LIMIT 1',
+        [email]
+      );
+
+      if (emailRows.length > 0) {
+        // Existing local user — link new OAuth identity
+        user = { userID: emailRows[0].userID, username: emailRows[0].username, roleName: emailRows[0].roleName };
+        await db.query(
+          'INSERT INTO userIdentities (userId, oauthProvider, oauthId) VALUES (?, ?, ?)',
+          [user.userID, provider, oauthId]
+        );
+        logger.debug(`authRoutes:/callback: linked ${provider} to existing user: ${user.username}`);
+      } else {
+        // Brand new user — create account
+        isNewUser = true;
+        const username = await generateUniqueUsername(email);
+        // Split displayName into firstname/lastname (both NOT NULL)
+        const nameParts = displayName.split(' ');
+        const firstname = nameParts[0];
+        const lastname = nameParts.slice(1).join(' ') || '-';
+        // Password placeholder — long random string, not usable for local login
+        const passwordPlaceholder = crypto.randomBytes(32).toString('hex');
+
+        const [insertResult] = await db.query(
+          'INSERT INTO users (username, password, email, firstname, lastname, displayName, lastLoginAt) VALUES (?, ?, ?, ?, ?, ?, NOW())',
+          [username, passwordPlaceholder, email, firstname, lastname, displayName]
+        );
+        user = { userID: insertResult.insertId, username, roleName: 'user' };
+        await db.query(
+          'INSERT INTO userIdentities (userId, oauthProvider, oauthId) VALUES (?, ?, ?)',
+          [user.userID, provider, oauthId]
+        );
+        logger.debug(`authRoutes:/callback: created new user: ${username}`);
+      }
+    }
+
+    // 4. Update lastLoginAt
+    await db.query('UPDATE users SET lastLoginAt = NOW() WHERE userID = ?', [user.userID]);
+
+    // 5. Fetch role permissions
+    const [roleRows] = await db.query(
+      'SELECT permissions FROM roles WHERE roleName = ? LIMIT 1',
+      [user.roleName]
+    );
+    user.permissions = roleRows[0]?.permissions || '';
+
+    // 6. Issue JWT cookie
+    issueNewToken(res, user);
+
+    // 7. Redirect to profile page
+    res.redirect(`${clientOrigin}/profile/${user.username}`);
+
+  } catch (err) {
+    logger.error(`authRoutes:/callback: OAuth callback error: ${err}`);
+    res.redirect(`${clientOrigin}/signin?error=OAUTH_EXCHANGE_FAILED`);
+  }
+});
+
+// helper: generate a username from email prefix, with uniqueness check
+async function generateUniqueUsername(email) {
+  const base = email.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '').toLowerCase() || 'user';
+  let username = base;
+  let counter = 1;
+  while (true) {
+    const [rows] = await db.query('SELECT userID FROM users WHERE username = ? LIMIT 1', [username]);
+    if (rows.length === 0) break;
+    username = `${base}${counter++}`;
+  }
+  return username;
 }
 
 
