@@ -16,10 +16,14 @@ const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const { notFound, errorHandler } = require('./middleware/errorHandler');
 const { logger } = require('config');
+const rateLimit = require('express-rate-limit');
 
 const { config } = require('config');
 const server = config.adminServer;
 const corsOptions = config.corsOptions;
+
+// Trust the first proxy (Caddy) so rate limiter can identify real client IPs
+app.set('trust proxy', 1);
 
 // Middleware setup
 // app.use(bodyParser.urlencoded({extended: false}));
@@ -42,8 +46,17 @@ const audioRoutes = require('./routes/audioRoutes');
 const recipeRoutes = require('./routes/recipeRoutes');
 const roleRoutes = require('./routes/roleRoutes');
 
+// Rate limiter for auth endpoints — 20 requests per 15 minutes per IP
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: { code: 429, reason: 'too_many_requests', message: 'Too many requests, please try again later.' } },
+});
+
 // Use routes
-app.use('/api/auth', authRoutes);
+app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/audio', audioRoutes);
 app.use('/api/recipe', recipeRoutes);
