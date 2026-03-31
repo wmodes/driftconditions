@@ -1,7 +1,8 @@
 # Caddyfile for server
 #
 # Symlink with:
-# % sudo ln -sf /home/debian/interference/setupfiles/Caddyfile.server /etc/caddy/Caddyfile
+# % sudo ln -sf /home/debian/interference/setupfiles/Caddyfile.server /etc/caddy/sites/driftcondtitions.caddy
+# % echo 'import sites/*' | sudo tee /etc/caddy/Caddyfile # if not already there
 #
 # Start:
 # % sudo systemctl start caddy
