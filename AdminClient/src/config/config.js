@@ -369,6 +369,10 @@ const config = {
         },`,
 
   },
+  recaptcha: {
+    siteKey: '6LeGSaAsAAAAAC5vDSHIXZD291CnNXGTCfyrYF8b',
+    scoreThreshold: 0.5,
+  },
   app: {
     homepageImageURLBase: '/img/homepage',
     homepageImages: [

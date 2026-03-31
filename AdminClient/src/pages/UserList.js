@@ -46,7 +46,7 @@ function UserList() {
       filter: searchParams.get('filter') || 'all',
       role: searchParams.get('role'),
     };
-  };x`
+  };
 
   useEffect(() => {
     if (retryAttempt >= retryLimit) return;

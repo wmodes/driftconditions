@@ -136,6 +136,11 @@ const config = {
   bcrypt: {
     saltRounds: 10,
   },
+  recaptcha: {
+    siteKey: '6LeGSaAsAAAAAC5vDSHIXZD291CnNXGTCfyrYF8b',  // public, used by frontend
+    secretKey: process.env.RECAPTCHA_SECRET_KEY,           // private, used by backend
+    scoreThreshold: 0.5,                                   // minimum score to allow request
+  },
   authToken: {
     jwtSecretKey: process.env.JWT_SECRET_KEY,
     tokenExpires: '7d',

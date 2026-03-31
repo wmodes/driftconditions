@@ -38,13 +38,13 @@ export const signup = createAsyncThunk(signupRoute,
 // signin thunk for logging in a user. It sends username and password to the server,
 // and handles the response similarly to the signup thunk.
 export const signin = createAsyncThunk(
-  signinRoute, 
-  async ({username, password}, thunkAPI) => {
+  signinRoute,
+  async ({username, password, recaptchaToken}, thunkAPI) => {
   try {
     // Send a POST request to the server with the user's credentials
     await axios.post(
-      signinRoute, 
-      {username, password}, 
+      signinRoute,
+      {username, password, recaptchaToken},
       { withCredentials: true }
     );
   } catch (error) {

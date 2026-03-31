@@ -14,7 +14,7 @@
 // foundational imports
 const express = require('express');
 const router = express.Router();
-const logger = require('config/logger').custom('AdminServer', 'info');
+const logger = require('config/logger').custom('AdminServer', 'debug');
 const { database: db } = require('config');
 
 // authentication imports
@@ -29,6 +29,22 @@ const tokenExpires = config.authToken.tokenExpires;
 const cookieExpires = config.authCookie.cookieExpires;
 const tokenRefresh = config.authToken.tokenRefresh;
 const saltRounds = config.bcrypt.saltRounds;
+const recaptchaSecretKey = config.recaptcha.secretKey;
+const recaptchaScoreThreshold = config.recaptcha.scoreThreshold;
+
+// helper: verify reCAPTCHA v3 token with Google
+// returns the score (0.0-1.0) or throws on failure
+async function verifyRecaptcha(token) {
+  const response = await fetch('https://www.google.com/recaptcha/api/siteverify', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: `secret=${recaptchaSecretKey}&response=${token}`,
+  });
+  const data = await response.json();
+  logger.debug(`authRoutes:verifyRecaptcha: success=${data.success}, score=${data.score}`);
+  if (!data.success) throw new Error('reCAPTCHA verification failed');
+  return data.score;
+}
 
 //
 // USER REGISTRATION & AUTHENTICATION
@@ -38,9 +54,17 @@ const saltRounds = config.bcrypt.saltRounds;
 // hashes the password for secure storage, and inserts the new user into the database.
 // Uses bcrypt for password hashing to securely store user credentials.
 router.post('/signup', async (req, res) => {
-  const { username, password, firstname, lastname, location, email } = req.body;
-  
+  const { username, password, firstname, lastname, location, email, recaptchaToken } = req.body;
+
   try {
+    // Verify reCAPTCHA token if provided
+    if (recaptchaToken) {
+      const score = await verifyRecaptcha(recaptchaToken);
+      if (score < recaptchaScoreThreshold) {
+        return res.status(403).send('reCAPTCHA score too low, request blocked');
+      }
+    }
+
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, saltRounds);
     
@@ -76,7 +100,15 @@ router.post('/signup', async (req, res) => {
 // This showcases using bcrypt to compare hashed passwords for login verification.
 router.post('/signin', async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const { username, password, recaptchaToken } = req.body;
+
+    // Verify reCAPTCHA token if provided
+    if (recaptchaToken) {
+      const score = await verifyRecaptcha(recaptchaToken);
+      if (score < recaptchaScoreThreshold) {
+        return res.status(403).send('reCAPTCHA score too low, request blocked');
+      }
+    }
     // Construct db query
     const query = 'SELECT * FROM users WHERE username = ?';
     const values = [username];

@@ -6,7 +6,10 @@ import { useNavigate } from 'react-router-dom';
 // Hooks for dispatching actions and accessing Redux state.
 import { useDispatch } from 'react-redux';
 // signin async thunk for authentication.
-import { signin } from '../store/authSlice';
+import { signin, checkPageAuth } from '../store/authSlice';
+// config for reCAPTCHA site key
+import config from '../config/config';
+const recaptchaSiteKey = config.recaptcha.siteKey;
 
 function Signin() {
   const navigate = useNavigate();
@@ -22,20 +25,26 @@ function Signin() {
   // Handles form submission, dispatching the signin action and resetting form fields.
   const submitHandler = e => {
     e.preventDefault(); // Prevents the default form submission behavior.
-    dispatch(signin({username, password}))
-    .unwrap() // Unwraps the result of the thunk execution to handle it directly.
-    .then(() => {
-      // Proceed with resetting form fields or redirecting the user
-      setUsername('');
-      setPassword('');
-      navigate(`/profile/${username}`);
-    })
-    .catch((error) => {
-        // Handle any error here
-        console.error("Login error:", error);
-        setError('Invalid username or password');
+    // Execute reCAPTCHA v3 to get a token before submitting credentials
+    window.grecaptcha.ready(() => {
+      window.grecaptcha.execute(recaptchaSiteKey, { action: 'signin' }).then(recaptchaToken => {
+        dispatch(signin({username, password, recaptchaToken}))
+          .unwrap()
+          .then(() => {
+            setUsername('');
+            setPassword('');
+            // Hydrate Redux state with user/role info before navigating
+            dispatch(checkPageAuth({ context: 'profile' })).finally(() => {
+              navigate(`/profile/${username}`);
+            });
+          })
+          .catch((error) => {
+            console.error("Login error:", error);
+            setError('Invalid username or password');
+          });
+      });
     });
-}
+  };
 
   // Renders the sign-in form. Uses conditional rendering for displaying errors and redirecting on successful login.
   return (
