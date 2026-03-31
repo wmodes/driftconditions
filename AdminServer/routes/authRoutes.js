@@ -20,6 +20,7 @@ const { database: db } = require('config');
 // authentication imports
 const bcrypt = require('bcrypt-promise');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 
 // configuration import
 const { config } = require('config');
@@ -31,6 +32,9 @@ const tokenRefresh = config.authToken.tokenRefresh;
 const saltRounds = config.bcrypt.saltRounds;
 const recaptchaSecretKey = config.recaptcha.secretKey;
 const recaptchaScoreThreshold = config.recaptcha.scoreThreshold;
+const googleClientId = config.google.clientId;
+const googleClientSecret = config.google.clientSecret;
+const googleCallbackUrl = config.google.callbackUrl;
 
 // helper: verify reCAPTCHA v3 token with Google
 // returns the score (0.0-1.0) or throws on failure
@@ -346,6 +350,46 @@ async function getRolePermissions(userID) {
     throw error; // Rethrow to handle it in the calling function
   }
 }
+
+
+// OAuth init route — redirects browser to provider's auth page
+// GET /api/auth/:provider (google or github)
+router.get('/:provider', async (req, res) => {
+  const provider = req.params.provider;
+  if (!['google', 'github'].includes(provider)) {
+    return res.status(400).json({ error: 'Unknown provider' });
+  }
+
+  try {
+    const { discovery, buildAuthorizationUrl } = await import('openid-client');
+
+    // Google supports OIDC discovery; GitHub does not (handled in callback step)
+    const issuerUrl = new URL('https://accounts.google.com');
+    const oidcConfig = await discovery(issuerUrl, googleClientId, googleClientSecret);
+
+    // Generate CSRF state and store in short-lived cookie
+    const state = crypto.randomBytes(16).toString('hex');
+    res.cookie('oauth_state', state, {
+      httpOnly: true,
+      maxAge: 10 * 60 * 1000, // 10 minutes
+      path: '/',
+      sameSite: 'Lax',
+      secure: true,
+    });
+
+    const authUrl = buildAuthorizationUrl(oidcConfig, {
+      redirect_uri: googleCallbackUrl,
+      scope: 'openid email profile',
+      state,
+    });
+
+    logger.debug(`authRoutes:/:provider: redirecting to ${provider} auth`);
+    res.redirect(authUrl.href);
+  } catch (err) {
+    logger.error(`authRoutes:/:provider: OAuth init error: ${err}`);
+    res.status(500).send('OAuth initialization failed');
+  }
+});
 
 
 module.exports = router;

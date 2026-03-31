@@ -141,6 +141,11 @@ const config = {
     secretKey: process.env.RECAPTCHA_SECRET_KEY,           // private, used by backend
     scoreThreshold: 0.5,                                   // minimum score to allow request
   },
+  google: {
+    clientId: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    callbackUrl: 'https://localhost:8080/api/auth/callback/google',
+  },
   authToken: {
     jwtSecretKey: process.env.JWT_SECRET_KEY,
     tokenExpires: '7d',
