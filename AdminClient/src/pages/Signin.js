@@ -2,7 +2,7 @@
 
 // React's useState hook for managing form inputs.
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 // Hooks for dispatching actions and accessing Redux state.
 import { useDispatch } from 'react-redux';
 // signin async thunk for authentication.
@@ -12,8 +12,16 @@ import config from '../config/config';
 const recaptchaSiteKey = config.recaptcha.siteKey;
 const serverBaseURL = config.adminServer.baseURL;
 
+// Map OAuth error codes (from ?error= query param) to user-facing messages
+const OAUTH_ERRORS = {
+  NO_EMAIL:             'Your account with that provider has no verified email address. Please use another sign-in method.',
+  INVALID_STATE:        'Login session expired or was tampered with. Please try again.',
+  OAUTH_EXCHANGE_FAILED:'Sign-in failed due to a provider error. Please try again.',
+};
+
 function Signin() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Dynamically load reCAPTCHA script only while this component is mounted
   useEffect(() => {
@@ -33,8 +41,10 @@ function Signin() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
-  const [error, setError] = useState('');
-  
+  // Pre-populate error from OAuth redirect query param (e.g. ?error=NO_EMAIL)
+  const oauthError = new URLSearchParams(location.search).get('error');
+  const [error, setError] = useState(OAUTH_ERRORS[oauthError] || '');
+
   // Hook to dispatch authentication action.
   const dispatch = useDispatch(); 
 
@@ -46,12 +56,19 @@ function Signin() {
       window.grecaptcha.execute(recaptchaSiteKey, { action: 'signin' }).then(recaptchaToken => {
         dispatch(signin({username, password, recaptchaToken}))
           .unwrap()
-          .then(() => {
+          .then((signinData) => {
             setUsername('');
             setPassword('');
+            // Use the username returned by the server (input may have been an email)
+            const actualUsername = signinData?.username || username;
             // Hydrate Redux state with user/role info before navigating
             dispatch(checkPageAuth({ context: 'profile' })).finally(() => {
-              navigate(`/profile/${username}`);
+              // Send incomplete profiles to edit page to fill in missing fields
+              if (!signinData?.profileComplete) {
+                navigate(`/profile/edit`);
+              } else {
+                navigate(`/profile/${actualUsername}`);
+              }
             });
           })
           .catch((error) => {
@@ -69,7 +86,7 @@ function Signin() {
         <div className="display-box">
           <form onSubmit={submitHandler}>
             <h2 className='title'>Log in</h2>
-            <label className="form-label" htmlFor="username">Username:</label>
+            <label className="form-label" htmlFor="username">Username or Email:</label>
             <input className="form-field" type="text" id="username" value={username} onChange={e => setUsername(e.target.value)} />
             <label className="form-label"  htmlFor="password">Password:</label>
             <input className="form-field" type="password" id="password" value={password} onChange={e => setPassword(e.target.value)} />

@@ -1054,6 +1054,12 @@ tr.row-even.quick-edit textarea {
   font-weight: bold;
 }
 
+.notice {
+  text-align: center;
+  color: var(--link-color);
+  font-weight: bold;
+}
+
 .unavailable-wrapper {
   display: flex;
   justify-content: center;

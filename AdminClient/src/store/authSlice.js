@@ -42,11 +42,12 @@ export const signin = createAsyncThunk(
   async ({username, password, recaptchaToken}, thunkAPI) => {
   try {
     // Send a POST request to the server with the user's credentials
-    await axios.post(
+    const response = await axios.post(
       signinRoute,
       {username, password, recaptchaToken},
       { withCredentials: true }
     );
+    return response.data; // includes username from server
   } catch (error) {
     console.error(error);
     return thunkAPI.rejectWithValue(error.message);  

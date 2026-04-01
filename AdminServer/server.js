@@ -16,7 +16,7 @@ const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const { notFound, errorHandler } = require('./middleware/errorHandler');
 const { logger } = require('config');
-const rateLimit = require('express-rate-limit');
+const { rateLimit, ipKeyGenerator } = require('express-rate-limit');
 
 const { config } = require('config');
 const server = config.adminServer;
@@ -46,8 +46,8 @@ const audioRoutes = require('./routes/audioRoutes');
 const recipeRoutes = require('./routes/recipeRoutes');
 const roleRoutes = require('./routes/roleRoutes');
 
-// Custom key generator — strips port from IPv6 addresses like [::1]:49289
-const keyGenerator = (req) => req.ip.replace(/:\d+$/, '');
+// Use the library's ipKeyGenerator to correctly normalize IPv6 addresses
+const keyGenerator = (req) => ipKeyGenerator(req);
 
 // Rate limiter for credential endpoints — 20 requests per 15 minutes per IP
 const authLimiter = rateLimit({
