@@ -151,6 +151,11 @@ const config = {
     clientSecret: process.env.GITHUB_CLIENT_SECRET,
     callbackUrl: 'https://localhost:8080/api/auth/callback/github',
   },
+  discord: {
+    clientId: process.env.DISCORD_CLIENT_ID,
+    clientSecret: process.env.DISCORD_CLIENT_SECRET,
+    callbackUrl: 'https://localhost:8080/api/auth/callback/discord',
+  },
   client: {
     url: process.env.CLIENT_URL,
   },

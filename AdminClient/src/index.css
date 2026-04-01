@@ -403,6 +403,11 @@ figcaption {
   left: 50%;
 }
 
+/* push reCAPTCHA badge above the player bar */
+.grecaptcha-badge {
+  bottom: 40px !important;
+}
+
 /* player */
 
 .player {
@@ -483,6 +488,54 @@ figcaption {
 
 .signin-wrapper .display-box {
   width: 320px;
+}
+
+.oauth-divider {
+  display: flex;
+  align-items: center;
+  margin: 1rem 0;
+  color: #888;
+  font-size: 0.875rem;
+}
+.oauth-divider::before,
+.oauth-divider::after {
+  content: '';
+  flex: 1;
+  border-top: 1px solid #ccc;
+}
+.oauth-divider span {
+  padding: 0 0.75rem;
+}
+
+.oauth-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.oauth-button {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 1rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #f6f8fa;
+  color: #24292f;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.oauth-button:hover {
+  background: #e8edf2;
+  text-decoration: none;
+}
+.oauth-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
 }
 
 .display-box h2.title {

@@ -46,12 +46,16 @@ const audioRoutes = require('./routes/audioRoutes');
 const recipeRoutes = require('./routes/recipeRoutes');
 const roleRoutes = require('./routes/roleRoutes');
 
+// Custom key generator — strips port from IPv6 addresses like [::1]:49289
+const keyGenerator = (req) => req.ip.replace(/:\d+$/, '');
+
 // Rate limiter for credential endpoints — 20 requests per 15 minutes per IP
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 20,
   standardHeaders: true,
   legacyHeaders: false,
+  keyGenerator,
   message: { error: { code: 429, reason: 'too_many_requests', message: 'Too many requests, please try again later.' } },
 });
 
@@ -62,6 +66,7 @@ const oauthLimiter = rateLimit({
   max: 60,
   standardHeaders: true,
   legacyHeaders: false,
+  keyGenerator,
   message: { error: { code: 429, reason: 'too_many_requests', message: 'Too many requests, please try again later.' } },
 });
 

@@ -7,9 +7,26 @@ import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 // Importing the signup action from authSlice.
 import { signup } from '../store/authSlice';
+// config for reCAPTCHA site key
+import config from '../config/config';
+const recaptchaSiteKey = config.recaptcha.siteKey;
 
 function Signup() {
   const navigate = useNavigate();
+
+  // Dynamically load reCAPTCHA script only while this component is mounted
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = `https://www.google.com/recaptcha/api.js?render=${recaptchaSiteKey}`;
+    script.async = true;
+    document.head.appendChild(script);
+    return () => {
+      document.head.removeChild(script);
+      const badge = document.querySelector('.grecaptcha-badge');
+      if (badge) badge.remove();
+    };
+  }, []);
+
   // State hooks to store input values from the form.
   const [record, setRecord] = useState({
     username: '',
