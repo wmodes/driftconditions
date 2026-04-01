@@ -15,6 +15,8 @@
   import Homepage from './pages/Homepage';
   import Signup from './pages/Signup';
   import Signin from './pages/Signin';
+  import ForgotPassword from './pages/ForgotPassword';
+  import ResetPassword from './pages/ResetPassword';
   import Profile from './pages/Profile';
   import ProfileEdit from './pages/ProfileEdit';
   import UserList from './pages/UserList';
@@ -57,6 +59,8 @@
         <Route path='/' element={<Homepage />} />
         <Route path='/signup' element={<Signup />} />
         <Route path='/signin' element={<Signin />} />
+        <Route path='/forgot-password' element={<ForgotPassword />} />
+        <Route path='/reset-password' element={<ResetPassword />} />
         <Route path="/profile/:username" element={<Profile />} />
         <Route path='/profile' element={<Profile />} /> 
         <Route path="/profile/edit/:username" element={<ProfileEdit />} />

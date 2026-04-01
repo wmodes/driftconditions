@@ -1,15 +1,17 @@
 // authRoutes.js - user registration and authentication
 // List off Routes:
-//   /api/auth/signup - Route for handling user registration. It extracts user information from 
-//        the request, hashes the password for secure storage, and inserts the new user into 
+//   /api/auth/signup - Route for handling user registration. It extracts user information from
+//        the request, hashes the password for secure storage, and inserts the new user into
 //        the database.
-//   /api/auth/signin - Route for user authentication. It retrieves the user from the database 
-//        by username, compares the submitted password with the stored hashed password, and 
+//   /api/auth/signin - Route for user authentication. It retrieves the user from the database
+//        by username, compares the submitted password with the stored hashed password, and
 //        responds with user info on successful authentication or an error message on failure.
-//   /api/auth/logout - Route for user logout. It expires the token cookie to invalidate the 
+//   /api/auth/logout - Route for user logout. It expires the token cookie to invalidate the
 //        user session.
-//   /api/auth/check - Route for checking if the user is authenticated. It checks for the 
+//   /api/auth/check - Route for checking if the user is authenticated. It checks for the
 //        presence of the token cookie.
+//   /api/auth/forgot-password - Accepts email, generates a reset token, sends reset email.
+//   /api/auth/reset-password - Validates token, hashes and saves new password.
 
 // foundational imports
 const express = require('express');
@@ -21,6 +23,7 @@ const { database: db } = require('config');
 const bcrypt = require('bcrypt-promise');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
+const { sendMail } = require('../utils/mailer');
 
 // configuration import
 const { config } = require('config');
@@ -593,6 +596,107 @@ async function generateUniqueUsername(email) {
   return username;
 }
 
+
+// Route to initiate password reset — accepts email, generates token, sends reset email.
+// Returns identical success response whether or not the email exists (prevents enumeration).
+router.post('/forgot-password', async (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.status(400).send('Email is required');
+
+  try {
+    // Look up user by email — silent success if not found
+    const [rows] = await db.query('SELECT userID, firstname FROM users WHERE email = ? LIMIT 1', [email]);
+    if (rows.length > 0) {
+      const { userID, firstname } = rows[0];
+      const token = crypto.randomBytes(32).toString('hex');
+      const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+      // Store token
+      await db.query(
+        'INSERT INTO passwordResetTokens (token, userID, expiresAt) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE token = token',
+        [token, userID, expiresAt]
+      );
+
+      const resetUrl = `${clientUrl}/reset-password?token=${token}`;
+      const name = firstname || 'there';
+
+      await sendMail({
+        to: email,
+        subject: 'Reset your DriftConditions password',
+        text: [
+          `Hi ${name},`,
+          '',
+          'We received a request to reset the password for your DriftConditions account.',
+          '',
+          `Reset your password: ${resetUrl}`,
+          '',
+          'This link expires in 1 hour.',
+          '',
+          "If you didn't request a password reset, you can safely ignore this email. Your password will not be changed.",
+          '',
+          '— The DriftConditions Team',
+        ].join('\n'),
+        html: `
+          <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px 24px">
+            <h1 style="font-size:24px;margin-bottom:8px">DriftConditions</h1>
+            <hr style="border:none;border-top:1px solid #ddd;margin-bottom:24px"/>
+            <h2 style="font-size:20px;margin-bottom:16px">Reset your password</h2>
+            <p>Hi ${name},</p>
+            <p>We received a request to reset the password for your DriftConditions account. Click the button below to choose a new password.</p>
+            <div style="text-align:center;margin:32px 0">
+              <a href="${resetUrl}" style="background:#336699;color:#fff;padding:12px 28px;border-radius:6px;text-decoration:none;font-weight:bold;display:inline-block">Reset Password</a>
+            </div>
+            <p style="color:#666;font-size:14px">This link expires in 1 hour.</p>
+            <p style="color:#666;font-size:14px">If you didn't request a password reset, you can safely ignore this email. Your password will not be changed.</p>
+            <hr style="border:none;border-top:1px solid #ddd;margin-top:32px"/>
+            <p style="color:#999;font-size:12px;text-align:center">DriftConditions &mdash; driftconditions.org</p>
+          </div>
+        `,
+      });
+      logger.info(`authRoutes:/forgot-password: reset email sent to ${email}`);
+    } else {
+      logger.debug(`authRoutes:/forgot-password: email not found: ${email} (silent)`);
+    }
+
+    // Always return success to prevent email enumeration
+    res.status(200).json({ message: 'If that email is registered, a reset link has been sent.' });
+  } catch (err) {
+    logger.error(`authRoutes:/forgot-password: ${err}`);
+    res.status(500).send('Server error');
+  }
+});
+
+// Route to complete password reset — validates token, saves new hashed password.
+router.post('/reset-password', async (req, res) => {
+  const { token, password } = req.body;
+  if (!token || !password) return res.status(400).send('Token and password are required');
+
+  try {
+    // Look up token and check expiry
+    const [rows] = await db.query(
+      'SELECT userID FROM passwordResetTokens WHERE token = ? AND expiresAt > NOW() LIMIT 1',
+      [token]
+    );
+    if (rows.length === 0) {
+      return res.status(400).send('Reset link is invalid or has expired');
+    }
+
+    const { userID } = rows[0];
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    // Update password and delete token in parallel
+    await Promise.all([
+      db.query('UPDATE users SET password = ? WHERE userID = ?', [hashedPassword, userID]),
+      db.query('DELETE FROM passwordResetTokens WHERE token = ?', [token]),
+    ]);
+
+    logger.info(`authRoutes:/reset-password: password reset for userID=${userID}`);
+    res.status(200).json({ message: 'Password updated successfully' });
+  } catch (err) {
+    logger.error(`authRoutes:/reset-password: ${err}`);
+    res.status(500).send('Server error');
+  }
+});
 
 // OAuth init route — redirects browser to provider's auth page
 // GET /api/auth/:provider (google, github, discord)
