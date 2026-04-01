@@ -146,6 +146,11 @@ const config = {
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     callbackUrl: 'https://localhost:8080/api/auth/callback/google',
   },
+  github: {
+    clientId: process.env.GITHUB_CLIENT_ID,
+    clientSecret: process.env.GITHUB_CLIENT_SECRET,
+    callbackUrl: 'https://localhost:8080/api/auth/callback/github',
+  },
   client: {
     url: process.env.CLIENT_URL,
   },
