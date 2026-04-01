@@ -46,7 +46,7 @@ const audioRoutes = require('./routes/audioRoutes');
 const recipeRoutes = require('./routes/recipeRoutes');
 const roleRoutes = require('./routes/roleRoutes');
 
-// Rate limiter for auth endpoints — 20 requests per 15 minutes per IP
+// Rate limiter for credential endpoints — 20 requests per 15 minutes per IP
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 20,
@@ -55,8 +55,20 @@ const authLimiter = rateLimit({
   message: { error: { code: 429, reason: 'too_many_requests', message: 'Too many requests, please try again later.' } },
 });
 
-// Use routes
-app.use('/api/auth', authLimiter, authRoutes);
+// Rate limiter for OAuth endpoints — 60 requests per 15 minutes per IP
+// Higher limit since OAuth flows involve multiple redirects per login attempt
+const oauthLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: { code: 429, reason: 'too_many_requests', message: 'Too many requests, please try again later.' } },
+});
+
+// Use routes — OAuth routes get a more permissive limiter, credential routes get strict
+app.use('/api/auth/signup', authLimiter, authRoutes);
+app.use('/api/auth/signin', authLimiter, authRoutes);
+app.use('/api/auth', oauthLimiter, authRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/audio', audioRoutes);
 app.use('/api/recipe', recipeRoutes);
