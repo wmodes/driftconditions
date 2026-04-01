@@ -38,6 +38,9 @@ const googleCallbackUrl = config.google.callbackUrl;
 const githubClientId = config.github.clientId;
 const githubClientSecret = config.github.clientSecret;
 const githubCallbackUrl = config.github.callbackUrl;
+const discordClientId = config.discord.clientId;
+const discordClientSecret = config.discord.clientSecret;
+const discordCallbackUrl = config.discord.callbackUrl;
 const clientUrl = config.client.url;
 
 // helper: verify reCAPTCHA v3 token with Google
@@ -421,6 +424,37 @@ router.get('/callback/:provider', async (req, res) => {
         }
         email = primary.email;
       }
+
+    } else if (provider === 'discord') {
+      const code = req.query.code;
+      // Exchange code for access token
+      const tokenRes = await fetch('https://discord.com/api/oauth2/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          client_id: discordClientId,
+          client_secret: discordClientSecret,
+          grant_type: 'authorization_code',
+          code,
+          redirect_uri: discordCallbackUrl,
+        }),
+      });
+      const tokenData = await tokenRes.json();
+      if (!tokenData.access_token) throw new Error('Discord token exchange failed');
+
+      // Fetch user profile
+      const userRes = await fetch('https://discord.com/api/users/@me', {
+        headers: { 'Authorization': `Bearer ${tokenData.access_token}` },
+      });
+      const discordUser = await userRes.json();
+      if (!discordUser.email) {
+        logger.error('authRoutes:/callback: Discord user has no email (email scope missing or unverified)');
+        return res.redirect(`${clientUrl}/signin?error=NO_EMAIL`);
+      }
+      oauthId = String(discordUser.id);
+      // global_name is the display name, username is the handle
+      displayName = discordUser.global_name || discordUser.username;
+      email = discordUser.email;
     }
 
     logger.debug(`authRoutes:/callback: provider=${provider}, email=${email}, oauthId=${oauthId}`);
@@ -543,10 +577,10 @@ async function generateUniqueUsername(email) {
 
 
 // OAuth init route — redirects browser to provider's auth page
-// GET /api/auth/:provider (google or github)
+// GET /api/auth/:provider (google, github, discord)
 router.get('/:provider', async (req, res) => {
   const provider = req.params.provider;
-  if (!['google', 'github'].includes(provider)) {
+  if (!['google', 'github', 'discord'].includes(provider)) {
     return res.status(400).json({ error: 'Unknown provider' });
   }
 
@@ -579,6 +613,16 @@ router.get('/:provider', async (req, res) => {
         state,
       });
       authUrl = `https://github.com/login/oauth/authorize?${params}`;
+
+    } else if (provider === 'discord') {
+      const params = new URLSearchParams({
+        client_id: discordClientId,
+        redirect_uri: discordCallbackUrl,
+        response_type: 'code',
+        scope: 'identify email',
+        state,
+      });
+      authUrl = `https://discord.com/api/oauth2/authorize?${params}`;
     }
 
     logger.debug(`authRoutes:/:provider: redirecting to ${provider} auth`);
