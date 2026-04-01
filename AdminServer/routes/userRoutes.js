@@ -193,7 +193,7 @@ router.post('/profile/edit', verifyToken, async (req, res) => {
     const isEditable = allowedFields.includes('editable');
 
     // valid db fields
-    const validDBFields = ['email', 'firstname', 'lastname', 'url', 'bio', 'location', 'roleName', 'status'];
+    const validDBFields = ['username', 'email', 'firstname', 'lastname', 'url', 'bio', 'location', 'roleName', 'status'];
 
     // Filter out only the fields that are allowed and provided in req.body
     const queryFields = [];
@@ -232,6 +232,9 @@ router.post('/profile/edit', verifyToken, async (req, res) => {
       res.status(200).send({ message: 'Profile updated successfully' });
     }
   } catch (error) {
+    if (error.code === 'ER_DUP_ENTRY') {
+      return res.status(409).send('Username already taken');
+    }
     logger.error(`userRoutes:/edit: Update failed: ${error}`);
     res.status(500).send('Server error');
   }
