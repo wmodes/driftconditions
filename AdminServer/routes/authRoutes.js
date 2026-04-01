@@ -35,6 +35,9 @@ const recaptchaScoreThreshold = config.recaptcha.scoreThreshold;
 const googleClientId = config.google.clientId;
 const googleClientSecret = config.google.clientSecret;
 const googleCallbackUrl = config.google.callbackUrl;
+const githubClientId = config.github.clientId;
+const githubClientSecret = config.github.clientSecret;
+const githubCallbackUrl = config.github.callbackUrl;
 const clientUrl = config.client.url;
 
 // helper: verify reCAPTCHA v3 token with Google
@@ -370,27 +373,56 @@ router.get('/callback/:provider', async (req, res) => {
     }
     res.clearCookie('oauth_state', { path: '/', sameSite: 'Lax', secure: true });
 
-    const { discovery, authorizationCodeGrant } = await import('openid-client');
+    // 2. Exchange code for profile — provider-specific
+    let oauthId, email, displayName;
 
-    // Google uses OIDC discovery
-    const issuerUrl = new URL('https://accounts.google.com');
-    const oidcConfig = await discovery(issuerUrl, googleClientId, googleClientSecret);
+    if (provider === 'google') {
+      const { discovery, authorizationCodeGrant } = await import('openid-client');
+      const oidcConfig = await discovery(new URL('https://accounts.google.com'), googleClientId, googleClientSecret);
+      const apiOrigin = new URL(googleCallbackUrl).origin;
+      const currentUrl = new URL(req.originalUrl, apiOrigin);
+      const tokens = await authorizationCodeGrant(oidcConfig, currentUrl, { expectedState: storedState });
+      const claims = tokens.claims();
+      oauthId = String(claims.sub);
+      email = claims.email;
+      displayName = claims.name || email.split('@')[0];
 
-    // Build the full callback URL (openid-client extracts code/state from it)
-    // Must use the API server origin, not the frontend client URL
-    const apiOrigin = new URL(googleCallbackUrl).origin;
-    const currentUrl = new URL(req.originalUrl, apiOrigin);
+    } else if (provider === 'github') {
+      const code = req.query.code;
+      // Exchange code for access token
+      const tokenRes = await fetch('https://github.com/login/oauth/access_token', {
+        method: 'POST',
+        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ client_id: githubClientId, client_secret: githubClientSecret, code, redirect_uri: githubCallbackUrl }),
+      });
+      const tokenData = await tokenRes.json();
+      if (!tokenData.access_token) throw new Error('GitHub token exchange failed');
 
-    // Exchange code for tokens; also validates state
-    const tokens = await authorizationCodeGrant(oidcConfig, currentUrl, {
-      expectedState: storedState,
-    });
+      // Fetch user profile
+      const userRes = await fetch('https://api.github.com/user', {
+        headers: { 'Authorization': `Bearer ${tokenData.access_token}`, 'Accept': 'application/json' },
+      });
+      const ghUser = await userRes.json();
+      oauthId = String(ghUser.id);
+      displayName = ghUser.name || ghUser.login;
 
-    // 2. Extract profile from ID token claims
-    const claims = tokens.claims();
-    const oauthId = String(claims.sub);
-    const email = claims.email;
-    const displayName = claims.name || email.split('@')[0];
+      // GitHub may not return email publicly — fetch verified emails
+      if (ghUser.email) {
+        email = ghUser.email;
+      } else {
+        const emailRes = await fetch('https://api.github.com/user/emails', {
+          headers: { 'Authorization': `Bearer ${tokenData.access_token}`, 'Accept': 'application/json' },
+        });
+        const emails = await emailRes.json();
+        const primary = emails.find(e => e.primary && e.verified);
+        if (!primary) {
+          logger.error('authRoutes:/callback: GitHub user has no verified email');
+          return res.redirect(`${clientUrl}/signin?error=NO_EMAIL`);
+        }
+        email = primary.email;
+      }
+    }
+
     logger.debug(`authRoutes:/callback: provider=${provider}, email=${email}, oauthId=${oauthId}`);
 
     // 3. Resolve user: check userIdentities → check email → create new
@@ -518,31 +550,39 @@ router.get('/:provider', async (req, res) => {
     return res.status(400).json({ error: 'Unknown provider' });
   }
 
+  // Generate CSRF state and store in short-lived cookie
+  const state = crypto.randomBytes(16).toString('hex');
+  res.cookie('oauth_state', state, {
+    httpOnly: true,
+    maxAge: 10 * 60 * 1000, // 10 minutes
+    path: '/',
+    sameSite: 'Lax',
+    secure: true,
+  });
+
   try {
-    const { discovery, buildAuthorizationUrl } = await import('openid-client');
+    let authUrl;
 
-    // Google supports OIDC discovery; GitHub does not (handled in callback step)
-    const issuerUrl = new URL('https://accounts.google.com');
-    const oidcConfig = await discovery(issuerUrl, googleClientId, googleClientSecret);
-
-    // Generate CSRF state and store in short-lived cookie
-    const state = crypto.randomBytes(16).toString('hex');
-    res.cookie('oauth_state', state, {
-      httpOnly: true,
-      maxAge: 10 * 60 * 1000, // 10 minutes
-      path: '/',
-      sameSite: 'Lax',
-      secure: true,
-    });
-
-    const authUrl = buildAuthorizationUrl(oidcConfig, {
-      redirect_uri: googleCallbackUrl,
-      scope: 'openid email profile',
-      state,
-    });
+    if (provider === 'google') {
+      const { discovery, buildAuthorizationUrl } = await import('openid-client');
+      const oidcConfig = await discovery(new URL('https://accounts.google.com'), googleClientId, googleClientSecret);
+      authUrl = buildAuthorizationUrl(oidcConfig, {
+        redirect_uri: googleCallbackUrl,
+        scope: 'openid email profile',
+        state,
+      }).href;
+    } else if (provider === 'github') {
+      const params = new URLSearchParams({
+        client_id: githubClientId,
+        redirect_uri: githubCallbackUrl,
+        scope: 'read:user user:email',
+        state,
+      });
+      authUrl = `https://github.com/login/oauth/authorize?${params}`;
+    }
 
     logger.debug(`authRoutes:/:provider: redirecting to ${provider} auth`);
-    res.redirect(authUrl.href);
+    res.redirect(authUrl);
   } catch (err) {
     logger.error(`authRoutes:/:provider: OAuth init error: ${err}`);
     res.status(500).send('OAuth initialization failed');
