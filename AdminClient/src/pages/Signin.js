@@ -131,6 +131,9 @@ function Signin() {
             <span>or</span>
           </div>
           <p className="text-center text-sm text-gray-500">
+            <a href="/forgot-password" className="link">Forgot password?</a>
+          </p>
+          <p className="text-center text-sm text-gray-500">
             Need an account? <a href="/signup" className="link">Sign up</a>
           </p>
         </div>
