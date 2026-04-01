@@ -398,7 +398,7 @@ router.get('/callback/:provider', async (req, res) => {
     let isNewUser = false;
 
     const [identityRows] = await db.query(
-      `SELECT ui.userId, u.username, u.roleName
+      `SELECT ui.userId, u.username, u.roleName, u.firstname, u.lastname, u.displayName
        FROM userIdentities ui JOIN users u ON u.userID = ui.userId
        WHERE ui.oauthProvider = ? AND ui.oauthId = ?`,
       [provider, oauthId]
@@ -407,10 +407,12 @@ router.get('/callback/:provider', async (req, res) => {
     if (identityRows.length > 0) {
       // Existing OAuth user
       user = { userID: identityRows[0].userId, username: identityRows[0].username, roleName: identityRows[0].roleName };
+      // Fill in any blank name fields from provider data without overwriting existing values
+      await fillBlankNameFields(user.userID, identityRows[0], displayName);
       logger.debug(`authRoutes:/callback: existing OAuth user: ${user.username}`);
     } else {
       const [emailRows] = await db.query(
-        'SELECT userID, username, roleName FROM users WHERE email = ? LIMIT 1',
+        'SELECT userID, username, roleName, firstname, lastname, displayName FROM users WHERE email = ? LIMIT 1',
         [email]
       );
 
@@ -421,15 +423,17 @@ router.get('/callback/:provider', async (req, res) => {
           'INSERT INTO userIdentities (userId, oauthProvider, oauthId) VALUES (?, ?, ?)',
           [user.userID, provider, oauthId]
         );
+        // Fill in any blank name fields from provider data without overwriting existing values
+        await fillBlankNameFields(user.userID, emailRows[0], displayName);
         logger.debug(`authRoutes:/callback: linked ${provider} to existing user: ${user.username}`);
       } else {
         // Brand new user — create account
         isNewUser = true;
         const username = await generateUniqueUsername(email);
-        // Split displayName into firstname/lastname (both NOT NULL)
-        const nameParts = displayName.split(' ');
-        const firstname = nameParts[0];
-        const lastname = nameParts.slice(1).join(' ') || '-';
+        // Split displayName into firstname/lastname (both NOT NULL), split on last space
+        const lastSpace = displayName.lastIndexOf(' ');
+        const firstname = lastSpace > 0 ? displayName.slice(0, lastSpace) : displayName;
+        const lastname  = lastSpace > 0 ? displayName.slice(lastSpace + 1) : null;
         // Password placeholder — long random string, not usable for local login
         const passwordPlaceholder = crypto.randomBytes(32).toString('hex');
 
@@ -459,14 +463,38 @@ router.get('/callback/:provider', async (req, res) => {
     // 6. Issue JWT cookie
     issueNewToken(res, user);
 
-    // 7. Redirect to profile page
-    res.redirect(`${clientOrigin}/profile/${user.username}`);
+    // 7. Redirect — new users go to profile edit, existing users go to their profile
+    if (isNewUser) {
+      res.redirect(`${clientOrigin}/profile/edit`);
+    } else {
+      res.redirect(`${clientOrigin}/profile/${user.username}`);
+    }
 
   } catch (err) {
     logger.error(`authRoutes:/callback: OAuth callback error: ${err}`);
     res.redirect(`${clientOrigin}/signin?error=OAUTH_EXCHANGE_FAILED`);
   }
 });
+
+// helper: update blank name fields for existing users from OAuth provider data
+// never overwrites fields that already have a value
+async function fillBlankNameFields(userID, existingUser, providerDisplayName) {
+  const lastSpace = providerDisplayName.lastIndexOf(' ');
+  const providerFirstname = lastSpace > 0 ? providerDisplayName.slice(0, lastSpace) : providerDisplayName;
+  const providerLastname  = lastSpace > 0 ? providerDisplayName.slice(lastSpace + 1) : null;
+
+  const updates = {};
+  if (!existingUser.displayName) updates.displayName = providerDisplayName;
+  if (!existingUser.firstname)   updates.firstname   = providerFirstname;
+  if (!existingUser.lastname)    updates.lastname     = providerLastname;
+
+  if (Object.keys(updates).length > 0) {
+    const setClauses = Object.keys(updates).map(k => `${k} = ?`).join(', ');
+    const values = [...Object.values(updates), userID];
+    await db.query(`UPDATE users SET ${setClauses} WHERE userID = ?`, values);
+    logger.debug(`authRoutes:fillBlankNameFields: updated ${Object.keys(updates).join(', ')} for userID=${userID}`);
+  }
+}
 
 // helper: generate a username from email prefix, with uniqueness check
 async function generateUniqueUsername(email) {

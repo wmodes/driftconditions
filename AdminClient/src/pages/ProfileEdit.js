@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { profileInfo, profileEdit } from '../store/userSlice';
+import { checkPageAuth } from '../store/authSlice';
 import FeatherIcon from 'feather-icons-react';
 import { Waiting } from '../utils/appUtils';
 
@@ -76,16 +77,26 @@ function ProfileEdit() {
       updatedProfile.password = newPassword;
     }
     dispatch(profileEdit({profile: updatedProfile}))
+      .unwrap()
       .then(() => {
-        setSuccessMessage('Profile updated successfully!'); 
-        setError(''); // Clear any existing errors
+        setSuccessMessage('Profile updated successfully!');
+        setError('');
+        // Re-hydrate auth state and redirect to new username URL
+        dispatch(checkPageAuth({ context: 'profileEdit' })).finally(() => {
+          navigate(`/profile/edit/${updatedProfile.username}`, { replace: true });
+        });
       })
       .catch(error => {
         console.error("Failed to update profile:", error);
-        setError('An error occurred while updating the profile.');
+        const msg = typeof error === 'string' ? error : JSON.stringify(error);
+        if (msg.includes('already taken') || msg.includes('Username')) {
+          setError('Username taken. Please choose another.');
+        } else {
+          setError('An error occurred while updating the profile.');
+        }
       })
       .finally(() => {
-        setIsLoading(false); // Set loading to false after fetching
+        setIsLoading(false);
       });
   };
 
@@ -119,10 +130,12 @@ function ProfileEdit() {
         <div className="display-box">
           <form onSubmit={handleSubmit}>
             <h2 className='title'>Edit Profile</h2>
-            <p className='mb-2'>
-              <span className='form-label mb-1 pr-4'>Username:</span>
-              <span className='pb-1 text-xl'>{profile.username}</span>
-            </p>
+            {profile.username !== undefined && (
+              <div>
+                <label className="form-label" htmlFor="username">Username:</label>
+                <input className="form-field" type="text" id="username" name="username" value={profile.username} onChange={handleChange} />
+              </div>
+            )}
 
             {profile.firstname !== undefined && (
               <div>
