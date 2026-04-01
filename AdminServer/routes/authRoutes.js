@@ -120,11 +120,15 @@ router.post('/signin', async (req, res) => {
         return res.status(403).send('reCAPTCHA score too low, request blocked');
       }
     }
-    // Construct db query
-    const query = 'SELECT * FROM users WHERE username = ?';
+    // Route lookup by email (case-insensitive) or username based on whether input contains '@'
+    // Parameterized query protects against injection in both cases
+    const isEmail = username.includes('@');
+    const query = isEmail
+      ? 'SELECT * FROM users WHERE LOWER(email) = LOWER(?)'
+      : 'SELECT * FROM users WHERE username = ?';
     const values = [username];
 
-    // Execute query to find user by username
+    // Execute query to find user by username or email
     const [users] = await db.query(query, values);
     // logger.debug("authRoutes:/signin: users:", users);
 
@@ -138,7 +142,11 @@ router.post('/signin', async (req, res) => {
       userID: users[0].userID,
       username: users[0].username,
       roleName: users[0].roleName,
-      hashedPassword: users[0].password
+      hashedPassword: users[0].password,
+      firstname: users[0].firstname,
+      lastname: users[0].lastname,
+      email: users[0].email,
+      location: users[0].location,
     }
 
     // get role permissions
@@ -152,7 +160,7 @@ router.post('/signin', async (req, res) => {
     if (isMatch) {
       // If the passwords match, generate a JWT token for the user.
       issueNewToken(res, user);
-      res.status(200).send({ message: "Authentication successful" });
+      res.status(200).send({ message: "Authentication successful", username: user.username, profileComplete: isProfileComplete(user) });
     } else {
       // If the passwords do not match, respond with an error.
       res.status(418).send(`Username or password doesn't match any records`);
@@ -231,8 +239,8 @@ router.post('/check', async (req, res) => {
     // with the updated permissions
     if (tokenData) {
       const oneHourFromNow = new Date(Date.now() + tokenRefresh); // 1 hour from now
-      if (user.editDate > tokenData.issuedAt || tokenData.expiresAt <= oneHourFromNow) {
-        logger.debug("authRoutes:/check: role permissions have been updated or token expires within 1 hour");
+      if (user.editDate > tokenData.issuedAt || tokenData.expiresAt <= oneHourFromNow || user.username !== tokenData.username) {
+        logger.debug("authRoutes:/check: role permissions updated, token expiring, or username changed — re-issuing token");
         const token = issueNewToken(res, user);
         logger.debug("authRoutes:/check: new token issued");
       }
@@ -464,27 +472,32 @@ router.get('/callback/:provider', async (req, res) => {
     let isNewUser = false;
 
     const [identityRows] = await db.query(
-      `SELECT ui.userId, u.username, u.roleName, u.firstname, u.lastname, u.displayName
+      `SELECT ui.userId, u.username, u.roleName, u.firstname, u.lastname, u.displayName, u.email, u.location
        FROM userIdentities ui JOIN users u ON u.userID = ui.userId
        WHERE ui.oauthProvider = ? AND ui.oauthId = ?`,
       [provider, oauthId]
     );
 
+    // redirectUser tracks profile fields needed for completeness check
+    let redirectUser = null;
+
     if (identityRows.length > 0) {
       // Existing OAuth user
       user = { userID: identityRows[0].userId, username: identityRows[0].username, roleName: identityRows[0].roleName };
+      redirectUser = { ...identityRows[0], email: identityRows[0].email || email };
       // Fill in any blank name fields from provider data without overwriting existing values
       await fillBlankNameFields(user.userID, identityRows[0], displayName);
       logger.debug(`authRoutes:/callback: existing OAuth user: ${user.username}`);
     } else {
       const [emailRows] = await db.query(
-        'SELECT userID, username, roleName, firstname, lastname, displayName FROM users WHERE email = ? LIMIT 1',
+        'SELECT userID, username, roleName, firstname, lastname, displayName, location FROM users WHERE email = ? LIMIT 1',
         [email]
       );
 
       if (emailRows.length > 0) {
         // Existing local user — link new OAuth identity
         user = { userID: emailRows[0].userID, username: emailRows[0].username, roleName: emailRows[0].roleName };
+        redirectUser = { ...emailRows[0], email };
         await db.query(
           'INSERT INTO userIdentities (userId, oauthProvider, oauthId) VALUES (?, ?, ?)',
           [user.userID, provider, oauthId]
@@ -529,8 +542,8 @@ router.get('/callback/:provider', async (req, res) => {
     // 6. Issue JWT cookie
     issueNewToken(res, user);
 
-    // 7. Redirect — new users go to profile edit, existing users go to their profile
-    if (isNewUser) {
+    // 7. Redirect — new users or incomplete profiles go to profile edit
+    if (isNewUser || !isProfileComplete(redirectUser)) {
       res.redirect(`${clientOrigin}/profile/edit`);
     } else {
       res.redirect(`${clientOrigin}/profile/${user.username}`);
@@ -541,6 +554,11 @@ router.get('/callback/:provider', async (req, res) => {
     res.redirect(`${clientOrigin}/signin?error=OAUTH_EXCHANGE_FAILED`);
   }
 });
+
+// helper: check if a user's profile has all required fields filled in
+function isProfileComplete(user) {
+  return !!(user.username && user.firstname && user.lastname && user.email && user.location);
+}
 
 // helper: update blank name fields for existing users from OAuth provider data
 // never overwrites fields that already have a value

@@ -13,6 +13,7 @@ const { database: db } = require('config');
 
 // authentication imports
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt-promise');
 const verifyToken = require('../middleware/authMiddleware');
 
 // configuration import
@@ -195,6 +196,19 @@ router.post('/profile/edit', verifyToken, async (req, res) => {
     // valid db fields
     const validDBFields = ['username', 'email', 'firstname', 'lastname', 'url', 'bio', 'location', 'roleName', 'status'];
 
+    // Prevent blanking required fields
+    if (req.body.username !== undefined && req.body.username.trim() === '') {
+      return res.status(400).send('Username cannot be blank');
+    }
+    if (req.body.email !== undefined && req.body.email.trim() === '') {
+      return res.status(400).send('Email cannot be blank');
+    }
+
+    // Sanitize username: lowercase alphanumeric only (same rule as signup form)
+    if (req.body.username !== undefined) {
+      req.body.username = req.body.username.toLowerCase().replace(/[^a-z0-9]/g, '');
+    }
+
     // Filter out only the fields that are allowed and provided in req.body
     const queryFields = [];
     const queryValues = [];
@@ -205,6 +219,13 @@ router.post('/profile/edit', verifyToken, async (req, res) => {
         queryValues.push(req.body[field]);
       }
     });
+
+    // Handle password change separately — hash before storing
+    if (req.body.password && isEditable) {
+      const hashedPassword = await bcrypt.hash(req.body.password, config.bcrypt.saltRounds);
+      queryFields.push('password = ?');
+      queryValues.push(hashedPassword);
+    }
 
     // Ensure there's something to update
     if (queryFields.length === 0) {

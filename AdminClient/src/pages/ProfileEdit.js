@@ -57,7 +57,11 @@ function ProfileEdit() {
 
   // Keep values in sync with form values
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value: initialValue } = e.target;
+    // Username: lowercase alphanumeric only (same rule as Signup)
+    const value = name === 'username'
+      ? initialValue.toLowerCase().replace(/[^a-z0-9]/g, '')
+      : initialValue;
     setProfile(prevState => ({ ...prevState, [name]: value }));
   };
 
@@ -101,8 +105,11 @@ function ProfileEdit() {
   };
 
   // Check if required fields are filled
-  const requiredFields = ['firstname', 'lastname', 'email'];
+  const requiredFields = ['username', 'firstname', 'lastname', 'email'];
   const isFormValid = requiredFields.every(field => profile[field]);
+  // Check if the profile has all fields needed for a complete profile
+  const completeProfileFields = ['username', 'firstname', 'lastname', 'email', 'location'];
+  const isProfileIncomplete = completeProfileFields.some(field => !profile[field]);
   const Required = () => <span className="required">*</span>;
   
   //
@@ -130,6 +137,9 @@ function ProfileEdit() {
         <div className="display-box">
           <form onSubmit={handleSubmit}>
             <h2 className='title'>Edit Profile</h2>
+            {isProfileIncomplete && (
+              <p className="notice">Please complete your profile.</p>
+            )}
             {profile.username !== undefined && (
               <div>
                 <label className="form-label" htmlFor="username">Username:</label>
