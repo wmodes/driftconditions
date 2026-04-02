@@ -30,35 +30,29 @@ export const useAuthCheckAndNavigate = (context) => {
 
   useEffect(() => {
     const performAuthCheck = async () => {
-      const noAuthPages = ['error', 'notauth', 'homepage', 'signup', 'signin'];
+      const noAuthPages = ['error', 'notauth', 'homepage', 'signup', 'signin', 'forgotpassword', 'resetpassword', 'howitworks'];
+      const isPublicPage = noAuthPages.includes(context.toLowerCase());
 
-      // Check and allow public pages without requiring re-authentication
-      if (noAuthPages.includes(context.toLowerCase())) {
-        if (!authChecked) dispatch(setAuthChecked({ authChecked: true }));
-        return;
-      }
-
-      // For protected pages, verify session if authChecked is false
       if (!authChecked) {
         try {
           const actionResult = await dispatch(checkPageAuth({ context }));
           const result = actionResult.payload;
 
-          if (result.error) {
-            if (result.error.reason === "not_authenticated") {
-              dispatch(setAuthChecked({ authChecked: false }));
-              navigate('/signin');
-            } else if (result.error.reason === "not_authorized") {
-              dispatch(setAuthChecked({ authChecked: false }));
-              navigate('/notauth');
+          if (result && result.error) {
+            // Only redirect on auth failure for protected pages
+            if (!isPublicPage) {
+              if (result.error.reason === "not_authenticated") {
+                navigate('/signin');
+              } else if (result.error.reason === "not_authorized") {
+                navigate('/notauth');
+              }
             }
-          } else {
-            dispatch(setAuthChecked({ authChecked: true }));
           }
         } catch (error) {
           console.error("Auth check failed:", error);
-          dispatch(setAuthChecked({ authChecked: false }));
-          navigate('/signin');
+          if (!isPublicPage) navigate('/signin');
+        } finally {
+          dispatch(setAuthChecked({ authChecked: true }));
         }
       }
     };
