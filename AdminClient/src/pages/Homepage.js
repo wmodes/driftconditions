@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useOutletContext, Link } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import FeatherIcon from 'feather-icons-react';
 import Playlist from '../components/Playlist';
 import { 
@@ -16,6 +17,7 @@ const Homepage = () => {
   const location = getLocation();
 
   const { togglePlayer, isPlaying } = useOutletContext();
+  const user = useSelector(state => state.auth.user);
 
   useEffect(() => {
     // Assuming generateRandomTexts is a function that accepts projectName and returns an array of text strings
@@ -74,12 +76,13 @@ const Homepage = () => {
                 </p>
                 <p>
                   You have audio you think would fit {projectName}? <Link  className="link" to="/signup">Signup for an account,</Link> and then{' '}
-                  <a  className="link" target="_new" href="mailto:info@driftconditions.org?subject=please%20promote%20me%20to%20a%20contributor">
+                  <a className="link" target="_blank" rel="noopener noreferrer"
+                    href={`mailto:info@driftconditions.org?subject=Please%20promote%20me%20to%20a%20contributor${user?.username ? `&body=My%20user%20name%20is%20${encodeURIComponent(user.username)}` : ''}`}>
                     hit us up
                   </a>.
                 </p>
                 <p className="contact">
-                  Need to reach us for some other reason? <Link className="link"                 to="mailto:info@driftconditions.org">Okay.</Link>
+                  Need to reach us for some other reason? <a className="link" href="mailto:info@driftconditions.org" target="_blank" rel="noopener noreferrer">Okay.</a>
                 </p>
               </div>
             </div> {/* end narrative-wrapper */}
