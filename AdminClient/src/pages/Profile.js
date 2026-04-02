@@ -81,7 +81,10 @@ function Profile() {
           <div className='flex items-center'>
             <div className='flex-shrink-0'>
               <div className='avatar'>
-                <FeatherIcon icon="user" />
+                {profile.avatar_url
+                  ? <img src={profile.avatar_url} alt="avatar" referrerPolicy="no-referrer" />
+                  : <FeatherIcon icon="user" />
+                }
               </div>
             </div>
             <div className='flex-grow ml-4 text-center'>

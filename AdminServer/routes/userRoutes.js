@@ -381,13 +381,13 @@ const getAllowedFields = (permissions, requestingUsername, targetUsername) => {
   switch (lookupStatus) {
     case "extended":
       // Return everything except password, adding 'editable' field
-      return ['userID', 'username', 'status', 'email', 'firstname', 'lastname', 'email', 'url', 'bio', 'location', 'roleName', 'addedOn', 'editable'];
+      return ['userID', 'username', 'status', 'email', 'firstname', 'lastname', 'email', 'url', 'bio', 'location', 'roleName', 'addedOn', 'avatar_url', 'editable'];
     case "self":
       // Return everything except password, and replacing roleName with roleNameShow, adding 'editable' field
-      return ['userID', 'username', 'statusShow', 'email', 'firstname', 'lastname', 'email', 'url', 'bio', 'location', 'roleNameShow', 'addedOn', 'editable'];
+      return ['userID', 'username', 'statusShow', 'email', 'firstname', 'lastname', 'email', 'url', 'bio', 'location', 'roleNameShow', 'addedOn', 'avatar_url', 'editable'];
     case "basic":
     default:
-      return ['userID', 'username', 'firstname', 'lastname', 'url', 'bio', 'location', 'roleNameShow', 'addedOn'];
+      return ['userID', 'username', 'firstname', 'lastname', 'url', 'bio', 'location', 'roleNameShow', 'addedOn', 'avatar_url'];
   }
 };
 

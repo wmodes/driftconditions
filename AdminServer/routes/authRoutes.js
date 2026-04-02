@@ -388,7 +388,7 @@ router.get('/callback/:provider', async (req, res) => {
     res.clearCookie('oauth_state', { path: '/', sameSite: 'Lax', secure: true });
 
     // 2. Exchange code for profile — provider-specific
-    let oauthId, email, displayName;
+    let oauthId, email, displayName, avatarUrl;
 
     if (provider === 'google') {
       const { discovery, authorizationCodeGrant } = await import('openid-client');
@@ -400,6 +400,7 @@ router.get('/callback/:provider', async (req, res) => {
       oauthId = String(claims.sub);
       email = claims.email;
       displayName = claims.name || email.split('@')[0];
+      avatarUrl = claims.picture || null;
 
     } else if (provider === 'github') {
       const code = req.query.code;
@@ -419,6 +420,7 @@ router.get('/callback/:provider', async (req, res) => {
       const ghUser = await userRes.json();
       oauthId = String(ghUser.id);
       displayName = ghUser.name || ghUser.login;
+      avatarUrl = ghUser.avatar_url || null;
 
       // GitHub may not return email publicly — fetch verified emails
       if (ghUser.email) {
@@ -466,6 +468,10 @@ router.get('/callback/:provider', async (req, res) => {
       // global_name is the display name, username is the handle
       displayName = discordUser.global_name || discordUser.username;
       email = discordUser.email;
+      // Discord avatar URL is constructed from user ID and avatar hash
+      avatarUrl = discordUser.avatar
+        ? `https://cdn.discordapp.com/avatars/${discordUser.id}/${discordUser.avatar}.png`
+        : null;
     }
 
     logger.debug(`authRoutes:/callback: provider=${provider}, email=${email}, oauthId=${oauthId}`);
@@ -520,8 +526,8 @@ router.get('/callback/:provider', async (req, res) => {
         const passwordPlaceholder = crypto.randomBytes(32).toString('hex');
 
         const [insertResult] = await db.query(
-          'INSERT INTO users (username, password, email, firstname, lastname, displayName, lastLoginAt) VALUES (?, ?, ?, ?, ?, ?, NOW())',
-          [username, passwordPlaceholder, email, firstname, lastname, displayName]
+          'INSERT INTO users (username, password, email, firstname, lastname, displayName, avatar_url, lastLoginAt) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())',
+          [username, passwordPlaceholder, email, firstname, lastname, displayName, avatarUrl]
         );
         user = { userID: insertResult.insertId, username, roleName: 'user' };
         await db.query(
@@ -532,8 +538,8 @@ router.get('/callback/:provider', async (req, res) => {
       }
     }
 
-    // 4. Update lastLoginAt
-    await db.query('UPDATE users SET lastLoginAt = NOW() WHERE userID = ?', [user.userID]);
+    // 4. Update lastLoginAt and avatar (last login wins — provider may have changed)
+    await db.query('UPDATE users SET lastLoginAt = NOW(), avatar_url = ? WHERE userID = ?', [avatarUrl, user.userID]);
 
     // 5. Fetch role permissions
     const [roleRows] = await db.query(
