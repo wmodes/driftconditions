@@ -13,88 +13,64 @@ const HowItWorks = () => {
             <div className="newspaper-columns">
 
               <section className='minor-section keep-together'>
-                <h3 className='title'>Welcome to an Immersive Auditory Experience</h3>
+                <h3 className='title'>The Accident</h3>
                 <p>
-                  Welcome to an immersive auditory experience that captures the chaos and serendipity of late-night radio tuning. Imagine stumbling upon a hidden world of overlapping fragmented stories, ambient sounds, and mysterious crosstalk, where each listening session offers a fresh journey through an evocative and unpredictable sonic landscape.
+                  Late one night in the early oughts, I was driving home from my radio show — a late-night aural collage of music, story, and found sound — when I stumbled across something strange on the dial. Someone was layering a sermon with BBC news, lacing it with static, the whole thing drifting in and out. I pulled over on a dark mountain highway to listen. Eventually I lost the signal. When I tuned back in, I realized I'd been parked between two stations the whole time, and the gorgeous mess had been an accident. That's when I asked: if something this beautiful can happen by accident, can you make it happen on purpose?
                 </p>
-              </section>
-
-              <section className='minor-section'>
-                <div className='keep-together'>
-                  <h3 className='title'>The Magic of Procedural Generation</h3>
-                  <p>
-                    The magic lies in its ability to generate this unique experience on the fly, relying on a sophisticated system that combines human creativity with algorithmic precision. Behind the scenes, users can contribute and edit audio recipes. These recipes are like blueprints for the soundscapes you hear, specifying how different audio clips should be combined and processed.
-                  </p>
-                </div>
-                <figure>
-                  <img src="/img/figures/sample-audio.png" alt="A sample audio clip" />
-                  <figcaption>A sample audio clip submitted by a user.</figcaption>
-                </figure>
-              </section>
-
-              <section className='minor-section'>
-                <div className='keep-together'>
-                  <h3 className='title'>Creating the Audio Feed</h3>
-                  <p>
-                    The real magic happens when these recipes are used to construct the audio feed. Picture a multi-track editing software where each track contains one or more clips. Attributes of each track and clip—such as classification, tags, and length—help the system pick clips that fit together harmoniously. This ensures that every broadcast is a seamless blend of sounds that loosely match the intended style and mood.
-                  </p>
-                </div>
-                <figure>
-                  <img src="/img/figures/sample-recipe.png" alt="A sample recipe" />
-                  <figcaption>A sample recipe written in JSON5 format specifies the details of each track and clip including type, tags, length, and effects.</figcaption>
-                </figure>
               </section>
 
               <section className='minor-section keep-together'>
-                <h3 className='title'>Ever-Evolving Soundscapes</h3>
+                <h3 className='title'>Organized Chaos</h3>
                 <p>
-                  The system maintains its ever-evolving tapestry of audio by relying heavily on procedural generation. For instance, the name of each session, the hero image, and even the descriptive text on the homepage are generated anew each time you visit. This approach mirrors the unpredictability of real-world radio interference, where the boundaries between intention and happenstance blur, creating a dynamic and captivating listening experience.
+                  DriftConditions is built around one idea: that a system given the right materials and rules can generate something that feels discovered rather than made. Every session is assembled fresh — different clips, different combinations, different collisions. The content is contributed by people, but the experience is conjured by the machine. The boundary between intention and accident is exactly where we want to be.
                 </p>
               </section>
 
-              <section className='minor-section'>
-                <div className='keep-together'>
-                  <h3 className='title'>Dynamic Audio Effects</h3>
-                  <p>
-                    As you listen, you might notice the audio stream fading in and out with different sources. This effect is achieved through a technique similar to Perlin noise, a type of coherent noise used in computer graphics to create natural-looking textures. This technique helps modulate various audio effects, creating a sound that is both unpredictable and harmoniously pleasing.
-                  </p>
-                </div>
-                <figure>
-                  <img src="/img/figures/noise-graphs.png" alt="Graph of harmonic cascade" />
-                  <figcaption>Harmonic cascade simulating coherent noise to control the amplitude of a clip or track.</figcaption>
-                </figure>
-              </section>
+              <figure>
+                <img src="/img/figures/sample-audio.png" alt="A sample audio clip" />
+                <figcaption>A sample audio clip submitted by a user.</figcaption>
+              </figure>
 
-              <section className='minor-section'>
-                <div className='keep-together'>
-                  <h3 className='title'>Behind the Scenes</h3>
-                  <p>
-                    Several components work together to bring this experience to life. A user-friendly interface allows users to upload and manage clips, and create and edit recipes. A backend server supports these admin functions, ensuring smooth operation and content management. The real powerhouse, called the MixEngine, generates the audio mixes based on the recipes and randomly selected clips. Finally, a streaming component assembles these mixes into a continuous audio stream, delivering the seamless and immersive experience you enjoy.
-                  </p>
-                </div>
-                <figure>
-                  <img src="/img/figures/mixing-console.webp" alt="Mixing console" />
-                  <figcaption>MixEngine dynamically combines user-contributed audio clips, recipes, and effects to create a seamless and ever-evolving audio stream.</figcaption>
-                </figure>
-              </section>
-
-              <section className='minor-section'>
-                <div className='keep-together'>
-                  <h3 className='title'>User Contribution</h3>
-                  <p>
-                    The station relies on user audio contributions. Do you have audio that you think would fit perfectly within the unique soundscape of the station? We welcome your contributions. By <Link  className="link" to="/signup">signing up for an account</Link> and letting us know you would like to be a contributor, you can upload your own audio clips and participate in creating the ever-evolving auditory experience. Once you've signed up, <a className="link" target="_new" href="mailto:info@driftconditions.org?subject=please%20promote%20me%20to%20a%20contributor">reach out to us to get started.</a> Your input helps shape the dynamic and immersive environment that makes the station so special.
-                  </p>
-                </div>
-
+              <section className='minor-section keep-together'>
+                <h3 className='title'>The Blueprints</h3>
                 <p>
-                  When submitting audio, we ask users to certify that their contributions contain no copyrighted works for which they do not have the right to use. We appreciate the use of public domain materials, creative commons licensed content, or other works for which users have clear rights. User contributions help enrich the station's unique soundscape while respecting the work of other artists.
+                  Contributors write recipes: blueprints in JSON5 format that describe the structure of a mix. Each recipe contains multiple tracks; each track specifies one or more clips along with attributes like type, tags, length, and effects. The system draws from thousands of user-contributed clips — ranging from a few seconds to over an hour — pulling matches from the library and assembling them into something coherent. No two sessions are alike, but they hang together — the way a late-night radio show does, even when it's strange.
                 </p>
               </section>
 
-              <section className='minor-section keep-together'>                
-                <h3 className='title'>Join the Journey</h3>
+              <figure>
+                <img src="/img/figures/sample-recipe.png" alt="A sample recipe" />
+                <figcaption>A sample recipe written in JSON5 format specifies the details of each track and clip including type, tags, length, and effects.</figcaption>
+              </figure>
+
+              <section className='minor-section keep-together'>
+                <h3 className='title'>Under the Hood</h3>
                 <p>
-                  Every time you tune in, you embark on a new auditory journey. The overlapping stories, ambient sounds, and mysterious whispers create a rich and immersive listening experience that challenges traditional narrative structures. Whether you're seeking a soothing background ambiance or an intriguing auditory adventure, the station offers a unique and magical escape into a world of sound.
+                  The MixEngine is the heart of the system. It reads a recipe, selects clips from the database, applies effects, and renders a mix. A streaming component takes those mixes and assembles them into the continuous feed you're hearing. A separate admin interface — the one you're in right now — lets contributors upload audio, manage clips, and write and edit recipes. Somewhere between these moving parts, the station finds its sound.
+                </p>
+              </section>
+
+              <figure>
+                <img src="/img/figures/mixing-console.webp" alt="Mixing console" />
+                <figcaption>MixEngine dynamically combines user-contributed audio clips, recipes, and effects to create a seamless and ever-evolving audio stream.</figcaption>
+              </figure>
+
+              <section className='minor-section keep-together'>
+                <h3 className='title'>The Drift</h3>
+                <p>
+                  That sense of something new emerging from unlikely combinations — a voice you don't recognize over a sound you almost do — that's the heart of it. The system pulls clips from across the library, matches them against the recipe's loose constraints, and layers them into something none of the contributors could have predicted. And layered over all of it, coherent noise — borrowed from computer graphics — breathes life into the mix, modulating volume, triggering and releasing effects, shaping the texture of each track over time. The result feels less like playback and more like something happening right now, for the first time — the way a signal sounds when it's drifting just at the edge of reception.
+                </p>
+              </section>
+
+              <figure>
+                <img src="/img/figures/noise-graphs.png" alt="Graph of harmonic cascade" />
+                <figcaption>Harmonic cascade simulating coherent noise to control the amplitude of a clip or track.</figcaption>
+              </figure>
+
+              <section className='minor-section keep-together'>
+                <h3 className='title'>Join In</h3>
+                <p>
+                  The station runs on what people bring to it. If you have audio that might fit — field recordings, spoken word, found sound, ambient texture — we'd love to hear from you. <Link className="link" to="/signup">Sign up for an account</Link> and reach out to let us know you'd like to contribute. Once we've set you up, you can upload clips and start contributing to the library. We ask that everything be free of copyright you don't hold — public domain, Creative Commons, or your own original work. The station lives in that space where interesting things happen, and we'd like to keep it there.
                 </p>
               </section>
 
@@ -102,7 +78,6 @@ const HowItWorks = () => {
           </div>
         </div>
       </div>
-
     );
 }
 
