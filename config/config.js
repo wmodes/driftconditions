@@ -144,17 +144,17 @@ const config = {
   google: {
     clientId: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackUrl: 'https://localhost:8080/api/auth/callback/google',
+    callbackUrl: process.env.GOOGLE_CALLBACK_URL || 'https://localhost:8080/api/auth/callback/google',
   },
   github: {
     clientId: process.env.GITHUB_CLIENT_ID,
     clientSecret: process.env.GITHUB_CLIENT_SECRET,
-    callbackUrl: 'https://localhost:8080/api/auth/callback/github',
+    callbackUrl: process.env.GITHUB_CALLBACK_URL || 'https://localhost:8080/api/auth/callback/github',
   },
   discord: {
     clientId: process.env.DISCORD_CLIENT_ID,
     clientSecret: process.env.DISCORD_CLIENT_SECRET,
-    callbackUrl: 'https://localhost:8080/api/auth/callback/discord',
+    callbackUrl: process.env.DISCORD_CALLBACK_URL || 'https://localhost:8080/api/auth/callback/discord',
   },
   client: {
     url: process.env.CLIENT_URL,
