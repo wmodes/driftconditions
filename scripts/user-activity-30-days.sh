@@ -32,13 +32,9 @@ echo "  USER ACTIVITY REPORT — last ${DAYS} days (since ${SINCE_DATE%% *})"
 echo "================================================================"
 echo
 
-# ── NOTE ON DATA AVAILABILITY ───────────────────────────────────────────────
-# journald does not persist logs across restarts unless configured to do so.
-# Log-based metrics below only cover the period since the last service restart.
 LOG_SINCE=$(echo "$LOGS" | head -1 | awk '{print $1, $2, $3}')
 echo "  DB data:  last ${DAYS} days"
-echo "  Log data: since last restart (${LOG_SINCE:-unknown})"
-echo "  (configure journald Storage=persistent for full history)"
+echo "  Log data: since ${LOG_SINCE:-unknown}"
 echo
 
 # ── UNIQUE USERS ─────────────────────────────────────────────────────────────
