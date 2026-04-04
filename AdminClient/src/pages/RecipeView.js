@@ -58,6 +58,7 @@ function RecipeView() {
       <div className="breadcrumb-box">
         <ul className="breadcrumb">
           <li className="link"><Link to="/recipe/list">List</Link></li>
+          <li className="link"><Link to="/recipe/create">Add New</Link></li>
           <li className="link"><Link to={'/recipe/edit/' + recipeID}>Edit</Link></li>
         </ul> 
       </div>
@@ -65,11 +66,11 @@ function RecipeView() {
   };
 
   return (
-    <div className="view-wrapper">
+    <div className="edit-wrapper">
       <div className="display-box-wrapper">
         <div className="display-box">
           <h2 className='title'>View Recipe Details</h2>
-          
+          {renderBreadcrumbs()}
           <div className="form-group">
             <div className="form-row">
               <span className="form-label">Name:</span>

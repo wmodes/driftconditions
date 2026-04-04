@@ -10,7 +10,7 @@ import {
 } from '../store/audioSlice';
 import { parseQuery, stringifyQuery } from '../utils/queryUtils';
 import { renderPagination } from '../utils/listUtils'; 
-import { formatDateAsFriendlyDate, formatListAsString } from '../utils/formatUtils';
+import { formatDateAsFriendlyDate, formatListAsString, formatDuration } from '../utils/formatUtils';
 import { ReactComponent as AudioOn } from '../images/volume-animate.svg';
 
 import config from '../config/config';
@@ -286,7 +286,7 @@ function AudioList() {
                             </div>
                           )}
                         </td>
-                        <td className="duration">{parseFloat(audio.duration).toFixed(2)}s</td>
+                        <td className="duration">{formatDuration(audio.duration)}</td>
                         <td className="status">{audio.status}</td>
                         <td className="classification">{formatListAsString(audio.classification)}</td>
                         <td className="tags">{formatListAsString(audio.tags)}</td>
@@ -376,7 +376,10 @@ function AudioList() {
               <div className="bottom-controls">
                 {renderPagination(totalRecords, recordsPerPage, page, handlePageChange)}
               </div>
-              <audio className="audioPlayer" ref={audioRef} controls onEnded={() => setPlayingAudio({ ...playingAudio, playing: false })}></audio>
+              <audio className="audioPlayer" ref={audioRef} controls onEnded={() => {
+                  document.querySelectorAll('.listen button').forEach(btn => btn.classList.remove('active'));
+                  setPlayingAudio({ ...playingAudio, playing: false });
+                }}></audio>
             </div>
           ) : null}
         </div>

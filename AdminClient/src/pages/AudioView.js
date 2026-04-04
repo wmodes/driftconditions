@@ -2,12 +2,11 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { audioInfo } from '../store/audioSlice';
 import { initWaveSurfer, destroyWaveSurfer } from '../utils/waveUtils';
 
-import { formatDateAsFriendlyDate, formatListAsString } from '../utils/formatUtils';
-import FeatherIcon from 'feather-icons-react';
+import { formatDateAsFriendlyDate, formatListAsString, formatDuration } from '../utils/formatUtils';
 
 // Import the config object from the config.js file
 import config from '../config/config';
@@ -17,7 +16,6 @@ const audioBaseURL = config.adminServer.audioBaseURL;
 
 function AudioView() {
   const { audioID } = useParams();
-  const navigate = useNavigate();
   const dispatch = useDispatch();
 
   // get auth state from Redux store
@@ -118,10 +116,11 @@ function AudioView() {
   };  
 
   return ( 
-    <div className="view-wrapper">
+    <div className="edit-wrapper">
       <div className="display-box-wrapper">
         <div className="display-box">
           <h2 className='title'>View Audio Details</h2>
+          {renderBreadcrumbs()}
           <div className="form-group">
             <div className="form-row">
               <span className="form-label">Title:</span>
@@ -164,7 +163,7 @@ function AudioView() {
 
           <div className="form-group pb-2">
             <div id="waveform"></div>
-            <div className="text-sm mt-1">Duration: {record.duration}s</div>
+            <div className="text-sm mt-1">Duration: {formatDuration(record.duration)}</div>
           </div>
   
           <div className="form-group">

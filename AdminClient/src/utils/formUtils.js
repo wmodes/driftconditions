@@ -223,10 +223,8 @@ export const TagInput = ({ onTagChange, initialTags }) => {
 
   const [tags, setTags] = useState(convertedTags);
 
-  useEffect(() => {
-    // Call onTagChange with initial tags when the component mounts
-    onTagChange(ReactTagsToArray(tags));
-  }, []); // Empty dependency array to run only once on mount
+  // Intentionally not calling onTagChange on mount — the parent already has the
+  // initial tags from the fetched record, and firing here would falsely trigger unsaved changes.
 
   // make sure that when we click in the select-results div, the input field is focused
   useEffect(() => {
