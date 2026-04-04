@@ -153,10 +153,10 @@ function AudioBatchUpload() {
         uploadResults.push({ success: false });
         setUploadStatus(prevStatus => {
           const newStatus = [...prevStatus];
-          newStatus[index] = { status: 'Error', error: error.message || `Failed to upload ${file.name}.`, uploaded: false };
+          newStatus[index] = { status: 'Error', error: error || `Failed to upload ${file.name}.`, uploaded: false };
           return newStatus;
         });
-        setError(error.message || `Failed to upload ${file.name}.`);
+        setError(error || `Failed to upload ${file.name}.`);
       }
     }
 

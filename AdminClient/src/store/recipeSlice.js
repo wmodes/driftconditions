@@ -32,7 +32,7 @@ export const recipeCreate = createAsyncThunk(
       return response.data;
     } catch (error) {
       console.error('Create recipe error:', error);
-      return thunkAPI.rejectWithValue(error.message);
+      return thunkAPI.rejectWithValue(error.response?.data?.error?.message || 'Server error. Try again later.');
     }
   }
 );
@@ -53,7 +53,7 @@ export const recipeInfo = createAsyncThunk(
       return response.data;
     } catch (error) {
       console.error('Fetch recipe info error:', error);
-      return thunkAPI.rejectWithValue(error.message);
+      return thunkAPI.rejectWithValue(error.response?.data?.error?.message || 'Server error. Try again later.');
     }
   }
 );
@@ -73,7 +73,7 @@ export const recipeUpdate = createAsyncThunk(
       );
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      return rejectWithValue(error.response?.data?.error?.message || 'Server error. Try again later.');
     }
   }
 );
@@ -92,7 +92,7 @@ export const recipeList = createAsyncThunk(
       return response.data;
     } catch (error) {
       console.error('Fetch recipe list error:', error);
-      return thunkAPI.rejectWithValue(error.response.data);
+      return thunkAPI.rejectWithValue(error.response?.data?.error?.message || 'Server error. Try again later.');
     }
   }
 );
@@ -110,7 +110,7 @@ export const recipeTrash = createAsyncThunk(
       return response.data;
     } catch (error) {
       console.error('Trash recipe error:', error);
-      return thunkAPI.rejectWithValue(error.response.data);
+      return thunkAPI.rejectWithValue(error.response?.data?.error?.message || 'Server error. Try again later.');
     }
   }
 );

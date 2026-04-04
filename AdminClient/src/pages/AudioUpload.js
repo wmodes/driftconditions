@@ -152,7 +152,7 @@ function AudioUpload() {
       .catch(error => {
         setIsLoading(false); // Stop loading
         console.error("Upload error:", error);
-        setError(error.message || 'Failed to upload audio.');
+        setError(error || 'Failed to upload audio.');
       });
   };
 

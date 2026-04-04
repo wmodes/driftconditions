@@ -65,7 +65,7 @@ function RecipeCreate() {
       .catch(error => {
         setIsLoading(false); // Stop loading
         console.error('Failed to create new recipe:', error);
-        setError('Failed to create new recipe.'); // Display error message
+        setError(error || 'Failed to create new recipe.'); // Display error message
       });
   };
 

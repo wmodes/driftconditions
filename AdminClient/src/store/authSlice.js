@@ -30,7 +30,7 @@ export const signup = createAsyncThunk(signupRoute,
       );
       return response.data;
     } catch (error) {
-      return thunkAPI.rejectWithValue(error.message);  
+      return thunkAPI.rejectWithValue(error.response?.data?.error?.message || 'Server error. Try again later.');
     }
   }
 );

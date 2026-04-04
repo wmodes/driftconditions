@@ -43,7 +43,7 @@ export const audioUpload = createAsyncThunk(
       return response.data;
     } catch (error) {
       console.error('Upload error:', error);
-      return thunkAPI.rejectWithValue(error.message);
+      return thunkAPI.rejectWithValue(error.response?.data?.error?.message || 'Server error. Try again later.');
     }
   }
 );
@@ -65,7 +65,7 @@ export const audioInfo = createAsyncThunk(
       return response.data;
     } catch (error) {
       console.error('Fetch audio info error:', error);
-      return thunkAPI.rejectWithValue(error.message);
+      return thunkAPI.rejectWithValue(error.response?.data?.error?.message || 'Server error. Try again later.');
     }
   }
 );
@@ -86,7 +86,7 @@ export const audioUpdate = createAsyncThunk(
       );
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      return rejectWithValue(error.response?.data?.error?.message || 'Server error. Try again later.');
     }
   }
 );
@@ -105,7 +105,7 @@ export const audioList = createAsyncThunk(
       return response.data; 
     } catch (error) {
       console.error('Fetch audio list error:', error);
-      return thunkAPI.rejectWithValue(error.response.data);
+      return thunkAPI.rejectWithValue(error.response?.data?.error?.message || 'Server error. Try again later.');
     }
   }
 );
@@ -123,7 +123,7 @@ export const audioTrash = createAsyncThunk(
       return response.data;
     } catch (error) {
       console.error('Trash audio error:', error);
-      return thunkAPI.rejectWithValue(error.response.data);
+      return thunkAPI.rejectWithValue(error.response?.data?.error?.message || 'Server error. Try again later.');
     }
   }
 );

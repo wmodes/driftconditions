@@ -31,17 +31,11 @@ export const profileInfo = createAsyncThunk(
         {username}, 
         {withCredentials: true}
       );
-      if (response.data.success) {
-        return response.data;
-      } else {
-        // Assuming your API consistently returns a success flag and a message in cases of failure
-        return thunkAPI.rejectWithValue(response.data.message);
-      }
+      return response.data;
     } catch (error) {
       console.error('Fetch profile error:', error);
       // Assuming your API error responses are structured in a certain way
-      const message = error.response?.data?.message || error.message;
-      return thunkAPI.rejectWithValue(message);
+      return thunkAPI.rejectWithValue(error.response?.data?.error?.message || 'Server error. Try again later.');
     }
   }
 );
@@ -58,7 +52,7 @@ export const profileEdit = createAsyncThunk(
       );
       return response.data;
     } catch (error) {
-      return thunkAPI.rejectWithValue(error.response?.data || error.message);
+      return thunkAPI.rejectWithValue(error.response?.data?.error?.message || 'Server error. Try again later.');
     }
   }
 );
@@ -77,7 +71,7 @@ export const userList = createAsyncThunk(
       return response.data; 
     } catch (error) {
       console.error('Fetch user list error:', error);
-      return thunkAPI.rejectWithValue(error.response.data);
+      return thunkAPI.rejectWithValue(error.response?.data?.error?.message || 'Server error. Try again later.');
     }
   }
 );
@@ -96,7 +90,7 @@ export const roleList = createAsyncThunk(
       return response.data; 
     } catch (error) {
       console.error('Fetch role list error:', error);
-      return thunkAPI.rejectWithValue(error.response.data);
+      return thunkAPI.rejectWithValue(error.response?.data?.error?.message || 'Server error. Try again later.');
     }
   }
 );
@@ -112,7 +106,7 @@ export const roleUpdate = createAsyncThunk(
     );
     return response.data;
   } catch (error) {
-    return thunkAPI.rejectWithValue(error.response?.data?.error || error.message);
+    return thunkAPI.rejectWithValue(error.response?.data?.error?.message || 'Server error. Try again later.');
   }
 });
 
@@ -129,7 +123,7 @@ export const userDisable = createAsyncThunk(
       return response.data;
     } catch (error) {
       console.error('Disable user error:', error);
-      return thunkAPI.rejectWithValue(error.response.data);
+      return thunkAPI.rejectWithValue(error.response?.data?.error?.message || 'Server error. Try again later.');
     }
   }
 );

@@ -22,7 +22,7 @@ const jwtSecretKey = config.authToken.jwtSecretKey;
 router.post('/info', verifyToken, async (req, res) => {
   const { recipeID } = req.body;
   if (!recipeID) {
-    return res.status(400).send('Recipe ID is required');
+    return res.status(400).json({ error: { message: 'Recipe ID is required.' } });
   }
   try {
     const query = `
@@ -38,7 +38,7 @@ router.post('/info', verifyToken, async (req, res) => {
     
     const [result] = await db.query(query, values);
     if (result.length === 0) {
-      return res.status(404).send('Recipe not found');
+      return res.status(404).json({ error: { message: 'Recipe not found.' } });
     }
     record = result[0];
     // Attempt to repair broken JSON fields (recipeData, classification, tags)
@@ -49,7 +49,7 @@ router.post('/info', verifyToken, async (req, res) => {
     res.status(200).json(record);
   } catch (error) {
     logger.error(`recipeRoutes:/info: Error fetching recipe info: ${error}`);
-    res.status(500).send('Server error during recipe info retrieval');
+    res.status(500).json({ error: { message: 'Server error. Try again later.' } });
   }
 });
 
@@ -136,7 +136,7 @@ router.post('/list', verifyToken, async (req, res) => {
     });
   } catch (error) {
     logger.error(`recipeRoutes:/list: Error listing recipes: ${error}`);
-    res.status(500).send('Server error during recipe list retrieval');
+    res.status(500).json({ error: { message: 'Server error. Try again later.' } });
   }
 });
 
@@ -173,7 +173,7 @@ router.post('/create', verifyToken, async (req, res) => {
     });
   } catch (error) {
     logger.error(`recipeRoutes:/create: Error creating new recipe: ${error}`);
-    res.status(500).send('Server error during recipe creation');
+    res.status(500).json({ error: { message: 'Server error. Try again later.' } });
   }
 });
 
@@ -186,7 +186,7 @@ router.post('/update', verifyToken, async (req, res) => {
   const editorID = decoded.userID;
 
   if (!record.recipeID) {
-    return res.status(400).send('Recipe ID is required for update.');
+    return res.status(400).json({ error: { message: 'Recipe ID is required for update.' } });
   }
   try {
     const query = `UPDATE recipes SET
@@ -215,12 +215,12 @@ router.post('/update', verifyToken, async (req, res) => {
 
     const [result] = await db.query(query, values);
     if (result.affectedRows === 0) {
-      return res.status(404).send('Recipe not found or no update was made');
+      return res.status(404).json({ error: { message: 'Recipe not found or no update was made.' } });
     }
     res.status(200).json({ message: 'Recipe updated successfully' });
   } catch (error) {
     logger.error(`recipeRoutes:/update: Server error during recipe update: ${error}`);
-    res.status(500).send('Server error');
+    res.status(500).json({ error: { message: 'Server error. Try again later.' } });
   }
 });
 
@@ -229,19 +229,19 @@ router.post('/update', verifyToken, async (req, res) => {
 router.post('/trash', verifyToken, async (req, res) => {
   const { recipeID } = req.body;
   if (!recipeID) {
-    return res.status(400).send('Recipe ID is required');
+    return res.status(400).json({ error: { message: 'Recipe ID is required.' } });
   }
   try {
     const query = `UPDATE recipes SET status = 'Trashed' WHERE recipeID = ?`;
     const values = [recipeID];
     const [result] = await db.query(query, values);
     if (result.affectedRows === 0) {
-      return res.status(404).send('Recipe not found');
+      return res.status(404).json({ error: { message: 'Recipe not found.' } });
     }
     res.status(200).json({ message: 'Recipe deleted successfully' });
   } catch (error) {
     logger.error(`recipeRoutes:/trash: Error trashing recipe: ${error}`);
-    res.status(500).send('Server error during recipe trashing');
+    res.status(500).json({ error: { message: 'Server error. Try again later.' } });
   }
 });
 

@@ -30,7 +30,7 @@ router.post('/list', verifyToken, async (req, res) => {
   try {
     const requestingUserInfo = getRequestingUserInfo(req);
     if (!hasPermission(requestingUserInfo, 'userList')) {
-      return res.status(403).send('Permission denied');
+      return res.status(403).json({ error: { message: 'Permission denied.' } });
     }
 
     var sortArg = req.body.sort || 'user';
@@ -100,7 +100,7 @@ router.post('/list', verifyToken, async (req, res) => {
     });
   } catch (error) {
     logger.error(`userRoutes:/list: Error listing users: ${error}`);
-    res.status(500).send('Server error during user list retrieval');
+    res.status(500).json({ error: { message: 'Server error. Try again later.' } });
   }
 });
 
@@ -116,7 +116,7 @@ router.post('/profile', async (req, res) => {
   try {
     const requestingUserInfo = getRequestingUserInfo(req);
     if (!hasPermission(requestingUserInfo, 'profile')) {
-      return res.status(403).send('Permission denied');
+      return res.status(403).json({ error: { message: 'Permission denied.' } });
     }
 
     // Get the username from the requesting user's information
@@ -135,7 +135,7 @@ router.post('/profile', async (req, res) => {
     let userInfo = await getUserInfo({ username: targetUsername });
     logger.debug(`userRoutes:/profile: userInfo: ${JSON.stringify(userInfo, null, 2)}`);
     if (!userInfo) {
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res.status(404).json({ error: { message: 'User not found.' } });
     }
 
     // Create copies of immutable fields
@@ -159,7 +159,7 @@ router.post('/profile', async (req, res) => {
   } catch (error) {
     // Log the error and respond with a server error status
     logger.error(`userRoutes:/profile: Error in profile route: ${error}`);
-    res.status(500).json({ success: false, message: "Server error" });
+    res.status(500).json({ error: { message: 'Server error. Try again later.' } });
   }
 });
 
@@ -176,7 +176,7 @@ router.post('/profile/edit', verifyToken, async (req, res) => {
   try {
     const requestingUserInfo = getRequestingUserInfo(req);
     if (!hasPermission(requestingUserInfo, 'profileEdit')) {
-      return res.status(403).send('Permission denied');
+      return res.status(403).json({ error: { message: 'Permission denied.' } });
     }
 
     // Get the username from the requesting user's information
@@ -198,10 +198,10 @@ router.post('/profile/edit', verifyToken, async (req, res) => {
 
     // Prevent blanking required fields
     if (req.body.username !== undefined && req.body.username.trim() === '') {
-      return res.status(400).send('Username cannot be blank');
+      return res.status(400).json({ error: { message: 'Username cannot be blank.' } });
     }
     if (req.body.email !== undefined && req.body.email.trim() === '') {
-      return res.status(400).send('Email cannot be blank');
+      return res.status(400).json({ error: { message: 'Email cannot be blank.' } });
     }
 
     // Sanitize username: lowercase alphanumeric only (same rule as signup form)
@@ -229,7 +229,7 @@ router.post('/profile/edit', verifyToken, async (req, res) => {
 
     // Ensure there's something to update
     if (queryFields.length === 0) {
-      return res.status(400).send('No valid fields provided for update');
+      return res.status(400).json({ error: { message: 'No valid fields provided for update.' } });
     }
 
     // Add the userID to the values array
@@ -248,16 +248,16 @@ router.post('/profile/edit', verifyToken, async (req, res) => {
     const [result] = await db.query(query, queryValues);
     if (!result.affectedRows) {
       logger.error('userRoutes:/edit: Error updating user profile: No rows affected');
-      res.status(500).send('Error updating user profile');
+      res.status(500).json({ error: { message: 'Error updating user profile.' } });
     } else {
       res.status(200).send({ message: 'Profile updated successfully' });
     }
   } catch (error) {
     if (error.code === 'ER_DUP_ENTRY') {
-      return res.status(409).send('Username already taken');
+      return res.status(409).json({ error: { message: 'Username already taken.' } });
     }
     logger.error(`userRoutes:/edit: Update failed: ${error}`);
-    res.status(500).send('Server error');
+    res.status(500).json({ error: { message: 'Server error. Try again later.' } });
   }
 });
 
@@ -269,25 +269,25 @@ router.post('/profile/edit', verifyToken, async (req, res) => {
 router.post('/disable', verifyToken, async (req, res) => {
   const requestingUserInfo = getRequestingUserInfo(req);
   if (!hasPermission(requestingUserInfo, 'userEdit')) {
-    return res.status(403).send('Permission denied');
+    return res.status(403).json({ error: { message: 'Permission denied.' } });
   }
 
   const { userID } = req.body;
   logger.debug(`userRoutes:/disable: userID: ${userID}`);
   if (!userID) {
-    return res.status(400).send('User ID is required');
+    return res.status(400).json({ error: { message: 'User ID is required.' } });
   }
   try {
     const query = `UPDATE users SET status = 'Disabled' WHERE userID = ?`;
     const values = [userID];
     const [result] = await db.query(query, values);
     if (result.affectedRows === 0) {
-      return res.status(404).send('User not found');
+      return res.status(404).json({ error: { message: 'User not found.' } });
     }
     res.status(200).json({ message: 'User disabled successfully' });
   } catch (error) {
     logger.error(`userRoutes:/disable: Error disabling user: ${error}`);
-    res.status(500).send('Server error during user disabling');
+    res.status(500).json({ error: { message: 'Server error. Try again later.' } });
   }
 });
 

@@ -47,7 +47,7 @@ function RecipeView() {
       })
       .catch(err => {
         console.error('Error fetching recipe details:', err);
-        setError('Failed to fetch recipe details.');
+        setError(err || 'Failed to fetch recipe details.');
         setIsLoading(false); // Stop loading on error
       });
   }, [recipeRecord, recipeID, dispatch]);

@@ -18,7 +18,7 @@ function UserDownload() {
       })
       .catch(error => {
         console.error("Error fetching user list:", error);
-        setError('Failed to fetch user list.');
+        setError(error || 'Failed to fetch user list.');
       });
   }, [dispatch]);
 

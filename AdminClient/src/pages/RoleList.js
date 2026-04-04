@@ -41,7 +41,7 @@ function RolesList() {
       })
       .catch(error => {
         console.error("Error fetching roles list:", error);
-        setError(error.message || 'Failed to fetch roles');
+        setError(error || 'Failed to fetch roles.');
         setIsLoading(false);
       });
   }, [dispatch, updateTrigger]);
@@ -72,7 +72,7 @@ function RolesList() {
       })
       .catch(error => {
         console.error("Error updating role:", error);
-        setError(error.message || 'Failed to update role');
+        setError(error || 'Failed to update role.');
       });
 };
 

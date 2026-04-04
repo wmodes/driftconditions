@@ -65,7 +65,7 @@ function AudioView() {
       })
       .catch(err => {
         console.error('Error fetching audio details:', err);
-        setError('Failed to fetch audio details.');
+        setError(err || 'Failed to fetch audio details.');
         setIsLoading(false); // Stop loading on error
       });
   }, [audioID, dispatch]);

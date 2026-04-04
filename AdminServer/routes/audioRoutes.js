@@ -140,7 +140,7 @@ router.post('/list', verifyToken, async (req, res) => {
     });
   } catch (error) {
     logger.error(`audioRoutes:/list: Error listing audio files: ${error}`);
-    res.status(500).send('Server error during audio list retrieval');
+    res.status(500).json({ error: { message: 'Server error. Try again later.' } });
   }
 });
 
@@ -149,7 +149,7 @@ router.post('/list', verifyToken, async (req, res) => {
 router.post('/info', verifyToken, async (req, res) => {
   const { audioID } = req.body;
   if (!audioID) {
-    return res.status(400).send('Audio ID is required');
+    return res.status(400).json({ error: { message: 'Audio ID is required.' } });
   }
   try {
     // Verify token and get userID (optional for this route, depending on your security model)
@@ -170,7 +170,7 @@ router.post('/info', verifyToken, async (req, res) => {
 
     const [result] = await db.query(query, values);
     if (result.length === 0) {
-      return res.status(404).send('Audio not found');
+      return res.status(404).json({ error: { message: 'Audio not found.' } });
     }
     // Repair broken JSON fields
     record = result[0];
@@ -179,7 +179,7 @@ router.post('/info', verifyToken, async (req, res) => {
     res.status(200).json(record);
   } catch (error) {
     logger.error(`audioRoutes:/info: Error verifying token or fetching audio info: ${error}`);
-    res.status(500).send('Server error during audio info retrieval');
+    res.status(500).json({ error: { message: 'Server error. Try again later.' } });
   }
 });
 
@@ -227,7 +227,7 @@ router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
   record = req.body;
   logger.debug(`audioUpload Route: record: ${JSON.stringify(record, null, 2)}`);
   if (!req.file) {
-    return res.status(400).send('No file uploaded.');
+    return res.status(400).json({ error: { message: 'No file was received. Please select a file and try again.' } });
   }
   try {
     logger.debug(`audioRoutes:/upload: origfilename: ${req.file.originalname}`);
@@ -271,7 +271,7 @@ router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
     });
   } catch (error) {
     logger.error(`audioRoutes:/upload: Error processing upload: ${error}`);
-    res.status(500).send('Server error during file processing');
+    res.status(500).json({ error: { message: 'Server error. Try again later.' } });
   }
 });
 
@@ -290,7 +290,7 @@ router.post('/update', verifyToken, async (req, res) => {
   const { audioID, title, status, classification, tags, comments } = req.body;
   
   if (!record.audioID) {
-    return res.status(400).send('Audio ID is required for update.');
+    return res.status(400).json({ error: { message: 'Audio ID is required for update.' } });
   }
   
   try {
@@ -317,12 +317,12 @@ router.post('/update', verifyToken, async (req, res) => {
     const [result] = await db.query(query, values);
     if (result.affectedRows === 0) {
       // This means the audio ID was not found or no fields were changed.
-      return res.status(404).send('Audio not found or no update was made');
+      return res.status(404).json({ error: { message: 'Audio not found or no update was made.' } });
     }
     res.status(200).send({ message: 'Audio updated successfully' });
   } catch (error) {
     logger.error(`audioRoutes:/update: Server error during audio update: ${error}`);
-    res.status(500).send('Server error');
+    res.status(500).json({ error: { message: 'Server error. Try again later.' } });
   }
 });
 
@@ -331,7 +331,7 @@ router.post('/update', verifyToken, async (req, res) => {
 router.post('/trash', verifyToken, async (req, res) => {
   const audioID = req.body.audioID;
   if (!audioID) {
-    return res.status(400).send('Audio ID is required');
+    return res.status(400).json({ error: { message: 'Audio ID is required.' } });
   }
   try {
     // Verify the token to get user ID
@@ -342,12 +342,12 @@ router.post('/trash', verifyToken, async (req, res) => {
     const values = [audioID];
     const [result] = await db.query(query, values);
     if (result.affectedRows === 0) {
-      return res.status(404).send('Audio not found');
+      return res.status(404).json({ error: { message: 'Audio not found.' } });
     }
     res.status(200).send({ message: 'Audio trashed successfully' });    
   } catch (error) {
     logger.error(`audioRoutes:/trash: Error trashing audio file: ${error}`);
-    res.status(500).send('Server error during audio trashing');
+    res.status(500).json({ error: { message: 'Server error. Try again later.' } });
   }
 });
 
