@@ -12,8 +12,8 @@ import { initWaveSurfer, destroyWaveSurfer } from '../utils/waveUtils';
 import { setUnsavedChanges } from '../store/formSlice';
 import { useUnsavedChangesEvents, SafeLink, useSafeNavigate } from '../utils/formUtils';
 
-import { formatDateAsFriendlyDate, setClassificationFormOptions, 
-  formatClassificationForDB } from '../utils/formatUtils';
+import { formatDateAsFriendlyDate, setClassificationFormOptions,
+  formatClassificationForDB, formatDuration } from '../utils/formatUtils';
 import { ClassificationCheckboxes, TagInput } from '../utils/formUtils';
 
 // import FeatherIcon from 'feather-icons-react';
@@ -34,10 +34,16 @@ function AudioEdit() {
   // Call the useUnsavedChangesEvents hook to create event listeners
   useUnsavedChangesEvents();
 
+  // Reset unsaved changes flag on mount so we don't inherit stale state from a previous page
+  useEffect(() => {
+    dispatch(setUnsavedChanges(false));
+  }, [dispatch]);
+
   const [isDomReady, setIsDomReady] = useState(false);
   const waveSurferRef = useRef(null);
 
   // Success and error handling
+  // eslint-disable-next-line no-unused-vars
   const [isLoading, setIsLoading] = useState(true);
   const [successMessage, setSuccessMessage] = useState('');
   const [error, setError] = useState('');
@@ -161,7 +167,7 @@ function AudioEdit() {
         <ul className="breadcrumb">
           <li className="link"><SafeLink to="/audio/list">List</SafeLink></li>
           <li className="link"><SafeLink to="/audio/upload">Add New</SafeLink></li>
-          <li className="link"><SafeLink to={'/audio/view/' + audioID}>Views</SafeLink></li>
+          <li className="link"><SafeLink to={'/audio/view/' + audioID}>View</SafeLink></li>
         </ul>
       </div>
     );
@@ -202,7 +208,7 @@ function AudioEdit() {
 
             <div className="form-group pb-2">
               <div id="waveform"></div>
-              <div className="text-sm mt-1">Duration: {record.duration}s</div>
+              <div className="text-sm mt-1">Duration: {formatDuration(record.duration)}</div>
             </div>
 
             <div className="form-group">

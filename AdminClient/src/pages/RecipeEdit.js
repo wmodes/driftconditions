@@ -117,6 +117,7 @@ function RecipeEdit() {
       <div className="breadcrumb-box">
         <ul className="breadcrumb">
           <li className="link"><SafeLink to="/recipe/list">List</SafeLink></li>
+          <li className="link"><SafeLink to="/recipe/create">Add New</SafeLink></li>
           <li className="link"><SafeLink to={"/recipe/view/" + recipeID}>View</SafeLink></li>
         </ul>
       </div>
@@ -132,6 +133,7 @@ function RecipeEdit() {
       <div className="display-box-wrapper">
         <div className="display-box">
           <h2 className='title'>Edit Recipe</h2>
+          {renderBreadcrumbs()}
           <RecipeForm
             action="update"
             initialRecord={record}

@@ -120,6 +120,18 @@ export const formatJSONStrForDB = (jsonStr) => {
 };
 
 /**
+ * Format a duration in seconds to m:ss display format.
+ * @param {number|string} seconds - Duration in seconds.
+ * @returns {string} - Formatted duration string (e.g. "2:07").
+ */
+export function formatDuration(seconds) {
+  const total = Math.floor(parseFloat(seconds) || 0);
+  const m = Math.floor(total / 60);
+  const s = total % 60;
+  return `${m}:${String(s).padStart(2, '0')}`;
+}
+
+/**
  * Takes a classification array and formats it for the form.
  * @param {Array<string>} options - The classification options.
  * @param {Array<string>|boolean} keysSetToTrue - The keys to set to true or a boolean value.
