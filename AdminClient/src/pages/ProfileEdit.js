@@ -91,6 +91,7 @@ function ProfileEdit() {
       })
       .catch(error => {
         console.error("Failed to update profile:", error);
+        setSuccessMessage('');
         setError(error || 'An error occurred while updating the profile.');
       })
       .finally(() => {

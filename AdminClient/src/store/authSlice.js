@@ -50,7 +50,7 @@ export const signin = createAsyncThunk(
     return response.data; // includes username from server
   } catch (error) {
     console.error(error);
-    return thunkAPI.rejectWithValue(error.message);  
+    return thunkAPI.rejectWithValue(error.response?.data?.error?.message || 'Server error. Try again later.');
   }
 })
 

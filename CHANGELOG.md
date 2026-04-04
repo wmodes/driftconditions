@@ -26,6 +26,9 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Play/stop icon in Audio List persisting after audio playback ends naturally
 - "Unsaved changes" warning appearing on Audio Edit even without any user edits — caused by `TagInput` firing `onTagChange` on mount, and stale Redux `unsavedChanges` state carried over from previous pages
 - "Views" typo in Audio Edit breadcrumb corrected to "View"
+- Error responses standardized across all server routes, Redux thunks, and frontend pages — errors now surface as meaningful one-line messages rather than raw HTTP errors or generic fallbacks
+- Sign-in wrong credentials no longer exposes raw HTTP status code to the user
+- Profile edit, audio edit, recipe edit, and role list: switching from success to error no longer shows both messages simultaneously
 
 ---
 

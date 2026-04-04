@@ -119,6 +119,7 @@ function AudioEdit() {
       })
       .catch(err => {
         console.error('Update error:', err);
+        setSuccessMessage('');
         setError(err || 'Failed to update audio.');
       });
   };
