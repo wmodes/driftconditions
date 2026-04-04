@@ -70,7 +70,7 @@ function AudioList() {
       })
       .catch(error => {
         console.error("Error fetching audio list:", error);
-        setError('Failed to fetch audio list.');
+        setError(error || 'Failed to fetch audio list.');
         setAudioList([]);
         setIsLoading(false); // Stop loading on error
         setRetryAttempt(prevAttempt => prevAttempt + 1); // Increment retry attempt
@@ -92,12 +92,12 @@ function AudioList() {
         })
         .catch(error => {
           console.error("Error fetching updated audio list:", error);
-          setError('Failed to fetch updated audio list.');
+          setError(error || 'Failed to fetch updated audio list.');
         });
       })
       .catch(error => {
         console.error("Error trashing audio:", error);
-        setError('Failed to trash audio.');
+        setError(error || 'Failed to trash audio.');
       });
   };
 
@@ -170,7 +170,7 @@ function AudioList() {
       })
       .catch(error => {
         console.error("Error updating audio:", error);
-        setError(error.message || 'Failed to update audio');
+        setError(error || 'Failed to update audio.');
       });
   };  
 

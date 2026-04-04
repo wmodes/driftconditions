@@ -63,7 +63,7 @@ function RecipeList() {
       })
       .catch(error => {
         console.error("Error fetching recipe list:", error);
-        setError('Failed to fetch recipe list.');
+        setError(error || 'Failed to fetch recipe list.');
         setRecipeList([]);
         setIsLoading(false); // Stop loading on error
         setRetryAttempt(prevAttempt => prevAttempt + 1); // Increment retry attempt
@@ -90,12 +90,12 @@ function RecipeList() {
         })
         .catch(error => {
           console.error("Error fetching updated recipe list:", error);
-          setError('Failed to fetch updated recipe list.');
+          setError(error || 'Failed to fetch updated recipe list.');
         });
       })
       .catch(error => {
         console.error("Error trashing recipe:", error);
-        setError('Failed to trash recipe.'); // Update error state
+        setError(error || 'Failed to trash recipe.'); // Update error state
       });
   };
 

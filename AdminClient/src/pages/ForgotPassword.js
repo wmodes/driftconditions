@@ -13,13 +13,18 @@ function ForgotPassword() {
     e.preventDefault();
     setError('');
     try {
-      await fetch(`${serverBaseURL}/api/auth/forgot-password`, {
+      const res = await fetch(`${serverBaseURL}/api/auth/forgot-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
       });
-      // Always show success regardless of whether email exists (prevents enumeration)
-      setSubmitted(true);
+      if (res.ok) {
+        // Always show success regardless of whether email exists (prevents enumeration)
+        setSubmitted(true);
+      } else {
+        const data = await res.json();
+        setError(data?.error?.message || 'Something went wrong. Please try again.');
+      }
     } catch (err) {
       setError('Something went wrong. Please try again.');
     }

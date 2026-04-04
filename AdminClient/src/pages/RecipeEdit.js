@@ -65,7 +65,7 @@ function RecipeEdit() {
       })
       .catch((err) => {
         console.error('Error fetching recipe details:', err);
-        setError('Failed to fetch recipe details.');
+        setError(err || 'Failed to fetch recipe details.');
         setIsLoading(false); // Stop loading on error
       });
   }, [recipeID, dispatch]);
@@ -101,7 +101,7 @@ function RecipeEdit() {
       })
       .catch((err) => {
         console.error('Update error:', err);
-        setError('Failed to update recipe.');
+        setError(err || 'Failed to update recipe.');
         setIsLoading(false); // Stop loading on error
         // Retain the current form state on error to allow for corrections
         setRecord(updatedRecord);

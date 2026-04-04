@@ -73,7 +73,7 @@ function Signin() {
           })
           .catch((error) => {
             console.error("Login error:", error);
-            setError('Invalid username or password');
+            setError(error || 'Invalid username or password.');
           });
       });
     });

@@ -75,7 +75,7 @@ router.post('/signup', async (req, res) => {
     if (recaptchaToken) {
       const score = await verifyRecaptcha(recaptchaToken);
       if (score < recaptchaScoreThreshold) {
-        return res.status(403).send('reCAPTCHA score too low, request blocked');
+        return res.status(403).json({ error: { message: 'reCAPTCHA score too low, request blocked.' } });
       }
     }
 
@@ -96,14 +96,14 @@ router.post('/signup', async (req, res) => {
         email: email
       });
     } else {
-      res.status(500).send(`Couldn't register user`);
+      res.status(500).json({ error: { message: 'Server error. Try again later.' } });
     }
   } catch (err) {
     if (err.code === 'ER_DUP_ENTRY') {
-      res.status(409).send('Username already exists');
+      res.status(409).json({ error: { message: 'Username already exists.' } });
     } else {
       logger.error(`authRoutes:/signup: Signup error: ${err}`);
-      res.status(500).send('Error during the signup process');
+      res.status(500).json({ error: { message: 'Server error. Try again later.' } });
     }
   }
 });
@@ -120,7 +120,7 @@ router.post('/signin', async (req, res) => {
     if (recaptchaToken) {
       const score = await verifyRecaptcha(recaptchaToken);
       if (score < recaptchaScoreThreshold) {
-        return res.status(403).send('reCAPTCHA score too low, request blocked');
+        return res.status(403).json({ error: { message: 'reCAPTCHA score too low, request blocked.' } });
       }
     }
     // Route lookup by email (case-insensitive) or username based on whether input contains '@'
@@ -137,7 +137,7 @@ router.post('/signin', async (req, res) => {
 
     // no user found
     if (users.length < 1) {
-      return res.status(418).send(`Username or password doesn't match any records`);
+      return res.status(418).json({ error: { message: "Username or password doesn't match." } });
     }
 
     // get data from user db query
@@ -166,11 +166,11 @@ router.post('/signin', async (req, res) => {
       res.status(200).send({ message: "Authentication successful", username: user.username, profileComplete: isProfileComplete(user) });
     } else {
       // If the passwords do not match, respond with an error.
-      res.status(418).send(`Username or password doesn't match any records`);
+      res.status(418).json({ error: { message: "Username or password doesn't match." } });
     }
   } catch (err) {
     logger.error(`authRoutes:/signin: Signin error: ${err}`);
-    res.status(500).send('Error during the signin process');
+    res.status(500).json({ error: { message: 'Server error. Try again later.' } });
   }
 });
 
@@ -281,7 +281,7 @@ router.post('/check', async (req, res) => {
       });
     }
     logger.error(`authRoutes:/check: Server error during auth check: ${error}`);
-    res.status(500).send('Server error');
+    res.status(500).json({ error: { code: 500, reason: 'server_error', message: 'Server error. Try again later.' } });
   }
 });
 
@@ -608,7 +608,7 @@ async function generateUniqueUsername(email) {
 // Returns identical success response whether or not the email exists (prevents enumeration).
 router.post('/forgot-password', async (req, res) => {
   const { email } = req.body;
-  if (!email) return res.status(400).send('Email is required');
+  if (!email) return res.status(400).json({ error: { message: 'Email is required.' } });
 
   try {
     // Look up user by email — silent success if not found
@@ -669,14 +669,14 @@ router.post('/forgot-password', async (req, res) => {
     res.status(200).json({ message: 'If that email is registered, a reset link has been sent.' });
   } catch (err) {
     logger.error(`authRoutes:/forgot-password: ${err}`);
-    res.status(500).send('Server error');
+    res.status(500).json({ error: { message: 'Server error. Try again later.' } });
   }
 });
 
 // Route to complete password reset — validates token, saves new hashed password.
 router.post('/reset-password', async (req, res) => {
   const { token, password } = req.body;
-  if (!token || !password) return res.status(400).send('Token and password are required');
+  if (!token || !password) return res.status(400).json({ error: { message: 'Token and password are required.' } });
 
   try {
     // Look up token and check expiry
@@ -685,7 +685,7 @@ router.post('/reset-password', async (req, res) => {
       [token]
     );
     if (rows.length === 0) {
-      return res.status(400).send('Reset link is invalid or has expired');
+      return res.status(400).json({ error: { message: 'Reset link is invalid or has expired.' } });
     }
 
     const { userID } = rows[0];
@@ -701,7 +701,7 @@ router.post('/reset-password', async (req, res) => {
     res.status(200).json({ message: 'Password updated successfully' });
   } catch (err) {
     logger.error(`authRoutes:/reset-password: ${err}`);
-    res.status(500).send('Server error');
+    res.status(500).json({ error: { message: 'Server error. Try again later.' } });
   }
 });
 
@@ -758,7 +758,7 @@ router.get('/:provider', async (req, res) => {
     res.redirect(authUrl);
   } catch (err) {
     logger.error(`authRoutes:/:provider: OAuth init error: ${err}`);
-    res.status(500).send('OAuth initialization failed');
+    res.status(500).json({ error: { message: 'OAuth initialization failed.' } });
   }
 });
 

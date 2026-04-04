@@ -40,13 +40,12 @@ function ProfileEdit() {
           }
           setError('');
         } else if (res.error) {
-          // Handle the case where the user is not found
-          setError('User not found');
+          setError(res.payload || 'Failed to fetch profile.');
         }
       })
       .catch((error) => {
         console.error("Failed to fetch profile:", error);
-        setError(error.toString());
+        setError(error || 'Failed to fetch profile.');
       })
       .finally(() => {
         setIsLoading(false); // Set loading to false after fetching
@@ -92,12 +91,7 @@ function ProfileEdit() {
       })
       .catch(error => {
         console.error("Failed to update profile:", error);
-        const msg = typeof error === 'string' ? error : JSON.stringify(error);
-        if (msg.includes('already taken') || msg.includes('Username')) {
-          setError('Username taken. Please choose another.');
-        } else {
-          setError('An error occurred while updating the profile.');
-        }
+        setError(error || 'An error occurred while updating the profile.');
       })
       .finally(() => {
         setIsLoading(false);

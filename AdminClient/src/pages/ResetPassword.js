@@ -48,8 +48,8 @@ function ResetPassword() {
         setSuccess('Password updated! Redirecting to sign in...');
         setTimeout(() => navigate('/signin'), 2000);
       } else {
-        const msg = await res.text();
-        setError(msg || 'Reset failed. The link may have expired.');
+        const data = await res.json();
+        setError(data?.error?.message || 'Reset failed. The link may have expired.');
       }
     } catch (err) {
       setError('Something went wrong. Please try again.');

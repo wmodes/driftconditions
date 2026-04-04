@@ -64,7 +64,7 @@ function UserList() {
       })
       .catch(error => {
         console.error("Error fetching user list:", error);
-        setCriticalError('Failed to fetch user list.');
+        setCriticalError(error || 'Failed to fetch user list.');
         setUserList([]);
         setIsLoading(false);
         setRetryAttempt(prevAttempt => prevAttempt + 1);
@@ -141,12 +141,12 @@ function UserList() {
         })
         .catch(error => {
           console.error("Error fetching updated user list:", error);
-          setError('Failed to fetch updated user list.');
+          setError(error || 'Failed to fetch updated user list.');
         });
       })
       .catch(error => {
         console.error("Error disabling user:", error);
-        setError('Failed to disable user.'); // Update error state
+        setError(error || 'Failed to disable user.'); // Update error state
       });
   };
 

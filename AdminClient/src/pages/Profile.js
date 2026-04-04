@@ -43,15 +43,14 @@ function Profile() {
           }
           setError('');
         } else if (res.error) {
-          // Handle the case where the user is not found
-          setError('User not found');
-          setProfile(notFoundUser); // Set the profile information to a notFoundUser
+          setError(res.payload || 'Failed to fetch profile.');
+          setProfile(notFoundUser);
         }
       })
       .catch((error) => {
         console.error("Failed to fetch profile:", error);
-        setError(error.toString());
-        setProfile(notFoundUser); // Fallback to notFoundUser in case of any error
+        setError(error || 'Failed to fetch profile.');
+        setProfile(notFoundUser);
       });
   }, [dispatch, username, navigate]);
 
