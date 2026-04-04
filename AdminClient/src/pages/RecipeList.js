@@ -5,7 +5,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { recipeList as recipeListAction, recipeTrash as recipeTrashAction } from '../store/recipeSlice';
+import { recipeList as recipeListAction, recipeTrash as recipeTrashAction, recipeUpdate } from '../store/recipeSlice';
 import { parseQuery, stringifyQuery } from '../utils/queryUtils';
 import { renderPagination } from '../utils/listUtils'; 
 import { formatDateAsFriendlyDate, formatListAsString } from '../utils/formatUtils';
@@ -31,8 +31,13 @@ function RecipeList() {
   // Success and error handling
   const [isLoading, setIsLoading] = useState(true);
   const [retryAttempt, setRetryAttempt] = useState(0);
-  const [successMessage, setSuccessMessage] = useState(''); // State for success message
+  const [successMessage, setSuccessMessage] = useState('');
   const [error, setError] = useState('');
+
+  // Quick edit state
+  const [editRecipeID, setEditRecipeID] = useState(null);
+  const [editedRecord, setEditedRecord] = useState({});
+  const [updateTrigger, setUpdateTrigger] = useState(false);
 
   // Parse current URL search params
   const currentFilters = parseQuery(location.search);
@@ -70,7 +75,7 @@ function RecipeList() {
       });
   // Only dependency is location.search to react to changes in search parameters
   // eslint-disable-next-line
-  }, [dispatch, location.search, retryAttempt]);
+  }, [dispatch, location.search, retryAttempt, updateTrigger]);
 
   const recipeTrash = async (recipeID) => {
     dispatch(recipeTrashAction({ recipeID }))
@@ -119,6 +124,28 @@ function RecipeList() {
       }
     }
     navigate(`${location.pathname}?${searchParams.toString()}`);
+  };
+
+  const openEditRow = (recipe) => {
+    setEditRecipeID(editRecipeID === recipe.recipeID ? null : recipe.recipeID);
+    setEditedRecord(recipe);
+  };
+
+  const handleQuickEditSubmit = async (e) => {
+    e.preventDefault();
+    await dispatch(recipeUpdate({ recipeRecord: editedRecord }))
+      .unwrap()
+      .then(() => {
+        setSuccessMessage('Recipe updated successfully');
+        setError('');
+        setEditRecipeID(null);
+        setUpdateTrigger(prev => !prev);
+      })
+      .catch(error => {
+        console.error("Error updating recipe:", error);
+        setSuccessMessage('');
+        setError(error || 'Failed to update recipe.');
+      });
   };
 
   const handlePageChange = (newPage) => {
@@ -212,45 +239,129 @@ function RecipeList() {
                   </tr>
                 </thead>
                 <tbody>
-                  {recipeList.map(recipe => (
-                    <tr key={recipe.recipeID}>
-                      <td className="id">{recipe.recipeID}</td>
-                      <td className="name">
-                        {recipe.title}
-                        <div>
-                          <ul className="action-list">
-                            <li><Link to={`/recipe/view/${recipe.recipeID}`}>View</Link></li>
-                            <li><Link to={`/recipe/edit/${recipe.recipeID}`}>Edit</Link></li>
-                            <li><button className="link" onClick={() => recipeTrash(recipe.recipeID)}>Trash</button></li>
-                          </ul>
-                        </div>
-                      </td>
-                      <td className="author">
-                        <div className="authorline">
-                          Upload:&nbsp;
-                          <button className="link" 
-                            onClick={() => handleFilter('user', recipe.creatorUsername)}>
-                            {recipe.creatorUsername}
-                          </button> 
-                          &nbsp;on {formatDateAsFriendlyDate(recipe.createDate)}
-                        </div>
-                        {recipe.editorUsername && (
-                          <div className="authorline">
-                            Edit:&nbsp;
-                            <button className="link" 
-                              onClick={() => handleFilter('user', recipe.editorUsername)}>
-                              {recipe.editorUsername}
-                            </button> 
-                            &nbsp;on {formatDateAsFriendlyDate(recipe.editDate)}
+                  {recipeList.map((recipe, index) => (
+                    <React.Fragment key={recipe.recipeID}>
+                      <tr className={index % 2 === 0 ? 'row-even' : 'row-odd'}>
+                        <td className="id">{recipe.recipeID}</td>
+                        <td className="name">
+                          {recipe.title}
+                          <div>
+                            <ul className="action-list">
+                              <li><Link to={`/recipe/view/${recipe.recipeID}`}>View</Link></li>
+                              <li><Link to={`/recipe/edit/${recipe.recipeID}`}>Edit</Link></li>
+                              <li><button className="link" onClick={() => openEditRow(recipe)}>Quick Edit</button></li>
+                              <li><button className="link" onClick={() => recipeTrash(recipe.recipeID)}>Trash</button></li>
+                            </ul>
                           </div>
-                        )}
-                      </td>
-                      <td className="description">{recipe.description}</td>
-                      <td className="status">{recipe.status}</td>
-                      <td className="classification">{formatListAsString(recipe.classification)}</td>
-                      <td className="tags">{formatListAsString(recipe.tags)}</td>
-
-                    </tr>
+                        </td>
+                        <td className="author">
+                          <div className="authorline">
+                            Upload:&nbsp;
+                            <button className="link"
+                              onClick={() => handleFilter('user', recipe.creatorUsername)}>
+                              {recipe.creatorUsername}
+                            </button>
+                            &nbsp;on {formatDateAsFriendlyDate(recipe.createDate)}
+                          </div>
+                          {recipe.editorUsername && (
+                            <div className="authorline">
+                              Edit:&nbsp;
+                              <button className="link"
+                                onClick={() => handleFilter('user', recipe.editorUsername)}>
+                                {recipe.editorUsername}
+                              </button>
+                              &nbsp;on {formatDateAsFriendlyDate(recipe.editDate)}
+                            </div>
+                          )}
+                        </td>
+                        <td className="description">{recipe.description}</td>
+                        <td className="status">{recipe.status}</td>
+                        <td className="classification">{formatListAsString(recipe.classification)}</td>
+                        <td className="tags">{formatListAsString(recipe.tags)}</td>
+                      </tr>
+                      {/* quick edit row */}
+                      {editRecipeID === recipe.recipeID && (
+                        <tr className={`${index % 2 === 0 ? 'row-even' : 'row-odd'} quick-edit`}>
+                          <td colSpan="7">
+                            <div className="form-group">
+                              <form onSubmit={handleQuickEditSubmit}>
+                                <div className="space-y-1">
+                                  <div className="flex items-center space-x-2">
+                                    <label className="block text-sm font-medium text-gray-700" htmlFor="title">Title:</label>
+                                    <input
+                                      type="text"
+                                      name="title"
+                                      value={editedRecord.title || ''}
+                                      onChange={(e) => setEditedRecord({ ...editedRecord, title: e.target.value })}
+                                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm"
+                                    />
+                                  </div>
+                                  <div className="flex items-center space-x-4">
+                                    <div className="flex items-center space-x-2 flex-none">
+                                      <label className="block text-sm font-medium text-gray-700" htmlFor="status">Status:</label>
+                                      <select
+                                        name="status"
+                                        value={editedRecord.status || ''}
+                                        onChange={(e) => setEditedRecord({ ...editedRecord, status: e.target.value })}
+                                        className="mt-1 block rounded-md border-gray-300 shadow-sm sm:text-sm"
+                                      >
+                                        <option value="Review">Review</option>
+                                        <option value="Approved">Approved</option>
+                                        <option value="Disapproved">Disapproved</option>
+                                        <option value="Trashed">Trashed</option>
+                                      </select>
+                                    </div>
+                                    <div className="flex items-center space-x-2 flex-grow">
+                                      <label className="block text-sm font-medium text-gray-700" htmlFor="classification">Classification:</label>
+                                      <input
+                                        type="text"
+                                        name="classification"
+                                        value={editedRecord.classification || ''}
+                                        onChange={(e) => setEditedRecord({ ...editedRecord, classification: e.target.value })}
+                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm"
+                                      />
+                                    </div>
+                                    <div className="flex items-center space-x-2 flex-grow">
+                                      <label className="block text-sm font-medium text-gray-700" htmlFor="tags">Tags:</label>
+                                      <input
+                                        type="text"
+                                        name="tags"
+                                        value={editedRecord.tags || ''}
+                                        onChange={(e) => setEditedRecord({ ...editedRecord, tags: e.target.value })}
+                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm"
+                                      />
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center space-x-2">
+                                    <label className="block text-sm font-medium text-gray-700" htmlFor="description">Description:</label>
+                                    <textarea
+                                      name="description"
+                                      value={editedRecord.description || ''}
+                                      onChange={(e) => setEditedRecord({ ...editedRecord, description: e.target.value })}
+                                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm"
+                                    />
+                                  </div>
+                                  <div className="flex items-center space-x-2">
+                                    <label className="block text-sm font-medium text-gray-700" htmlFor="comments">Comments:</label>
+                                    <textarea
+                                      name="comments"
+                                      value={editedRecord.comments || ''}
+                                      onChange={(e) => setEditedRecord({ ...editedRecord, comments: e.target.value })}
+                                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm"
+                                    />
+                                  </div>
+                                  <div className="flex justify-end">
+                                    <button className="bg-blue-500 text-white rounded-md py-2 px-4 hover:bg-blue-600" type="submit">
+                                      Update
+                                    </button>
+                                  </div>
+                                </div>
+                              </form>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
                   ))}
                 </tbody>
               </table>
