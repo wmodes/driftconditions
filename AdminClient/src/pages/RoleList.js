@@ -72,6 +72,7 @@ function RolesList() {
       })
       .catch(error => {
         console.error("Error updating role:", error);
+        setSuccessMessage('');
         setError(error || 'Failed to update role.');
       });
 };

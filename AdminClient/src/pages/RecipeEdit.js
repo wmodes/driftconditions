@@ -101,6 +101,7 @@ function RecipeEdit() {
       })
       .catch((err) => {
         console.error('Update error:', err);
+        setSuccessMessage('');
         setError(err || 'Failed to update recipe.');
         setIsLoading(false); // Stop loading on error
         // Retain the current form state on error to allow for corrections
