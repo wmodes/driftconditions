@@ -13,6 +13,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 - `formatDuration(seconds)` utility in `formatUtils.js` — converts raw seconds to `m:ss` format
+- Recipe List: inline Quick Edit row (Title, Status, Description, Classification, Tags, Comments) matching the Audio List quick-edit pattern
 - Breadcrumb navigation at top and bottom of Recipe Edit page, matching Audio Edit; added "Add New" link
 - "Add New" link added to Recipe View and Audio View breadcrumbs
 - Breadcrumb rendered at top of Audio View and Recipe View pages, matching Edit pages
