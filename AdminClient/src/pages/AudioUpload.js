@@ -138,20 +138,26 @@ function AudioUpload() {
     dispatch(audioUpload({ audioRecord: adjustedRecord, file }))
       .unwrap()
       .then(response => {
-        setIsLoading(false); // Stop loading
-        setSuccessMessage('Upload successful!');
-        setError('');
+        setIsLoading(false);
         setUploadedAudioID(response.audioID);
         dispatch(setUnsavedChanges(false));
-        if (editPerm) {
-          navigateOG(`/audio/edit/${response.audioID}`);
+        setError('');
+        if (response.nameMatch) {
+          // Soft warning — uploaded but filename matched an existing file
+          setSuccessMessage('Uploaded. Note: a file with this name already exists in the library.');
         } else {
-          navigateOG(`/audio/view/${response.audioID}`);
+          // Auto-navigate only when no warning to show
+          if (editPerm) {
+            navigateOG(`/audio/edit/${response.audioID}`);
+          } else {
+            navigateOG(`/audio/view/${response.audioID}`);
+          }
         }
       })
       .catch(error => {
-        setIsLoading(false); // Stop loading
+        setIsLoading(false);
         console.error("Upload error:", error);
+        setSuccessMessage('');
         setError(error || 'Failed to upload audio.');
       });
   };
