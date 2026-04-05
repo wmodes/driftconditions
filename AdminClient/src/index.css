@@ -759,6 +759,12 @@ figcaption {
   animation-delay: 0.6s; 
 }
 
+/* Recipe table */
+
+.recipe-table .name {
+  width: 15rem;
+}
+
 /* Role table */
 
 .big-table .row-odd {
