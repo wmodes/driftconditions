@@ -52,7 +52,7 @@ router.post('/list', verifyToken, async (req, res) => {
     const sort = req.body.sort || 'date';
     const order = req.body.order === 'ASC' ? 'ASC' : 'DESC';
     const filter = req.body.filter;
-    const targetID = req.body.targetID || req.user.userID;
+    const targetID = req.body.targetID || null;
     const page = req.body.page || 1;
     const recordsPerPage = req.body.recordsPerPage || 15;
     const offset = (page - 1) * recordsPerPage;
@@ -67,51 +67,50 @@ router.post('/list', verifyToken, async (req, res) => {
     };
     const sortColumn = sortOptions[sort.toLowerCase()] || 'createDate';
 
-    // Define filter options
+    // Status filter — independent of user filter
     const filterOptions = {
-      all : {
-        query: 'AND a.status != ?', 
-        values: ['Trashed']
-      },
-      user: {
-        query: 'AND a.creatorID = ? AND a.status != ?',
-        values: [targetID, 'Trashed'] 
-      },
-      trash: {
-        query: 'AND a.status = ?',
-        values: ['Trashed']
-      },
-      review: {
-        query: 'AND a.status = ?',
-        values: ['Review']
-      },
-      approved: {
-        query: 'AND a.status = ?',
-        values: ['Approved']
-      },
-      disapproved: {
-        query: 'AND a.status = ?',
-        values: ['Disapproved']
-      }
+      all:        { query: 'AND a.status != ?', values: ['Trashed'] },
+      trash:      { query: 'AND a.status = ?',  values: ['Trashed'] },
+      review:     { query: 'AND a.status = ?',  values: ['Review'] },
+      approved:   { query: 'AND a.status = ?',  values: ['Approved'] },
+      disapproved:{ query: 'AND a.status = ?',  values: ['Disapproved'] },
     };
-    // Determine filter condition from provided filter parameter
     let filterCondition = filterOptions[filter] || filterOptions['all'];
     let filterQuery = filterCondition.query;
     let filterValues = filterCondition.values;
+
+    // User filter — additive, stacks with status filter
+    const userQuery = targetID ? 'AND a.creatorID = ?' : '';
+    const userValues = targetID ? [targetID] : [];
+
+    // Parse search string into tokens, respecting quoted phrases.
+    // Each token is ANDed across title, tags, and comments.
+    const searchRaw = req.body.search || '';
+    const searchTokens = [];
+    const tokenRegex = /"([^"]+)"|(\S+)/g;
+    let tokenMatch;
+    while ((tokenMatch = tokenRegex.exec(searchRaw)) !== null) {
+      searchTokens.push(tokenMatch[1] || tokenMatch[2]);
+    }
+    // Build one AND clause per token: (title LIKE ? OR tags LIKE ? OR comments LIKE ?)
+    const searchQuery = searchTokens
+      .map(() => 'AND (a.title LIKE ? OR a.tags LIKE ? OR a.comments LIKE ?)')
+      .join(' ');
+    const searchValues = searchTokens.flatMap(t => [`%${t}%`, `%${t}%`, `%${t}%`]);
 
     // construct query and value strings
     const queryStr1 = `
       SELECT
         COUNT(*) AS totalRecords
       FROM audio a
-      WHERE 1=1 ${filterQuery};
+      WHERE 1=1 ${filterQuery} ${userQuery} ${searchQuery};
     `;
-    const queryValues1 = filterValues;
+    const queryValues1 = [...filterValues, ...userValues, ...searchValues];
     logger.debug(`audioRoutes:/list: queryStr1: ${queryStr1}, queryValues1: ${JSON.stringify(queryValues1)}`);
 
     // Execute countQuery to get the total number of records
     const [countResult] = await db.query(queryStr1, queryValues1);
-    
+
     const totalRecords = countResult[0].totalRecords;
 
     // Get the audio list with filter, sort, and pagination
@@ -124,11 +123,11 @@ router.post('/list', verifyToken, async (req, res) => {
       FROM audio a
       LEFT JOIN users u1 ON a.creatorID = u1.userID
       LEFT JOIN users u2 ON a.editorID = u2.userID
-      WHERE 1=1 ${filterQuery}
+      WHERE 1=1 ${filterQuery} ${userQuery} ${searchQuery}
       ORDER BY ${sortColumn} ${order}
       LIMIT ? OFFSET ?;
     `;
-    const queryValues2 = [...filterValues, recordsPerPage, offset];
+    const queryValues2 = [...filterValues, ...userValues, ...searchValues, recordsPerPage, offset];
     logger.debug(`audioRoutes:/list: queryStr2: ${queryStr2}, queryValues2: ${JSON.stringify(queryValues2)}`);
 
     // Execute the query

@@ -45,6 +45,12 @@ function AudioList() {
   const currentFilters = parseQuery(location.search);
   const audioRef = useRef(null);
 
+  // Search input state — initialized from URL and kept in sync with URL changes
+  const [searchInput, setSearchInput] = useState(() => new URLSearchParams(location.search).get('search') || '');
+  useEffect(() => {
+    setSearchInput(new URLSearchParams(location.search).get('search') || '');
+  }, [location.search]);
+
   const getCurrentQueryParams = () => {
     const searchParams = new URLSearchParams(location.search);
     return {
@@ -52,6 +58,8 @@ function AudioList() {
       sort: searchParams.get('sort') || 'date',
       order: searchParams.get('order') || 'DESC',
       filter: searchParams.get('filter') || 'all',
+      targetID: searchParams.get('targetID') || null,
+      search: searchParams.get('search') || '',
     };
   };
 
@@ -108,18 +116,50 @@ function AudioList() {
     navigate(`${location.pathname}?${searchParams.toString()}`);
   };
   
-  const handleFilter = (newFilter, targetID = null) => {
+  const handleFilter = (newFilter) => {
     const searchParams = new URLSearchParams(location.search);
     if (newFilter === 'all') {
       searchParams.delete('filter');
     } else {
       searchParams.set('filter', newFilter);
-      if (newFilter === 'user' && targetID) {
-        searchParams.set('targetID', targetID);
-      } else {
-        searchParams.delete('targetID');
-      }
     }
+    searchParams.delete('page');
+    navigate(`${location.pathname}?${searchParams.toString()}`);
+  };
+
+  const handleUserFilter = (creatorID, creatorUsername) => {
+    const searchParams = new URLSearchParams(location.search);
+    searchParams.set('targetID', creatorID);
+    searchParams.set('targetUsername', creatorUsername);
+    searchParams.delete('page');
+    navigate(`${location.pathname}?${searchParams.toString()}`);
+  };
+
+  const handleUserClear = () => {
+    const searchParams = new URLSearchParams(location.search);
+    searchParams.delete('targetID');
+    searchParams.delete('targetUsername');
+    searchParams.delete('page');
+    navigate(`${location.pathname}?${searchParams.toString()}`);
+  };
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    const searchParams = new URLSearchParams(location.search);
+    if (searchInput.trim()) {
+      searchParams.set('search', searchInput.trim());
+    } else {
+      searchParams.delete('search');
+    }
+    searchParams.delete('page'); // reset to page 1 on new search
+    navigate(`${location.pathname}?${searchParams.toString()}`);
+  };
+
+  const handleSearchClear = () => {
+    setSearchInput('');
+    const searchParams = new URLSearchParams(location.search);
+    searchParams.delete('search');
+    searchParams.delete('page');
     navigate(`${location.pathname}?${searchParams.toString()}`);
   };
 
@@ -186,35 +226,46 @@ function AudioList() {
           </div>
           {!error && !isLoading ? (
             <div>
+              <div className="search-box">
+                <form onSubmit={handleSearch}>
+                  <div className="search-input-wrap">
+                    <input
+                      type="text"
+                      className="search-input"
+                      placeholder="Search title, tags, comments..."
+                      value={searchInput}
+                      onChange={(e) => setSearchInput(e.target.value)}
+                    />
+                    {searchInput && (
+                      <button type="button" className="search-clear" onClick={handleSearchClear} aria-label="Clear search">×</button>
+                    )}
+                  </div>
+                  <button type="submit" className="button search-submit">Search</button>
+                </form>
+              </div>
               <div className="top-controls">
                 <div className="filter-box">
-                  <ul>
-                    <li>
-                      <button className="link" onClick={() => handleFilter('all')}>
-                        All
-                      </button>
-                    </li>
-                    <li>
-                      <button className="link" onClick={() => handleFilter('review')}>
-                        Review
-                      </button>
-                    </li>
-                    <li>
-                      <button className="link" onClick={() => handleFilter('approved')}>
-                        Approved
-                      </button>
-                    </li>
-                    <li>
-                      <button className="link" onClick={() => handleFilter('disapproved')}>
-                        Disapproved
-                      </button>
-                    </li>
-                    <li>
-                      <button className="link" onClick={() => handleFilter('trash')}>
-                        Trash
-                      </button>
-                    </li>
-                  </ul>
+                  {(() => {
+                    const activeFilter = new URLSearchParams(location.search).get('filter') || 'all';
+                    const activeUser = new URLSearchParams(location.search).get('targetID');
+                    const chipClass = (name) => `link filter-chip${activeFilter === name ? ' active' : ''}`;
+                    return (
+                      <ul>
+                        <li><button className={chipClass('all')} onClick={() => handleFilter('all')}>All</button></li>
+                        <li><button className={chipClass('review')} onClick={() => handleFilter('review')}>Review</button></li>
+                        <li><button className={chipClass('approved')} onClick={() => handleFilter('approved')}>Approved</button></li>
+                        <li><button className={chipClass('disapproved')} onClick={() => handleFilter('disapproved')}>Disapproved</button></li>
+                        <li><button className={chipClass('trash')} onClick={() => handleFilter('trash')}>Trash</button></li>
+                        {activeUser && (
+                          <li>
+                            <button className="link filter-chip active filter-chip-user" onClick={handleUserClear}>
+                              {new URLSearchParams(location.search).get('targetUsername') || activeUser} ×
+                            </button>
+                          </li>
+                        )}
+                      </ul>
+                    );
+                  })()}
                 </div>
                 {renderPagination(totalRecords, recordsPerPage, page, handlePageChange)}
               </div>
@@ -269,17 +320,17 @@ function AudioList() {
                         <td className="author">
                           <div className="authorline">
                             Upload:&nbsp;
-                            <button className="link" 
-                              onClick={() => handleFilter('user', audio.creatorUsername)}>
+                            <button className="link"
+                              onClick={() => handleUserFilter(audio.creatorID, audio.creatorUsername)}>
                               {audio.creatorUsername}
-                            </button> 
+                            </button>
                             &nbsp;on {formatDateAsFriendlyDate(audio.createDate)}
                           </div>
                           {audio.editorUsername && (
                             <div className="authorline">
                               Edit:&nbsp;
-                              <button className="link" 
-                                onClick={() => handleFilter('user', audio.editorUsername)}>
+                              <button className="link"
+                                onClick={() => handleUserFilter(audio.editorID, audio.editorUsername)}>
                                 {audio.editorUsername}
                               </button> 
                               &nbsp;on {formatDateAsFriendlyDate(audio.editDate)}

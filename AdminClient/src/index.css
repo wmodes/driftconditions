@@ -690,8 +690,60 @@ figcaption {
   display: none;
 }
 
+.search-box {
+  margin-bottom: 0.3rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.search-input-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.search-input {
+  font-size: 0.9rem;
+  padding: 0.15rem 1.5rem 0.15rem 0.4rem; /* right padding leaves room for × */
+  border: 1px solid var(--border-color);
+  border-radius: 3px;
+  width: 18rem;
+  background: var(--input-bg-color, #fff);
+  color: var(--text-color);
+}
+
+.search-clear {
+  position: absolute;
+  right: 0.3rem;
+  background: #fff;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  line-height: 1;
+  color: var(--link-color);
+  padding: 0 0.1rem;
+}
+
+.search-clear:hover {
+  color: var(--link-hover-color, var(--link-color));
+}
+
+.search-submit {
+  font-size: 0.9rem;
+  padding: 0.15rem 0.75rem;
+}
+
 .filter-box {
   margin-bottom: 0.3rem;
+}
+
+.filter-chip.active {
+  background-color: var(--link-color);
+  color: #fff !important;
+  border-radius: 3px;
+  padding: 0.1rem 0.4rem;
+  text-decoration: none !important;
 }
 
 .filter-box li, .pagination li {
@@ -1120,7 +1172,7 @@ tr.row-even.quick-edit textarea {
   padding-bottom: 4px;
 }
 
-button:not(.link,.icon) {
+button:not(.link,.icon,.search-clear) {
   border-radius: 0.25rem; /* 2px */
   background-color: var(--button-submit-background-color);
   border: 1px solid var(--table-border-color);

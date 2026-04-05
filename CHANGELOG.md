@@ -9,6 +9,19 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-04-05]
+
+### Added
+- Audio List: full-text search across title, tags, and comments — supports multiple words (ANDed) and quoted phrases; search term preserved in URL and stacks with filter and sort
+- Audio List: active status filter displayed as an inverted chip; active user filter shown as a dismissible chip after the filter bar
+- Audio List: clicking a username in the Author column now filters to that user's clips; user filter stacks independently with status filter and search
+
+### Fixed
+- Audio List user filter now correctly sends numeric `creatorID` to backend (previously sent username string, which never matched)
+- `message-box` height changed from fixed `2rem` to `min-height` so long error messages expand rather than overflow
+
+---
+
 ## [2026-04-04]
 
 ### Added
