@@ -24,6 +24,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Playlist time labels offset by one position to better approximate actual Icecast playback start time
 
 ### Fixed
+- Profile pages now publicly accessible without login — unauthenticated users see basic public fields; `profile` added to public contexts in auth check and profile route gracefully handles missing token
 - Play/stop icon in Audio List persisting after audio playback ends naturally
 - "Unsaved changes" warning appearing on Audio Edit even without any user edits — caused by `TagInput` firing `onTagChange` on mount, and stale Redux `unsavedChanges` state carried over from previous pages
 - "Views" typo in Audio Edit breadcrumb corrected to "View"

@@ -114,18 +114,17 @@ router.post('/list', verifyToken, async (req, res) => {
  */
 router.post('/profile', async (req, res) => {
   try {
-    const requestingUserInfo = getRequestingUserInfo(req);
-    if (!hasPermission(requestingUserInfo, 'profile')) {
-      return res.status(403).json({ error: { message: 'Permission denied.' } });
-    }
-
-    // Get the username from the requesting user's information
-    const requestingUsername = requestingUserInfo.username;
+    // Profile is public — unauthenticated users get basic fields, authenticated users get full field set
+    let requestingUserInfo = null;
+    try { requestingUserInfo = getRequestingUserInfo(req); } catch (e) { /* no token — public access */ }
+    const requestingUsername = requestingUserInfo?.username || null;
+    const permissions = requestingUserInfo?.permissions || [];
     // Get the username from the body if provided, otherwise use the requesting user's username
     const targetUsername = req.body.username || requestingUsername;
+    if (!targetUsername) {
+      return res.status(400).json({ error: { message: 'Username is required.' } });
+    }
     logger.debug(`userRoutes:/profile: target username: ${targetUsername}`);
-    // Get permission level of the user
-    const permissions = requestingUserInfo.permissions;
     // Define the fields to be returned based on the user's permission level
     const allowedFields = getAllowedFields(permissions, requestingUsername, targetUsername);
     // Determine if the edit flag should be true or false based on 'editable' field presence

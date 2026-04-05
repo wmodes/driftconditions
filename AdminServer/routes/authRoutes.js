@@ -251,7 +251,7 @@ router.post('/check', async (req, res) => {
 
     // check if the context is included in the "permissions" field
     // Public pages skip permission check — we just validate the token and return user info
-    const publicContexts = ['homepage', 'signin', 'signup', 'notauth', 'error', 'howitworks', 'forgotpassword', 'resetpassword'];
+    const publicContexts = ['homepage', 'signin', 'signup', 'notauth', 'error', 'howitworks', 'forgotpassword', 'resetpassword', 'profile'];
     const pageContext = req.body.context;
     if (!publicContexts.includes(pageContext) && !user.permissions.includes(pageContext)) {
       return res.status(403).json({
