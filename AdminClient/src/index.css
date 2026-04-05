@@ -27,6 +27,7 @@
   --table-border-color: #D1D5DB;
 
   --error-text-color: #dc2626;
+  --warning-text-color: #b45309;
   --success-text-color: #2d5b89;
 
   --button-cancel-background-color: #9CA3AF;
@@ -947,6 +948,10 @@ tr.row-even.quick-edit textarea {
 
 .upload-progress .uploaded {
   color: var(--success-text-color);
+}
+
+.upload-progress .warning {
+  color: var(--warning-text-color);
 }
 
 /* Info button */

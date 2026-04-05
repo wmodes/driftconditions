@@ -23,6 +23,7 @@ const fs = require('fs').promises;
 const fsExtra = require('fs-extra');
 const path = require('path');
 const { mkdirp } = require('mkdirp');
+const crypto = require('crypto');
 
 // configuration import
 const { config } = require('config');
@@ -235,6 +236,24 @@ router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
     const decoded = jwt.verify(req.cookies.token, jwtSecretKey);
     const creatorID = decoded.userID;
     logger.debug(`audioRoutes:/upload: creatorID: ${creatorID}`);
+
+    // Compute MD5 checksum from temp file before moving
+    const fileBuffer = await fs.readFile(req.file.path);
+    const checksum = crypto.createHash('md5').update(fileBuffer).digest('hex');
+    logger.debug(`audioRoutes:/upload: checksum: ${checksum}`);
+
+    // Check for exact duplicate by checksum
+    const [checksumRows] = await db.query('SELECT audioID, title FROM audio WHERE checksum = ? LIMIT 1', [checksum]);
+    if (checksumRows.length > 0) {
+      await fs.unlink(req.file.path).catch(() => {});
+      return res.status(409).json({ error: { message: `This file has already been submitted (matches "${checksumRows[0].title}").` } });
+    }
+
+    // Check for filename match (soft warning — different content, same name)
+    const originalFilename = path.basename(req.file.originalname);
+    const [nameRows] = await db.query('SELECT audioID FROM audio WHERE filename LIKE ? LIMIT 1', [`%${originalFilename}%`]);
+    const nameMatch = nameRows.length > 0;
+
     // Rename file and move into place (async)
     const filePathForDB = await renameAndStore(req.file.path, req.file.originalname, record.title);
     const fullFilePath = path.join(contentFileDir, filePathForDB);
@@ -247,18 +266,19 @@ router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
     logger.debug(`audioRoutes:/upload: filetype: ${filetype}`);
 
     // Prep db params
-    const query = `INSERT INTO audio (title, status, filename, creatorID, duration, filetype, classification, tags, comments, copyrightCert) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+    const query = `INSERT INTO audio (title, status, filename, creatorID, duration, filetype, classification, tags, comments, copyrightCert, checksum) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
     const values = [
-      record.title, 
+      record.title,
       record.status,
-      filePathForDB, 
-      creatorID, 
-      duration, 
-      filetype, 
-      record.classification, 
-      JSON.stringify(normalizeTagArray(record.tags)), 
-      record.comments, 
-      record.copyrightCert
+      filePathForDB,
+      creatorID,
+      duration,
+      filetype,
+      record.classification,
+      JSON.stringify(normalizeTagArray(record.tags)),
+      record.comments,
+      record.copyrightCert,
+      checksum
     ];
 
     // Execute the query
@@ -267,7 +287,8 @@ router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
     res.status(200).send({
       message: 'File uploaded successfully',
       filepath: filePathForDB,
-      audioID: audioID
+      audioID: audioID,
+      nameMatch: nameMatch
     });
   } catch (error) {
     logger.error(`audioRoutes:/upload: Error processing upload: ${error}`);
