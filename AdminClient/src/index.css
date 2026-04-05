@@ -1062,7 +1062,7 @@ tr.row-even.quick-edit textarea {
 
 .message-box {
   padding-top: 0.5rem; /* 8px */
-  height: 2rem; /* 32px */
+  min-height: 2rem; /* 32px */
 }
 
 .success {
@@ -1098,6 +1098,12 @@ tr.row-even.quick-edit textarea {
 .error {
   text-align: center;
   color: var(--error-text-color);
+  font-weight: bold;
+}
+
+.warning {
+  text-align: center;
+  color: var(--warning-text-color);
   font-weight: bold;
 }
 

@@ -139,11 +139,10 @@ function AudioBatchUpload() {
 
       try {
         const response = await dispatch(audioUpload({ audioRecord: adjustedRecord, file })).unwrap();
-        const statusLabel = response.nameMatch ? 'Possible Dupe' : 'Uploaded';
         uploadResults.push({ success: true });
         setUploadStatus(prevStatus => {
           const newStatus = [...prevStatus];
-          newStatus[index] = { status: statusLabel, error: null, uploaded: true };
+          newStatus[index] = { status: 'Uploaded', error: null, uploaded: true };
           return newStatus;
         });
         setError('');
@@ -151,8 +150,8 @@ function AudioBatchUpload() {
       } catch (error) {
         console.error("Upload error:", error);
         // Distinguish checksum duplicate (409) from other errors
-        const isDuplicate = error?.includes?.('already been submitted') || false;
-        uploadResults.push({ success: false, duplicate: isDuplicate });
+        const isDuplicate = typeof error === 'string' && error.includes('already been submitted');
+        uploadResults.push({ success: false });
         setUploadStatus(prevStatus => {
           const newStatus = [...prevStatus];
           newStatus[index] = {
@@ -205,8 +204,6 @@ function AudioBatchUpload() {
             <span className="file-status">
               {uploadStatus[index]?.status === 'Uploaded' ? (
                 <span className="uploaded">Uploaded</span>
-              ) : uploadStatus[index]?.status === 'Possible Dupe' ? (
-                <span className="warning">Possible Dupe</span>
               ) : uploadStatus[index]?.status === 'Duplicate' ? (
                 <span className="error">Duplicate</span>
               ) : uploadStatus[index]?.status === 'Error' ? (

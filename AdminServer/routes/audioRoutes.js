@@ -249,11 +249,6 @@ router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
       return res.status(409).json({ error: { message: `This file has already been submitted (matches "${checksumRows[0].title}").` } });
     }
 
-    // Check for filename match (soft warning — different content, same name)
-    const originalFilename = path.basename(req.file.originalname);
-    const [nameRows] = await db.query('SELECT audioID FROM audio WHERE filename LIKE ? LIMIT 1', [`%${originalFilename}%`]);
-    const nameMatch = nameRows.length > 0;
-
     // Rename file and move into place (async)
     const filePathForDB = await renameAndStore(req.file.path, req.file.originalname, record.title);
     const fullFilePath = path.join(contentFileDir, filePathForDB);
@@ -288,7 +283,6 @@ router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
       message: 'File uploaded successfully',
       filepath: filePathForDB,
       audioID: audioID,
-      nameMatch: nameMatch
     });
   } catch (error) {
     logger.error(`audioRoutes:/upload: Error processing upload: ${error}`);
@@ -377,6 +371,11 @@ router.post('/trash', verifyToken, async (req, res) => {
 //
 
 // Renames the file and moves it to the final upload directory
+// Normalize a title into a URL-safe filename slug
+function slugifyTitle(title) {
+  return title.toLowerCase().replace(/[\W_]+/g, '-').replace(/^\-+|\-+$/g, '');
+}
+
 async function renameAndStore(tempPath, origFilename, title) {
 
   // get date info for the directory structure
@@ -390,7 +389,7 @@ async function renameAndStore(tempPath, origFilename, title) {
   await mkdirp(uploadDir);
 
   // Normalize the title to be used as the filename
-  let baseFilename = title.toLowerCase().replace(/[\W_]+/g, '-').replace(/^\-+|\-+$/g, '');
+  let baseFilename = slugifyTitle(title);
   logger.debug(`audioRoutes:renameAndStore: baseFilename: ${baseFilename}`);
 
   // Extract the extension from the original filename
