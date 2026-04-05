@@ -853,9 +853,34 @@ figcaption {
   padding: 0.5rem 0;
 }
 
-/* audio table */
+/* audio table / user table quick-edit row */
 
-tr.row-even.quick-edit input {
+.quick-edit-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.quick-edit-fields .quick-edit-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1rem;
+}
+
+.quick-edit-fields label {
+  margin-right: 0.25rem;
+}
+
+.quick-edit-fields .quick-edit-submit {
+  display: flex;
+  justify-content: flex-end;
+}
+
+tr.row-even.quick-edit input,
+tr.row-odd.quick-edit input,
+tr.row-even.quick-edit select,
+tr.row-odd.quick-edit select {
   border: 1px solid var(--table-border-color);
   padding: .25rem;
 }
