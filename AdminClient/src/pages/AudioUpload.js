@@ -129,7 +129,7 @@ function AudioUpload() {
    */
   const handleSubmit = e => {
     e.preventDefault();
-    setIsLoading(true); // Start loading
+    setIsLoading(true);
     const adjustedRecord = {
       ...record,
       classification: formatClassificationForDB(record.classification),
@@ -139,19 +139,14 @@ function AudioUpload() {
       .unwrap()
       .then(response => {
         setIsLoading(false);
+        setSuccessMessage('Upload successful!');
+        setError('');
         setUploadedAudioID(response.audioID);
         dispatch(setUnsavedChanges(false));
-        setError('');
-        if (response.nameMatch) {
-          // Soft warning — uploaded but filename matched an existing file
-          setSuccessMessage('Uploaded. Note: a file with this name already exists in the library.');
+        if (editPerm) {
+          navigateOG(`/audio/edit/${response.audioID}`);
         } else {
-          // Auto-navigate only when no warning to show
-          if (editPerm) {
-            navigateOG(`/audio/edit/${response.audioID}`);
-          } else {
-            navigateOG(`/audio/view/${response.audioID}`);
-          }
+          navigateOG(`/audio/view/${response.audioID}`);
         }
       })
       .catch(error => {
