@@ -15,6 +15,8 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Audio List: full-text search across title, tags, and comments — supports multiple words (ANDed) and quoted phrases; search term preserved in URL and stacks with filter and sort
 - Audio List: active status filter displayed as an inverted chip; active user filter shown as a dismissible chip after the filter bar
 - Audio List: clicking a username in the Author column now filters to that user's clips; user filter stacks independently with status filter and search
+- User List: inline Quick Edit row — Role (dropdown) and Status (dropdown); reuses `profileEdit` thunk, no server changes required
+- `TODO.md` added — all known work items organized by UI/UX, MixEngine, and Backend/Infrastructure
 
 ### Fixed
 - Audio List user filter now correctly sends numeric `creatorID` to backend (previously sent username string, which never matched)

@@ -4,7 +4,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { userList as userListAction, userDisable as userDisableAction } from '../store/userSlice'; 
+import { userList as userListAction, userDisable as userDisableAction, profileEdit } from '../store/userSlice';
 import { parseQuery, stringifyQuery } from '../utils/queryUtils';
 import { renderPagination } from '../utils/listUtils';
 import { formatDateAsFriendlyDate } from '../utils/formatUtils';
@@ -33,6 +33,10 @@ function UserList() {
   const [successMessage, setSuccessMessage] = useState('');
   const [error, setError] = useState('');
   const [criticalError, setCriticalError] = useState('');
+
+  const [editUserID, setEditUserID] = useState(null);
+  const [editedRecord, setEditedRecord] = useState({});
+  const [updateTrigger, setUpdateTrigger] = useState(false);
 
   const currentFilters = parseQuery(location.search);
 
@@ -69,7 +73,7 @@ function UserList() {
         setIsLoading(false);
         setRetryAttempt(prevAttempt => prevAttempt + 1);
       });
-  }, [dispatch, location.search, retryAttempt]);
+  }, [dispatch, location.search, retryAttempt, updateTrigger]);
 
   // Adapt handlePageChange, handleSort, and handleFilter for user data
   // These functions can largely remain the same, just ensure they work with your user data and API endpoints
@@ -81,7 +85,7 @@ function UserList() {
     navigate(`${location.pathname}?${searchParams.toString()}`);
   };
   
-  const handleFilter = (newFilter, targetID = null) => {
+  const handleFilter = (newFilter) => {
     const searchParams = new URLSearchParams(location.search);
   
     let role;
@@ -119,6 +123,27 @@ function UserList() {
     setSuccessMessage('');
     setCriticalError('');
     setError('');
+  };
+
+  const openEditRow = (userID) => {
+    setEditUserID(editUserID === userID ? null : userID);
+    const userToEdit = userList.find(u => u.userID === userID);
+    if (userToEdit) setEditedRecord({ userID: userToEdit.userID, username: userToEdit.username, roleName: userToEdit.roleName, status: userToEdit.status });
+  };
+
+  const handleQuickEditSubmit = async (e) => {
+    e.preventDefault();
+    dispatch(profileEdit({ profile: editedRecord }))
+      .unwrap()
+      .then(() => {
+        setSuccessMessage('User updated successfully.');
+        setError('');
+        setEditUserID(null);
+        setUpdateTrigger(prev => !prev);
+      })
+      .catch(error => {
+        setError(error || 'Failed to update user.');
+      });
   };
 
   const userDisable = async (userID) => {
@@ -251,29 +276,73 @@ function UserList() {
                   </tr>
                 </thead>
                 <tbody>
-                  {userList.map(user => (
-                    <tr key={user.userID}>
-                      {/* Adapt table cells for user data */}
-                      <td>{user.userID}</td>
-                      <td>
-                        {user.username}
-                        <div>
-                          <ul className="action-list">
-                            <li><Link to={`/profile/${user.username}`}>View</Link></li>
-                            <li><Link to={`/profile/edit/${user.username}`}>Edit</Link></li>
-                            <li><button className="link" onClick={() => userDisable(user.userID)}>Disable</button></li>
-                          </ul>
-                        </div>
-                      </td>
-                      <td>{user.firstname}</td>
-                      <td>{user.lastname}</td>
-                      <td>{user.email}</td>
-                      <td>{user.url}</td>
-                      <td>{user.location}</td>
-                      <td>{user.roleName}</td>
-                      <td>{user.status}</td>
-                      <td>{formatDateAsFriendlyDate(user.addedOn)}</td>
-                    </tr>
+                  {userList.map((user, index) => (
+                    <React.Fragment key={user.userID}>
+                      <tr className={index % 2 === 0 ? 'row-even' : 'row-odd'}>
+                        <td>{user.userID}</td>
+                        <td>
+                          {user.username}
+                          <div>
+                            <ul className="action-list">
+                              <li><Link to={`/profile/${user.username}`}>View</Link></li>
+                              <li><Link to={`/profile/edit/${user.username}`}>Edit</Link></li>
+                              <li><button className="link" onClick={() => openEditRow(user.userID)}>Quick Edit</button></li>
+                              <li><button className="link" onClick={() => userDisable(user.userID)}>Disable</button></li>
+                            </ul>
+                          </div>
+                        </td>
+                        <td>{user.firstname}</td>
+                        <td>{user.lastname}</td>
+                        <td>{user.email}</td>
+                        <td>{user.url}</td>
+                        <td>{user.location}</td>
+                        <td>{user.roleName}</td>
+                        <td>{user.status}</td>
+                        <td>{formatDateAsFriendlyDate(user.addedOn)}</td>
+                      </tr>
+                      {editUserID === user.userID && (
+                        <tr className={`${index % 2 === 0 ? 'row-even' : 'row-odd'} quick-edit`}>
+                          <td colSpan="10">
+                            <form onSubmit={handleQuickEditSubmit}>
+                              <div className="form-group">
+                              <div className="quick-edit-fields">
+                                <div className="quick-edit-row">
+                                  <div>
+                                    <label htmlFor="roleName">Role:</label>
+                                    <select
+                                      name="roleName"
+                                      value={editedRecord.roleName || ''}
+                                      onChange={(e) => setEditedRecord({ ...editedRecord, roleName: e.target.value })}
+                                    >
+                                      <option value="user">User</option>
+                                      <option value="contributor">Contributor</option>
+                                      <option value="editor">Editor</option>
+                                      <option value="mod">Mod</option>
+                                      <option value="admin">Admin</option>
+                                    </select>
+                                  </div>
+                                  <div>
+                                    <label htmlFor="status">Status:</label>
+                                    <select
+                                      name="status"
+                                      value={editedRecord.status || ''}
+                                      onChange={(e) => setEditedRecord({ ...editedRecord, status: e.target.value })}
+                                    >
+                                      <option value="Active">Active</option>
+                                      <option value="Inactive">Inactive</option>
+                                    </select>
+                                  </div>
+                                </div>
+                                <div className="quick-edit-submit">
+                                  <button className="button submit" type="submit">Update</button>
+                                </div>
+                              </div>
+                              </div>
+                            </form>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
                   ))}
                 </tbody>
               </table>
