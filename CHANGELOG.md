@@ -16,6 +16,10 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Audio List: "Plays" column between Author and Duration, right-aligned; shows `timesUsed` or an em dash for zero
 - Audio View: "Plays" read-only field after Status, showing `timesUsed` or an em dash for zero
 - Audio Edit: "Plays" read-only field after Status, showing `timesUsed` or an em dash for zero
+- Recipe List: "Plays" and "Avg" columns between Author and Description, right-aligned; show `timesUsed`/`avgDuration` or em dash for zero/null
+- Recipe View: "Plays" and "Avg Duration" read-only fields after Status
+- Recipe Edit: "Plays" and "Avg Duration" read-only fields after Status (hidden on new recipe)
+- `formatDuration` utility now used for `avgDuration` display in `m:ss` format
 - **RecordKeeper service** (`MixEngine/core/services/recordkeeper/RecordKeeper.js`) — new post-selection bookkeeping service that computes which clips were actually heard in a mix (by walking per-track elapsed time against `mixDuration`), updates `audio.lastUsed` and `audio.timesUsed` only for heard clips, inserts a `clipUsage` row per heard clip, and returns an accurate playlist; replaces the former `RecipeParser.getPlaylistFromRecipe()` and the per-clip `_updateClipLastUsed()` in `ClipSelector`
 - `clipUsage` DB table — per-row record of every clip heard in a mix (`audioID`, `recipeID`, `usedAt`); enables per-clip usage history, future digest emails, and analytics
 - `timesUsed INT DEFAULT 0` column on `audio` table — cached counter incremented by RecordKeeper on each heard play; avoids a COUNT JOIN on `clipUsage` for every audio list/view request
@@ -26,6 +30,10 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - ESLint config updated to match codebase style: semicolons required, brace-style and eqeqeq relaxed
 - `huge` clip length category extended from 60 min max to 120 min — prevents valid long-form content (environmental recordings, radio broadcasts) from being silently excluded by the length filter
 - Conductor: RecordKeeper now fires between `adjustClipTimings` and `makeMix`; `RecipeParser.getPlaylistFromRecipe()` retired; `ClipSelector._updateClipLastUsed()` removed — `lastUsed` and `timesUsed` are now set only for clips that were actually heard, not all selected clips
+- RecordKeeper extended to track recipe usage: updates `recipes.lastUsed`, increments `recipes.timesUsed`, updates `recipes.avgDuration` as a weighted running average (`historyWeight=10`), and inserts a `recipeUsage` row per mix; replaces `RecipeSelector._updateRecipeLastUsed()`
+- `recipeUsage` DB table and `recipes.timesUsed`/`recipes.avgDuration` columns added (local and production)
+- `config.recipes.avgDurationHistoryWeight` added (default: 10)
+- RecipeSelector and ClipSelector lint cleaned up; latent `subscore`-before-define bug fixed in RecipeSelector
 - Conductor: error handling restructured into two separate try/catch scopes — queue-check failures wait a full `checkTime` interval before retrying; mix-pipeline failures (recipe/clip/ffmpeg errors) retry immediately with a short `retryTime` (5 s) backoff rather than waiting the full queue interval
 - `AdminServer /api/audio/info`: `timesUsed` now read directly from `audio.*` column instead of a COUNT JOIN on `clipUsage`; simplifies the query and improves performance
 - Audio List: Duration column right-aligned to match Plays

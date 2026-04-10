@@ -3,9 +3,9 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { recipeInfo } from '../store/recipeSlice';
 
-import { 
-  formatDateAsFriendlyDate, formatListAsString, formatTagsAsString, 
-  formatJSONForDisplay } from '../utils/formatUtils';
+import {
+  formatDateAsFriendlyDate, formatListAsString, formatTagsAsString,
+  formatJSONForDisplay, formatDuration } from '../utils/formatUtils';
 // import FeatherIcon from 'feather-icons-react';
 
 import AceEditor from 'react-ace';
@@ -108,6 +108,16 @@ function RecipeView() {
             <div className="form-row">
               <span className="form-label">Status:</span>
               <span className="form-value">{recipeRecord.status}</span>
+            </div>
+
+            <div className="form-row">
+              <span className="form-label">Plays:</span>
+              <span className="form-value">{recipeRecord.timesUsed || '—'}</span>
+            </div>
+
+            <div className="form-row">
+              <span className="form-label">Avg Duration:</span>
+              <span className="form-value">{recipeRecord.avgDuration ? formatDuration(recipeRecord.avgDuration) : '—'}</span>
             </div>
           </div>
 
