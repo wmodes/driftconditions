@@ -23,6 +23,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `huge` clip length category extended from 60 min max to 120 min — prevents valid long-form content (environmental recordings, radio broadcasts) from being silently excluded by the length filter
 
 ### Fixed
+- MixEngine: `amix` filter's default `normalize=1` was dividing each track's level by the number of tracks (~−6 dB per track), undoing per-clip `loudnorm` work and causing mixes to be too quiet; `normalize=0` is now set when any track or clip in the recipe uses a norm effect, preserving pre-normalized levels
 - MixEngine: silence clips with invalid or unrecognized `clipLength` keys (e.g. `"small"`) no longer produce `Infinity` duration, which previously caused ffmpeg `aevalsrc` filter to fail; falls back to `short` range with a warning log
 - MixEngine: unrecognized `clipLength` keys in non-silence clips now log a warning instead of silently dropping the length filter; if no valid keys match, a second warning is logged noting that no length constraint will be applied
 - Long Narrative with music bed: root cause identified — malformed `length` key in recipe (`"long, huge"` as single string instead of `["long", "huge"]`) bypassed the length filter, allowing a 106-min clip to be selected; recipe has been corrected and `huge` max extended to accommodate legitimately long clips
