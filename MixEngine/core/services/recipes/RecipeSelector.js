@@ -5,13 +5,13 @@ const logger = require('config/logger').custom('RecipeSelector', 'info');
 
 const { config } = require('config');
 // Extract values from the config object
-const { 
-  selectPoolPercentSize, selectPoolMinSize, 
-  classificationScoreWeight, newnessScoreWeight } = config.recipes;
+const {
+  selectPoolPercentSize, selectPoolMinSize,
+  classificationScoreWeight, newnessScoreWeight
+} = config.recipes;
 
 class RecipeSelector {
-
-  constructor() {
+  constructor () {
     // Initialize properties to store fetched data
     this.earliestDate = null;
     this.latestDate = null;
@@ -23,7 +23,7 @@ class RecipeSelector {
 
   // Main method to get the next recipe
   //  check status: confirmed working
-  async getNextRecipe() {
+  async getNextRecipe () {
     // Fetch recipes from the database
     await this._fetchRecipes();
     // Set the date range for the recipes
@@ -37,15 +37,14 @@ class RecipeSelector {
     // Use recipeID to select full recipe from the database
     const [selectedFullRecipe] = await this._fetchSelectedRecipe(selectedRecipe.recipeID);
     logger.debug(`Selected recipe: ${selectedFullRecipe.title}, score: ${selectedRecipe.score}`);
-    // update the recipe with the new lastUsed timestamp
-    await this._updateRecipeLastUsed(selectedRecipe.recipeID);
+    // lastUsed is now updated by RecordKeeper after the mix is made
     // return the full recipe to the caller
     return selectedFullRecipe;
   }
 
   // Fetch select fields for ALL the recipes from the database
   //  check status: confirmed working
-  async _fetchRecipes() {
+  async _fetchRecipes () {
     try {
       const query = `
         SELECT recipeID, title, classification, tags, lastUsed
@@ -56,7 +55,7 @@ class RecipeSelector {
       this.recipes = recipes;
     } catch (error) {
       logger.error(new Error(`Error fetching recipes: ${error.message}`));
-      // Handling the error similarly, you may choose to throw it, 
+      // Handling the error similarly, you may choose to throw it,
       // or handle it in a way that the rest of your class can deal with (e.g., setting this._recipes to an empty array)
       throw error; // or this._recipes = [];
     }
@@ -65,27 +64,27 @@ class RecipeSelector {
 
   // Calculate the earliest and latest dates from the recipes
   //  check status: confirmed working
-  _getEarliestAndLatestDates() {
+  _getEarliestAndLatestDates () {
     // Initialize both earliest and latest to the Unix epoch start
     let earliest = new Date().getTime();
-    let latest = 0; 
+    let latest = 0;
     // iterate over the recipes
     this.recipes.forEach(recipe => {
       const lastUsedTime = new Date(recipe.lastUsed).getTime();
-        // Check if the recipe has been used and does not evaluate to NaN
-        if (recipe.lastUsed && !isNaN(lastUsedTime)) {
-          // Adjust earliest if the date is earlier than earlier date
-          if (lastUsedTime < earliest) {
-              earliest = lastUsedTime;
-          }
-          // Adjust latest only if we find a valid, later date
-          if (lastUsedTime > latest) {
-              latest = lastUsedTime;
-          }
+      // Check if the recipe has been used and does not evaluate to NaN
+      if (recipe.lastUsed && !isNaN(lastUsedTime)) {
+        // Adjust earliest if the date is earlier than earlier date
+        if (lastUsedTime < earliest) {
+          earliest = lastUsedTime;
         }
-        // if recipe.lastUsed is NULL, we don't change the earliest rendering
-        // a true range. Later if a recipe has never been used (lastUser == NULL), 
-        // we can set the newness score to 1
+        // Adjust latest only if we find a valid, later date
+        if (lastUsedTime > latest) {
+          latest = lastUsedTime;
+        }
+      }
+      // if recipe.lastUsed is NULL, we don't change the earliest rendering
+      // a true range. Later if a recipe has never been used (lastUser == NULL),
+      // we can set the newness score to 1
     });
     this.earliestDate = new Date(earliest);
     this.latestDate = new Date(latest);
@@ -98,7 +97,7 @@ class RecipeSelector {
 
   // Create an array of recent classifications and tags
   //  check status: confirmed working
-  _setRecentClassificationAndTags() {
+  _setRecentClassificationAndTags () {
     // Sort the recipes from most recent to earliest
     this._sortRecipesRecentToEarliest();
     // Initialize the arrays
@@ -128,20 +127,20 @@ class RecipeSelector {
 
   // Iterate over the recipes and score each one
   //  check status: confirmed working
-  _scoreRecipes() {
+  _scoreRecipes () {
     this.recipes = this.recipes.map(recipe => {
-        // Calculate the score for the current recipe
-        const score = this._calculateScore(recipe);       
-        // Log the recipe's identifiable property (e.g., title) and its score
-        logger.debug(`Recipe scored: ${recipe.title}, score: ${score}`);        
-        // Return the recipe object with the updated score
-        return { ...recipe, score: score };
+      // Calculate the score for the current recipe
+      const score = this._calculateScore(recipe);
+      // Log the recipe's identifiable property (e.g., title) and its score
+      logger.debug(`Recipe scored: ${recipe.title}, score: ${score}`);
+      // Return the recipe object with the updated score
+      return { ...recipe, score };
     });
   }
 
   // Score a recipe based on newness and classification (and other criteria if we wish)
   //  check status: confirmed working
-  _calculateScore(recipe) {
+  _calculateScore (recipe) {
     const newnessScore = this._calculateNewnessScore(recipe);
     const classificationScore = this._calculateClassificationScore(recipe);
     // combine scores for different criteria as weighted average
@@ -153,17 +152,17 @@ class RecipeSelector {
 
   // Calculate the "newness" score, i.e., least recently used recipes get a higher score
   //  check status: confirmed working
-  _calculateNewnessScore(recipe) {
+  _calculateNewnessScore (recipe) {
     // If the recipe has never been used (lastUsed is NULL) or the date range is 0,
     // assign the maximum newness score of 1.
     if (!recipe.lastUsed || this.dateRange === 0) {
-        return 1;
+      return 1;
     }
     // For recipes that have been used, calculate newness based on their lastUsed date.
     const lastUsedTime = new Date(recipe.lastUsed).getTime();
     const earliestTime = this.earliestDate.getTime();
     // Calculate newness score based on the position of lastUsedTime within the date range.
-    let newnessSubscore = 1 - (lastUsedTime - earliestTime) / this.dateRange;
+    const newnessSubscore = 1 - (lastUsedTime - earliestTime) / this.dateRange;
     // Ensure the newness score is within the 0 to 1 range.
     const normalizedNewness = Math.min(Math.max(newnessSubscore, 0), 1);
     logger.debug(`Recipe "${recipe.title}" scored. Newness: ${normalizedNewness}`);
@@ -173,7 +172,7 @@ class RecipeSelector {
   // Iterate over the classifications in a recipe and calculate a score
   //  lower scores are more recent classifications, higher scores are older
   //  check status: confirmed working
-  _calculateClassificationScore(recipe) {
+  _calculateClassificationScore (recipe) {
     // Ensure the recipe has classifications
     if (!recipe.classification || recipe.classification.length === 0) {
       return 1; // Return 0 if no classifications are present
@@ -196,7 +195,7 @@ class RecipeSelector {
 
   // Calculate classification score - least recent classifications get a higher score
   //  check status: confirmed working
-  _calculateClassificationSubscore(classification) {
+  _calculateClassificationSubscore (classification) {
     // scoring classification
     //  1 - recipe with least recent classification (or no match)
     //  0 - recipe with most recent classification
@@ -207,18 +206,18 @@ class RecipeSelector {
     const index = this.recentClassifications.findIndex(c => c.toLowerCase() === normalizedClassification);
     // If the classification is not found, return 1
     if (index === -1) {
-      logger.debug(`Classification "${classification}" not found, scored: ${subscore}`)
+      logger.debug(`Classification "${classification}" not found, scored: 1`);
       return 1;
     }
     // Scale the value based on the index position
     const subscore = index / (this.recentClassifications.length - 1);
-    logger.debug(`Classification "${classification}" index: ${index}, scored: ${subscore}`)
+    logger.debug(`Classification "${classification}" index: ${index}, scored: ${subscore}`);
     return subscore;
   }
 
   // Select the next recipe based on the calculated scores
   //  check status: confirmed working
-  _selectNextRecipe() {
+  _selectNextRecipe () {
     // Sort the recipes for selection based on score
     this._sortRecipesByScore();
     // create our pool
@@ -248,7 +247,7 @@ class RecipeSelector {
 
   // Fetch the full recipe based on the recipeID after selection
   // check status: confirmed working
-  async _fetchSelectedRecipe(recipeID) {
+  async _fetchSelectedRecipe (recipeID) {
     try {
       const query = `
         SELECT *
@@ -262,13 +261,13 @@ class RecipeSelector {
       logger.error(new Error(`Error fetching selected recipe with ID ${recipeID}: ${error.message}`));
       // Depending on your error handling strategy, you might want to rethrow the error
       // or return null/undefined/a default value
-      throw error; // or return null; 
+      throw error; // or return null;
     }
   }
 
   // Sort recipes based on lastUsed timestamp, from most recent to earliest
   //  check status: confirmed working
-  _sortRecipesRecentToEarliest() {
+  _sortRecipesRecentToEarliest () {
     this.recipes.sort((a, b) => {
       if (a.lastUsed === null && b.lastUsed === null) {
         return 0; // Leave them in their current order
@@ -284,13 +283,13 @@ class RecipeSelector {
 
   // Sort recipes based on score
   //  check status: confirmed working
-  _sortRecipesByScore() {
+  _sortRecipesByScore () {
     this.recipes.sort((a, b) => b.score - a.score);
   }
 
   // update the recipe.lastUsed - we do this after selecting the recipe
   // check status: confirmed working
-  async _updateRecipeLastUsed(recipeID) {
+  async _updateRecipeLastUsed (recipeID) {
     try {
       const query = `
         UPDATE recipes
@@ -304,9 +303,8 @@ class RecipeSelector {
       // Depending on your error handling strategy, you might want to rethrow the error
       // or handle it in a way that the rest of your class can deal with
       throw error; // or return null;
-    } 
+    }
   }
-
 }
 
 module.exports = RecipeSelector;
