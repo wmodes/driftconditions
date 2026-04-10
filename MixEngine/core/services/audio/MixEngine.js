@@ -782,12 +782,11 @@ class MixEngine {
       filter: 'acompressor',
       options: {
         level_in: 1.0,
-        level_out: 0.8,
         attack: 20,
         release: 250,
         threshold: -20,
         ratio: 10,
-        makeup: 1.0,
+        makeup: 0.8, // replaces invalid level_out:0.8 (level_out belongs to agate, not acompressor)
         knee: 5
       },
       outputs: distortionLabel
