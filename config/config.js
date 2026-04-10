@@ -97,9 +97,9 @@ const config = {
         max: 60 * 10, // 600s
       },
       huge: {
-        // 10 minutes to 60 minutes - long soundscapes, environmental recordings, and ambient
-        min: 60 * 10, // 600s
-        max: 60 * 60, // 3600s
+        // 10 minutes to 120 minutes - long soundscapes, environmental recordings, and ambient
+        min: 60 * 10,  // 600s
+        max: 60 * 120, // 7200s
       },
     },
   },
