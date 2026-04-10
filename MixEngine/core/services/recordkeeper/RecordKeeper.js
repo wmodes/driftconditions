@@ -3,12 +3,14 @@
  *
  * After clips are selected and timings are fully resolved, RecordKeeper:
  *   - Determines which clips were actually heard (within mixDuration, per track)
- *   - Updates audio.lastUsed for each heard clip
+ *   - Updates audio.lastUsed and audio.timesUsed for each heard clip
  *   - Writes a row to clipUsage for each heard clip
+ *   - Updates recipes.lastUsed, recipes.timesUsed, and recipes.avgDuration
+ *   - Writes a row to recipeUsage
  *   - Returns an accurate playlist of heard clips for storage in mixQueue
  *
- * Replaces the former RecipeParser.getPlaylistFromRecipe() and the per-clip
- * _updateClipLastUsed() calls in ClipSelector.
+ * Replaces the former RecipeParser.getPlaylistFromRecipe(), the per-clip
+ * _updateClipLastUsed() in ClipSelector, and _updateRecipeLastUsed() in RecipeSelector.
  */
 
 const { database: db } = require('config');
@@ -16,6 +18,7 @@ const { config } = require('config');
 const logger = require('config/logger').custom('RecordKeeper', 'info');
 
 const tinyMax = config.audio.clipLength.tiny.max;
+const avgDurationHistoryWeight = config.recipes.avgDurationHistoryWeight;
 
 class RecordKeeper {
   /**
@@ -30,6 +33,7 @@ class RecordKeeper {
     const heardClips = this._getHeardClips(recipe, mixDuration);
     await this._updateLastUsed(heardClips);
     await this._logClipUsage(heardClips, recipe.recipeID);
+    await this._updateRecipeUsage(recipe.recipeID, mixDuration);
     const playlist = this._buildPlaylist(heardClips);
     return playlist;
   }
@@ -106,6 +110,41 @@ class RecordKeeper {
       } catch (error) {
         logger.error(new Error(`RecordKeeper:_logClipUsage: Failed for audioID ${clip.audioID}: ${error.message}`));
       }
+    }
+  }
+
+  /**
+   * Updates recipe usage tracking: increments timesUsed, inserts a recipeUsage row,
+   * and updates the avgDuration running average.
+   *
+   * avgDuration = (avgDuration * historyWeight + mixDuration) / (historyWeight + 1)
+   * If avgDuration is NULL (first run), mixDuration is stored directly.
+   *
+   * @param {number} recipeID - The recipe that generated this mix.
+   * @param {number} mixDuration - The final mix duration in seconds.
+   */
+  async _updateRecipeUsage (recipeID, mixDuration) {
+    try {
+      await db.execute(
+        'INSERT INTO recipeUsage (recipeID, duration) VALUES (?, ?)',
+        [recipeID, mixDuration]
+      );
+    } catch (error) {
+      logger.error(new Error(`RecordKeeper:_updateRecipeUsage: Failed to insert recipeUsage for recipeID ${recipeID}: ${error.message}`));
+    }
+    try {
+      await db.execute(
+        `UPDATE recipes SET
+          lastUsed = ?,
+          timesUsed = timesUsed + 1,
+          avgDuration = IF(avgDuration IS NULL,
+            ?,
+            (avgDuration * ? + ?) / (? + 1))
+        WHERE recipeID = ?`,
+        [new Date(), mixDuration, avgDurationHistoryWeight, mixDuration, avgDurationHistoryWeight, recipeID]
+      );
+    } catch (error) {
+      logger.error(new Error(`RecordKeeper:_updateRecipeUsage: Failed to update recipes for recipeID ${recipeID}: ${error.message}`));
     }
   }
 

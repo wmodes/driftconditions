@@ -108,6 +108,7 @@ const config = {
     selectPoolMinSize: 3,
     newnessScoreWeight: 1,
     classificationScoreWeight: 0.25,
+    avgDurationHistoryWeight: 10, // running average weight for recipe avgDuration; higher = slower to adapt
     classification: [
       'Ambient', 
       'Atmospheric', 
