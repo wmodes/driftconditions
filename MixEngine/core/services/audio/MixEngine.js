@@ -4,7 +4,6 @@
  */
 
 const logger = require('config/logger').custom('MixEngine', 'info');
-const { database: db } = require('config');
 const ffmpeg = require('fluent-ffmpeg');
 const JSON5 = require('json5');
 const path = require('path');
@@ -22,11 +21,11 @@ const exprsConfig = config.exprs;
  * Class representing the MixEngine.
  */
 class MixEngine {
-  constructor() {
+  constructor () {
     logger.debug(`MixEngine:constructor: config: ${JSON5.stringify(config, null, 2)}`);
     this.exprs = this._substituteExpressions(exprsConfig);
     logger.debug('MixEngine:constructor: exprs: ...');
-    for (let key in this.exprs) {
+    for (const key in this.exprs) {
       logger.debug(`${key}: ${this.exprs[key]}`);
     }
     this.filterChain = [];
@@ -50,12 +49,12 @@ class MixEngine {
    * Resets the internal state of the MixEngine.
    * @private
    */
-  _resetState() {
+  _resetState () {
     this.filterChain = [];
     this.currentInputNum = 0;
     this.currentTrackNum = 0;
     this.currentClipNum = 0;
-    this.trackFinalLabels = []; 
+    this.trackFinalLabels = [];
     this.finalOutputLabel = '';
     this.mixFilename = '';
     this.mixFilepath = '';
@@ -71,7 +70,7 @@ class MixEngine {
    * @returns {Promise<void>} A promise that resolves when the mix is created.
    * @async
    */
-  async makeMix(recipe, mixDetails) {
+  async makeMix (recipe, mixDetails) {
     // Reset state
     this._resetState();
     const recipeObj = recipe.recipeObj;
@@ -103,7 +102,7 @@ class MixEngine {
    * @param {Object} recipeObj - The recipe object.
    * @private
    */
-  _setupInputs(ffmpegCmd, recipeObj) {
+  _setupInputs (ffmpegCmd, recipeObj) {
     recipeObj.tracks.forEach(track => {
       track.clips.forEach(clip => {
         if (!clip.classification.includes('silence')) {
@@ -113,7 +112,7 @@ class MixEngine {
         }
       });
     });
-  }  
+  }
 
   /*
    * BUILD INPUTS
@@ -127,7 +126,7 @@ class MixEngine {
    * @sideeffect this.mixFilename, this.mixFilepaths
    * @private
    */
-  _setMixFilepath(mixID, recipe) {
+  _setMixFilepath (mixID, recipe) {
     const mixFilename = `${this._sanitizeFilename(`${mixID}_${recipe.title}`)}.mp3`;
     this.mixFilename = mixFilename;
     const mixFilepath = path.join(mixFileDir, mixFilename);
@@ -141,14 +140,12 @@ class MixEngine {
    * @param {Object} recipeObj - The recipe object.
    * @private
    */
-  _buildComplexFilter(recipeObj) {
+  _buildComplexFilter (recipeObj) {
     // clear the filterChain
     this.filterChain = [];
     // clear some counters
     this.currentInputNum = 0;
     this.currentTrackNum = 0;
-    // track the outputs of each track, later we will mix these
-    let trackOutputs = [];
     //
     // Build filters for each track
     this._buildAllTracksAndClipsFilters(recipeObj);
@@ -171,19 +168,18 @@ class MixEngine {
    * @param {Object} recipeObj - The recipe object.
    * @private
    */
-  _buildAllTracksAndClipsFilters(recipeObj) {
+  _buildAllTracksAndClipsFilters (recipeObj) {
     recipeObj.tracks.forEach(track => {
       // set track filters and outputs
       this._buildTrackFilters(track);
       // increment the track number
       this.currentTrackNum++;
     });
-  }  
+  }
 
   /*
    * TRACK FILTERS
    */
-
 
   /**
    * Concatenates clips within a track and applies volume adjustment to the entire track if specified.
@@ -191,11 +187,11 @@ class MixEngine {
    * @param {Object} track - The track object.
    * @private
    */
-  _buildTrackFilters(track) {
+  _buildTrackFilters (track) {
     // clear our clip counter
     this.currentClipNum = 0;
     // gather clip output labels for concatenation
-    let clipOutputLabels = [];
+    const clipOutputLabels = [];
     //
     // track base label
     const baseLabel = `track-${this.currentTrackNum}`;
@@ -221,7 +217,7 @@ class MixEngine {
     });
     //
     // Concat inputs including silence
-    let newTrackLabel = baseLabel + '_concat';
+    const newTrackLabel = baseLabel + '_concat';
     this.filterChain.push({
       inputs: clipOutputLabels,
       filter: 'concat',
@@ -239,8 +235,8 @@ class MixEngine {
     if ('volume' in track) {
       logger.debug(`MixEngine:_buildTrackFilters(): Applying volume filter to track ${track.volume}`);
       nextInputSrc = this._volumeFilter(
-        nextInputSrc, 
-        baseLabel, 
+        nextInputSrc,
+        baseLabel,
         track.volume
       );
     }
@@ -264,8 +260,8 @@ class MixEngine {
           // if we have a loop effect, we need to adjust the duration of the clip
           track.duration = Infinity;
           nextInputSrc = this._loopEffect(
-            nextInputSrc, 
-            baseLabel, 
+            nextInputSrc,
+            baseLabel,
             this._getParams(effect)
           );
         }
@@ -273,8 +269,8 @@ class MixEngine {
         else if (/^(noise|wave)/i.test(effect)) {
           logger.debug(`MixEngine:_buildtrackFilters(): Applying wave effect to track ${effect}`);
           nextInputSrc = this._waveEffect(
-            nextInputSrc, 
-            baseLabel, 
+            nextInputSrc,
+            baseLabel,
             this._getParams(effect)
           );
         }
@@ -282,8 +278,8 @@ class MixEngine {
         else if (/^(backward|backwards|reverse|reversed)/i.test(effect)) {
           logger.debug(`MixEngine:_buildClipFilters(): Applying backward effect to clip ${effect}`);
           nextInputSrc = this._backwardEffect(
-            nextInputSrc, 
-            baseLabel, 
+            nextInputSrc,
+            baseLabel,
             this._getParams(effect)
           );
         }
@@ -291,8 +287,8 @@ class MixEngine {
         else if (/^(faraway|distant)/i.test(effect)) {
           logger.debug(`MixEngine:_buildtrackFilters(): Applying faraway effect to track ${effect}`);
           nextInputSrc = this._farawayEffect(
-            nextInputSrc, 
-            baseLabel, 
+            nextInputSrc,
+            baseLabel,
             this._getParams(effect)
           );
         }
@@ -300,8 +296,8 @@ class MixEngine {
         else if (/^(telephone|phone)/i.test(effect)) {
           logger.debug(`MixEngine:_buildtrackFilters(): Applying telephone effect to track ${effect}`);
           nextInputSrc = this._telephoneEffect(
-            nextInputSrc, 
-            baseLabel, 
+            nextInputSrc,
+            baseLabel,
             this._getParams(effect)
           );
         }
@@ -309,19 +305,17 @@ class MixEngine {
         else if (effect.toLowerCase().startsWith('detune')) {
           logger.debug(`MixEngine:_buildtrackFilters(): Applying detune effect to track ${effect}`);
           nextInputSrc = this._detuneEffect(
-            nextInputSrc, 
-            baseLabel, 
+            nextInputSrc,
+            baseLabel,
             this._getParams(effect)
           );
         }
         // shortest, longest, and first effects
         else if (effect.toLowerCase() == 'first') {
           this.mixDurationTrack = 0;
-        }
-        else if (effect.toLowerCase() == 'shortest') {
+        } else if (effect.toLowerCase() == 'shortest') {
           this.mixDurationTrack = 'shortest';
-        }
-        else if (effect.toLowerCase() == 'longest') {
+        } else if (effect.toLowerCase() == 'longest') {
           this.mixDurationTrack = 'longest';
         }
         // trim effect
@@ -329,7 +323,7 @@ class MixEngine {
           this.mixDurationTrack = this.currentTrackNum;
         }
       }); // end of effects
-    } 
+    }
     // set the final track label
     this.trackFinalLabels.push(nextInputSrc);
     //
@@ -344,7 +338,7 @@ class MixEngine {
    * @returns {string} The noise filter string.
    * @private
    */
-  _buildNoiseFilter(noiseOpts) {
+  _buildNoiseFilter (noiseOpts) {
     let noiseObj = {};
     if (typeof noiseOpts === 'string') {
       // if we have a string, we assume it's a preset
@@ -363,16 +357,16 @@ class MixEngine {
       noiseObj = filterConfig.noise.presets.default;
     }
     // set individual values
-    let genFreqFact = noiseObj.genFreqFact || noiseObj.f;
+    const genFreqFact = noiseObj.genFreqFact || noiseObj.f;
     let genAmpFact = noiseObj.genAmpFact || noiseObj.a;
-    let globFreqFact = noiseObj.globFreqFact || noiseObj.n;
-    let globAmpFact = noiseObj.globAmpFact || noiseObj.s;
-    let globAmpPol = noiseObj.globAmpPolarity || noiseObj.p;
-    let globPreBias = noiseObj.globPreBias || noiseObj.o;
-    let globPostBias = noiseObj.globPostBias || noiseObj.q;
+    const globFreqFact = noiseObj.globFreqFact || noiseObj.n;
+    const globAmpFact = noiseObj.globAmpFact || noiseObj.s;
+    const globAmpPol = noiseObj.globAmpPolarity || noiseObj.p;
+    const globPreBias = noiseObj.globPreBias || noiseObj.o;
+    const globPostBias = noiseObj.globPostBias || noiseObj.q;
 
     // if we require more genFreqFact than we have genAmpFact, pad with 1
-    genAmpFact = genAmpFact.concat(Array.from({length: genFreqFact.length - genAmpFact.length}, () => 1));
+    genAmpFact = genAmpFact.concat(Array.from({ length: genFreqFact.length - genAmpFact.length }, () => 1));
     // construct the generators
     const genStr = genFreqFact.map((f, i) => {
       return `cos(PI * t * ${globFreqFact} / ${f}) * ${genAmpFact[i]}`;
@@ -394,7 +388,7 @@ class MixEngine {
    * @returns {string} The label of the most recent clip.
    * @private
    */
-  _buildClipFilters(clip) {
+  _buildClipFilters (clip) {
     logger.debug(`MixEngine:_buildClipFilters(): clip: ${JSON5.stringify(clip, null, 2)}`);
     //
     // clip base label
@@ -415,8 +409,8 @@ class MixEngine {
     if ('volume' in clip) {
       logger.debug(`MixEngine:_buildClipFilters(): Applying volume filter to clip ${clip.volume}`);
       nextInputSrc = this._volumeFilter(
-        nextInputSrc, 
-        baseLabel, 
+        nextInputSrc,
+        baseLabel,
         clip.volume
       );
     }
@@ -440,8 +434,8 @@ class MixEngine {
           // if we have a loop effect, we need to adjust the duration of the clip
           clip.duration = Infinity;
           nextInputSrc = this._loopEffect(
-            nextInputSrc, 
-            baseLabel, 
+            nextInputSrc,
+            baseLabel,
             this._getParams(effect)
           );
         }
@@ -449,8 +443,8 @@ class MixEngine {
         else if (/^(noise|wave)/i.test(effect)) {
           logger.debug(`MixEngine:_buildClipFilters(): Applying wave effect to clip ${effect}`);
           nextInputSrc = this._waveEffect(
-            nextInputSrc, 
-            baseLabel, 
+            nextInputSrc,
+            baseLabel,
             this._getParams(effect)
           );
         }
@@ -458,8 +452,8 @@ class MixEngine {
         else if (/^(backward|reverse)/i.test(effect)) {
           logger.debug(`MixEngine:_buildClipFilters(): Applying backward effect to clip ${effect}`);
           nextInputSrc = this._backwardEffect(
-            nextInputSrc, 
-            baseLabel, 
+            nextInputSrc,
+            baseLabel,
             this._getParams(effect)
           );
         }
@@ -467,8 +461,8 @@ class MixEngine {
         else if (/^(faraway|distant)/i.test(effect)) {
           logger.debug(`MixEngine:_buildClipFilters(): Applying faraway effect to clip ${effect}`);
           nextInputSrc = this._farawayEffect(
-            nextInputSrc, 
-            baseLabel, 
+            nextInputSrc,
+            baseLabel,
             this._getParams(effect)
           );
         }
@@ -476,8 +470,8 @@ class MixEngine {
         else if (/^(telephone|phone)/i.test(effect)) {
           logger.debug(`MixEngine:_buildtrackFilters(): Applying telephone effect to track ${effect}`);
           nextInputSrc = this._telephoneEffect(
-            nextInputSrc, 
-            baseLabel, 
+            nextInputSrc,
+            baseLabel,
             this._getParams(effect)
           );
         }
@@ -485,8 +479,8 @@ class MixEngine {
         else if (effect.toLowerCase().startsWith('detune')) {
           logger.debug(`MixEngine:_buildClipFilters(): Applying detune effect to clip ${effect}`);
           nextInputSrc = this._detuneEffect(
-            nextInputSrc, 
-            baseLabel, 
+            nextInputSrc,
+            baseLabel,
             this._getParams(effect)
           );
         }
@@ -508,7 +502,7 @@ class MixEngine {
    * @returns {string[]} - An array of extracted parameters or an empty array if not found.
    * @private
    */
-  _getParams(input) {
+  _getParams (input) {
     // Match "someWord(param)" or "someWord{param1, param2}"
     const match = input.match(/^[a-zA-Z]+\(([^)]+)\)$/) || input.match(/^[a-zA-Z]+\{([^}]+)\}$/);
     if (match) {
@@ -520,22 +514,22 @@ class MixEngine {
 
   /**
    * Generate silence clip of a given duration.
-   * @param {number} duration 
+   * @param {number} duration
    * @sideeffect adds filter to this.filterChain
    * @returns {string} The label of the most recent clip
    * @private
    */
-  _silenceFilter(baseLabel, duration) {
+  _silenceFilter (baseLabel, duration) {
     // generate label
     const newLabel = baseLabel + '_silence';
     // create filter
     this.filterChain.push({
-        filter: 'aevalsrc',
-        options: {
-          exprs: 0,
-          duration: duration
-        },
-        outputs: newLabel
+      filter: 'aevalsrc',
+      options: {
+        exprs: 0,
+        duration
+      },
+      outputs: newLabel
     });
     logger.debug(`MixEngine:_silenceFilter(): Generating silence of duration ${duration} seconds with label ${newLabel}`);
     // return the most recent clip label
@@ -549,11 +543,11 @@ class MixEngine {
    * @returns {string} most recent output label
    * @private
    */
-  _volumeFilter(inputSrc, baseLabel, volume) {
+  _volumeFilter (inputSrc, baseLabel, volume) {
     // generate label
     let newLabel = baseLabel + '_volume';
     // compile options
-    let volOptions = {};
+    const volOptions = {};
     // If we have a number or number-string
     // this should handle 99.9% of cases
     if (!isNaN(Number(volume))) {
@@ -562,29 +556,29 @@ class MixEngine {
         inputs: inputSrc,
         filter: 'volume',
         options: {
-          volume: (volume || 100) / 100,
+          volume: (volume || 100) / 100
         },
         outputs: newLabel
       });
       return newLabel;
-    } 
+    }
     // if we have a volume command, handle it
     // this is a wierdo leftover from the old system
     // replaced by 'wave' effects
     if (volume.toLowerCase().startsWith('noise')) {
       // TODO: This will be replaced by effects
       newLabel = this._waveEffect(
-        inputSrc, 
-        baseLabel, 
+        inputSrc,
+        baseLabel,
         this._getParams(volume)
       );
-      return(newLabel);
+      return (newLabel);
     }
     // we shouldn't get here unless we have weirdness
     // what da fuq is this?
     else {
       logger.error(`MixEngine:_volumeFilter(): Invalid volume command: ${volume}`);
-    }    
+    }
     // if we get here, it means we didn't do anything, return the original label
     // In the words of Fleewood Mac:
     // never break the chain
@@ -600,10 +594,10 @@ class MixEngine {
    * @returns {string} most recent output label
    * @private
    */
-  _loopEffect(inputSrc, baseLabel, params) {
+  _loopEffect (inputSrc, baseLabel, params) {
     const newLabel = baseLabel + '_loop';
     // unless otherwise specified, loop forever
-    var numLoops = -1;
+    let numLoops = -1;
     if (params.length > 0) {
       numLoops = parseInt(params[0]);
     }
@@ -612,7 +606,7 @@ class MixEngine {
       filter: 'aloop',
       options: {
         loop: numLoops,
-        size: 2e9,
+        size: 2e9
       },
       outputs: newLabel
     });
@@ -629,7 +623,7 @@ class MixEngine {
    * @returns {string} most recent output label
    * @private
    */
-  _waveEffect(inputSrc, baseLabel,params) {
+  _waveEffect (inputSrc, baseLabel, params) {
     // here 'noise' refers to coherent noise filters, a harmonic series based on sine and cosine functions
     //
     logger.debug(`MixEngine:_waveEffect(): params: ${JSON5.stringify(params)} count: ${params.length}`);
@@ -643,7 +637,7 @@ class MixEngine {
     if (params.length > 0) {
       const paramKey = params[0].toLowerCase();
       logger.debug(`MixEngine:_waveEffect(): Checking if paramKey "${paramKey}" exists in exprs.`);
-  
+
       if (paramKey in this.exprs) {
         waveFunc = this.exprs[paramKey];
         logger.debug(`MixEngine:_waveEffect(): Found paramKey "${paramKey}" in exprs. Setting waveFunc.`);
@@ -676,9 +670,9 @@ class MixEngine {
    * @returns {string} most recent output label
    * @private
    */
-  _farawayEffect(inputSrc, baseLabel, params) {
+  _farawayEffect (inputSrc, baseLabel, params) {
     logger.debug(`MixEngine:_farawayEffect(): params: ${params}`);
-    
+
     // Generate initial labels
     let currentLabel = inputSrc;
     const volumeLabel = baseLabel + '_faraway_volume';
@@ -694,7 +688,7 @@ class MixEngine {
         inputs: currentLabel,
         filter: 'volume',
         options: {
-          'volume': 0.3
+          volume: 0.3
         },
         outputs: volumeLabel
       });
@@ -706,8 +700,8 @@ class MixEngine {
       inputs: currentLabel,
       filter: 'lowpass',
       options: {
-        'f': 1000,
-        'p': 2
+        f: 1000,
+        p: 2
       },
       outputs: lowpassLabel
     });
@@ -718,10 +712,10 @@ class MixEngine {
       inputs: currentLabel,
       filter: 'aecho',
       options: {
-        'in_gain': 0.8,
-        'out_gain': 0.9,
-        'delays': 50,
-        'decays': 0.2
+        in_gain: 0.8,
+        out_gain: 0.9,
+        delays: 50,
+        decays: 0.2
       },
       outputs: reverbLabel
     });
@@ -739,7 +733,7 @@ class MixEngine {
    * @returns {string} most recent output label
    * @private
    */
-  _backwardEffect(inputSrc, baseLabel, params) {
+  _backwardEffect (inputSrc, baseLabel, params) {
     const newLabel = baseLabel + '_backward';
 
     this.filterChain.push({
@@ -761,7 +755,7 @@ class MixEngine {
    * @returns {string} most recent output label
    * @private
    */
-  _telephoneEffect(inputSrc, baseLabel, params) {
+  _telephoneEffect (inputSrc, baseLabel, params) {
     logger.debug(`MixEngine:_telephoneEffect(): params: ${params}`);
 
     // Generate initial labels
@@ -774,9 +768,9 @@ class MixEngine {
       inputs: currentLabel,
       filter: 'bandpass',
       options: {
-        'f': 1000,   // Center frequency at 1000 Hz
-        'width_type': 'h',
-        'width': 2000 // Bandwidth of 2000 Hz (approx. 300-3400 Hz for telephone)
+        f: 1000, // Center frequency at 1000 Hz
+        width_type: 'h',
+        width: 2000 // Bandwidth of 2000 Hz (approx. 300-3400 Hz for telephone)
       },
       outputs: bandpassLabel
     });
@@ -787,14 +781,14 @@ class MixEngine {
       inputs: currentLabel,
       filter: 'acompressor',
       options: {
-        'level_in': 1.0,
-        'level_out': 0.8,
-        'attack': 20,
-        'release': 250,
-        'threshold': -20,
-        'ratio': 10,
-        'makeup': 1.0,
-        'knee': 5
+        level_in: 1.0,
+        level_out: 0.8,
+        attack: 20,
+        release: 250,
+        threshold: -20,
+        ratio: 10,
+        makeup: 1.0,
+        knee: 5
       },
       outputs: distortionLabel
     });
@@ -812,7 +806,7 @@ class MixEngine {
    * @returns {string} most recent output label
    * @private
    */
-  _normEffect(inputSrc, baseLabel, params) {
+  _normEffect (inputSrc, baseLabel, params) {
     logger.debug(`MixEngine:_normEffect(): params: ${JSON5.stringify(params)} count: ${params.length}`);
     // generate label
     const newLabel = baseLabel + '_norm';
@@ -820,8 +814,8 @@ class MixEngine {
     let options = { I: -14, TP: -1 };
 
     // Set values based on preset
-    //  (I) Integrated loudness target 
-    //  (TP) True peak limit 
+    //  (I) Integrated loudness target
+    //  (TP) True peak limit
     //  (LRA) Loudness range target - optional
     if (params.length > 0) {
       const preset = params[0].toLowerCase();
@@ -833,7 +827,7 @@ class MixEngine {
         case 'music':
           options = { I: -14, TP: -1 };
           break;
-        case 'musicbed':  
+        case 'musicbed':
         case 'bed':
           options = { I: -20, TP: -2 };
           break;
@@ -844,19 +838,12 @@ class MixEngine {
     this.filterChain.push({
       inputs: inputSrc,
       filter: 'loudnorm',
-      options: options,
+      options,
       outputs: newLabel
     });
     // return the most recent label
     return newLabel;
   }
-
-
-
-
-
-
-
 
   /*
    * FINAL MIX FILTERS
@@ -868,7 +855,7 @@ class MixEngine {
    * @param {Object} recipeObj - The recipe object.
    * @private
    */
-  _buildMixFilter(recipeObj) {
+  _buildMixFilter (recipeObj) {
     if (this.trackFinalLabels.length === 1) {
       // If there is only one track, we don't need to mix anything
       this.finalOutputLabel = this.trackFinalLabels[0];
@@ -878,7 +865,7 @@ class MixEngine {
       this.filterChain.push({
         filter: 'amix',
         options: {
-          inputs: this.trackFinalLabels.length,
+          inputs: this.trackFinalLabels.length
         },
         inputs: this.trackFinalLabels,
         outputs: finalOutputLabel
@@ -893,7 +880,7 @@ class MixEngine {
    * @param {number} mixDuration - The length of the mix in seconds.
    * @private
    */
-  _buildTrimFilter(mixDuration) {
+  _buildTrimFilter (mixDuration) {
     this.filterChain.push({
       inputs: this.finalOutputLabel,
       filter: 'atrim',
@@ -918,7 +905,7 @@ class MixEngine {
    * @returns {Promise<void>} A promise that resolves when the ffmpeg command completes.
    * @private
    */
-  _configureAndRun(ffmpegCmd) {
+  _configureAndRun (ffmpegCmd) {
     return new Promise((resolve, reject) => {
       ffmpegCmd
         .complexFilter(this.filterChain)
@@ -928,17 +915,17 @@ class MixEngine {
         .audioFrequency(ffmpegOutput.sampleRate) // Set audio sample rate from config
         .outputOptions([`-map [${this.finalOutputLabel}]`, "-v info"])
         .output(this.mixFilepath)
-        .on('end', function() {
-            logger.debug('Transcoding succeeded !');
-            resolve();
+        .on('end', function () {
+          logger.debug('Transcoding succeeded !');
+          resolve();
         })
-        .on('error', function(err, stdout, stderr) {
-            logger.error('Cannot process audio: ' + err.message);
-            console.log('ffmpeg stdout:\n' + stdout);
-            console.log('ffmpeg stderr:\n' + stderr);
-            reject(err);
+        .on('error', function (err, stdout, stderr) {
+          logger.error('Cannot process audio: ' + err.message);
+          console.log('ffmpeg stdout:\n' + stdout);
+          console.log('ffmpeg stderr:\n' + stderr);
+          reject(err);
         })
-        .run()
+        .run();
     });
   }
 
@@ -953,9 +940,9 @@ class MixEngine {
    * @returns {Object} The substituted expressions.
    * @private
    */
-  _substituteExpressions(exprsConfig) {
+  _substituteExpressions (exprsConfig) {
     // Convert all keys to lowercase
-    let exprs = this._keysToLowercase(exprsConfig);
+    const exprs = this._keysToLowercase(exprsConfig);
     // Get list of keys with placeholders that need substitution
     let exprsSubstNeeded = this._getListOfExprSubstNeeded(exprs);
     // logger.debug(`MixEngine:_substituteExpressions: exprsSubstNeeded: ${JSON.stringify(exprsSubstNeeded)}`);
@@ -964,7 +951,7 @@ class MixEngine {
     // while (exprsSubstNeeded != [] && loopNum < 5)
     while (exprsSubstNeeded.length > 0 && loopNum < 5) {
       // iterate over exprsSubstNeeded
-      for (let key of exprsSubstNeeded) {
+      for (const key of exprsSubstNeeded) {
         // call _replacePlaceholder passing exprsObj, exprKey
         this._replacePlaceholder(exprs, key);
       }
@@ -989,15 +976,15 @@ class MixEngine {
    * @returns {Object} The object with lowercase keys.
    * @private
    */
-    _keysToLowercase(obj) {
-      const lowerCaseObj = {};
-      for (let key in obj) {
-        if (obj.hasOwnProperty(key)) {
-          lowerCaseObj[key.toLowerCase()] = obj[key];
-        }
+  _keysToLowercase (obj) {
+    const lowerCaseObj = {};
+    for (const key in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        lowerCaseObj[key.toLowerCase()] = obj[key];
       }
-      return lowerCaseObj;
     }
+    return lowerCaseObj;
+  }
 
   /**
    * Gets a list of keys in the expressions object that contain placeholders.
@@ -1006,11 +993,11 @@ class MixEngine {
    * @returns {string[]} An array of keys that contain placeholders.
    * @private
    */
-  _getListOfExprSubstNeeded(exprsObj) {
+  _getListOfExprSubstNeeded (exprsObj) {
     const keys = [];
     // iterate over each key to see if there is an unresolved placeholder
-    for (let key in exprsObj) {
-      if (exprsObj.hasOwnProperty(key) && /%\{\w+\}/.test(exprsObj[key])) {
+    for (const key in exprsObj) {
+      if (Object.prototype.hasOwnProperty.call(exprsObj, key) && /%\{\w+\}/.test(exprsObj[key])) {
         // if value contains placeholder, add to key array
         keys.push(key);
       }
@@ -1025,7 +1012,7 @@ class MixEngine {
    * @param {string} exprKey - The key of the expression to replace placeholders in.
    * @private
    */
-  _replacePlaceholder(exprsObj, exprKey) {
+  _replacePlaceholder (exprsObj, exprKey) {
     // get value of exprKey from exprsObj
     const value = exprsObj[exprKey];
     // replace placeholders with values corresponding to key in exprsObj
@@ -1043,7 +1030,7 @@ class MixEngine {
    * @returns {string} The sanitized filename.
    * @private
    */
-  _sanitizeFilename(filename) {
+  _sanitizeFilename (filename) {
     return filename.replace(/[^a-z0-9_\-().\s]+/gi, '').replace(/\s+/g, '_');
   }
 
@@ -1053,7 +1040,7 @@ class MixEngine {
    * @returns {number} The length of the mix in seconds.
    * @private
    */
-  _determineMixDuration() {
+  _determineMixDuration () {
     logger.debug(`MixEngine:_determineMixDuration(): trackDurations: ${this.trackDurations}`);
     // Check if mixLengthTrack is a track number and is infinite
     if (typeof this.mixDurationTrack === 'number' && this.trackDurations[this.mixDurationTrack] === Infinity) {
@@ -1076,7 +1063,6 @@ class MixEngine {
     logger.debug(`MixEngine:_determineMixDuration(): mixDurationTrack: ${this.mixDurationTrack}, mixDuration: ${mixDuration}`);
     return mixDuration;
   }
-
 }
 
 module.exports = MixEngine;
