@@ -9,6 +9,24 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-04-10]
+
+### Added
+- `scripts/stop.sh` — stops all services in reverse dependency order (liquidsoap → icecast → mixengine → adminserver → caddy)
+
+### Changed
+- Renamed legacy project name from `interference` to `driftconditions` throughout — config, scripts, setup files, service files, Caddyfiles, and DB (local and production)
+- `AdminClient` heading updated from "interference" to "DriftConditions"
+- ESLint config updated to match codebase style: semicolons required, brace-style and eqeqeq relaxed
+
+### Fixed
+- MixEngine: silence clips with invalid or unrecognized `clipLength` keys (e.g. `"small"`) no longer produce `Infinity` duration, which previously caused ffmpeg `aevalsrc` filter to fail; falls back to `short` range with a warning log
+- MixEngine: removed unused `db` import and dead `trackOutputs` variable from `MixEngine.js`
+- Production `.env` symlinks (`AdminServer/.env`, `MixEngine/.env`, `AdminClient/.env`) were broken after directory rename — repointed to `~/driftconditions/.env`
+- Production `BASEDIR` updated to `/home/debian/driftconditions` in root `.env`
+
+---
+
 ## [2026-04-05]
 
 ### Added
