@@ -55,9 +55,9 @@ class RecordKeeper {
         const duration = parseFloat(clip.duration) || 0;
         // clip starts at `elapsed`; if that's already past the mix end, it was never heard
         if (elapsed < mixDuration) {
-          // exclude silence and tiny clips (not meaningful playlist entries)
-          if (!clip.classification.includes('silence') && duration >= tinyMax) {
-            // avoid duplicate audioIDs across tracks (same behaviour as before)
+          // exclude silence — no audioID to log
+          if (!clip.classification.includes('silence')) {
+            // avoid duplicate audioIDs across tracks
             const alreadyListed = heardClips.some(c => c.audioID === clip.audioID);
             if (!alreadyListed) {
               heardClips.push(clip);
@@ -116,15 +116,17 @@ class RecordKeeper {
    * @returns {Array} playlist
    */
   _buildPlaylist (heardClips) {
-    return heardClips.map(clip => ({
-      audioID: clip.audioID,
-      title: clip.title,
-      filename: clip.filename,
-      duration: clip.duration,
-      creatorID: clip.creatorID,
-      classification: clip.classification,
-      tags: clip.tags
-    }));
+    return heardClips
+      .filter(clip => parseFloat(clip.duration) >= tinyMax) // exclude tiny clips from public playlist
+      .map(clip => ({
+        audioID: clip.audioID,
+        title: clip.title,
+        filename: clip.filename,
+        duration: clip.duration,
+        creatorID: clip.creatorID,
+        classification: clip.classification,
+        tags: clip.tags
+      }));
   }
 }
 
