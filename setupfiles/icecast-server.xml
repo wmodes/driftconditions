@@ -2,7 +2,7 @@
 Icecast configuration file for local development
 
 Link into icecast config with:
-% sudo ln -sf /home/debian/interference/setupfiles/icecast-server.xml /etc/icecast2/icecast.xml
+% sudo ln -sf /home/debian/driftconditions/setupfiles/icecast-server.xml /etc/icecast2/icecast.xml
 
 Start:
 % sudo systemctl start icecast2

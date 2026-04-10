@@ -1,7 +1,7 @@
 # MixEngine systemctl service file
 #
 # Link into systemctl with:
-# % sudo ln -sf /home/debian/interference/setupfiles/mixengine.service /etc/systemd/system/mixengine.service
+# % sudo ln -sf /home/debian/driftconditions/setupfiles/mixengine.service /etc/systemd/system/mixengine.service
 # % sudo systemctl daemon-reload
 #
 # Start:
@@ -12,7 +12,7 @@
 #
 # View journal:
 # % journalctl -u mixengine.service --no-pager | less
-# (though ordinary server messages should be reported in interference/logs/mixengine.log)
+# (though ordinary server messages should be reported in driftconditions/logs/mixengine.log)
 
 [Unit]
 Description=MixEngine Node.js Express backend service
@@ -22,7 +22,7 @@ Requires=mysql.service
 [Service]
 Type=simple
 User=debian
-WorkingDirectory=/home/debian/interference/MixEngine
+WorkingDirectory=/home/debian/driftconditions/MixEngine
 
 # Commands to run before the service starts
 ExecStartPre=/bin/echo 'Starting MixEngine service...'

@@ -51,7 +51,7 @@ const config = {
     host: '127.0.0.1',
     user: 'mysql',
     password: process.env.DATABASE_PASSWORD,
-    database: 'interference',
+    database: 'driftconditions',
   },
   audio: {
     selectPoolPercentSize: 10,

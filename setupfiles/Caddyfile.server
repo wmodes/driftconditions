@@ -1,7 +1,7 @@
 # Caddyfile for server
 #
 # Symlink with:
-# % sudo ln -sf /home/debian/interference/setupfiles/Caddyfile.server /etc/caddy/sites/driftcondtitions.caddy
+# % sudo ln -sf /home/debian/driftconditions/setupfiles/Caddyfile.server /etc/caddy/sites/driftcondtitions.caddy
 # % echo 'import sites/*' | sudo tee /etc/caddy/Caddyfile # if not already there
 #
 # Start:
@@ -22,7 +22,7 @@ http://driftconditions.org:80 {
 
 # AdminClient
 https://driftconditions.org {
-    root * /home/debian/interference/AdminClient/build
+    root * /home/debian/driftconditions/AdminClient/build
     file_server
     encode gzip
     tls wmodes@gmail.com
@@ -39,7 +39,7 @@ https://driftconditions.org {
 
     # Serve static assets for fallback separately
     handle /fallback/* {
-        root * /home/debian/interference/fallback
+        root * /home/debian/driftconditions/fallback
         file_server
     }
 
@@ -48,7 +48,7 @@ https://driftconditions.org {
         @notfound {
             not file {path}
         }
-        root * /home/debian/interference/fallback
+        root * /home/debian/driftconditions/fallback
         rewrite @notfound /index.html
         file_server
     }
