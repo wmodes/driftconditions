@@ -790,6 +790,12 @@ figcaption {
 
 /* Animated icon madness */
 
+.audio-table .plays,
+.audio-table .duration {
+  text-align: right;
+  white-space: nowrap;
+}
+
 /* Initially hide all but frame0 which is always on */
 .audio-table .listen button svg .frame0 {
   opacity: 1 !important;

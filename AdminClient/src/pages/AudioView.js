@@ -159,6 +159,11 @@ function AudioView() {
               <span className="form-label">Status:</span>
               <span className="form-value">{record.status}</span>
             </div>
+
+            <div className="form-row">
+              <span className="form-label">Plays:</span>
+              <span className="form-value">{record.timesUsed || '—'}</span>
+            </div>
           </div>
 
           <div className="form-group pb-2">

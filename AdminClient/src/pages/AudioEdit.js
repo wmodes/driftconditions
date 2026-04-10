@@ -185,26 +185,31 @@ function AudioEdit() {
               <label className="form-label" htmlFor="title">Title: <Required /></label>
               <input className="form-field" type="text" id="title" name="title" value={record.title || ""} onChange={handleChange} />
               
-              <div className="mb-2">
+              <div className="form-row">
                 <label className="form-label">Filename: <Required /></label> <span className="non-editable">{record.filename}</span>
               </div>
-              
-              <div className="mb-2">
+
+              <div className="form-row">
                 <label className="form-label">Author: <Required /></label> <span className="non-editable">{record.creatorUsername}</span>
               </div>
-              
-              <div className="mb-2">
+
+              <div className="form-row">
                 <label className="form-label">Date: <Required /></label> <span className="non-editable">{record.createDate}</span>
               </div>
 
+              <div className="form-row">
+                <label className="form-label" htmlFor="status">Status: <Required /></label>
+                <select name="status" value={record.status} onChange={handleChange} className="form-select">
+                  <option value="Review">Under Review</option>
+                  <option value="Approved">Approved</option>
+                  <option value="Disapproved">Disapproved</option>
+                  <option value="Trashed">Trashed</option>
+                </select>
+              </div>
 
-              <label className="form-label" htmlFor="status">Status: <Required /></label>
-              <select name="status" value={record.status} onChange={handleChange} className="form-select">
-                <option value="Review">Under Review</option>
-                <option value="Approved">Approved</option>
-                <option value="Disapproved">Disapproved</option>
-                <option value="Trashed">Trashed</option>
-              </select>
+              <div className="form-row">
+                <label className="form-label">Plays:</label> <span className="non-editable">{record.timesUsed || '—'}</span>
+              </div>
             </div>
 
             <div className="form-group pb-2">
