@@ -105,6 +105,12 @@ _setSilenceBasics(clip) {
       logger.debug(`No range found for clip length key: ${lengthKey}`);
     }
   });
+  // If no valid keys matched, minLength is still Infinity — fall back to 'short' range
+  if (minLength === Infinity) {
+    logger.warn(`_setSilenceBasics: No valid clipLength keys found in ${JSON.stringify(clip.clipLength)}, falling back to 'short'`);
+    minLength = clipLengthRanges.short.min;
+    maxLength = clipLengthRanges.short.max;
+  }
   // Set the calculated minLength and maxLength to the clip
   clip.minLength = minLength;
   clip.maxLength = maxLength;
