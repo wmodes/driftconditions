@@ -184,33 +184,6 @@ class RecipeParser {
     return tagsList;
   }  
 
-  getPlaylistFromRecipe(recipe) {
-    const playlist = [];
-    // Iterate over each track in the recipe
-    recipe.recipeObj.tracks.forEach(track => {
-      if (track.clips) {
-        // Iterate over each clip in the track
-        track.clips.forEach(clip => {
-          // Ignore silence clips
-          if (clip.classification.includes('silence')) {
-            return;
-          }
-          // Ignore clips with duration (s) less than clipLength.tiny.max (s)
-          if (clip.duration < clipLength.tiny.max) {
-            return;
-          }
-          // Check if the clip is already in the playlist to avoid duplicates
-          const isDuplicate = playlist.some(existingClip => existingClip.audioID === clip.audioID);
-          if (!isDuplicate) {
-              // Directly add the clip to the playlist if it's not a duplicate
-              playlist.push(clip);
-          }
-        });
-      }
-    });
-    return playlist;
-  }
-
 }
 
 module.exports = RecipeParser;
