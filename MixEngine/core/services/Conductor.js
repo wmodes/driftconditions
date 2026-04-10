@@ -11,6 +11,7 @@ const ClipSelector = require('@services/clips/ClipSelector');
 const ClipAdjustor = require('@services/clips/ClipAdjustor');
 const MixEngine = require('@services/audio/MixEngine');
 const MixQueue = require('@services/queue/MixQueue');
+const RecordKeeper = require('@services/recordkeeper/RecordKeeper');
 
 const { config } = require('config');
 const maxQueued = config.mixes.maxQueued;
@@ -27,7 +28,7 @@ class Conductor {
     this.clipAdjustor = new ClipAdjustor();
     this.mixEngine = new MixEngine();
     this.mixQueue = new MixQueue();
-    // this.playlist = [];
+    this.recordKeeper = new RecordKeeper();
   }
 
   /**
@@ -79,13 +80,12 @@ class Conductor {
             continue;
           }
           //
-          // Get list of clips for playlist
-          mixDetails.playlist = this.recipeParser.getPlaylistFromRecipe(selectedRecipe) || [];
-          logger.debug(`Conductor:start: playlist: ${JSON5.stringify(mixDetails.playlist, null, 2)}`);
-          //
           // Adjust timings for clips
           mixDetails.duration = this.clipAdjustor.adjustClipTimings(selectedRecipe);
           logger.debug(`recipe after clip timing adjustment: ${JSON5.stringify(selectedRecipe.recipeObj, null, 2)}`);
+          //
+          // Record what was actually heard, update lastUsed, log clipUsage, build accurate playlist
+          mixDetails.playlist = await this.recordKeeper.record(selectedRecipe, mixDetails.duration);
           //
           // Get next mix ID
           mixDetails.mixID = await this.mixQueue.getNextMixID();

@@ -156,16 +156,19 @@ router.post('/info', verifyToken, async (req, res) => {
     const decoded = jwt.verify(req.cookies.token, jwtSecretKey);
     // You might not need the userID here unless you're checking if the user has the right to view this audio's info
 
-    // Construct query to fetch audio info from the database 
+    // Construct query to fetch audio info from the database
     const query = `
-    SELECT 
-      audio.*, 
+    SELECT
+      audio.*,
       creator.username AS creatorUsername,
-      editor.username AS editorUsername 
+      editor.username AS editorUsername,
+      COUNT(clipUsage.usageID) AS timesUsed
     FROM audio
     JOIN users AS creator ON audio.creatorID = creator.userID
     LEFT JOIN users AS editor ON audio.editorID = editor.userID
-    WHERE audio.audioID = ?;`;
+    LEFT JOIN clipUsage ON audio.audioID = clipUsage.audioID
+    WHERE audio.audioID = ?
+    GROUP BY audio.audioID;`;
     const values = [audioID];
 
     const [result] = await db.query(query, values);

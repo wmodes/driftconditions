@@ -141,8 +141,6 @@ class ClipSelector {
     // logger.debug(`Selected clip: ${JSON5.stringify(selectedFullClip, null, 2)}`);
     // Add new tags to the recent tags array
     this._addNewTags(selectedFullClip.tags);
-    // update the clip with the new lastUsed timestamp
-    await this._updateClipLastUsed(selectedClip.audioID);
     // return the full clip to the caller
     return selectedFullClip;
   }
