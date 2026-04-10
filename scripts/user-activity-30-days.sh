@@ -5,10 +5,10 @@
 # Combines journalctl log analysis with direct DB queries.
 #
 # Usage: bash scripts/user-activity-30-days.sh
-#   or:  ssh debian@driftconditions.org "bash ~/interference/scripts/user-activity-30-days.sh"
+#   or:  ssh debian@driftconditions.org "bash ~/driftconditions/scripts/user-activity-30-days.sh"
 
 DAYS=30
-DB_NAME="interference"
+DB_NAME="driftconditions"
 DB_USER="mysql"
 DB_PASS="my\$ql"
 

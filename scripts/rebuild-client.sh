@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# Ensure the script runs in the 'interference' directory
-if [[ $(basename "$PWD") != "interference" ]]; then
-  echo "Start this script from the root directory 'interference'."
+# Ensure the script runs in the 'driftconditions' directory
+if [[ $(basename "$PWD") != "driftconditions" ]]; then
+  echo "Start this script from the root directory 'driftconditions'."
   exit 1
 fi
 

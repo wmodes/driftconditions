@@ -4,7 +4,7 @@ function App() {
   // Represents the core layout of the application with a title. Ideal place for future expansion.
   return (
     <div>
-      <h1 className='text-2xl text-center text-black'>interference</h1>
+      <h1 className='text-2xl text-center text-black'>DriftConditions</h1>
     </div>
   )
 }

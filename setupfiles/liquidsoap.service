@@ -6,7 +6,7 @@ Requires=mixengine.service
 [Service]
 User=liquidsoap
 Group=liquidsoap
-ExecStart=/bin/liquidsoap /home/debian/interference/setupfiles/liquidsoap.liq
+ExecStart=/bin/liquidsoap /home/debian/driftconditions/setupfiles/liquidsoap.liq
 Restart=on-failure
 
 [Install]
