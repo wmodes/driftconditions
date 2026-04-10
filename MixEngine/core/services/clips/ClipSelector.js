@@ -214,8 +214,14 @@ class ClipSelector {
           const { min, max } = clipLengthRanges[matchingLengthCategory];
           querySubParts.push('(duration >= ? AND duration <= ?)');
           querySubValues.push(min, max);
+        } else {
+          logger.warn(`_constructLengthQuery: Unrecognized clipLength key "${lengthCategory}" — skipping`);
         }
       });
+      // If no valid keys matched, the length filter is empty — any clip duration can be selected
+      if (querySubParts.length === 0) {
+        logger.warn(`_constructLengthQuery: No valid clipLength keys in ${JSON.stringify(criteria.clipLength)} — length filter not applied`);
+      }
     }
     return {
       querySubParts: querySubParts.length ? `(${querySubParts.join(' OR ')})` : '',
