@@ -19,9 +19,13 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `AdminClient` heading updated from "interference" to "DriftConditions"
 - ESLint config updated to match codebase style: semicolons required, brace-style and eqeqeq relaxed
 
+### Changed
+- `huge` clip length category extended from 60 min max to 120 min — prevents valid long-form content (environmental recordings, radio broadcasts) from being silently excluded by the length filter
+
 ### Fixed
 - MixEngine: silence clips with invalid or unrecognized `clipLength` keys (e.g. `"small"`) no longer produce `Infinity` duration, which previously caused ffmpeg `aevalsrc` filter to fail; falls back to `short` range with a warning log
 - MixEngine: unrecognized `clipLength` keys in non-silence clips now log a warning instead of silently dropping the length filter; if no valid keys match, a second warning is logged noting that no length constraint will be applied
+- Long Narrative with music bed: root cause identified — malformed `length` key in recipe (`"long, huge"` as single string instead of `["long", "huge"]`) bypassed the length filter, allowing a 106-min clip to be selected; recipe has been corrected and `huge` max extended to accommodate legitimately long clips
 - MixEngine: removed unused `db` import and dead `trackOutputs` variable from `MixEngine.js`
 - Production `.env` symlinks (`AdminServer/.env`, `MixEngine/.env`, `AdminClient/.env`) were broken after directory rename — repointed to `~/driftconditions/.env`
 - Production `BASEDIR` updated to `/home/debian/driftconditions` in root `.env`
