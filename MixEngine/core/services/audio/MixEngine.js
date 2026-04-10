@@ -862,11 +862,18 @@ class MixEngine {
     } else {
       const finalOutputLabel = 'out';
       logger.debug(`MixEngine:_buildMix(): Mixing tracks [${this.trackFinalLabels.join(', ')}] into ${finalOutputLabel}`);
+      // If any track or clip uses a norm effect, clips are already level-matched —
+      // disable amix's 1/N scaling so the pre-normalized levels are preserved.
+      // Otherwise, leave normalize=1 (default) as a basic clipping safeguard.
+      const hasNormEffect = effects => (effects || []).some(e => /^(norm|normalize|loudnorm)/i.test(e));
+      const anyNormEffect = recipeObj.tracks.some(t =>
+        hasNormEffect(t.effects) || (t.clips || []).some(c => hasNormEffect(c.effects))
+      );
+      const amixOptions = { inputs: this.trackFinalLabels.length };
+      if (anyNormEffect) amixOptions.normalize = 0;
       this.filterChain.push({
         filter: 'amix',
-        options: {
-          inputs: this.trackFinalLabels.length
-        },
+        options: amixOptions,
         inputs: this.trackFinalLabels,
         outputs: finalOutputLabel
       });
