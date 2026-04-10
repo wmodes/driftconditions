@@ -15,6 +15,7 @@ const RecordKeeper = require('@services/recordkeeper/RecordKeeper');
 const { config } = require('config');
 const maxQueued = config.mixes.maxQueued;
 const checkTime = config.mixes.checkTime;
+const retryTime = 5000; // short delay between failed mix attempts (ms)
 
 /**
  * Class representing the Conductor.
@@ -113,6 +114,7 @@ class Conductor {
         await this.mixQueue.pruneMixes();
       } catch (error) {
         logger.error(`Conductor: Mix generation failed, trying next recipe: ${error.message}`);
+        await new Promise(resolve => setTimeout(resolve, retryTime));
       }
     }
   }

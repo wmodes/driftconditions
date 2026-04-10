@@ -161,14 +161,11 @@ router.post('/info', verifyToken, async (req, res) => {
     SELECT
       audio.*,
       creator.username AS creatorUsername,
-      editor.username AS editorUsername,
-      COUNT(clipUsage.usageID) AS timesUsed
+      editor.username AS editorUsername
     FROM audio
     JOIN users AS creator ON audio.creatorID = creator.userID
     LEFT JOIN users AS editor ON audio.editorID = editor.userID
-    LEFT JOIN clipUsage ON audio.audioID = clipUsage.audioID
-    WHERE audio.audioID = ?
-    GROUP BY audio.audioID;`;
+    WHERE audio.audioID = ?;`;
     const values = [audioID];
 
     const [result] = await db.query(query, values);

@@ -18,7 +18,6 @@ const logger = require('config/logger').custom('RecordKeeper', 'info');
 const tinyMax = config.audio.clipLength.tiny.max;
 
 class RecordKeeper {
-
   /**
    * Main entry point. Call after clipAdjustor.adjustClipTimings() so that
    * every clip.duration and mixDuration are fully resolved.
@@ -27,7 +26,7 @@ class RecordKeeper {
    * @param {number} mixDuration - The final mix duration in seconds.
    * @returns {Array} playlist - Clips that were actually heard in this mix.
    */
-  async record(recipe, mixDuration) {
+  async record (recipe, mixDuration) {
     const heardClips = this._getHeardClips(recipe, mixDuration);
     await this._updateLastUsed(heardClips);
     await this._logClipUsage(heardClips, recipe.recipeID);
@@ -47,7 +46,7 @@ class RecordKeeper {
    * @param {number} mixDuration - The final mix duration in seconds.
    * @returns {Array} heardClips - Clip objects that were actually heard.
    */
-  _getHeardClips(recipe, mixDuration) {
+  _getHeardClips (recipe, mixDuration) {
     const heardClips = [];
 
     recipe.recipeObj.tracks.forEach(track => {
@@ -77,12 +76,12 @@ class RecordKeeper {
    *
    * @param {Array} heardClips - Clips that were heard.
    */
-  async _updateLastUsed(heardClips) {
+  async _updateLastUsed (heardClips) {
     const now = new Date();
     for (const clip of heardClips) {
       try {
         await db.execute(
-          'UPDATE audio SET lastUsed = ? WHERE audioID = ?',
+          'UPDATE audio SET lastUsed = ?, timesUsed = timesUsed + 1 WHERE audioID = ?',
           [now, clip.audioID]
         );
       } catch (error) {
@@ -97,7 +96,7 @@ class RecordKeeper {
    * @param {Array} heardClips - Clips that were heard.
    * @param {number} recipeID - The recipe that generated this mix.
    */
-  async _logClipUsage(heardClips, recipeID) {
+  async _logClipUsage (heardClips, recipeID) {
     for (const clip of heardClips) {
       try {
         await db.execute(
@@ -116,7 +115,7 @@ class RecordKeeper {
    * @param {Array} heardClips - Clips that were heard.
    * @returns {Array} playlist
    */
-  _buildPlaylist(heardClips) {
+  _buildPlaylist (heardClips) {
     return heardClips.map(clip => ({
       audioID: clip.audioID,
       title: clip.title,
@@ -124,10 +123,9 @@ class RecordKeeper {
       duration: clip.duration,
       creatorID: clip.creatorID,
       classification: clip.classification,
-      tags: clip.tags,
+      tags: clip.tags
     }));
   }
-
 }
 
 module.exports = RecordKeeper;
