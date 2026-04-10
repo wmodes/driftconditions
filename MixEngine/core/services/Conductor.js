@@ -2,7 +2,6 @@
  * @file Conductor.js - Main orchestrator for managing recipe selection and other tasks
  */
 
-const { database: db } = require('config');
 const logger = require('config/logger').custom('Conductor', 'info');
 const JSON5 = require('json5');
 const RecipeSelector = require('@services/recipes/RecipeSelector');
@@ -21,10 +20,10 @@ const checkTime = config.mixes.checkTime;
  * Class representing the Conductor.
  */
 class Conductor {
-  constructor() {
+  constructor () {
     this.recipeSelector = new RecipeSelector();
     this.recipeParser = new RecipeParser();
-    this.clipSelector = new ClipSelector(); 
+    this.clipSelector = new ClipSelector();
     this.clipAdjustor = new ClipAdjustor();
     this.mixEngine = new MixEngine();
     this.mixQueue = new MixQueue();
@@ -35,90 +34,94 @@ class Conductor {
    * Starts the conductor's main loop.
    * @async
    */
-  async start() {
+  async start () {
     while (true) {
+      //
+      // Check queue — infrastructure failure here warrants a wait
+      let numberMixesInQueue;
       try {
-        const numberMixesInQueue = await this.mixQueue.getNumberOfMixesInQueue();
+        numberMixesInQueue = await this.mixQueue.getNumberOfMixesInQueue();
         logger.debug(`Number of mixes in queue: ${numberMixesInQueue}`);
-        if (numberMixesInQueue <= maxQueued) {
-          //
-          // Place to store mix details
-          const mixDetails = {};
-          //
-          // Select a fresh new recipe
-          const selectedRecipe = await this.recipeSelector.getNextRecipe();
-          logger.info(`Selected Recipe: ${selectedRecipe.title}`);
-          //
-          // Validate the recipe
-          if (!this.recipeParser.validateRecipe(selectedRecipe)) {
-            logger.error(`Validation failed: ${selectedRecipe.title} (${selectedRecipe.recipeID})`);
-            // start new loop iteration
-            continue;
-          }
-          // console.log('typeof selectedRecipe.recipeData:', typeof selectedRecipe.recipeData);
-          // console.log('Selected Recipe:', JSON5.stringify(selectedRecipe.recipeData, null, 2));
-          //
-          // Normalize the recipe
-          // this.testRecipeNormalize()
-          this.recipeParser.normalizeRecipe(selectedRecipe);
-          //
-          // Mark the mix length track
-          this.recipeParser.markMixLengthTrack(selectedRecipe);
-          //
-          // Set tags for clip selection
-          this.clipSelector.resetTags();
-          const trackTags = this.recipeParser.getTagsFromTracks(selectedRecipe);
-          this.clipSelector.addTags(trackTags);
-          // Select files based on clips as criteria
-          const clipResults = await this.clipSelector.selectAudioClips(selectedRecipe);
-          logger.debug(`recipe after clip selection: ${JSON5.stringify(selectedRecipe.recipeObj, null, 2)}`);
-          //
-          // Did we find clips for this recipe?
-          if (!clipResults) {
-            logger.error(`Clips not found for recipe: ${selectedRecipe.title} (${selectedRecipe.recipeID})`);
-            // start new loop iteration and get new recipe
-            continue;
-          }
-          //
-          // Adjust timings for clips
-          mixDetails.duration = this.clipAdjustor.adjustClipTimings(selectedRecipe);
-          logger.debug(`recipe after clip timing adjustment: ${JSON5.stringify(selectedRecipe.recipeObj, null, 2)}`);
-          //
-          // Record what was actually heard, update lastUsed, log clipUsage, build accurate playlist
-          mixDetails.playlist = await this.recordKeeper.record(selectedRecipe, mixDetails.duration);
-          //
-          // Get next mix ID
-          mixDetails.mixID = await this.mixQueue.getNextMixID();
-          //
-          // Make the mix
-          await this.mixEngine.makeMix(selectedRecipe, mixDetails);
-          logger.debug(`Conductor:start: mixDetails: ${JSON5.stringify(mixDetails, null, 2)}`);
-          //
-          // Create entry into the database for the mix
-          await this.mixQueue.createMixQueueEntry(selectedRecipe, mixDetails);
-          //
-          // Prune old mixes
-          await this.mixQueue.pruneMixes();
-        } 
-        // We already have a maxed out queue, let's wait a bit
-        else {
-          //wait for some time or check for a condition to continue
-          await this.waitForNextIteration(); // Placeholder for timing logic
-        }
       } catch (error) {
-        logger.error(new Error(`Conductor error: ${error.message}, ${error.stack}`));
-        //wait for some time or check for a condition to continue
-        await this.waitForNextIteration(); // Placeholder for timing logic
+        logger.error(`Conductor: Failed to check queue: ${error.message}`);
+        await this.waitForNextIteration();
+        continue;
+      }
+      //
+      // Queue full — wait before trying again
+      if (numberMixesInQueue > maxQueued) {
+        logger.info('Conductor: Queue full, waiting...');
+        await this.waitForNextIteration();
+        continue;
+      }
+      //
+      // Mix pipeline — errors here are recipe/clip/ffmpeg failures;
+      // skip to next iteration immediately to try a different recipe
+      try {
+        const mixDetails = {};
+        //
+        // Select a fresh new recipe
+        const selectedRecipe = await this.recipeSelector.getNextRecipe();
+        logger.info(`Selected Recipe: ${selectedRecipe.title}`);
+        //
+        // Validate the recipe
+        if (!this.recipeParser.validateRecipe(selectedRecipe)) {
+          logger.error(`Validation failed: ${selectedRecipe.title} (${selectedRecipe.recipeID})`);
+          continue;
+        }
+        //
+        // Normalize the recipe
+        // this.testRecipeNormalize()
+        this.recipeParser.normalizeRecipe(selectedRecipe);
+        //
+        // Mark the mix length track
+        this.recipeParser.markMixLengthTrack(selectedRecipe);
+        //
+        // Set tags for clip selection
+        this.clipSelector.resetTags();
+        const trackTags = this.recipeParser.getTagsFromTracks(selectedRecipe);
+        this.clipSelector.addTags(trackTags);
+        //
+        // Select files based on clips as criteria
+        const clipResults = await this.clipSelector.selectAudioClips(selectedRecipe);
+        logger.debug(`recipe after clip selection: ${JSON5.stringify(selectedRecipe.recipeObj, null, 2)}`);
+        //
+        // Did we find clips for this recipe?
+        if (!clipResults) {
+          logger.error(`Clips not found for recipe: ${selectedRecipe.title} (${selectedRecipe.recipeID})`);
+          continue;
+        }
+        //
+        // Adjust timings for clips
+        mixDetails.duration = this.clipAdjustor.adjustClipTimings(selectedRecipe);
+        logger.debug(`recipe after clip timing adjustment: ${JSON5.stringify(selectedRecipe.recipeObj, null, 2)}`);
+        //
+        // Record what was actually heard, update lastUsed, log clipUsage, build accurate playlist
+        mixDetails.playlist = await this.recordKeeper.record(selectedRecipe, mixDetails.duration);
+        //
+        // Get next mix ID
+        mixDetails.mixID = await this.mixQueue.getNextMixID();
+        //
+        // Make the mix
+        await this.mixEngine.makeMix(selectedRecipe, mixDetails);
+        logger.debug(`Conductor:start: mixDetails: ${JSON5.stringify(mixDetails, null, 2)}`);
+        //
+        // Create entry into the database for the mix
+        await this.mixQueue.createMixQueueEntry(selectedRecipe, mixDetails);
+        //
+        // Prune old mixes
+        await this.mixQueue.pruneMixes();
+      } catch (error) {
+        logger.error(`Conductor: Mix generation failed, trying next recipe: ${error.message}`);
       }
     }
   }
 
   /**
-   * Waits for the next iteration when the queue is maxed out.
+   * Waits before the next loop iteration, whether due to a full queue or an error.
    * @async
    */
-  async waitForNextIteration() {
-    logger.info('Conductor:waitForNextIteration: Queue Maxed Out, Waiting...');
+  async waitForNextIteration () {
     return new Promise(resolve => setTimeout(resolve, checkTime));
   }
 
