@@ -285,11 +285,12 @@ function AudioList() {
                     <th className="author">
                       <button className="link" onClick={() => handleSort('author', 'ASC')}>
                         Author
-                      </button> / 
+                      </button> /
                       <button className="link" onClick={() => handleSort('date', 'ASC')}>
                          Date
                       </button>
                     </th>
+                    <th className="plays">Plays</th>
                     <th className="duration">Duration</th>
                     <th className="status">
                       <button className="link" onClick={() => handleSort('status', 'DESC')}>
@@ -337,6 +338,7 @@ function AudioList() {
                             </div>
                           )}
                         </td>
+                        <td className="plays">{audio.timesUsed || '—'}</td>
                         <td className="duration">{formatDuration(audio.duration)}</td>
                         <td className="status">{audio.status}</td>
                         <td className="classification">{formatListAsString(audio.classification)}</td>
@@ -350,7 +352,7 @@ function AudioList() {
                       {/* quick edit fields */}
                       {editAudioID === audio.audioID && (
                         <tr className={`${index % 2 === 0 ? 'row-even' : 'row-odd'} quick-edit`}>
-                          <td colSpan="8">
+                          <td colSpan="9">
                             <div className="form-group">
                               <form onSubmit={(e) => handleSubmit(e)}>
                                 <div className="space-y-1">

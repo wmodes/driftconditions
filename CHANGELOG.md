@@ -13,21 +13,31 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 - `scripts/stop.sh` — stops all services in reverse dependency order (liquidsoap → icecast → mixengine → adminserver → caddy)
+- Audio List: "Plays" column between Author and Duration, right-aligned; shows `timesUsed` or an em dash for zero
+- Audio View: "Plays" read-only field after Status, showing `timesUsed` or an em dash for zero
+- Audio Edit: "Plays" read-only field after Status, showing `timesUsed` or an em dash for zero
+- **RecordKeeper service** (`MixEngine/core/services/recordkeeper/RecordKeeper.js`) — new post-selection bookkeeping service that computes which clips were actually heard in a mix (by walking per-track elapsed time against `mixDuration`), updates `audio.lastUsed` and `audio.timesUsed` only for heard clips, inserts a `clipUsage` row per heard clip, and returns an accurate playlist; replaces the former `RecipeParser.getPlaylistFromRecipe()` and the per-clip `_updateClipLastUsed()` in `ClipSelector`
+- `clipUsage` DB table — per-row record of every clip heard in a mix (`audioID`, `recipeID`, `usedAt`); enables per-clip usage history, future digest emails, and analytics
+- `timesUsed INT DEFAULT 0` column on `audio` table — cached counter incremented by RecordKeeper on each heard play; avoids a COUNT JOIN on `clipUsage` for every audio list/view request
 
 ### Changed
 - Renamed legacy project name from `interference` to `driftconditions` throughout — config, scripts, setup files, service files, Caddyfiles, and DB (local and production)
 - `AdminClient` heading updated from "interference" to "DriftConditions"
 - ESLint config updated to match codebase style: semicolons required, brace-style and eqeqeq relaxed
-
-### Changed
 - `huge` clip length category extended from 60 min max to 120 min — prevents valid long-form content (environmental recordings, radio broadcasts) from being silently excluded by the length filter
+- Conductor: RecordKeeper now fires between `adjustClipTimings` and `makeMix`; `RecipeParser.getPlaylistFromRecipe()` retired; `ClipSelector._updateClipLastUsed()` removed — `lastUsed` and `timesUsed` are now set only for clips that were actually heard, not all selected clips
+- Conductor: error handling restructured into two separate try/catch scopes — queue-check failures wait a full `checkTime` interval before retrying; mix-pipeline failures (recipe/clip/ffmpeg errors) retry immediately with a short `retryTime` (5 s) backoff rather than waiting the full queue interval
+- `AdminServer /api/audio/info`: `timesUsed` now read directly from `audio.*` column instead of a COUNT JOIN on `clipUsage`; simplifies the query and improves performance
+- Audio List: Duration column right-aligned to match Plays
+- Audio Edit: non-editable field rows (Filename, Author, Date, Status, Plays) converted from `mb-2` wrappers to `form-row` for consistent spacing with Audio View
 
 ### Fixed
 - MixEngine: `amix` filter's default `normalize=1` was dividing each track's level by the number of tracks (~−6 dB per track), undoing per-clip `loudnorm` work and causing mixes to be too quiet; `normalize=0` is now set when any track or clip in the recipe uses a norm effect, preserving pre-normalized levels
+- MixEngine: `telephone` effect's `acompressor` filter was using `level_out` (an `agate`-only option, invalid in ffmpeg 7.1.1); replaced with `makeup:0.8` which is the correct `acompressor` makeup gain parameter
 - MixEngine: silence clips with invalid or unrecognized `clipLength` keys (e.g. `"small"`) no longer produce `Infinity` duration, which previously caused ffmpeg `aevalsrc` filter to fail; falls back to `short` range with a warning log
 - MixEngine: unrecognized `clipLength` keys in non-silence clips now log a warning instead of silently dropping the length filter; if no valid keys match, a second warning is logged noting that no length constraint will be applied
 - Long Narrative with music bed: root cause identified — malformed `length` key in recipe (`"long, huge"` as single string instead of `["long", "huge"]`) bypassed the length filter, allowing a 106-min clip to be selected; recipe has been corrected and `huge` max extended to accommodate legitimately long clips
-- MixEngine: removed unused `db` import and dead `trackOutputs` variable from `MixEngine.js`
+- MixEngine: removed unused `db` import and dead `trackOutputs` variable from `MixEngine.js`; removed unused `db` import from `Conductor.js`
 - Production `.env` symlinks (`AdminServer/.env`, `MixEngine/.env`, `AdminClient/.env`) were broken after directory rename — repointed to `~/driftconditions/.env`
 - Production `BASEDIR` updated to `/home/debian/driftconditions` in root `.env`
 
