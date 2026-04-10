@@ -791,7 +791,9 @@ figcaption {
 /* Animated icon madness */
 
 .audio-table .plays,
-.audio-table .duration {
+.audio-table .duration,
+.recipe-table .plays,
+.recipe-table .avg {
   text-align: right;
   white-space: nowrap;
 }

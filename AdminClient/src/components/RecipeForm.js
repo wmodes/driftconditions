@@ -19,6 +19,7 @@ import { insertNewElementIntoJsonStr } from '../utils/recipeUtils';
 import { defineCustomEditorMode } from '../utils/editorUtils';
 import { ClassificationCheckboxes, TagInput } from '../utils/formUtils';
 
+import { formatDuration } from '../utils/formatUtils';
 import config from '../config/config';
 const fieldNotes = config.recipes.fieldNotes;
 const aceOptions = config.aceEditor;
@@ -273,6 +274,19 @@ function RecipeForm({ action, initialRecord, onSave, onCancel, onChange }) {
           <option value="Trashed"  disabled={!editPerm}>Trashed</option>
         </select>
         <p className="form-note mt-1 mb-0">{fieldNotes.status}</p>
+
+        {action !== 'create' && (
+          <>
+            <div className="form-row">
+              <span className="form-label">Plays:</span>
+              <span className="form-value">{record.timesUsed || '—'}</span>
+            </div>
+            <div className="form-row">
+              <span className="form-label">Avg Duration:</span>
+              <span className="form-value">{record.avgDuration ? formatDuration(record.avgDuration) : '—'}</span>
+            </div>
+          </>
+        )}
       </div>
 
       <div className="form-group pb-1">

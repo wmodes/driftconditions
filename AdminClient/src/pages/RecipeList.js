@@ -8,7 +8,7 @@ import { useDispatch } from 'react-redux';
 import { recipeList as recipeListAction, recipeTrash as recipeTrashAction, recipeUpdate } from '../store/recipeSlice';
 import { parseQuery, stringifyQuery } from '../utils/queryUtils';
 import { renderPagination } from '../utils/listUtils'; 
-import { formatDateAsFriendlyDate, formatListAsString } from '../utils/formatUtils';
+import { formatDateAsFriendlyDate, formatListAsString, formatDuration } from '../utils/formatUtils';
 
 // TODO: test and debug user filter
 
@@ -228,6 +228,8 @@ function RecipeList() {
                          Date
                       </button>
                     </th>
+                    <th className="plays">Plays</th>
+                    <th className="avg">Avg</th>
                     <th className="description">Description</th>
                     <th className="status">
                       <button className="link" onClick={() => handleSort('status', 'DESC')}>
@@ -274,6 +276,8 @@ function RecipeList() {
                             </div>
                           )}
                         </td>
+                        <td className="plays">{recipe.timesUsed || '—'}</td>
+                        <td className="avg">{recipe.avgDuration ? formatDuration(recipe.avgDuration) : '—'}</td>
                         <td className="description">{recipe.description}</td>
                         <td className="status">{recipe.status}</td>
                         <td className="classification">{formatListAsString(recipe.classification)}</td>
@@ -282,7 +286,7 @@ function RecipeList() {
                       {/* quick edit row */}
                       {editRecipeID === recipe.recipeID && (
                         <tr className={`${index % 2 === 0 ? 'row-even' : 'row-odd'} quick-edit`}>
-                          <td colSpan="7">
+                          <td colSpan="9">
                             <div className="form-group">
                               <form onSubmit={handleQuickEditSubmit}>
                                 <div className="space-y-1">
