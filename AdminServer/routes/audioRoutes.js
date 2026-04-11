@@ -61,9 +61,11 @@ router.post('/list', verifyToken, async (req, res) => {
     const sortOptions = {
       id: 'audioID',
       title: 'title',
-      status: 'status',
-      author: 'creatorID', 
+      status: 'LOWER(a.status)',
+      author: 'creatorID',
       date: 'createDate',
+      plays: 'timesUsed',
+      duration: 'duration',
     };
     const sortColumn = sortOptions[sort.toLowerCase()] || 'createDate';
 

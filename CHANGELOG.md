@@ -9,6 +9,20 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-04-11] (3)
+
+### Added
+- Audio List: Plays and Duration columns are now sortable
+- Recipe List: Plays and Avg columns are now sortable
+- All sortable column headers on Audio List and Recipe List now toggle direction on successive clicks and show ▲/▼ indicator on the active sort column; indicator styled via `.sort-indicator` at 0.8em
+
+### Fixed
+- Audio List: status sort was using unqualified `status` column — changed to `LOWER(a.status)` to avoid ambiguity with joined tables
+- Recipe List: status sort was using unqualified `LOWER(status)` — changed to `LOWER(a.status)`
+- RecipeForm: removed unreachable `return true` after `return JSON5.parse(content)` in `isValidJSON`
+
+---
+
 ## [2026-04-11] (2)
 
 ### Added

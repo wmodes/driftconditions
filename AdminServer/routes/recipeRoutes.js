@@ -68,9 +68,11 @@ router.post('/list', verifyToken, async (req, res) => {
     const sortOptions = {
       id: 'recipeID',
       title: 'LOWER(title)',
-      status: 'LOWER(status)',
-      author: 'creatorID', 
+      status: 'LOWER(a.status)',
+      author: 'creatorID',
       date: 'createDate',
+      plays: 'timesUsed',
+      avg: 'avgDuration',
     };
     const sortColumn = sortOptions[sort] || 'createDate';
 
