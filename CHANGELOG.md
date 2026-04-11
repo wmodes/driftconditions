@@ -9,6 +9,16 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-04-11] (2)
+
+### Added
+- `RecipeParser.validTrackProperties`: added `label` so track `label` keys pass through normalization and are not stripped — required for upcoming `duck(label)` routing effect
+
+### Changed
+- Recipe create/new-track templates (`AdminClient/src/config/config.js`): effects list replaced with compact grouped reference (Structural / Looping / Level / Texture / Color / Routing) covering all current and upcoming effects; classification and tags comments updated to match recipe form field notes; `huge` duration corrected to 10m–2h
+
+---
+
 ## [2026-04-11]
 
 ### Added
