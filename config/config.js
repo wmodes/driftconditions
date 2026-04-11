@@ -58,6 +58,7 @@ const config = {
     selectPoolMinSize: 25,
     newnessScoreWeight: 0.75,
     tagScoreWeight: 1,
+    usageScoreWeight: 0.5,    // weight for clip usage score; less-used clips score higher
     classification: [
       'Ambient', 
       'Atmospheric', 
@@ -107,8 +108,8 @@ const config = {
     selectPoolPercentSize: 5,
     selectPoolMinSize: 3,
     newnessScoreWeight: 1,
-    classificationScoreWeight: 0.25,
-    durationScoreWeight: 0.5,     // weight for recipe avg-duration score; shorter-avg recipes score higher
+    classificationScoreWeight: 0.5,
+    durationScoreWeight: 1,       // weight for recipe avg-duration score; shorter-avg recipes score higher
     avgDurationHistoryWeight: 10, // running average weight for recipe avgDuration; higher = slower to adapt
     classification: [
       'Ambient', 
