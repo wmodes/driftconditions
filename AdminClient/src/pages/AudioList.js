@@ -109,11 +109,19 @@ function AudioList() {
       });
   };
 
-  const handleSort = (newSort, newOrder = 'DESC') => {
+  const handleSort = (newSort) => {
+    const { sort: currentSort, order: currentOrder } = getCurrentQueryParams();
+    const newOrder = (newSort === currentSort && currentOrder === 'ASC') ? 'DESC' : 'ASC';
     const searchParams = new URLSearchParams(location.search);
-    newSort && searchParams.set('sort', newSort);
-    newOrder && searchParams.set('order', newOrder);
+    searchParams.set('sort', newSort);
+    searchParams.set('order', newOrder);
     navigate(`${location.pathname}?${searchParams.toString()}`);
+  };
+
+  const sortIndicator = (field) => {
+    const { sort, order } = getCurrentQueryParams();
+    if (sort !== field) return null;
+    return <span className="sort-indicator">{order === 'ASC' ? ' ▲' : ' ▼'}</span>;
   };
   
   const handleFilter = (newFilter) => {
@@ -273,28 +281,36 @@ function AudioList() {
                 <thead>
                   <tr>
                     <th className="id">
-                      <button className="link" onClick={() => handleSort('id', 'ASC')}>
-                        ID
+                      <button className="link" onClick={() => handleSort('id')}>
+                        ID{sortIndicator('id')}
                       </button>
                     </th>
                     <th className="title">
-                      <button className="link" onClick={() => handleSort('title', 'ASC')}>
-                        Title
+                      <button className="link" onClick={() => handleSort('title')}>
+                        Title{sortIndicator('title')}
                       </button>
                     </th>
                     <th className="author">
-                      <button className="link" onClick={() => handleSort('author', 'ASC')}>
-                        Author
+                      <button className="link" onClick={() => handleSort('author')}>
+                        Author{sortIndicator('author')}
                       </button> /
-                      <button className="link" onClick={() => handleSort('date', 'ASC')}>
-                         Date
+                      <button className="link" onClick={() => handleSort('date')}>
+                        Date{sortIndicator('date')}
                       </button>
                     </th>
-                    <th className="plays">Plays</th>
-                    <th className="duration">Duration</th>
+                    <th className="plays">
+                      <button className="link" onClick={() => handleSort('plays')}>
+                        Plays{sortIndicator('plays')}
+                      </button>
+                    </th>
+                    <th className="duration">
+                      <button className="link" onClick={() => handleSort('duration')}>
+                        Duration{sortIndicator('duration')}
+                      </button>
+                    </th>
                     <th className="status">
-                      <button className="link" onClick={() => handleSort('status', 'DESC')}>
-                        Status
+                      <button className="link" onClick={() => handleSort('status')}>
+                        Status{sortIndicator('status')}
                       </button>
                     </th>
                     <th className="classification">Type</th>

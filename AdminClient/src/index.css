@@ -619,6 +619,10 @@ figcaption {
   font-weight: 800;
 }
 
+.sort-indicator {
+  font-size: 0.8em;
+}
+
 .big-table thead {
   border: 1px solid var(--table-border-color);
 }
