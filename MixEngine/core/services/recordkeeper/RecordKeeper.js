@@ -163,6 +163,7 @@ class RecordKeeper {
         filename: clip.filename,
         duration: clip.duration,
         creatorID: clip.creatorID,
+        creatorUsername: clip.creatorUsername,
         classification: clip.classification,
         tags: clip.tags
       }));
