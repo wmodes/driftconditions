@@ -11,32 +11,26 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [2026-04-11]
 
-### Changed
-- `norm(music)` loudnorm preset: added `LRA: 11` — ffmpeg's default LRA of 4 LU is too compressed for feature/foreground music; 11 LU allows natural musical dynamics
-
----
-
-## [2026-04-11]
-
-### Added
-- `RecipeParser.resolveShortestLongestTrack()` — resolves `shortest`/`longest` mixLength markers after clip selection, when actual clip durations are known; called in Conductor between `selectAudioClips` and `adjustClipTimings`
-
-### Fixed
-- `RecipeParser.markMixLengthTrack()` was resolving `shortest`/`longest` using `track.maxLength` (recipe metadata) before clip selection — actual clip durations were unknown at that point, causing the wrong track to be marked as `mixLength=true`; `shortest`/`longest` and the default `longest` case now defer to `resolveShortestLongestTrack()` via a `_pendingMixLength` flag, with track 0 as a placeholder until resolution
-
----
-
-## [2026-04-11]
-
 ### Added
 - **Duration-weighted recipe selection** (`RecipeSelector`) — recipes with shorter average mix durations now score higher, preventing long-running recipes from dominating airtime; score = `(maxDuration - avgDuration) / (maxDuration - minDuration)`; recipes with no `avgDuration` data score 0.5 (neutral)
-- `config.recipes.durationScoreWeight` (default: 0.5) — weight for duration subscore alongside existing `newnessScoreWeight` and `classificationScoreWeight`
+- `config.recipes.durationScoreWeight` (default: 1) — weight for duration subscore alongside existing `newnessScoreWeight` and `classificationScoreWeight`
 - `RecipeSelector._getDurationRange()` — computes `minDuration`/`maxDuration` across eligible recipes before scoring; stored on instance, parallel to `_getEarliestAndLatestDates()`
 - `RecipeSelector._calculateDurationScore()` — per-recipe duration subscore; handles NULL data (0.5 neutral), degenerate range (0.5 neutral), and normal cases
+- **Usage-weighted clip selection** (`ClipSelector`) — clips with lower `timesUsed` counts score higher, broadening rotation and giving less-played clips proportionally more exposure; score = `(maxUsed - timesUsed) / (maxUsed - minUsed)`; never-used clips score 1.0; clips with no range score 0.5 (neutral)
+- `config.audio.usageScoreWeight` (default: 0.5) — weight for usage subscore alongside existing `newnessScoreWeight` and `tagScoreWeight`
+- `ClipSelector._getUsageRange()` — computes `minUsed`/`maxUsed` across the clip pool before scoring
+- `ClipSelector._calculateUsageScore()` — per-clip usage subscore; never-used clips score 1.0, degenerate range scores 0.5 (neutral)
+- `RecipeParser.resolveShortestLongestTrack()` — resolves `shortest`/`longest` mixLength markers after clip selection, when actual clip durations are known; called in Conductor between `selectAudioClips` and `adjustClipTimings`
 
 ### Changed
 - `RecipeSelector._fetchRecipes()` now includes `avgDuration` in the SELECT query
 - `RecipeSelector._calculateScore()` extended to include `durationScore` as third weighted term; total weight is now `newnessScoreWeight + classificationScoreWeight + durationScoreWeight`
+- `ClipSelector._calculateScore()` extended to include `usageScore` as third weighted term
+- `config.recipes.classificationScoreWeight` raised from 0.25 to 0.5 — classification diversity now ~20% of recipe score
+- `norm(music)` loudnorm preset: added `LRA: 11` — ffmpeg's default LRA of 4 LU is too compressed for feature/foreground music; 11 LU allows natural musical dynamics
+
+### Fixed
+- `RecipeParser.markMixLengthTrack()` was resolving `shortest`/`longest` using `track.maxLength` (recipe metadata) before clip selection — actual clip durations were unknown at that point, causing the wrong track to be marked as `mixLength=true`; `shortest`/`longest` and the default `longest` case now defer to `resolveShortestLongestTrack()` via a `_pendingMixLength` flag, with track 0 as a placeholder until resolution
 
 ---
 
