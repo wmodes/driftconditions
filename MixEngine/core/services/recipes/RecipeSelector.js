@@ -7,7 +7,7 @@ const { config } = require('config');
 // Extract values from the config object
 const {
   selectPoolPercentSize, selectPoolMinSize,
-  classificationScoreWeight, newnessScoreWeight
+  classificationScoreWeight, newnessScoreWeight, durationScoreWeight
 } = config.recipes;
 
 class RecipeSelector {
@@ -16,6 +16,8 @@ class RecipeSelector {
     this.earliestDate = null;
     this.latestDate = null;
     this.dateRange = null;
+    this.minDuration = null;
+    this.maxDuration = null;
     this.recipes = [];
     this.recentClassifications = [];
     this.recentTags = [];
@@ -28,6 +30,8 @@ class RecipeSelector {
     await this._fetchRecipes();
     // Set the date range for the recipes
     this._getEarliestAndLatestDates();
+    // Set the duration range for duration scoring
+    this._getDurationRange();
     // Set the recent classifications and tags
     this._setRecentClassificationAndTags();
     // Score the recipes
@@ -47,7 +51,7 @@ class RecipeSelector {
   async _fetchRecipes () {
     try {
       const query = `
-        SELECT recipeID, title, classification, tags, lastUsed
+        SELECT recipeID, title, classification, tags, lastUsed, avgDuration
         FROM recipes
         WHERE editLock = 0 AND status = 'Approved'
       `;
@@ -93,6 +97,23 @@ class RecipeSelector {
 
     logger.debug(`Date range set: earliest: ${this.earliestDate.toISOString()}, latest: ${this.latestDate.toISOString()}, range: ${this.dateRange}`);
     return true;
+  }
+
+  // Calculate the min and max avgDuration across all recipes with data
+  _getDurationRange () {
+    let min = Infinity;
+    let max = 0;
+    this.recipes.forEach(recipe => {
+      const d = parseFloat(recipe.avgDuration);
+      if (!isNaN(d) && d > 0) {
+        if (d < min) min = d;
+        if (d > max) max = d;
+      }
+    });
+    // If no recipes have avgDuration data yet, leave both null (triggers neutral score)
+    this.minDuration = isFinite(min) ? min : null;
+    this.maxDuration = max > 0 ? max : null;
+    logger.debug(`Duration range set: min: ${this.minDuration}, max: ${this.maxDuration}`);
   }
 
   // Create an array of recent classifications and tags
@@ -143,10 +164,15 @@ class RecipeSelector {
   _calculateScore (recipe) {
     const newnessScore = this._calculateNewnessScore(recipe);
     const classificationScore = this._calculateClassificationScore(recipe);
+    const durationScore = this._calculateDurationScore(recipe);
     // combine scores for different criteria as weighted average
-    const totalWeight = newnessScoreWeight + classificationScoreWeight;
-    const score = (newnessScore * newnessScoreWeight + classificationScore * classificationScoreWeight) / totalWeight;
-    logger.debug(`Recipe scored: ${recipe.title}, newness: ${newnessScore}, classification: ${classificationScore}, score: ${score}`);
+    const totalWeight = newnessScoreWeight + classificationScoreWeight + durationScoreWeight;
+    const score = (
+      newnessScore * newnessScoreWeight +
+      classificationScore * classificationScoreWeight +
+      durationScore * durationScoreWeight
+    ) / totalWeight;
+    logger.debug(`Recipe scored: ${recipe.title}, newness: ${newnessScore}, classification: ${classificationScore}, duration: ${durationScore}, score: ${score}`);
     return score;
   }
 
@@ -213,6 +239,25 @@ class RecipeSelector {
     const subscore = index / (this.recentClassifications.length - 1);
     logger.debug(`Classification "${classification}" index: ${index}, scored: ${subscore}`);
     return subscore;
+  }
+
+  // Calculate duration score — shorter-avg recipes score higher
+  // Neutral score (1) for recipes with no avgDuration data, or if no range exists
+  _calculateDurationScore (recipe) {
+    const d = parseFloat(recipe.avgDuration);
+    // No data for this recipe, or no range to compare against — treat as neutral
+    if (isNaN(d) || this.minDuration === null || this.maxDuration === null) {
+      logger.debug(`Recipe "${recipe.title}" duration score: 0.5 (neutral — no avgDuration data)`);
+      return 0.5;
+    }
+    // All recipes have the same avgDuration — no meaningful distinction
+    if (this.maxDuration === this.minDuration) {
+      logger.debug(`Recipe "${recipe.title}" duration score: 0.5 (neutral — no range, all recipes same avgDuration)`);
+      return 0.5;
+    }
+    const score = (this.maxDuration - d) / (this.maxDuration - this.minDuration);
+    logger.debug(`Recipe "${recipe.title}" duration score: ${score} (avgDuration: ${d}s, range: ${this.minDuration}–${this.maxDuration}s)`);
+    return Math.min(Math.max(score, 0), 1);
   }
 
   // Select the next recipe based on the calculated scores
