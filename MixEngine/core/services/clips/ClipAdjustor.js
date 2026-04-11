@@ -3,7 +3,7 @@
  *       to ensure that the total duration matches the desired length specified in a recipe.
  */
 
-const logger = require('config/logger').custom('ClipAdjustor', 'debug');
+const logger = require('config/logger').custom('ClipAdjustor', 'info');
 const { config } = require('config');
 const { silenceAdjustMaxAttempts } = config.audio;
 
