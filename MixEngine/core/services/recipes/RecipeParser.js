@@ -144,10 +144,10 @@ class RecipeParser {
             // Mark the first track if 'first' effect is found and no track has been marked yet
             trackToMark = 0;
           } else if (effect === 'shortest') {
-            // Mark this track for 'shortest' effect (override any previous)
+            // Defer to resolveShortestLongestTrack() after clip selection
             trackToMark = 'shortest';
           } else if (effect === 'longest') {
-            // Mark this track for 'longest' effect (override any previous)
+            // Defer to resolveShortestLongestTrack() after clip selection
             trackToMark = 'longest';
           } else if (effect === 'trim') {
             // Mark the track that has the 'trim' effect
@@ -157,18 +157,51 @@ class RecipeParser {
       }
     });
 
-    // If no specific effect is found, default to the longest track
-    if (trackToMark === null || trackToMark === 'longest') {
-      let longestTrack = recipe.recipeObj.tracks.reduce((max, track) => track.maxLength > max.maxLength ? track : max, recipe.recipeObj.tracks[0]);
-      longestTrack.mixLength = true;
-    } else if (trackToMark === 'shortest') {
-      // Find and mark the shortest track
-      let shortestTrack = recipe.recipeObj.tracks.reduce((min, track) => track.maxLength < min.maxLength ? track : min, recipe.recipeObj.tracks[0]);
-      shortestTrack.mixLength = true;
+    if (trackToMark === 'shortest' || trackToMark === 'longest') {
+      // Real resolution deferred to resolveShortestLongestTrack() after clip selection;
+      // temporarily mark track 0 as a placeholder so ClipAdjustor has a mixLength track
+      recipe.recipeObj.tracks[0].mixLength = true;
+      recipe.recipeObj._pendingMixLength = trackToMark;
+    } else if (trackToMark === null) {
+      // Default: longest track — also deferred, placeholder on track 0
+      recipe.recipeObj.tracks[0].mixLength = true;
+      recipe.recipeObj._pendingMixLength = 'longest';
     } else {
-      // Otherwise, mark the specific track identified
+      // Specific track index (trim/first) — mark directly, no deferral needed
       recipe.recipeObj.tracks[trackToMark].mixLength = true;
     }
+  }
+
+  /**
+   * Resolves 'shortest' and 'longest' mixLength markers after clip selection,
+   * when actual clip durations are known. Call this after selectAudioClips().
+   * @param {object} recipe - The recipe object with fully selected clips.
+   */
+  resolveShortestLongestTrack(recipe) {
+    const pending = recipe.recipeObj._pendingMixLength;
+    if (!pending) return; // nothing to resolve — trim/first already handled
+
+    // Sum actual clip durations per track (silences have duration 0)
+    const trackDurations = recipe.recipeObj.tracks.map(track => {
+      const total = (track.clips || []).reduce((sum, clip) => sum + (parseFloat(clip.duration) || 0), 0);
+      return { track, total };
+    });
+
+    // Find the target track
+    let target;
+    if (pending === 'shortest') {
+      target = trackDurations.reduce((min, t) => t.total < min.total ? t : min, trackDurations[0]);
+    } else {
+      // 'longest' or default
+      target = trackDurations.reduce((max, t) => t.total > max.total ? t : max, trackDurations[0]);
+    }
+
+    // Clear the placeholder and mark the correct track
+    recipe.recipeObj.tracks.forEach(t => { t.mixLength = false; });
+    target.track.mixLength = true;
+    delete recipe.recipeObj._pendingMixLength;
+
+    logger.debug(`resolveShortestLongestTrack: resolved '${pending}' to track ${target.track.track} (${target.total.toFixed(1)}s)`);
   }
 
   getTagsFromTracks(recipe) {

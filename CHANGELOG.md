@@ -9,6 +9,30 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-04-11]
+
+### Added
+- `RecipeParser.resolveShortestLongestTrack()` — resolves `shortest`/`longest` mixLength markers after clip selection, when actual clip durations are known; called in Conductor between `selectAudioClips` and `adjustClipTimings`
+
+### Fixed
+- `RecipeParser.markMixLengthTrack()` was resolving `shortest`/`longest` using `track.maxLength` (recipe metadata) before clip selection — actual clip durations were unknown at that point, causing the wrong track to be marked as `mixLength=true`; `shortest`/`longest` and the default `longest` case now defer to `resolveShortestLongestTrack()` via a `_pendingMixLength` flag, with track 0 as a placeholder until resolution
+
+---
+
+## [2026-04-11]
+
+### Added
+- **Duration-weighted recipe selection** (`RecipeSelector`) — recipes with shorter average mix durations now score higher, preventing long-running recipes from dominating airtime; score = `(maxDuration - avgDuration) / (maxDuration - minDuration)`; recipes with no `avgDuration` data score 0.5 (neutral)
+- `config.recipes.durationScoreWeight` (default: 0.5) — weight for duration subscore alongside existing `newnessScoreWeight` and `classificationScoreWeight`
+- `RecipeSelector._getDurationRange()` — computes `minDuration`/`maxDuration` across eligible recipes before scoring; stored on instance, parallel to `_getEarliestAndLatestDates()`
+- `RecipeSelector._calculateDurationScore()` — per-recipe duration subscore; handles NULL data (0.5 neutral), degenerate range (0.5 neutral), and normal cases
+
+### Changed
+- `RecipeSelector._fetchRecipes()` now includes `avgDuration` in the SELECT query
+- `RecipeSelector._calculateScore()` extended to include `durationScore` as third weighted term; total weight is now `newnessScoreWeight + classificationScoreWeight + durationScoreWeight`
+
+---
+
 ## [2026-04-10]
 
 ### Added

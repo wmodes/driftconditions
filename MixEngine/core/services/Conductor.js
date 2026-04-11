@@ -93,6 +93,9 @@ class Conductor {
           continue;
         }
         //
+        // Resolve shortest/longest mixLength track now that clip durations are known
+        this.recipeParser.resolveShortestLongestTrack(selectedRecipe);
+        //
         // Adjust timings for clips
         mixDetails.duration = this.clipAdjustor.adjustClipTimings(selectedRecipe);
         logger.debug(`recipe after clip timing adjustment: ${JSON5.stringify(selectedRecipe.recipeObj, null, 2)}`);
