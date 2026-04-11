@@ -37,8 +37,7 @@ class RecipeParser {
       return false;
     }
     // check to make sure has tracks, if not return error
-    const tracks = recipeData.tracks.filter(record => record.track !== undefined);
-    if (tracks.length === 0) {
+    if (!recipeData.tracks || recipeData.tracks.length === 0) {
       logger.error('RecipeParser:validateRecipe: No tracks found in the recipe');
       return false;
     }
@@ -53,7 +52,7 @@ class RecipeParser {
     recipe.recipeObj = this._convertToLowercase(recipe.recipeObj);
     
     // Operate on 'recipeObj' instead of parsing 'recipeData' every time
-    const tracks = recipe.recipeObj.tracks.filter(record => record.track !== undefined);
+    const tracks = recipe.recipeObj.tracks;
 
     // Normalize each track and its clips
     tracks.forEach(track => {
