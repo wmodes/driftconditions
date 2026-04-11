@@ -169,7 +169,7 @@ function RecipeForm({ action, initialRecord, onSave, onCancel, onChange }) {
   // helper to parse JSON5 content
   function isValidJSON(content) {
     try {
-      return JSON5.parse(content);
+      JSON5.parse(content);
       return true;
     } catch (error) {
       console.error('Failed to parse content:', error);
