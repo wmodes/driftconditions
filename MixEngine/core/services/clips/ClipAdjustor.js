@@ -1,15 +1,17 @@
 /**
- * @file ClipAdjustor class to adjust the timing and duration of audio clips within a track 
+ * @file ClipAdjustor class to adjust the timing and duration of audio clips within a track
  *       to ensure that the total duration matches the desired length specified in a recipe.
  */
 
 const logger = require('config/logger').custom('ClipAdjustor', 'debug');
+const { config } = require('config');
+const { silenceAdjustMaxAttempts } = config.audio;
 
 class ClipAdjustor {
   /**
    * Constructor to initialize the ClipAdjustor class.
    */
-  constructor() {
+  constructor () {
     /**
      * The target duration of the track marked with `mixLength: true`.
      * @type {number}
@@ -29,7 +31,7 @@ class ClipAdjustor {
    * @param {Object} recipe - The recipe object containing track and clip information.
    * @returns {number} - The duration of the track that has `mixLength` set to true.
    */
-  adjustClipTimings(recipe) {
+  adjustClipTimings (recipe) {
     logger.debug('ClipAdjustor.adjustClipTimings: Starting adjustment process');
     this._totalInitialDurations(recipe);
     this._findMixDuration(recipe);
@@ -44,7 +46,7 @@ class ClipAdjustor {
    * @private
    * @param {Object} recipe - The recipe object containing track and clip information.
    */
-  _totalInitialDurations(recipe) {
+  _totalInitialDurations (recipe) {
     logger.debug('ClipAdjustor._totalInitialDurations: Starting to calculate initial durations for all tracks');
     recipe.recipeObj.tracks.forEach(track => {
       track.duration = track.clips
@@ -59,7 +61,7 @@ class ClipAdjustor {
    * @private
    * @param {Object} recipe - The recipe object containing track and clip information.
    */
-  _findMixDuration(recipe) {
+  _findMixDuration (recipe) {
     logger.debug('ClipAdjustor._findMixDuration: Searching for track with mixLength=true');
     const mixLengthTrack = recipe.recipeObj.tracks.find(track => track.mixLength === true);
 
@@ -69,7 +71,7 @@ class ClipAdjustor {
     } else {
       logger.warn('ClipAdjustor._findMixDuration: No track marked with mixLength: true. Using the longest track as fallback.');
       const longestTrack = recipe.recipeObj.tracks.reduce(
-        (max, track) => (track.duration > max.duration ? track : max), 
+        (max, track) => (track.duration > max.duration ? track : max),
         recipe.recipeObj.tracks[0]
       );
       this.mixDuration = parseFloat(longestTrack.duration);
@@ -82,9 +84,9 @@ class ClipAdjustor {
    * @private
    * @param {Object} recipe - The recipe object containing track and clip information.
    */
-  _findAdjustableTracks(recipe) {
+  _findAdjustableTracks (recipe) {
     logger.debug('ClipAdjustor._findAdjustableTracks: Searching for tracks with adjustable/silence clips');
-    
+
     // Correcting the property names to match the JSON structure (minLength and maxLength)
     this.adjustableTracks = recipe.recipeObj.tracks.filter(track =>
       track.clips.some(clip => 'minLength' in clip && 'maxLength' in clip)
@@ -93,100 +95,123 @@ class ClipAdjustor {
     logger.debug(`ClipAdjustor._findAdjustableTracks: Found ${this.adjustableTracks.length} adjustable tracks`);
   }
 
-
   /**
-   * Iterates through each of the adjustableTracks, passing the track and `mixDuration` to `_adjustSilences`.
+   * Iterates through each of the adjustableTracks, passing the track and `mixDuration` to `_adjustFlexibleClips`.
    * @private
    */
-  _adjustAdjustableTracks() {
+  _adjustAdjustableTracks () {
     logger.debug('ClipAdjustor._adjustAdjustableTracks: Adjusting each of the adjustable tracks');
     this.adjustableTracks.forEach(track => {
       logger.debug(`ClipAdjustor._adjustAdjustableTracks: Adjusting track with initial duration: ${track.duration}`);
-      this._adjustSilences(track);
+      this._adjustFlexibleClips(track);
     });
   }
 
   /**
-   * Adjusts the durations of flexible clips (e.g., silences) within a track based on the difference
-   * between the track's duration and `mixDuration`, using random assignments until the total duration is within an acceptable range.
+   * Assigns durations to flexible clips (silences, stretch, or any clip with minLength/maxLength)
+   * within a track so that the total track
+   * duration fits within mixDuration without exceeding it.
+   *
+   * ## Design intent
+   * Silence clips are spacers between effect clips on a track. The recipe creator expresses
+   * distribution intent through the silence clip's clipLength range:
+   *
+   *   track2: tiny silence + effect + tiny silence + effect + tiny silence
+   *     → effect clips bunched near the start; tiny gaps between them
+   *
+   *   track2: short-long silence + effect + short-long silence + effect + short-long silence
+   *     → effect clips spread loosely across whatever track1's duration is
+   *
+   * To honor that intent, each silence is sampled *independently and uniformly* within its
+   * own [minLength, maxLength] range. Sequential allocation would bias earlier silences toward
+   * longer values (greedy); proportional scaling would bias larger-range silences. Rejection
+   * sampling avoids both: just keep trying until the total fits.
+   *
+   * ## Pre-check
+   * If even the minimum silence durations exceed the available budget (mixDuration minus fixed
+   * content), the recipe's fixed clips are too long to honor minLengths. In this case we scale
+   * all silences down proportionally — preserving relative proportions as best we can — and
+   * return early. ffmpeg handles a track that runs slightly long or short gracefully.
+   *
+   * ## Rejection sampling + fallback
+   * The pre-check guarantees a feasible solution exists (sum of mins ≤ budget), so rejection
+   * sampling will always terminate in theory. We cap attempts at config.audio.silenceAdjustMaxAttempts
+   * to bound worst-case behavior when the feasible region is very tight. If the cap is hit,
+   * we scale the last attempt down proportionally to fit the budget — better than resetting to
+   * minimums because it preserves the relative spacing between effect clips.
+   *
    * @private
-   * @param {Object} track - The track object containing the clips to be adjusted.
+   * @param {Object} track - The track object containing clips to be adjusted.
    */
-  _adjustSilences(track) {
-    logger.debug('ClipAdjustor._adjustSilences: Starting adjustment of silences');
+  _adjustFlexibleClips (track) {
+    logger.debug('ClipAdjustor._adjustFlexibleClips: Starting adjustment of silences');
 
-    // Calculate the initial totalTrackDuration and totalMaxFlexibleDuration
-    const totalTrackDuration = this._calculateTotalTrackDuration(track);
-    const totalMaxFlexibleDuration = track.clips
-      .filter(clip => !('duration' in clip) && 'minLength' in clip && 'maxLength' in clip)
-      .reduce((total, clip) => total + parseFloat(clip.maxLength), 0);
+    // Identify flexible clips — silence spacers with a specified range but no fixed duration yet
+    const flexibleClips = track.clips.filter(
+      clip => !('duration' in clip) && 'minLength' in clip && 'maxLength' in clip
+    );
+    if (flexibleClips.length === 0) return;
 
-    logger.debug(`ClipAdjustor._adjustSilences: totalTrackDuration=${totalTrackDuration}, totalMaxFlexibleDuration=${totalMaxFlexibleDuration}`);
+    // Budget = time remaining for silences after all fixed clips are accounted for
+    const fixedContent = this._calculateTotalTrackDuration(track);
+    const budget = this.mixDuration - fixedContent;
+    logger.debug(`ClipAdjustor._adjustFlexibleClips: fixedContent=${fixedContent}s, budget=${budget}s, mixDuration=${this.mixDuration}s`);
 
-    // If the totalTrackDuration + the total maxLength of adjustable tracks is less than 33% of mixDuration
-    // to prevent an infinite loop if we can't fill the space
-    if (totalTrackDuration + totalMaxFlexibleDuration < this.mixDuration * 0.33) {
-      logger.debug(`ClipAdjustor._adjustSilences: Not enough flexible material to fill space, setting all flexible tracks to maxLength`);
-      // Set all flexible clips to maxLength 
-      track.clips.filter(clip => !('duration' in clip) && 'minLength' in clip && 'maxLength' in clip)
-        .forEach(clip => {
-          clip.duration = parseFloat(clip.maxLength);
-          logger.debug(`ClipAdjustor._adjustSilences: Clip set to maxLength duration=${clip.duration}`);
-        });
-    } else {
-      // Start by setting each adjustable clip to minLength.
-      logger.debug(`ClipAdjustor._adjustSilences: Proceeding with random adjustment strategy`);
-      
-      const flexibleClips = track.clips.filter(clip => !('duration' in clip) && 'minLength' in clip && 'maxLength' in clip);
+    const totalMins = flexibleClips.reduce((sum, clip) => sum + parseFloat(clip.minLength), 0);
+
+    // Pre-check: if even minimum silences exceed the budget, fixed content is too long.
+    // Scale all silence minimums down proportionally to fit and return early.
+    if (totalMins > budget) {
+      logger.warn(`ClipAdjustor._adjustFlexibleClips: Min silences (${totalMins}s) exceed budget (${budget}s) — scaling down proportionally`);
+      const scale = budget > 0 ? budget / totalMins : 0;
       flexibleClips.forEach(clip => {
-        clip.duration = parseFloat(clip.minLength);
+        clip.duration = parseFloat(clip.minLength) * scale;
+        logger.debug(`ClipAdjustor._adjustFlexibleClips: Clip scaled to ${clip.duration}s`);
       });
+      track.duration = this._calculateTotalTrackDuration(track);
+      logger.debug(`ClipAdjustor._adjustFlexibleClips: Final track duration after scale-down: ${track.duration}s`);
+      return;
+    }
 
-      // Get the totalTrackDuration 
-      let updatedTrackDuration = this._calculateTotalTrackDuration(track);
+    // Rejection sampling: pick each silence independently and uniformly within its own range.
+    // Accept the attempt if the total fits within budget. The pre-check above guarantees
+    // a valid solution exists, so this converges — but we cap attempts to be safe.
+    let lastAttempt = flexibleClips.map(clip => parseFloat(clip.minLength)); // safe initial fallback
+    let accepted = false;
 
-      // If the totalTrackDuration is less than mixDuration to prevent an infinite loop if we have too much material
-      if (updatedTrackDuration < this.mixDuration) {
-        logger.debug(`ClipAdjustor._adjustSilences: Initial updatedTrackDuration (${updatedTrackDuration}) is less than mixDuration (${this.mixDuration}), starting random adjustment loop`);
-
-        // Create an infinite while loop
-        while (true) {
-          // Iterate over the adjustable clips in the track
-          flexibleClips.forEach(clip => {
-            // Pick a random value within minLength and maxLength and assign it to the clip duration
-            const minLen = parseFloat(clip.minLength);
-            const maxLen = parseFloat(clip.maxLength);
-            clip.duration = minLen + Math.random() * (maxLen - minLen);
-            logger.debug(`ClipAdjustor._adjustSilences: Clip adjusted to random duration=${clip.duration}`);
-          });
-
-          // Calculate the totalTrackDuration (including both silence and fixed clips)
-          updatedTrackDuration = this._calculateTotalTrackDuration(track);
-
-          // If the totalTrackDuration is greater than mixLengthDuration, loop again
-          if (updatedTrackDuration > this.mixDuration) {
-            logger.debug(`ClipAdjustor._adjustSilences: updatedTrackDuration (${updatedTrackDuration}) exceeds mixDuration (${this.mixDuration}), trying again`);
-            // Reset to minLength and try again
-            flexibleClips.forEach(clip => {
-              clip.duration = parseFloat(clip.minLength);
-            });
-            continue; // Go to the next iteration
-          }
-
-          // If the totalTrackDuration is within 33% of mixLengthDuration, break out of the loop
-          if (updatedTrackDuration >= this.mixDuration * 0.67) {
-            logger.debug(`ClipAdjustor._adjustSilences: updatedTrackDuration (${updatedTrackDuration}) is within 33% of mixDuration (${this.mixDuration}), breaking loop`);
-            break; // Break the loop if within 33% of mixDuration
-          }
-        }
-      } else {
-        logger.debug(`ClipAdjustor._adjustSilences: No adjustment needed as updatedTrackDuration (${updatedTrackDuration}) is not less than mixDuration (${this.mixDuration})`);
+    for (let attempt = 0; attempt < silenceAdjustMaxAttempts; attempt++) {
+      const durations = flexibleClips.map(clip => {
+        const min = parseFloat(clip.minLength);
+        const max = parseFloat(clip.maxLength);
+        return min + Math.random() * (max - min);
+      });
+      lastAttempt = durations;
+      const total = durations.reduce((sum, d) => sum + d, 0);
+      if (total <= budget) {
+        accepted = true;
+        logger.debug(`ClipAdjustor._adjustFlexibleClips: Accepted on attempt ${attempt + 1} (total=${total.toFixed(1)}s, budget=${budget.toFixed(1)}s)`);
+        break;
       }
     }
 
-    // Final track duration after adjustment
+    // Fallback: scale the last attempt down to fit the budget.
+    // Preserves relative proportions between silences better than resetting to minimums,
+    // so effect clip distribution is approximated as closely as possible.
+    if (!accepted) {
+      logger.warn(`ClipAdjustor._adjustFlexibleClips: Rejection sampling hit ${silenceAdjustMaxAttempts}-attempt limit — scaling last attempt to fit budget`);
+      const lastTotal = lastAttempt.reduce((sum, d) => sum + d, 0);
+      const scale = lastTotal > 0 ? budget / lastTotal : 0;
+      lastAttempt = lastAttempt.map(d => d * scale);
+    }
+
+    // Apply final durations to clips
+    flexibleClips.forEach((clip, i) => {
+      clip.duration = lastAttempt[i];
+      logger.debug(`ClipAdjustor._adjustFlexibleClips: Clip duration set to ${clip.duration.toFixed(1)}s [min=${clip.minLength}, max=${clip.maxLength}]`);
+    });
+
     track.duration = this._calculateTotalTrackDuration(track);
-    logger.debug(`ClipAdjustor._adjustSilences: Final track duration after adjustment: ${track.duration}`);
+    logger.debug(`ClipAdjustor._adjustFlexibleClips: Final track duration: ${track.duration}s`);
   }
 
   /**
@@ -195,15 +220,14 @@ class ClipAdjustor {
  * @param {Object} track - The track object containing the clips to be calculated.
  * @returns {number} - The total duration of the track.
  */
-  _calculateTotalTrackDuration(track) {
+  _calculateTotalTrackDuration (track) {
     const totalTrackDuration = track.clips
       .filter(clip => 'duration' in clip)
       .reduce((total, clip) => total + parseFloat(clip.duration), 0);
-    
+
     logger.debug(`ClipAdjustor._calculateTotalTrackDuration: Calculated totalTrackDuration=${totalTrackDuration}`);
     return totalTrackDuration;
   }
-
 }
 
 module.exports = ClipAdjustor;

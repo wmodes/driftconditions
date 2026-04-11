@@ -59,6 +59,7 @@ const config = {
     newnessScoreWeight: 0.75,
     tagScoreWeight: 1,
     usageScoreWeight: 0.5,    // weight for clip usage score; less-used clips score higher
+    silenceAdjustMaxAttempts: 100, // max rejection-sampling attempts before scaling fallback
     classification: [
       'Ambient', 
       'Atmospheric', 

@@ -12,6 +12,21 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [2026-04-11]
 
 ### Added
+- `config.audio.silenceAdjustMaxAttempts` (default: 100) — caps rejection-sampling attempts in flexible clip duration assignment before falling back to proportional scaling
+
+### Changed
+- `ClipAdjustor._adjustSilences()` rewritten as `_adjustFlexibleClips()` — renamed to reflect that the mechanism is generic (any clip with `minLength`/`maxLength`, not just silences); algorithm replaced with rejection sampling to correctly honor recipe intent: each flexible clip is sampled independently and uniformly within its own range, so a `tiny` silence stays tiny and a `short-long` silence spreads widely regardless of its neighbors
+- Pre-check added: if minimum silence durations exceed the available budget, all flexible clips are scaled down proportionally rather than entering the loop
+- Fallback added: if `silenceAdjustMaxAttempts` is exceeded (feasible region too tight), the last attempt is scaled proportionally to fit the budget — preserves relative spacing between effect clips better than resetting to minimums
+
+### Fixed
+- `ClipAdjustor._adjustSilences()` infinite loop causing Node.js OOM crash — previous algorithm used a random search with a 67% fill threshold that was unreachable when silence clips couldn't span the mix duration (e.g. short silences alongside a 54-minute ambient clip); process would spin until heap exhaustion and crash MixEngine
+
+---
+
+## [2026-04-11]
+
+### Added
 - **Duration-weighted recipe selection** (`RecipeSelector`) — recipes with shorter average mix durations now score higher, preventing long-running recipes from dominating airtime; score = `(maxDuration - avgDuration) / (maxDuration - minDuration)`; recipes with no `avgDuration` data score 0.5 (neutral)
 - `config.recipes.durationScoreWeight` (default: 1) — weight for duration subscore alongside existing `newnessScoreWeight` and `classificationScoreWeight`
 - `RecipeSelector._getDurationRange()` — computes `minDuration`/`maxDuration` across eligible recipes before scoring; stored on instance, parallel to `_getEarliestAndLatestDates()`
