@@ -10,7 +10,7 @@ const clipLength = config.audio.clipLength;
 
 class RecipeParser {
 
-  static validTrackProperties = ['track', 'tags', 'clips', 'volume', 'effects'];
+  static validTrackProperties = ['track', 'label', 'tags', 'clips', 'volume', 'effects'];
   static validClipProperties = ['classification', 'tags', 'volume', 'clipLength', 'effects'];
   static arrayProperties = ['clips', 'classification', 'tags', 'clipLength', 'effects'];
 
