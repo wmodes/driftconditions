@@ -11,6 +11,13 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [2026-04-11]
 
+### Changed
+- `norm(music)` loudnorm preset: added `LRA: 11` — ffmpeg's default LRA of 4 LU is too compressed for feature/foreground music; 11 LU allows natural musical dynamics
+
+---
+
+## [2026-04-11]
+
 ### Added
 - `RecipeParser.resolveShortestLongestTrack()` — resolves `shortest`/`longest` mixLength markers after clip selection, when actual clip durations are known; called in Conductor between `selectAudioClips` and `adjustClipTimings`
 

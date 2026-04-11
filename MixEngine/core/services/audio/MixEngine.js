@@ -824,7 +824,7 @@ class MixEngine {
           options = { I: -16, TP: -1.5, LRA: 7 };
           break;
         case 'music':
-          options = { I: -14, TP: -1 };
+          options = { I: -14, TP: -1, LRA: 11 };
           break;
         case 'musicbed':
         case 'bed':

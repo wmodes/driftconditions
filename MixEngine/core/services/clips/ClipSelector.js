@@ -8,7 +8,7 @@ const logger = require('config/logger').custom('ClipSelector', 'info');
 const { config } = require('config');
 const {
   selectPoolPercentSize, selectPoolMinSize,
-  newnessScoreWeight, tagScoreWeight
+  newnessScoreWeight, tagScoreWeight, usageScoreWeight
 } = config.audio;
 const clipLengthRanges = config.audio.clipLength;
 
@@ -19,6 +19,8 @@ class ClipSelector {
     this.earliestDate = null;
     this.latestDate = null;
     this.dateRange = null;
+    this.minUsed = null;
+    this.maxUsed = null;
     this.recentTags = [];
   }
 
@@ -129,6 +131,8 @@ class ClipSelector {
     }
     // Set the date range for the clips
     this._getEarliestAndLatestDates();
+    // Set the usage range for usage scoring
+    this._getUsageRange();
     // Add tags from the criteria
     this.addTags(criteria.tags);
     // Score the clips
@@ -260,6 +264,41 @@ class ClipSelector {
     return true;
   }
 
+  // Calculate min and max timesUsed across the clip pool
+  _getUsageRange () {
+    let min = Infinity;
+    let max = 0;
+    this.clipPool.forEach(clip => {
+      const u = parseInt(clip.timesUsed, 10);
+      if (!isNaN(u)) {
+        if (u < min) min = u;
+        if (u > max) max = u;
+      }
+    });
+    this.minUsed = isFinite(min) ? min : null;
+    this.maxUsed = max >= 0 && this.minUsed !== null ? max : null;
+    logger.debug(`Usage range set: min: ${this.minUsed}, max: ${this.maxUsed}`);
+  }
+
+  // Calculate usage score — less-used clips score higher
+  // Neutral score (0.5) if no range exists; never-used clips score 1.0
+  _calculateUsageScore (clip) {
+    const u = parseInt(clip.timesUsed, 10);
+    // Never used — give maximum score
+    if (isNaN(u) || u === 0) {
+      logger.debug(`Clip "${clip.title}" usage score: 1.0 (never used)`);
+      return 1;
+    }
+    // No range to compare against — neutral
+    if (this.minUsed === null || this.maxUsed === null || this.maxUsed === this.minUsed) {
+      logger.debug(`Clip "${clip.title}" usage score: 0.5 (neutral — no range)`);
+      return 0.5;
+    }
+    const score = (this.maxUsed - u) / (this.maxUsed - this.minUsed);
+    logger.debug(`Clip "${clip.title}" usage score: ${score} (timesUsed: ${u}, range: ${this.minUsed}–${this.maxUsed})`);
+    return Math.min(Math.max(score, 0), 1);
+  }
+
   // Add the tags from criteria (or similar object)
   //  check status:
   addTags (tags) {
@@ -292,10 +331,15 @@ class ClipSelector {
   _calculateScore (clip) {
     const newnessScore = this._calculateNewnessScore(clip);
     const tagScore = this._calculateTagScore(clip);
+    const usageScore = this._calculateUsageScore(clip);
     // combine scores for different criteria as weighted average
-    const totalWeight = newnessScoreWeight + tagScoreWeight;
-    const score = (newnessScore * newnessScoreWeight + tagScore * tagScoreWeight) / totalWeight;
-    logger.debug(`Clip scored: ${clip.title}, newness: ${newnessScore}, tagScore: ${tagScore}, score: ${score}`);
+    const totalWeight = newnessScoreWeight + tagScoreWeight + usageScoreWeight;
+    const score = (
+      newnessScore * newnessScoreWeight +
+      tagScore * tagScoreWeight +
+      usageScore * usageScoreWeight
+    ) / totalWeight;
+    logger.debug(`Clip scored: ${clip.title}, newness: ${newnessScore}, tagScore: ${tagScore}, usageScore: ${usageScore}, score: ${score}`);
     return score;
   }
 
