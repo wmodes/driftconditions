@@ -3,7 +3,7 @@
  * @file MixEngine.js - Main audio processing engine for mixing audio clips
  */
 
-const logger = require('config/logger').custom('MixEngine', 'debug');
+const logger = require('config/logger').custom('MixEngine', 'info');
 const ffmpeg = require('fluent-ffmpeg');
 const JSON5 = require('json5');
 const path = require('path');
