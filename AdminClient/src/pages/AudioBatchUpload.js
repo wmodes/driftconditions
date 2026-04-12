@@ -174,6 +174,10 @@ function AudioBatchUpload() {
     const totalSuccess = uploadResults.filter(result => result.success).length;
     const totalFailure = uploadResults.filter(result => !result.success).length;
 
+    // Upload attempt is complete — nothing left to save regardless of outcome
+    dispatch(setUnsavedChanges(false));
+    setIsSubmitted(true);
+
     if (totalSuccess > 0 && totalFailure > 0) {
       setError('Some upload errors');
       setSuccessMessage('');
@@ -183,8 +187,6 @@ function AudioBatchUpload() {
     } else {
       setError('');
       setSuccessMessage('Uploads successful');
-      setIsSubmitted(true);
-      dispatch(setUnsavedChanges(false));
     }
   };
 
