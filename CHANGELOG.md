@@ -9,6 +9,13 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-04-12] (3)
+
+### Fixed
+- `MixEngine._telephoneEffect`: `acompressor` threshold was set to `-20` (invalid dB value); corrected to `0.1` (linear equivalent of -20dB, which is what ffmpeg acompressor requires) — previously caused ffmpeg to abort with "Error setting option threshold" on any recipe using the telephone effect (e.g. Fucked Up Radio Air Check)
+
+---
+
 ## [2026-04-12] (2)
 
 ### Added
