@@ -2,7 +2,7 @@
  * @file AudioBatchUpload.js - A page for uploading multiple audio files with the same attributes
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { audioUpload } from '../store/audioSlice';
@@ -45,6 +45,11 @@ function AudioBatchUpload() {
       setEditPerm(true);
     }
   }, [userAuth.permissions]);
+
+  // ref to reset the uncontrolled file input element
+  const fileInputRef = useRef(null);
+  // key to force TagInput remount on new batch
+  const [batchKey, setBatchKey] = useState(0);
 
   // Local state for managing form inputs
   const [files, setFiles] = useState([]);
@@ -240,6 +245,8 @@ function AudioBatchUpload() {
     setError('');
     setIsSubmitted(false);
     dispatch(setUnsavedChanges(false));
+    if (fileInputRef.current) fileInputRef.current.value = '';
+    setBatchKey(k => k + 1);
   };
 
   const renderBreadcrumbs = () => {
@@ -263,7 +270,7 @@ function AudioBatchUpload() {
 
             <div className="form-group">
               <label className="form-label" htmlFor="file">Audio Files: <Required /></label>
-              <input className="form-upload" type="file" id="file" onChange={handleFileChange} multiple />
+              <input className="form-upload" type="file" id="file" onChange={handleFileChange} multiple ref={fileInputRef} />
               <p className="form-note">{fieldNotes.filetypes}</p>
             </div>
 
@@ -293,7 +300,8 @@ function AudioBatchUpload() {
 
               <label className="form-label" htmlFor="tags">Tags: <Required /></label>
               <TagInput
-                initialRecord={record.tags}
+                key={batchKey}
+                initialTags={record.tags}
                 onTagChange={handleTagChange}
               />
               <p className="form-note mt-1">{fieldNotes.tags}</p>
