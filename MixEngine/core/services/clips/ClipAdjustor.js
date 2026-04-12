@@ -101,7 +101,10 @@ class ClipAdjustor {
    */
   _adjustAdjustableTracks () {
     logger.debug('ClipAdjustor._adjustAdjustableTracks: Adjusting each of the adjustable tracks');
-    this.adjustableTracks.forEach(track => {
+    // Process the mixLength track first so its silences expand freely and update
+    // this.mixDuration before other tracks calculate their budgets against it.
+    const sorted = [...this.adjustableTracks].sort((a, b) => (b.mixLength ? 1 : 0) - (a.mixLength ? 1 : 0));
+    sorted.forEach(track => {
       logger.debug(`ClipAdjustor._adjustAdjustableTracks: Adjusting track with initial duration: ${track.duration}`);
       this._adjustFlexibleClips(track);
     });
@@ -151,6 +154,22 @@ class ClipAdjustor {
       clip => !('duration' in clip) && 'minLength' in clip && 'maxLength' in clip
     );
     if (flexibleClips.length === 0) return;
+
+    // The mixLength track defines the mix duration — its silences should expand freely within
+    // their declared ranges rather than being budget-constrained. After sampling, update
+    // this.mixDuration so downstream tracks calculate their budgets correctly.
+    if (track.mixLength) {
+      flexibleClips.forEach(clip => {
+        const min = parseFloat(clip.minLength);
+        const max = parseFloat(clip.maxLength);
+        clip.duration = min + Math.random() * (max - min);
+        logger.debug(`ClipAdjustor._adjustFlexibleClips: mixLength track — clip duration set to ${clip.duration.toFixed(1)}s [min=${min}, max=${max}]`);
+      });
+      track.duration = this._calculateTotalTrackDuration(track);
+      this.mixDuration = track.duration;
+      logger.debug(`ClipAdjustor._adjustFlexibleClips: mixLength track — updated mixDuration to ${this.mixDuration}s`);
+      return;
+    }
 
     // Budget = time remaining for silences after all fixed clips are accounted for
     const fixedContent = this._calculateTotalTrackDuration(track);

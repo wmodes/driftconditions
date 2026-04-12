@@ -9,6 +9,17 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-04-12]
+
+### Added
+- `small` as an alias for `short` in `config.audio.clipLength` — natural companion to `tiny`, `medium`, `long`, `huge`; prevents silent fallback warnings in recipes that use `small` as a silence duration
+
+### Fixed
+- `ClipAdjustor._adjustFlexibleClips`: the `mixLength` track's own silence clips were budget-constrained against `this.mixDuration` (which excluded those very silences), causing budget=0 and silences scaled to zero — leading to truncated mixes; the `mixLength` track now samples silences freely within their declared ranges and updates `this.mixDuration` afterward so other tracks budget correctly
+- `ClipAdjustor._adjustAdjustableTracks`: `mixLength` track now processed first so downstream tracks see the updated `mixDuration`
+
+---
+
 ## [2026-04-11] (4)
 
 ### Added

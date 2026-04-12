@@ -88,6 +88,11 @@ const config = {
         min: 10,      // 10s
         max: 60 * 2,  // 120s
       },
+      small: {
+        // alias for short
+        min: 10,      // 10s
+        max: 60 * 2,  // 120s
+      },
       medium: { 
         // 2 minutes to 5 minutes - most music
         min: 60 * 2,  // 120s
