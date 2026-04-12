@@ -9,6 +9,30 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-04-11] (4)
+
+### Added
+- **`fadeout(n)` effect** (`MixEngine.js`) — smooth volume ramp-down at end of a track or clip; n sets fade duration in seconds (default 3); implemented via ffmpeg `afade t=out`
+  - Clip-level: applied immediately using known `clip.duration`
+  - Track-level: deferred to `_applyPendingFadeouts()` after `_determineMixDuration()` resolves, so looped tracks with Infinity duration are handled correctly
+- **`duck(n)` / `duck(label)` effect** (`MixEngine.js`) — sidechaincompress ducking; the track carrying `duck()` ducks when the referenced sidechain track has signal; n is a zero-based track index or a recipe `label` string
+  - `asplit` forks the sidechain track so it appears in the mix and drives the compressor simultaneously
+  - Deferred to `_applyPendingDucks()` after all tracks are built; both `trackFinalLabels` entries patched atomically
+  - Parameters configurable in `config.ffmpeg.filters.duck`: threshold (-30dB), ratio (20), attack (200ms), release (1000ms)
+- **`repeat(n)` effect** (`ClipSelector.js`) — reuses the nth already-selected clip in the same track instead of a new DB query; n is 0-based; silence slots count toward the index but cannot be the repeat target; falls through to normal selection with a warning if n is out of range or targets a silence
+- `config.ffmpeg.filters.duck` — duck compressor parameters (threshold, ratio, attack, release)
+- `trackLabels[]` array in `MixEngine` tracks optional recipe `label` keys per track, enabling `duck(label)` resolution
+- `experiments/duck/` and `experiments/fadeout/` — standalone ffmpeg shell scripts for validating filter behavior in isolation
+
+### Changed
+- `_applyPendingFadeouts()` now stores `trackNum` in pending entries instead of `inputLabel`, resolving the label at apply-time from `trackFinalLabels[trackNum]` — prevents collision when another deferred op updates the label before fadeout applies
+- MixEngine logger set to `'debug'` temporarily for filter development (TODO: revert to `'info'`)
+
+### Fixed
+- `_waveEffect()` debug log: second line was logging `this.exprs.noise` instead of `waveFunc`
+
+---
+
 ## [2026-04-11] (3)
 
 ### Added

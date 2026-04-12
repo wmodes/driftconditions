@@ -3,7 +3,7 @@
  * @file MixEngine.js - Main audio processing engine for mixing audio clips
  */
 
-const logger = require('config/logger').custom('MixEngine', 'info');
+const logger = require('config/logger').custom('MixEngine', 'debug'); // TODO: set back to 'info' after testing
 const ffmpeg = require('fluent-ffmpeg');
 const JSON5 = require('json5');
 const path = require('path');
@@ -43,6 +43,12 @@ class MixEngine {
     // tracking mix duration
     this.mixDurationTrack = 'longest';
     this.trackDurations = [];
+    // deferred fadeout requests resolved after mixDuration is known
+    this.pendingFadeouts = [];
+    // deferred duck requests resolved after all tracks are built
+    this.pendingDucks = [];
+    // track labels keyed by track index, for duck(label) resolution
+    this.trackLabels = [];
   }
 
   /**
@@ -60,6 +66,9 @@ class MixEngine {
     this.mixFilepath = '';
     this.mixDurationTrack = 'longest';
     this.trackDurations = [];
+    this.pendingFadeouts = [];
+    this.pendingDucks = [];
+    this.trackLabels = [];
   }
 
   /**
@@ -150,13 +159,19 @@ class MixEngine {
     // Build filters for each track
     this._buildAllTracksAndClipsFilters(recipeObj);
     //
-    // Build the final mix filter
-    this._buildMixFilter(recipeObj);
-    //
     // Determine the duration of the mix
     const mixDuration = this._determineMixDuration();
     //
-    // Build the trim filer
+    // Apply any deferred fadeouts now that mixDuration is known
+    this._applyPendingFadeouts(mixDuration);
+    //
+    // Apply any deferred duck effects now that all track labels are known
+    this._applyPendingDucks();
+    //
+    // Build the final mix filter
+    this._buildMixFilter(recipeObj);
+    //
+    // Build the trim filter
     this._buildTrimFilter(mixDuration);
     //
     logger.debug(`MixEngine:_buildComplexFilter: filterChain: ${JSON5.stringify(this.filterChain, null, 2)}`);
@@ -195,6 +210,8 @@ class MixEngine {
     //
     // track base label
     const baseLabel = `track-${this.currentTrackNum}`;
+    // store optional recipe label for duck(label) resolution
+    this.trackLabels.push(track.label || null);
     // Keep track of the track label so far
     let nextInputSrc = '';
     //
@@ -309,6 +326,35 @@ class MixEngine {
             baseLabel,
             this._getParams(effect)
           );
+        }
+        // duck effect — deferred until all tracks are built so sidechain labels are known
+        else if (/^duck/i.test(effect)) {
+          logger.debug(`MixEngine:_buildTrackFilters(): Deferring duck effect on track ${baseLabel}`);
+          const params = this._getParams(effect);
+          if (params.length === 0) {
+            logger.warn(`MixEngine:_buildTrackFilters(): duck requires a track index or label, skipping`);
+          } else {
+            const ref = params[0];
+            // numeric string → track index; anything else → track label
+            const sidechainRef = /^\d+$/.test(ref.trim()) ? parseInt(ref) : ref.trim();
+            this.pendingDucks.push({ trackNum: this.currentTrackNum, baseLabel, sidechainRef });
+          }
+        }
+        // fadeout effect — deferred until mixDuration is known
+        else if (/^fadeout/i.test(effect)) {
+          logger.debug(`MixEngine:_buildTrackFilters(): Deferring fadeout effect on track ${baseLabel}`);
+          const params = this._getParams(effect);
+          const fadeDuration = params.length > 0 ? parseFloat(params[0]) : 3;
+          // store the pending fadeout with the current label and track duration;
+          // if track is looped (Infinity), _applyPendingFadeouts will resolve from mixDuration
+          this.pendingFadeouts.push({
+            trackNum: this.currentTrackNum,
+            baseLabel,
+            fadeDuration,
+            trackDuration: track.duration
+          });
+          // nextInputSrc is intentionally NOT updated here; _applyPendingFadeouts
+          // will insert the afade filter and update trackFinalLabels after mix duration is known
         }
         // shortest, longest, and first effects
         else if (effect.toLowerCase() == 'first') {
@@ -484,6 +530,22 @@ class MixEngine {
             this._getParams(effect)
           );
         }
+        // fadeout effect — applied immediately using clip.duration
+        else if (/^fadeout/i.test(effect)) {
+          logger.debug(`MixEngine:_buildClipFilters(): Applying fadeout effect to clip ${effect}`);
+          const params = this._getParams(effect);
+          const fadeDuration = params.length > 0 ? parseFloat(params[0]) : 3;
+          if (!isFinite(clip.duration)) {
+            logger.warn(`MixEngine:_buildClipFilters(): fadeout on infinite-duration clip not supported, skipping`);
+          } else {
+            const startTime = clip.duration - fadeDuration;
+            if (startTime < 0) {
+              logger.warn(`MixEngine:_buildClipFilters(): fadeDuration ${fadeDuration}s exceeds clip duration ${clip.duration}s, skipping`);
+            } else {
+              nextInputSrc = this._fadeoutEffect(nextInputSrc, baseLabel, fadeDuration, startTime);
+            }
+          }
+        }
       }); // end of effects
     } // end of clip
     // increment the input number
@@ -641,7 +703,7 @@ class MixEngine {
       if (paramKey in this.exprs) {
         waveFunc = this.exprs[paramKey];
         logger.debug(`MixEngine:_waveEffect(): Found paramKey "${paramKey}" in exprs. Setting waveFunc.`);
-        logger.debug(`waveFunc: ${this.exprs.noise}`);
+        logger.debug(`waveFunc: ${waveFunc}`);
       } else {
         logger.debug(`MixEngine:_waveEffect(): paramKey "${paramKey}" not found in exprs.`);
       }
@@ -841,6 +903,118 @@ class MixEngine {
       outputs: newLabel
     });
     // return the most recent label
+    return newLabel;
+  }
+
+  /**
+   * Applies all deferred fadeout effects now that mixDuration is known.
+   * Track-level fadeouts are deferred because looped tracks have Infinity duration
+   * until mix duration is resolved.
+   *
+   * @param {number} mixDuration - The determined mix duration in seconds.
+   * @private
+   */
+  _applyPendingFadeouts (mixDuration) {
+    this.pendingFadeouts.forEach(({ trackNum, baseLabel, fadeDuration, trackDuration }) => {
+      // for looped tracks (Infinity), fade relative to mix end; otherwise use actual track duration
+      const effectiveDuration = isFinite(trackDuration) ? trackDuration : mixDuration;
+      const startTime = effectiveDuration - fadeDuration;
+      if (startTime < 0) {
+        logger.warn(`MixEngine:_applyPendingFadeouts(): fadeDuration ${fadeDuration}s exceeds track duration ${effectiveDuration}s for ${baseLabel}, skipping`);
+        return;
+      }
+      // use track index directly — avoids indexOf collision if multiple deferred ops touch the same track
+      const inputLabel = this.trackFinalLabels[trackNum];
+      const newLabel = this._fadeoutEffect(inputLabel, baseLabel, fadeDuration, startTime);
+      this.trackFinalLabels[trackNum] = newLabel;
+    });
+  }
+
+  /**
+   * Builds an afade filter that fades audio out.
+   * @param {string} inputSrc - The input label.
+   * @param {string} baseLabel - The base label for naming the output.
+   * @param {number} fadeDuration - Length of the fade in seconds.
+   * @param {number} startTime - When the fade begins (seconds from audio start).
+   * @sideeffect adds filter to this.filterChain
+   * @returns {string} most recent output label
+   * @private
+   */
+  _fadeoutEffect (inputSrc, baseLabel, fadeDuration, startTime) {
+    const newLabel = baseLabel + '_fadeout';
+    this.filterChain.push({
+      inputs: inputSrc,
+      filter: 'afade',
+      options: {
+        t: 'out',
+        st: startTime,
+        d: fadeDuration
+      },
+      outputs: newLabel
+    });
+    logger.debug(`MixEngine:_fadeoutEffect(): fade out from ${startTime}s over ${fadeDuration}s on ${baseLabel}`);
+    return newLabel;
+  }
+
+  /**
+   * Applies all deferred duck effects now that all track labels are known.
+   * Splits the sidechain source track and applies sidechaincompress to the ducked track.
+   * @private
+   */
+  _applyPendingDucks () {
+    this.pendingDucks.forEach(({ trackNum, baseLabel, sidechainRef }) => {
+      // resolve sidechain track index from number or label
+      let scTrackNum;
+      if (typeof sidechainRef === 'number') {
+        scTrackNum = sidechainRef;
+      } else {
+        scTrackNum = this.trackLabels.indexOf(sidechainRef);
+      }
+      if (scTrackNum < 0 || scTrackNum >= this.trackFinalLabels.length) {
+        logger.warn(`MixEngine:_applyPendingDucks(): sidechain ref "${sidechainRef}" not found, skipping duck on ${baseLabel}`);
+        return;
+      }
+      // split the sidechain track — one copy for the mix, one to drive the compressor
+      const scLabel = this.trackFinalLabels[scTrackNum];
+      const scMixLabel = scLabel + '_mix';
+      const scSideLabel = scLabel + '_sc';
+      this.filterChain.push({
+        inputs: scLabel,
+        filter: 'asplit',
+        outputs: [scMixLabel, scSideLabel]
+      });
+      this.trackFinalLabels[scTrackNum] = scMixLabel;
+      //
+      // apply sidechaincompress to the ducked track
+      const inputLabel = this.trackFinalLabels[trackNum];
+      const newLabel = this._duckEffect(inputLabel, scSideLabel, baseLabel);
+      this.trackFinalLabels[trackNum] = newLabel;
+    });
+  }
+
+  /**
+   * Builds a sidechaincompress filter that ducks the input when the sidechain has signal.
+   * @param {string} inputSrc - The audio to be ducked.
+   * @param {string} sidechainSrc - The sidechain trigger signal.
+   * @param {string} baseLabel - Base label for naming the output.
+   * @sideeffect adds filter to this.filterChain
+   * @returns {string} most recent output label
+   * @private
+   */
+  _duckEffect (inputSrc, sidechainSrc, baseLabel) {
+    const newLabel = baseLabel + '_duck';
+    this.filterChain.push({
+      inputs: [inputSrc, sidechainSrc],
+      filter: 'sidechaincompress',
+      options: {
+        threshold: config.ffmpeg.filters.duck.threshold,
+        ratio: config.ffmpeg.filters.duck.ratio,
+        attack: config.ffmpeg.filters.duck.attack,
+        release: config.ffmpeg.filters.duck.release
+      },
+      outputs: newLabel
+    });
+    logger.debug(`MixEngine:_duckEffect(): ducking ${baseLabel} via sidechain ${sidechainSrc}`);
     return newLabel;
   }
 

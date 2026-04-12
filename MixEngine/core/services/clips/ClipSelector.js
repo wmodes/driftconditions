@@ -31,14 +31,39 @@ class ClipSelector {
   async selectAudioClips (recipe) {
     // Iterate over each track in the recipe
     for (const track of recipe.recipeObj.tracks) {
+      // Track previously selected clips within this track for repeat(n) support
+      const selectedClips = [];
       // Iterate over each clip in the track
       for (const clip of track.clips) {
         //check for classification includes "silence"
         if (clip.classification.includes('silence')) {
           this._setSilenceBasics(clip);
+          selectedClips.push(null); // keep index aligned
           // go to next iteration of loop
           continue;
         }
+
+        // repeat(n) — reuse the nth already-selected clip in this track instead of
+        // querying the DB. n is 0-based. Falls through to normal selection if n is
+        // out of range or the target slot was a silence.
+        const repeatEffect = (clip.effects || []).find(e => /^repeat\(\d+\)/i.test(e));
+        if (repeatEffect) {
+          const n = parseInt(repeatEffect.match(/\((\d+)\)/)[1]);
+          const source = selectedClips[n];
+          if (source) {
+            clip.audioID = source.audioID;
+            clip.title = source.title;
+            clip.filename = source.filename;
+            clip.duration = source.duration;
+            clip.creatorID = source.creatorID;
+            clip.creatorUsername = source.creatorUsername;
+            logger.debug(`ClipSelector: repeat(${n}) reusing clip "${source.title}"`);
+            selectedClips.push(clip);
+            continue;
+          }
+          logger.warn(`ClipSelector: repeat(${n}) out of range or targets a silence — falling through to normal selection`);
+        }
+
         // we treat the clip as the search criteria
         let selectedAudioClip = null;
         let oneLastTime = false;
@@ -80,6 +105,7 @@ class ClipSelector {
         clip.duration = parseFloat(selectedAudioClip.duration);
         clip.creatorID = selectedAudioClip.creatorID;
         clip.creatorUsername = selectedAudioClip.creatorUsername;
+        selectedClips.push(clip);
       }
     }
     return true;
