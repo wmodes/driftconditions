@@ -20,6 +20,8 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Removed
 - `exprs2` config block — superseded by `exprs3`; was never referenced by any code
+- `exprs` config block — superseded by `exprs3`; all recipes migrated to new syntax
+- `MixEngine._substituteExpressions()`, `_keysToLowercase()`, `_getListOfExprSubstNeeded()`, `_replacePlaceholder()` — only served the old `exprs` system
 
 ### Changed
 - MixEngine logger reverted to `'info'` (was temporarily `'debug'` during filter development)

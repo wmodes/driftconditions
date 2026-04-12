@@ -207,47 +207,52 @@ const config = {
   },
   exprs3: {
     /*
-      Single parameterized base formula for all wave effects.
+      "Coherent noise" filters — a harmonic series based on cosine functions.
+      Unlike random noise, these produce smooth, slowly-evolving oscillations
+      that feel organic rather than chaotic. The wave is a harmonic cascade
+      of three cosines at decreasing frequency and amplitude, clamped to [0,1].
 
-      The wave is a harmonic cascade of three cosines at decreasing frequency/amplitude,
-      clamped to [0, 1]. All characteristics are parameters — presets below select
-      frequency families; modifiers (handled in code) patch params on top.
+      All wave characteristics are parameters — presets select frequency
+      families; modifiers (handled in code) patch individual params on top.
 
       base formula:
         min(1, max(0,
-          (( cos(PI*t*fs/f0 + fo) * 1
-           + cos(PI*t*fs/f1 + fo) * 0.5
-           + cos(PI*t*fs/f2 + fo) * 0.25
+          (( cos(PI*t*fs/f0 + fo) * 1     ← fundamental
+           + cos(PI*t*fs/f1 + fo) * 0.5   ← 2nd harmonic, half amplitude
+           + cos(PI*t*fs/f2 + fo) * 0.25  ← 3rd harmonic, quarter amplitude
           ) - ao) * as * po + q
         ))
 
       parameters:
-        f0, f1, f2  — frequency divisors (larger = slower); set per preset
+        f0, f1, f2  — frequency divisors (larger = slower period); set per preset
         fs          — global frequency scale (smaller = slower period overall)
-        fo          — frequency offset (phase shift; use to desync tracks)
+        fo          — frequency offset / phase shift (use to desync tracks)
         as          — amplitude scale (how far the wave travels; 0.75 = 3/4 height)
         ao          — amplitude offset (center point before scaling; 0.5 = centered)
         po          — polarity: 1 = normal, -1 = inverted (counter-phase)
         q           — wave offset (shifts whole wave up/down after scaling; 0.5 = centered)
 
       modifiers (resolved in code, not config):
-        inverse  — sets po = -1; wave is complement of default/slow/slower
-        soft     — sets as = 0.3, ao = 0.7; wave stays in upper range, less dramatic
-        lifted   — sets as = 1, ao = -1; wave never drops to zero (floor is raised)
-        bridge   — derived formula: peaks where default and inverse cross
-                   min(1,max(0, 4*(0.5-abs(0.5-lead))*(0.5-abs(0.5-counter)) + 0.25))
+        inverse/counter — sets po = -1; wave is complement of the base preset
+        soft            — sets as = 0.3, ao = 0.7; wave stays in upper range, less dramatic
+        lifted          — sets as = 1, ao = -1; wave never drops to zero (floor is raised)
+        bridge          — derived formula: peaks where lead and counter cross
+                          min(1,max(0, 4*(0.5-abs(0.5-lead))*(0.5-abs(0.5-counter)) + 0.25))
+
+      GraphToy demo: https://shorturl.at/T82uY
 
       usage in recipes:
-        wave()                  — default preset, normal sweep 0–1
-        wave(slow)              — slow preset
-        wave(slower)            — slower preset
-        wave(inverse)           — default + inverted polarity
-        wave(soft)              — default + subtle amplitude
-        wave(lifted)            — default + raised floor (never silent)
-        wave(bridge)            — default + bridge (transition peaks)
-        wave(slow, inverse)     — slow + inverted
-        wave(slow, soft)        — slow + subtle
-        wave(slow, lifted, inverse) — combinations are valid
+        wave()                      — default preset, normal sweep 0–1
+        wave(fast)                  — fast preset, rapid oscillation
+        wave(slow)                  — slow preset
+        wave(slower)                — slower preset
+        wave(counter)               — default + inverted polarity
+        wave(soft)                  — default + subtle amplitude
+        wave(lifted)                — default + raised floor (never silent)
+        wave(bridge)                — default + bridge (transition peaks)
+        wave(slow, counter)         — slow + inverted
+        wave(slow, soft)            — slow + subtle
+        wave(slow, lifted, counter) — combinations are valid in any order
     */
 
     // Single base formula — all params substituted at resolve time
@@ -255,6 +260,17 @@ const config = {
 
     // Presets — select frequency family; all other params are defaults
     presets: {
+
+      // fast — rapid oscillation, more agitated feel
+      fast: {
+        f0: 9, f1: 5, f2: 3,    // frequency divisors (fast period)
+        fs: 0.25,
+        fo: 0,
+        as: 0.75,
+        ao: 0.5,
+        po: 1,
+        q:  0.5,
+      },
 
       // default — active, noticeable oscillation
       default: {
@@ -292,58 +308,6 @@ const config = {
     },
   },
 
-  exprs: {
-    /* 
-      Here 'noise' refers to coherent noise filters, a harmonic series based on sine and cosine general harmonic sumation filter:
-
-      min(1, max(0, ((
-          cos(PI * t * fs / f0 + fo) * a0 + 
-          cos(PI * t * fs / f1 + fo) * a1 + 
-          cos(PI * t * fs / f2 + fo) * a2) + ao ) * as  * po + q))
-
-      where:
-
-        [f0, f1, f2] designate increasingly finer frequencies, default [17, 7, 3]
-        [a0, a1, a2] scale the wave to decreased amplidtude, default [1, 0.5, 0.25]
-        fs is a general frequency scaler, default 0.25, an nice large period
-        fo is a general frequency offset, default 0, to create different period offsets
-        as is a general amplitude scaler, default 0.75, creates a 3/4 height wave
-        ao is a general amplitude offset, default 0.5, offset 1/2 from 0
-        po is polarity [-1, 1], default 1, used to create an inverse wave
-        q offsets the entire wave, default 0.5, centered at 1/2
-      
-      GraphToy demo: https://shorturl.at/T82uY
-    */
-
-    // basic noise filter
-    'noise': 'min(1,max(0,((cos(PI*t*0.25/13)*1+cos(PI*t*0.25/7)*0.5+cos(PI*t*0.25/3)*0.25)-0.5)*0.75*1+0.5))',
-    // basic noise with a different period
-    'noise2': 'min(1,max(0,((cos(PI*t*0.25/17)*1+cos(PI*t*0.25/13)*0.5+cos(PI*t*0.25/7)*0.25)-0.5)*0.75*1+0.5))',
-    'default': '%{noise}',
-    // basic noise filter, but inverted
-    'inverseNoise': '1 - %{noise}',
-    'invert': '%{inverseNoise}',
-    'inverse': '%{inverseNoise}',
-    'inverted': '%{inverseNoise}',
-    // these transitional filters fill the space between noise and inverseNoise
-    'transition': 'min(1,max(0,(4*(0.5-abs(0.5-%{noise}))*(0.5-abs(0.5-%{inverseNoise}))+0.25)))',
-    'liminal': '%{transition}',
-    'interstitial': '%{transition}',
-    // subtle noise has ampitude of 0.15 and offset +0.85
-    'subtleNoise': 'min(1,max(0,((cos(PI*(t)*0.25/13)*1+cos(PI*(t)*0.25/7)*0.5+cos(PI*(t)*0.25/3)*0.25)-0.5)*0.3*1+0.7))',
-    'subtle': '%{subtleNoise}',
-    // subtle noise with a different period
-    'subtleNoise2': 'min(1,max(0,((cos(PI*(t)*0.25/17)*1+cos(PI*(t)*0.25/13)*0.5+cos(PI*(t)*0.25/7)*0.25)-0.5)*0.3*1+0.7))',
-    'subtle2': '%{subtleNoise2}',
-    // subtle noise filter, but inverted
-    'subtleNoiseInverse': '1 - %{subtleNoise}',
-    'subtleInverse': '%{subtleNoiseInverse}',
-    // here for backward compatibility
-    'interrupted': '%{noise}',
-    'interrupter': '1-%{interrupted}',
-    'fadeInNOut': 'min(1,max(0,((cos(PI*t*0.25/13)*1+cos(PI*t*0.25/7)*0.5+cos(PI*t*0.25/3)*0.25)+1)*1+0.5))',
-    'fadeInNOutInverse': '1-%{fadeInNOut}',
-  }
 };
 
 module.exports = config;
