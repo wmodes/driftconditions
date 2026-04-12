@@ -222,12 +222,32 @@ function AudioBatchUpload() {
 
   const Required = () => <span className="required">*</span>;
 
+  const handleNewBatch = (e) => {
+    e.preventDefault();
+    const hasContent = files.length > 0;
+    if (hasContent && !window.confirm('Start a new batch? Any unsubmitted files will be cleared.')) {
+      return;
+    }
+    // Reset all form state for a fresh batch
+    setFiles([]);
+    setUploadStatus([]);
+    setRecord({
+      status: 'Review',
+      classification: setClassificationFormOptions(classificationOptions, false),
+      copyrightCert: 0,
+    });
+    setSuccessMessage('');
+    setError('');
+    setIsSubmitted(false);
+    dispatch(setUnsavedChanges(false));
+  };
+
   const renderBreadcrumbs = () => {
     return (
       <div className="breadcrumb-box">
         <ul className="breadcrumb">
           <li className="link"><SafeLink to="/audio/list">List</SafeLink></li>
-          <li className="link"><SafeLink to="/audio/upload/batch">Batch Upload</SafeLink></li>
+          <li className="link"><a href="/audio/upload/batch" onClick={handleNewBatch}>Batch Upload</a></li>
         </ul>
       </div>
     );
