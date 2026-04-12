@@ -224,13 +224,21 @@ const config = {
         ))
 
       parameters:
-        f0, f1, f2  — frequency divisors (larger = slower period); set per preset
-        fs          — global frequency scale (smaller = slower period overall)
-        fo          — frequency offset / phase shift (use to desync tracks)
-        as          — amplitude scale (how far the wave travels; 0.75 = 3/4 height)
-        ao          — amplitude offset (center point before scaling; 0.5 = centered)
-        po          — polarity: 1 = normal, -1 = inverted (counter-phase)
-        q           — wave offset (shifts whole wave up/down after scaling; 0.5 = centered)
+        f0, f1, f2  — frequency divisors for each harmonic; larger = slower
+                      oscillation period. Set per preset to choose the tempo
+                      of the wave — fast churn vs. slow drift.
+        fs          — global frequency scale; default 0.25 creates a long,
+                      natural-feeling period across all harmonics.
+        fo          — phase offset; default 0. Shift this between tracks so
+                      they don't peak and trough at the same moment.
+        as          — amplitude scale; how far the wave travels. 0.75 sweeps
+                      3/4 of the available range — active but not extreme.
+        ao          — amplitude center before scaling; 0.5 keeps the wave
+                      centered so it rises and falls symmetrically around 0.5.
+        po          — polarity: 1 = normal, -1 = inverted. Flip this to make
+                      one track loud while another is quiet (counter-phase).
+        q           — final offset applied after scaling; 0.5 centers the
+                      output around mid-volume.
 
       modifiers (resolved in code, not config):
         inverse/counter — sets po = -1; wave is complement of the base preset
