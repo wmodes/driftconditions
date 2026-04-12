@@ -3,7 +3,7 @@
  * @file MixEngine.js - Main audio processing engine for mixing audio clips
  */
 
-const logger = require('config/logger').custom('MixEngine', 'info');
+const logger = require('config/logger').custom('MixEngine', 'debug');
 const ffmpeg = require('fluent-ffmpeg');
 const JSON5 = require('json5');
 const path = require('path');
@@ -16,6 +16,7 @@ const mixFileDir = config.content.mixFileDir;
 const ffmpegOutput = config.ffmpeg.output;
 const filterConfig = config.filters;
 const exprsConfig = config.exprs;
+const exprs3Config = config.exprs3;
 
 /**
  * Class representing the MixEngine.
@@ -686,40 +687,63 @@ class MixEngine {
    * @private
    */
   _waveEffect (inputSrc, baseLabel, params) {
-    // here 'noise' refers to coherent noise filters, a harmonic series based on sine and cosine functions
-    //
     logger.debug(`MixEngine:_waveEffect(): params: ${JSON5.stringify(params)} count: ${params.length}`);
-    // generate label
+
     const newLabel = baseLabel + '_wave';
-    // which wave function to use?
-    let waveFunc = this.exprs.noise;
-    logger.debug('MixEngine:_waveEffect(): Default waveFunc set to noise.');
-    logger.debug(`waveFunc: ${this.exprs.noise}`);
+    const presetNames = Object.keys(exprs3Config.presets);
+    const lowerParams = params.map(p => p.toLowerCase());
 
-    if (params.length > 0) {
-      const paramKey = params[0].toLowerCase();
-      logger.debug(`MixEngine:_waveEffect(): Checking if paramKey "${paramKey}" exists in exprs.`);
-
-      if (paramKey in this.exprs) {
-        waveFunc = this.exprs[paramKey];
-        logger.debug(`MixEngine:_waveEffect(): Found paramKey "${paramKey}" in exprs. Setting waveFunc.`);
-        logger.debug(`waveFunc: ${waveFunc}`);
+    // First param that matches a preset name sets the preset; all others are modifiers
+    let presetName = 'default';
+    const modifiers = [];
+    for (const p of lowerParams) {
+      if (presetNames.includes(p) && presetName === 'default' && !modifiers.length) {
+        presetName = p;
       } else {
-        logger.debug(`MixEngine:_waveEffect(): paramKey "${paramKey}" not found in exprs.`);
+        modifiers.push(p);
       }
-    } else {
-      logger.debug('MixEngine:_waveEffect(): No params provided.');
     }
+    logger.debug(`MixEngine:_waveEffect(): preset="${presetName}" modifiers=${JSON.stringify(modifiers)}`);
+
+    // Copy preset params — modifiers patch on top
+    const presetParams = { ...exprs3Config.presets[presetName] };
+
+    // Substitute param object values into the base formula string
+    // Uses word-boundary regex so 'q' doesn't match inside other tokens
+    const substituteParams = (formula, p) => {
+      let result = formula;
+      // Sort by key length descending to prevent partial matches (e.g. 'as' before 'a')
+      const keys = Object.keys(p).sort((a, b) => b.length - a.length);
+      for (const key of keys) {
+        result = result.replace(new RegExp(`\\b${key}\\b`, 'g'), p[key]);
+      }
+      return result;
+    };
+
+    let waveFunc;
+
+    if (modifiers.some(m => ['bridge', 'transition'].includes(m))) {
+      // Bridge peaks where the lead (normal) and counter (inverse) waves cross
+      const leadParams = { ...presetParams };
+      const counterParams = { ...presetParams, po: -1 };
+      const lead = substituteParams(exprs3Config.base, leadParams);
+      const counter = substituteParams(exprs3Config.base, counterParams);
+      waveFunc = `min(1,max(0,4*(0.5-abs(0.5-(${lead})))*(0.5-abs(0.5-(${counter})))+0.25))`;
+    } else {
+      // Apply scalar modifiers
+      if (modifiers.some(m => ['inverse', 'invert', 'inverted', 'counter'].includes(m))) presetParams.po = -1;
+      if (modifiers.includes('soft')) { presetParams.as = 0.3; presetParams.ao = 0.7; }
+      if (modifiers.includes('lifted')) { presetParams.as = 1; presetParams.ao = -1; }
+      waveFunc = substituteParams(exprs3Config.base, presetParams);
+    }
+
+    logger.debug(`MixEngine:_waveEffect(): waveFunc: ${waveFunc}`);
     this.filterChain.push({
       inputs: inputSrc,
       filter: 'volume',
-      options: {
-        volume: waveFunc,
-        eval: 'frame'
-      },
+      options: { volume: waveFunc, eval: 'frame' },
       outputs: newLabel
     });
-    // return the most recent label
     return newLabel;
   }
 

@@ -9,6 +9,24 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-04-12] (2)
+
+### Added
+- **`exprs3` wave effect system** (`config/config.js`, `MixEngine.js`) — replaces the old hardcoded `exprs` formula variants with a single parameterized base formula and named presets; the `_waveEffect()` resolver substitutes params at call time
+  - Presets: `default`, `slow`, `slower` — select frequency family (f0/f1/f2 divisors)
+  - Modifiers (composable, any order): `inverse`/`invert`/`inverted`/`counter` (invert polarity), `soft` (subtle amplitude), `lifted` (raised floor, never silent), `bridge`/`transition` (peaks at lead/counter crossover)
+  - Usage: `wave()`, `wave(slow)`, `wave(slow, inverse)`, `wave(bridge)`, etc.
+- `exprs3` config block with inline documentation of all parameters and modifier behavior
+
+### Removed
+- `exprs2` config block — superseded by `exprs3`; was never referenced by any code
+
+### Changed
+- MixEngine logger reverted to `'info'` (was temporarily `'debug'` during filter development)
+- All production recipes updated to use `exprs3` syntax: `subtle`→`soft`, `inverseNoise`/`interrupter`→`counter`, `subtleInverse`→`soft, counter`, `noise2`→`slow`, `fadeInNOut`→`lifted`
+
+---
+
 ## [2026-04-12]
 
 ### Added
