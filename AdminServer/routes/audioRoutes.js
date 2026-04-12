@@ -432,9 +432,14 @@ const getAudioDuration = (filePath) => {
 // Normalizes a string of tags
 const normalizeTagArray = (tagsArray) => {
   if (!tagsArray) return [];
-  // if tagsArray is a string, convert it to an array
+  // if tagsArray is a string, convert it to an array —
+  // may be a JSON array string or a plain comma-separated string
   if (typeof tagsArray === 'string') {
-    tagsArray = JSON.parse(tagsArray);
+    try {
+      tagsArray = JSON.parse(tagsArray);
+    } catch (e) {
+      tagsArray = tagsArray.split(',');
+    }
   }
   // Split the string into an array by commas, then process each tag
   return tagsArray.map(tag =>
