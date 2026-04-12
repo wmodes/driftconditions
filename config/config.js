@@ -185,6 +185,14 @@ const config = {
       channels: 2,
       sampleRate: 44100,
     },
+    filters: {
+      duck: {
+        threshold: '-30dB',
+        ratio: 20,
+        attack: 200,   // ms
+        release: 1000, // ms
+      },
+    },
   },
   sounds: {
     static: {
