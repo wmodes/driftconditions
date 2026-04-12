@@ -231,8 +231,8 @@ function AudioBatchUpload() {
 
   const handleNewBatch = (e) => {
     e.preventDefault();
-    const hasContent = files.length > 0;
-    if (hasContent && !window.confirm('Start a new batch? Any unsubmitted files will be cleared.')) {
+    const hasUnsubmitted = !isSubmitted && files.length > 0;
+    if (hasUnsubmitted && !window.confirm('Start a new batch? Any unsubmitted files will be cleared.')) {
       return;
     }
     // Reset all form state for a fresh batch
