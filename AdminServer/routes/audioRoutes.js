@@ -323,7 +323,7 @@ router.post('/update', verifyToken, async (req, res) => {
       record.title,
       editorID,
       record.status,
-      JSON.stringify(record.classification),
+      JSON.stringify(coerceToArray(record.classification)),
       JSON.stringify(normalizeTagArray(record.tags)),
       record.comments,
       record.audioID
@@ -429,26 +429,26 @@ const getAudioDuration = (filePath) => {
   return getAudioDurationInSeconds(filePath);
 };
 
-// Normalizes a string of tags
-const normalizeTagArray = (tagsArray) => {
-  if (!tagsArray) return [];
-  // if tagsArray is a string, convert it to an array —
-  // may be a JSON array string or a plain comma-separated string
-  if (typeof tagsArray === 'string') {
+// Coerces a value to an array — handles JSON array strings and comma-separated strings
+const coerceToArray = (val) => {
+  if (!val) return [];
+  if (Array.isArray(val)) return val;
+  if (typeof val === 'string') {
     try {
-      tagsArray = JSON.parse(tagsArray);
+      const parsed = JSON.parse(val);
+      return Array.isArray(parsed) ? parsed : [parsed];
     } catch (e) {
-      tagsArray = tagsArray.split(',');
+      return val.split(',');
     }
   }
-  // Split the string into an array by commas, then process each tag
-  return tagsArray.map(tag =>
-      // Convert to lowercase, trim whitespace, and then replace special characters and spaces with dashes
-      // Finally, trim any leading or trailing dashes that might have been added
-      tag.toLowerCase().trim().replace(/[\W_]+/g, '-').replace(/^-+|-+$/g, '')
-    )
-    // Remove duplicate tags
-    .filter((value, index, self) => self.indexOf(value) === index)
+  return [val];
+};
+
+// Normalizes a string or array of tags to lowercase-hyphenated deduplicated array
+const normalizeTagArray = (tagsArray) => {
+  return coerceToArray(tagsArray)
+    .map(tag => tag.toLowerCase().trim().replace(/[\W_]+/g, '-').replace(/^-+|-+$/g, ''))
+    .filter((value, index, self) => self.indexOf(value) === index);
 };
 
 const repairBrokenJSON = (jsonField) => {

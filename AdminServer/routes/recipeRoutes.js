@@ -163,7 +163,7 @@ router.post('/create', verifyToken, async (req, res) => {
       // JSONstringify(record.recipeData),
       record.recipeData,
       record.status,
-      JSON.stringify(record.classification),
+      JSON.stringify(coerceToArray(record.classification)),
       JSON.stringify(normalizeTagArray(record.tags)),
       record.comments
     ];
@@ -209,7 +209,7 @@ router.post('/update', verifyToken, async (req, res) => {
       // JSONstringify(record.recipeData),
       record.recipeData,
       record.status,
-      JSON.stringify(record.classification),
+      JSON.stringify(coerceToArray(record.classification)),
       JSON.stringify(normalizeTagArray(record.tags)),
       record.comments,
       record.recipeID
@@ -251,17 +251,26 @@ router.post('/trash', verifyToken, async (req, res) => {
 // HELPERS
 //
 
-// Normalizes a string of tags
+// Coerces a value to an array — handles JSON array strings and comma-separated strings
+const coerceToArray = (val) => {
+  if (!val) return [];
+  if (Array.isArray(val)) return val;
+  if (typeof val === 'string') {
+    try {
+      const parsed = JSON.parse(val);
+      return Array.isArray(parsed) ? parsed : [parsed];
+    } catch (e) {
+      return val.split(',');
+    }
+  }
+  return [val];
+};
+
+// Normalizes a string or array of tags to lowercase-hyphenated deduplicated array
 const normalizeTagArray = (tagsArray) => {
-  if (!tagsArray) return [];
-  // Split the string into an array by commas, then process each tag
-  return tagsArray.map(tag =>
-      // Convert to lowercase, trim whitespace, and then replace special characters and spaces with dashes
-      // Finally, trim any leading or trailing dashes that might have been added
-      tag.toLowerCase().trim().replace(/[\W_]+/g, '-').replace(/^-+|-+$/g, '')
-    )
-    // Remove duplicate tags
-    .filter((value, index, self) => self.indexOf(value) === index)
+  return coerceToArray(tagsArray)
+    .map(tag => tag.toLowerCase().trim().replace(/[\W_]+/g, '-').replace(/^-+|-+$/g, ''))
+    .filter((value, index, self) => self.indexOf(value) === index);
 };
 
 const repairBrokenJSON = (jsonField) => {
