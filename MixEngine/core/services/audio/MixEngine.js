@@ -15,7 +15,6 @@ const contentFileDir = config.content.contentFileDir;
 const mixFileDir = config.content.mixFileDir;
 const ffmpegOutput = config.ffmpeg.output;
 const filterConfig = config.filters;
-const exprsConfig = config.exprs;
 const exprs3Config = config.exprs3;
 
 /**
@@ -24,11 +23,6 @@ const exprs3Config = config.exprs3;
 class MixEngine {
   constructor () {
     logger.debug(`MixEngine:constructor: config: ${JSON5.stringify(config, null, 2)}`);
-    this.exprs = this._substituteExpressions(exprsConfig);
-    logger.debug('MixEngine:constructor: exprs: ...');
-    for (const key in this.exprs) {
-      logger.debug(`${key}: ${this.exprs[key]}`);
-    }
     this.filterChain = [];
     // store the current input, track, and clip
     this.currentInputNum = 0;
@@ -1136,96 +1130,6 @@ class MixEngine {
   /*
    * HELPER METHODS
    */
-
-  /**
-   * Substitutes expressions in the configuration.
-   *
-   * @param {Object} exprsConfig - The expressions configuration.
-   * @returns {Object} The substituted expressions.
-   * @private
-   */
-  _substituteExpressions (exprsConfig) {
-    // Convert all keys to lowercase
-    const exprs = this._keysToLowercase(exprsConfig);
-    // Get list of keys with placeholders that need substitution
-    let exprsSubstNeeded = this._getListOfExprSubstNeeded(exprs);
-    // logger.debug(`MixEngine:_substituteExpressions: exprsSubstNeeded: ${JSON.stringify(exprsSubstNeeded)}`);
-    let loopNum = 0;
-
-    // while (exprsSubstNeeded != [] && loopNum < 5)
-    while (exprsSubstNeeded.length > 0 && loopNum < 5) {
-      // iterate over exprsSubstNeeded
-      for (const key of exprsSubstNeeded) {
-        // call _replacePlaceholder passing exprsObj, exprKey
-        this._replacePlaceholder(exprs, key);
-      }
-      // Get updated list of keys with placeholders that need substitution
-      exprsSubstNeeded = this._getListOfExprSubstNeeded(exprs);
-      // increment loopNum
-      loopNum++;
-    }
-    // logger.debug('Substituted exprs:');
-    // for (let key in exprs) {
-    //   if (exprs.hasOwnProperty(key)) {
-    //     logger.debug(`${key}: ${exprs[key]}`);
-    //   }
-    // }
-    return exprs;
-  }
-
-  /**
-   * Converts all keys in the object to lowercase.
-   *
-   * @param {Object} obj - The object with keys to convert.
-   * @returns {Object} The object with lowercase keys.
-   * @private
-   */
-  _keysToLowercase (obj) {
-    const lowerCaseObj = {};
-    for (const key in obj) {
-      if (Object.prototype.hasOwnProperty.call(obj, key)) {
-        lowerCaseObj[key.toLowerCase()] = obj[key];
-      }
-    }
-    return lowerCaseObj;
-  }
-
-  /**
-   * Gets a list of keys in the expressions object that contain placeholders.
-   *
-   * @param {Object} exprsObj - The expressions object.
-   * @returns {string[]} An array of keys that contain placeholders.
-   * @private
-   */
-  _getListOfExprSubstNeeded (exprsObj) {
-    const keys = [];
-    // iterate over each key to see if there is an unresolved placeholder
-    for (const key in exprsObj) {
-      if (Object.prototype.hasOwnProperty.call(exprsObj, key) && /%\{\w+\}/.test(exprsObj[key])) {
-        // if value contains placeholder, add to key array
-        keys.push(key);
-      }
-    }
-    return keys;
-  }
-
-  /**
-   * Replaces placeholders in a string with corresponding values from expressions.
-   *
-   * @param {Object} exprsObj - The expressions object.
-   * @param {string} exprKey - The key of the expression to replace placeholders in.
-   * @private
-   */
-  _replacePlaceholder (exprsObj, exprKey) {
-    // get value of exprKey from exprsObj
-    const value = exprsObj[exprKey];
-    // replace placeholders with values corresponding to key in exprsObj
-    exprsObj[exprKey] = value.replace(/%\{(\w+)\}/g, (_, placeholderKey) => {
-      const replacement = exprsObj[placeholderKey.toLowerCase()] || '';
-      // logger.debug(`Replacing %{${placeholderKey}} with ${replacement} in ${exprKey}`);
-      return replacement;
-    });
-  }
 
   /**
    * Sanitizes a filename by removing invalid characters.
