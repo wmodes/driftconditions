@@ -9,6 +9,24 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-04-13]
+
+### Added
+- **Profile stats column** (`Profile.js`, `userRoutes.js`, `index.css`) — two-column profile layout with contributor stats panel on the right; stacks responsively on narrow screens
+  - Audio: contributed count, waiting for approval count (self/mod/admin only), total plays, last contributed date
+  - Recipes: contributed count, waiting for approval count (self/mod/admin only)
+  - Top Played Audio: top 5 clips by play count (configurable via `config.profile.topAudioCount`)
+  - Waiting for Approval: most recent 3 pending clips (configurable via `config.profile.recentPendingCount`), visible to self/mod/admin only
+  - Clip titles link to `/audio/view/` for users with `audioView` permission
+- `viewProfileExtras` permission added to `admin`, `mod`, `editor` roles — gates pending/approval stats on others' profiles
+- `config.profile` block in `AdminClient/src/config/config.js` with `topAudioCount` and `recentPendingCount`
+- `getProfileStats()` helper in `userRoutes.js` — single backend call bundles all stats into the profile response
+
+### Changed
+- Playlist clip title links now gated by `audioView` permission (previously `recipeView`) — semantically correct and consistent with profile page behavior
+
+---
+
 ## [2026-04-12] (3)
 
 ### Fixed

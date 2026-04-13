@@ -75,6 +75,10 @@ const config = {
   list: {
     recordsPerPage: 15,
   },
+  profile: {
+    topAudioCount: 5,
+    recentPendingCount: 3,
+  },
   wavesurfer: {
     container: '#waveform',
     waveColor: '#264d73',
