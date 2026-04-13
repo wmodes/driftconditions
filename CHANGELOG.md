@@ -9,6 +9,13 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-04-13] (3)
+
+### Fixed
+- **Track and clip `volume` now applies after `norm`** (`MixEngine.js`) — previously `volume` was applied before the effects loop, meaning `norm` would undo it entirely; `volume` is now injected as a synthetic effect and sorts between `norm` and `wave`/`duck`: structural → norm → volume → color/texture → dynamic volume
+
+---
+
 ## [2026-04-13] (2)
 
 ### Added
