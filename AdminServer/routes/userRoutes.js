@@ -150,10 +150,18 @@ router.post('/profile', async (req, res) => {
     }, {});
     logger.debug(`userRoutes:/profile: filtered userInfoReturned: ${JSON.stringify(userInfoReturned, null, 2)}`);
 
-    // Respond with the user's information and the edit flag
+    // Determine if the requesting user can see pending/approval content
+    const isSelf = requestingUsername === targetUsername;
+    const canViewExtras = isSelf || permissions.includes('viewProfileExtras');
+
+    // Fetch profile stats for the target user
+    const stats = await getProfileStats(userInfo.userID, canViewExtras);
+    logger.debug(`userRoutes:/profile: stats: ${JSON.stringify(stats, null, 2)}`);
+
+    // Respond with the user's information, stats, and the edit flag
     res.status(200).json({
       success: true,
-      data: { ...userInfoReturned, edit: isEditable }
+      data: { ...userInfoReturned, stats, edit: isEditable }
     });
   } catch (error) {
     // Log the error and respond with a server error status
@@ -302,6 +310,69 @@ router.post('/disable', verifyToken, async (req, res) => {
  * @returns {Object|null} - The user information or null if not found.
  * @throws {Error} - Throws an error if both userID and username are not provided.
  */
+/**
+ * Fetch contribution stats for a user profile.
+ * @param {number} userID - The target user's ID.
+ * @param {boolean} canViewExtras - Whether to include pending/approval data.
+ * @returns {Object} - Stats object with counts, totals, top clips, and optionally pending clips.
+ */
+async function getProfileStats(userID, canViewExtras) {
+  // Audio counts + totals
+  const [[audioRow]] = await db.query(
+    `SELECT COUNT(*) AS total,
+            SUM(status = 'Review') AS pending,
+            SUM(COALESCE(timesUsed, 0)) AS totalPlays,
+            MAX(createDate) AS lastContributed
+     FROM audio WHERE creatorID = ?`,
+    [userID]
+  );
+
+  // Recipe counts
+  const [[recipeRow]] = await db.query(
+    `SELECT COUNT(*) AS total,
+            SUM(status = 'Review') AS pending
+     FROM recipes WHERE creatorID = ?`,
+    [userID]
+  );
+
+  // Top played audio (top 5)
+  const [topPlays] = await db.query(
+    `SELECT audioID, title, timesUsed
+     FROM audio WHERE creatorID = ? AND status = 'Approved'
+     ORDER BY timesUsed DESC LIMIT 5`,
+    [userID]
+  );
+
+  // Pending audio list (most recent 3) — extras only
+  let recentPending = [];
+  if (canViewExtras) {
+    const [rows] = await db.query(
+      `SELECT audioID, title, createDate
+       FROM audio WHERE creatorID = ? AND status = 'Review'
+       ORDER BY createDate DESC LIMIT 3`,
+      [userID]
+    );
+    recentPending = rows;
+  }
+
+  return {
+    general: {
+      lastContributed: audioRow.lastContributed || null,
+    },
+    audio: {
+      contributed: audioRow.total || 0,
+      totalPlays: parseInt(audioRow.totalPlays, 10) || 0,
+      ...(canViewExtras && { pending: audioRow.pending || 0 }),
+      topPlays,
+      ...(canViewExtras && { recentPending }),
+    },
+    recipes: {
+      contributed: recipeRow.total || 0,
+      ...(canViewExtras && { pending: recipeRow.pending || 0 }),
+    },
+  };
+}
+
 async function getUserInfo({ userID = null, username = null } = {}) {
   let query = '';
   let values = [];

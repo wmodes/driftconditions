@@ -22,7 +22,7 @@ const Playlist = () => {
 
   useEffect(() => {
     // console.log(`Playlist component: userAuth.permissions: ${userAuth.permissions}`)
-    if (userAuth && userAuth.permissions && userAuth.permissions.includes('recipeView')) {
+    if (userAuth && userAuth.permissions && userAuth.permissions.includes('audioView')) {
       setSeeMore(true);
     } 
 

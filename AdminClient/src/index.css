@@ -484,7 +484,131 @@ figcaption {
 }
 
 .profile-wrapper .display-box {
-  width: 480px;
+  width: 860px;
+  max-width: 900px;
+}
+
+/* Two-column profile layout: card on left, stats on right */
+.profile-columns {
+  display: flex;
+  flex-direction: row;
+  gap: 0;
+  align-items: center;
+}
+
+.profile-card {
+  flex: 0 0 340px;
+  min-width: 0;
+}
+
+.profile-divider {
+  width: 1px;
+  align-self: stretch;
+  background-color: var(--content-box-border-color);
+  margin: 0 2rem;
+  flex-shrink: 0;
+}
+
+.profile-stats {
+  flex: 1;
+  min-width: 0;
+}
+
+.profile-stats h3 {
+  line-height: 1.75rem;
+  font-weight: normal;
+  font-size: 1.4rem;
+  margin-top: 1rem;
+  margin-bottom: 0.25rem;
+  color: var(--header-color);
+}
+
+.profile-stats h3:first-child {
+  margin-top: 0;
+}
+
+.profile-stats .stat-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.95rem;
+  padding: 0.1rem 0;
+}
+
+.profile-stats .stat-row .stat-label {
+  color: var(--text-color);
+}
+
+.profile-stats .stat-row .stat-value {
+  font-weight: 600;
+  color: var(--header-color);
+}
+
+.profile-stats .stat-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.profile-stats .stat-list li {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  padding: 0.15rem 0;
+}
+
+.profile-stats .stat-list .clip-title {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding-right: 1rem;
+}
+
+.profile-stats .stat-list .clip-count {
+  flex-shrink: 0;
+  font-weight: 600;
+  color: var(--header-color);
+}
+
+.profile-stats .stat-empty {
+  font-size: 0.9rem;
+  color: var(--muted-text-color, #888);
+  font-style: italic;
+  margin-top: 0.5rem;
+}
+
+.profile-card hr {
+  border: none;
+  border-top: 1px solid var(--content-box-border-color);
+  width: 8rem;
+  margin: 0.5rem auto;
+}
+
+.profile-stats hr {
+  border: none;
+  border-top: 1px solid var(--content-box-border-color);
+  margin: 1rem 0;
+}
+
+/* Stack columns on narrow screens */
+@media (max-width: 700px) {
+  .profile-columns {
+    flex-direction: column;
+  }
+  .profile-card {
+    flex: none;
+    width: 100%;
+  }
+  .profile-divider {
+    width: auto;
+    height: 1px;
+    align-self: stretch;
+    margin: 1.5rem 0;
+  }
+  .profile-stats {
+    width: 100%;
+  }
 }
 
 .signin-wrapper .display-box {
