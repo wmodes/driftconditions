@@ -22,9 +22,10 @@ const exprs3Config = config.exprs3;
 // from fighting dynamic volume effects like wave or duck.
 const EFFECT_ORDER = [
   /^(trim|first|shortest|longest|loop|crossfade|fadeout)/i,  // structural
-  /^(norm|normalize|loudnorm)/i,                              // level
+  /^(norm|normalize|loudnorm)/i,                              // reference level
+  /^volume$/i,                                                // desired output level (after norm so norm doesn't undo it)
   /^(backward|faraway|telephone)/i,                          // color/texture
-  /^(noise|wave|duck)/i,                                     // dynamic volume
+  /^(noise|wave|duck)/i,                                     // dynamic volume (operates on the final level)
 ];
 
 function effectPriority(effect) {
@@ -258,21 +259,28 @@ class MixEngine {
     // set the track label for the next step
     nextInputSrc = newTrackLabel;
     //
-    // Set volume of track
+    // Build a synthetic effects list that includes volume as a named effect,
+    // so it sorts into the correct position (after norm, before wave/duck).
+    const trackEffects = [...(track.effects || [])];
     if ('volume' in track) {
-      logger.debug(`MixEngine:_buildTrackFilters(): Applying volume filter to track ${track.volume}`);
-      nextInputSrc = this._volumeFilter(
-        nextInputSrc,
-        baseLabel,
-        track.volume
-      );
+      trackEffects.push(`volume(${track.volume})`);
     }
     //
     // effects
-    if (track.effects) {
-      logger.debug(`MixEngine:_buildTrackFilters(): Applying effects to track ${track.effects}`);
-      [...track.effects].sort((a, b) => effectPriority(a) - effectPriority(b)).forEach(effect => {
+    if (trackEffects.length > 0) {
+      logger.debug(`MixEngine:_buildTrackFilters(): Applying effects to track ${trackEffects}`);
+      [...trackEffects].sort((a, b) => effectPriority(a) - effectPriority(b)).forEach(effect => {
+        // volume effect
+        if (/^volume/i.test(effect)) {
+          logger.debug(`MixEngine:_buildTrackFilters(): Applying volume filter to track ${effect}`);
+          nextInputSrc = this._volumeFilter(
+            nextInputSrc,
+            baseLabel,
+            this._getParams(effect).length > 0 ? this._getParams(effect)[0] : track.volume
+          );
+        }
         // norm effect
+        else
         if (/^(norm|normalize|loudnorm)/i.test(effect)) {
           logger.debug(`MixEngine:_buildTrackFilters(): Applying norm effect to track ${effect}`);
           nextInputSrc = this._normEffect(
@@ -461,21 +469,28 @@ class MixEngine {
     }
     nextInputSrc = `${this.currentInputNum}:a`;
     //
-    // Handle clip volume adjustment
+    // Build a synthetic effects list that includes volume as a named effect,
+    // so it sorts into the correct position (after norm, before wave/duck).
+    const clipEffects = [...(clip.effects || [])];
     if ('volume' in clip) {
-      logger.debug(`MixEngine:_buildClipFilters(): Applying volume filter to clip ${clip.volume}`);
-      nextInputSrc = this._volumeFilter(
-        nextInputSrc,
-        baseLabel,
-        clip.volume
-      );
+      clipEffects.push(`volume(${clip.volume})`);
     }
     //
     // effects
-    if (clip.effects) {
-      logger.debug(`MixEngine:_buildClipFilters(): Applying effects to clip ${clip.effects}`);
-      [...clip.effects].sort((a, b) => effectPriority(a) - effectPriority(b)).forEach(effect => {
+    if (clipEffects.length > 0) {
+      logger.debug(`MixEngine:_buildClipFilters(): Applying effects to clip ${clipEffects}`);
+      [...clipEffects].sort((a, b) => effectPriority(a) - effectPriority(b)).forEach(effect => {
+        // volume effect
+        if (/^volume/i.test(effect)) {
+          logger.debug(`MixEngine:_buildClipFilters(): Applying volume filter to clip ${effect}`);
+          nextInputSrc = this._volumeFilter(
+            nextInputSrc,
+            baseLabel,
+            this._getParams(effect).length > 0 ? this._getParams(effect)[0] : clip.volume
+          );
+        }
         // norm effect
+        else
         if (/^(norm|normalize|loudnorm)/i.test(effect)) {
           logger.debug(`MixEngine:_buildTrackFilters(): Applying norm effect to track ${effect}`);
           nextInputSrc = this._normEffect(
