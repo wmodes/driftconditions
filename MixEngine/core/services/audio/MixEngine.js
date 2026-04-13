@@ -17,6 +17,21 @@ const ffmpegOutput = config.ffmpeg.output;
 const filterConfig = config.filters;
 const exprs3Config = config.exprs3;
 
+// Preferred effect application order — effects are sorted by category before processing
+// regardless of the order they appear in the recipe. This prevents effects like norm
+// from fighting dynamic volume effects like wave or duck.
+const EFFECT_ORDER = [
+  /^(trim|first|shortest|longest|loop|crossfade|fadeout)/i,  // structural
+  /^(norm|normalize|loudnorm)/i,                              // level
+  /^(backward|faraway|telephone)/i,                          // color/texture
+  /^(noise|wave|duck)/i,                                     // dynamic volume
+];
+
+function effectPriority(effect) {
+  const idx = EFFECT_ORDER.findIndex(re => re.test(effect));
+  return idx === -1 ? EFFECT_ORDER.length : idx;
+}
+
 /**
  * Class representing the MixEngine.
  */
@@ -256,7 +271,7 @@ class MixEngine {
     // effects
     if (track.effects) {
       logger.debug(`MixEngine:_buildTrackFilters(): Applying effects to track ${track.effects}`);
-      track.effects.forEach(effect => {
+      [...track.effects].sort((a, b) => effectPriority(a) - effectPriority(b)).forEach(effect => {
         // norm effect
         if (/^(norm|normalize|loudnorm)/i.test(effect)) {
           logger.debug(`MixEngine:_buildTrackFilters(): Applying norm effect to track ${effect}`);
@@ -459,7 +474,7 @@ class MixEngine {
     // effects
     if (clip.effects) {
       logger.debug(`MixEngine:_buildClipFilters(): Applying effects to clip ${clip.effects}`);
-      clip.effects.forEach(effect => {
+      [...clip.effects].sort((a, b) => effectPriority(a) - effectPriority(b)).forEach(effect => {
         // norm effect
         if (/^(norm|normalize|loudnorm)/i.test(effect)) {
           logger.debug(`MixEngine:_buildTrackFilters(): Applying norm effect to track ${effect}`);

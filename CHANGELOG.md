@@ -9,6 +9,16 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-04-13] (2)
+
+### Added
+- **Effect application order** (`MixEngine.js`) — effects are now sorted by category before processing, regardless of recipe order: structural → level (norm) → color → dynamic volume (wave, duck); prevents `norm` from fighting `wave`/`duck` volume modulation
+
+### Fixed
+- `wave(bridge)` on Interrupted Sermon recipe was partially defeated by `norm` appearing after it in the effects list — now resolved automatically by the effect ordering system
+
+---
+
 ## [2026-04-13]
 
 ### Added
