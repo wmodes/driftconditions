@@ -23,7 +23,8 @@ const { database: db } = require('config');
 const bcrypt = require('bcrypt-promise');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
-const { sendMail } = require('../utils/mailer');
+const { sendMail, sendTemplate, FROM } = require('../utils/mailer');
+const brand = require('config/brand');
 
 // configuration import
 const { config } = require('config');
@@ -94,6 +95,15 @@ router.post('/signup', async (req, res) => {
         firstname: firstname,
         lastname: lastname,
         email: email
+      });
+
+      // Send welcome email — fire and forget; don't let mail failure break signup
+      sendTemplate('welcome', {
+        firstname: firstname || username,
+        username,
+        contactEmail: brand.email.contact,
+      }, { to: email, from: FROM.welcome }).catch((err) => {
+        logger.error(`authRoutes:/signup: welcome email failed for ${username}: ${err.message}`);
       });
     } else {
       res.status(500).json({ error: { message: 'Server error. Try again later.' } });
@@ -627,39 +637,7 @@ router.post('/forgot-password', async (req, res) => {
       const resetUrl = `${clientUrl}/reset-password?token=${token}`;
       const name = firstname || 'there';
 
-      await sendMail({
-        to: email,
-        subject: 'Reset your DriftConditions password',
-        text: [
-          `Hi ${name},`,
-          '',
-          'We received a request to reset the password for your DriftConditions account.',
-          '',
-          `Reset your password: ${resetUrl}`,
-          '',
-          'This link expires in 1 hour.',
-          '',
-          "If you didn't request a password reset, you can safely ignore this email. Your password will not be changed.",
-          '',
-          '— The DriftConditions Team',
-        ].join('\n'),
-        html: `
-          <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px 24px">
-            <h1 style="font-size:24px;margin-bottom:8px">DriftConditions</h1>
-            <hr style="border:none;border-top:1px solid #ddd;margin-bottom:24px"/>
-            <h2 style="font-size:20px;margin-bottom:16px">Reset your password</h2>
-            <p>Hi ${name},</p>
-            <p>We received a request to reset the password for your DriftConditions account. Click the button below to choose a new password.</p>
-            <div style="text-align:center;margin:32px 0">
-              <a href="${resetUrl}" style="background:#336699;color:#fff;padding:12px 28px;border-radius:6px;text-decoration:none;font-weight:bold;display:inline-block">Reset Password</a>
-            </div>
-            <p style="color:#666;font-size:14px">This link expires in 1 hour.</p>
-            <p style="color:#666;font-size:14px">If you didn't request a password reset, you can safely ignore this email. Your password will not be changed.</p>
-            <hr style="border:none;border-top:1px solid #ddd;margin-top:32px"/>
-            <p style="color:#999;font-size:12px;text-align:center">DriftConditions &mdash; driftconditions.org</p>
-          </div>
-        `,
-      });
+      await sendTemplate('password-reset', { name, resetUrl }, { to: email, from: FROM.noreply });
       logger.info(`authRoutes:/forgot-password: reset email sent to ${email}`);
     } else {
       logger.debug(`authRoutes:/forgot-password: email not found: ${email} (silent)`);

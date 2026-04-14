@@ -15,6 +15,7 @@ const { database: db } = require('config');
 // authentication imports
 const jwt = require('jsonwebtoken');
 const verifyToken = require('../middleware/authMiddleware');
+const { sendTemplate, FROM } = require('../utils/mailer');
 
 // audio and file management imports
 const multer = require('multer');
@@ -336,6 +337,32 @@ router.post('/update', verifyToken, async (req, res) => {
       return res.status(404).json({ error: { message: 'Audio not found or no update was made.' } });
     }
     res.status(200).send({ message: 'Audio updated successfully' });
+
+    // Send moderation notice if status changed to Approved/Disapproved and notifyContributor is set
+    const notifyContributor = record.notifyContributor;
+    const isModAction = status === 'Approved' || status === 'Disapproved';
+    if (notifyContributor && isModAction) {
+      const [rows] = await db.query(
+        `SELECT u.firstname, u.username, u.email, a.title
+         FROM audio a JOIN users u ON u.userID = a.creatorID
+         WHERE a.audioID = ? LIMIT 1`,
+        [audioID]
+      );
+      if (rows.length > 0) {
+        const { firstname, username, email, title } = rows[0];
+        const approved = status === 'Approved';
+        sendTemplate('audio-moderation', {
+          firstname: firstname || username,
+          username,
+          clipTitle: title,
+          action: approved ? 'approved' : 'rejected',
+          approved,
+          notes: record.moderationNotes || '',
+        }, { to: email, from: FROM.noreply }).catch((err) => {
+          logger.error(`audioRoutes:/update: moderation email failed for ${username}: ${err.message}`);
+        });
+      }
+    }
   } catch (error) {
     logger.error(`audioRoutes:/update: Server error during audio update: ${error}`);
     res.status(500).json({ error: { message: 'Server error. Try again later.' } });

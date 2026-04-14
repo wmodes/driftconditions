@@ -53,6 +53,7 @@ function AudioEdit() {
     // turn classificationOptions into an object with keys for each option (set to false)
     classification: {},
     copyrightCert: 0,
+    notifyContributor: true,
   });
 
   useEffect(() => {
@@ -206,6 +207,27 @@ function AudioEdit() {
                   <option value="Trashed">Trashed</option>
                 </select>
               </div>
+
+              {(record.status === 'Approved' || record.status === 'Disapproved') && (
+                <div className="form-row">
+                  <label className="form-label checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={record.notifyContributor !== false}
+                      onChange={(e) => setRecord(prev => ({ ...prev, notifyContributor: e.target.checked }))}
+                    />
+                    {' '}Notify contributor
+                  </label>
+                  <textarea
+                    className="form-field"
+                    name="moderationNotes"
+                    placeholder="Notes on this submission (optional — included in notification email)"
+                    value={record.moderationNotes || ''}
+                    onChange={handleChange}
+                    rows={3}
+                  />
+                </div>
+              )}
 
               <div className="form-row">
                 <label className="form-label">Plays:</label> <span className="non-editable">{record.timesUsed || '—'}</span>
