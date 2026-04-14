@@ -38,7 +38,9 @@ function AudioList() {
     status: '',
     classification: '',
     tags: '',
-    comments: ''
+    comments: '',
+    notifyContributor: true,
+    _originalStatus: '',
   });
   const [updateTrigger, setUpdateTrigger] = useState(false);
 
@@ -183,7 +185,11 @@ function AudioList() {
     setEditAudioID(editAudioID === audioID ? null : audioID);
     const audioToEdit = audioList.find(audio => audio.audioID === audioID);
     if (audioToEdit) {
-      setEditedRecord(audioToEdit);
+      setEditedRecord({
+        ...audioToEdit,
+        notifyContributor: true,
+        _originalStatus: audioToEdit.status,
+      });
     }
   };
 
@@ -397,6 +403,28 @@ function AudioList() {
                                         <option value="Trash">Trash</option>
                                       </select>
                                     </div>
+                                    <div className="flex items-center space-x-2">
+                                      <label
+                                        className="flex items-center space-x-1 text-sm font-medium"
+                                        style={{
+                                          color: (editedRecord.status === editedRecord._originalStatus || (editedRecord.status !== 'Approved' && editedRecord.status !== 'Disapproved')) ? '#999' : 'inherit',
+                                        }}
+                                      >
+                                        <input
+                                          type="checkbox"
+                                          checked={editedRecord.notifyContributor || false}
+                                          disabled={
+                                            editedRecord.status === editedRecord._originalStatus ||
+                                            (editedRecord.status !== 'Approved' && editedRecord.status !== 'Disapproved')
+                                          }
+                                          onChange={(e) => setEditedRecord({ ...editedRecord, notifyContributor: e.target.checked })}
+                                        />
+                                        <span>Notify contributor</span>
+                                      </label>
+                                      <span className="text-xs text-gray-500">Approval/Disapproval notes go in comments below, sent to contributor</span>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center space-x-4">
                                     <div className="flex items-center space-x-2 flex-grow">
                                       <label className="block text-sm font-medium text-gray-700" htmlFor="classification">Classification:</label>
                                       <input

@@ -9,6 +9,20 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-04-14] (6)
+
+### Added
+- **Contributor digest scaffolding** — `userComms` table created (commID, userID, commType, payload JSON, createdAt, sentAt). `digestFrequency VARCHAR(16) DEFAULT 'weekly'` added to `users` table (values: `weekly`, `monthly`, `none`).
+- **Digest event queuing** — `audioRoutes.js /audio/update` now inserts an `audio_approved` event into `userComms` whenever a clip is approved, independent of the notify checkbox. Basis for future periodic digest emails.
+
+### Changed
+- **Audio moderation notifications overhauled** — "Notify contributor" checkbox moved inline with Status on both AudioEdit and AudioList quick edit. Checkbox defaults to checked but is grayed out (label color `#999`, input disabled) until status is changed to Approved or Disapproved, matching the "Notify user" pattern on UserList.
+- **Moderation notes field removed** — separate `moderationNotes` textarea removed from AudioEdit. Notes to include in the notification email now go in the regular Comments field, which is saved to the DB and passed to the email template. Instructional note ("Approval/Disapproval notes go in comments below, sent to contributor") shown below the Status row.
+- **`audioRoutes.js`** — moderation email now uses `record.comments` for the notes field (was `record.moderationNotes`).
+- **AudioList quick edit layout** — Classification and Tags moved to their own row below Status/Notify, making room for the notify checkbox and note on the status row.
+
+---
+
 ## [2026-04-14] (5)
 
 ### Added
