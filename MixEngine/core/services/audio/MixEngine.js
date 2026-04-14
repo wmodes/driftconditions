@@ -907,44 +907,52 @@ class MixEngine {
   }
 
   /**
-   * Builds a filter that handles loudness normalization (loudnorm).
+   * Builds a filter that handles loudness normalization (dynaudnorm).
+   *
+   * Uses dynaudnorm (dynamic audio normalizer) throughout — streaming-safe,
+   * frame-by-frame, no duration limit. loudnorm (EBU R128) has a fixed 4096-block
+   * internal buffer that fails on looped stereo streams beyond ~409s.
+   *
+   * dynaudnorm parameters:
+   *   p — peak target (linear 0–1); p=0.95 ≈ -0.5dBFS (~-10 to -14 LUFS),
+   *                                  p=0.85 ≈ -1.4dBFS (~-12 to -16 LUFS),
+   *                                  p=0.5  ≈ -6dBFS   (~-16 to -22 LUFS)
+   *       (LUFS is approximate — depends on content crest factor;
+   *        Spotify/YouTube target -14 LUFS; EBU R128 broadcast targets -23 LUFS)
+   *   m — max gain factor; limits how aggressively quiet passages are boosted
+   *   f — frame length in ms; granularity of gain analysis
+   *   g — Gaussian window (frames, must be odd); larger = wider context, slower gain
+   *       changes, closer to loudnorm's whole-file analysis. g=301 is the max.
+   *
    * @param {string} inputSrc
    * @param {string} baseLabel
-   * @param {string[]} params - An array of parameters (voice, music, bed) that set the I, TP, and LRA values.
+   * @param {string[]} params - preset name: voice, music, bed (default if omitted)
    * @sideeffect adds filter to this.filterChain
    * @returns {string} most recent output label
    * @private
    */
   _normEffect (inputSrc, baseLabel, params) {
     logger.debug(`MixEngine:_normEffect(): params: ${JSON5.stringify(params)} count: ${params.length}`);
-    // generate label
     const newLabel = baseLabel + '_norm';
-    // Default options (loudnorm: EBU R128 integrated loudness normalization)
-    let filter = 'loudnorm';
-    let options = { I: -14, TP: -1 };
+    // Default / music: full streaming level (~-0.5dBFS peak, ~-10 to -14 LUFS)
+    let options = { p: 0.95, m: 10, f: 500, g: 301 };
 
-    // Set values based on preset
-    //  (I) Integrated loudness target
-    //  (TP) True peak limit
-    //  (LRA) Loudness range target - optional
     if (params.length > 0) {
       const preset = params[0].toLowerCase();
       switch (preset) {
         case 'spoken':
         case 'voice':
-          options = { I: -16, TP: -1.5, LRA: 7 };
+          // Slightly pulled back (~-1.4dBFS peak, ~-12 to -16 LUFS) for speech clarity
+          options = { p: 0.85, m: 10, f: 500, g: 301 };
           break;
         case 'music':
-          options = { I: -14, TP: -1, LRA: 11 };
+          // Full streaming level (~-0.5dBFS peak, ~-10 to -14 LUFS)
+          options = { p: 0.95, m: 10, f: 500, g: 301 };
           break;
         case 'musicbed':
         case 'bed':
-          // NOTE: loudnorm + aloop fails on stereo clips at ~409s (ffmpeg internal
-          // 4096-block buffer overflow). dynaudnorm is streaming-safe and has no
-          // duration limit. p=0.5 targets ~-6dBFS peak (roughly -20 LUFS equivalent
-          // for typical ambient/drone content). f=500 uses a 500ms smoothing window.
-          filter = 'dynaudnorm';
-          options = { p: 0.5, m: 5, f: 500 };
+          // Quieter background level (~-6dBFS peak, ~-16 to -22 LUFS); m=5 limits boosting of quiet passages
+          options = { p: 0.5, m: 5, f: 750, g: 301 };
           break;
         default:
           logger.debug(`MixEngine:_normEffect(): Unknown preset ${preset}, using default values.`);
@@ -952,11 +960,10 @@ class MixEngine {
     }
     this.filterChain.push({
       inputs: inputSrc,
-      filter,
+      filter: 'dynaudnorm',
       options,
       outputs: newLabel
     });
-    // return the most recent label
     return newLabel;
   }
 
