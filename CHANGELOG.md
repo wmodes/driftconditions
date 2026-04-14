@@ -9,6 +9,16 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-04-14] (4)
+
+### Changed
+- **Tailwind `cornflower` color removed** (`tailwind.config.js`) — was unused in JS; brand colors are fully owned by `brand.css` via CSS variables. Stale `/* bg-cornflower */` comments cleaned from `index.css`.
+
+### Removed
+- `AdminClient/src/App.js`, `App.test.js`, `index-broken.js` — dead code, never imported by the running app.
+
+---
+
 ## [2026-04-14] (3)
 
 ### Added
