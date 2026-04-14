@@ -12,7 +12,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [2026-04-13] (4)
 
 ### Fixed
-- **Drony Story "Conversion failed" at 6:49** (`MixEngine.js`) — FFmpeg's `loudnorm` filter has an internal 4096-block buffer used for stereo EBU R128 measurement; when a stereo bed clip is connected to `aloop` (infinite loop), `loudnorm` fails with EINVAL at exactly 409.6s (4096 × 0.1s blocks). The `bed` norm preset now uses `dynaudnorm` (streaming-safe dynamic normalizer, `p=0.5:m=5:f=500`) which has no duration limit. Mono clips were not affected because they use a different internal code path.
+- **Drony Story "Conversion failed" at 6:49** (`MixEngine.js`) — FFmpeg's `loudnorm` (EBU R128) has a fixed 4096-block internal buffer that fails with EINVAL on looped stereo streams beyond ~409s. Replaced `loudnorm` with `dynaudnorm` (dynamic audio normalizer) throughout `_normEffect` — streaming-safe, frame-by-frame, no duration limit. All presets (voice, music, bed, default) retained with equivalent `dynaudnorm` parameters (`p`/`m`/`f`/`g`); `g=301` (max Gaussian window) approximates `loudnorm`'s whole-file analysis. The previous fix targeted only the `bed` preset, which was inelegant; `loudnorm` + `aloop` is problematic for any norm preset on any looped track.
 
 ---
 
