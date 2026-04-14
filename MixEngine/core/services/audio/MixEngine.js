@@ -934,25 +934,25 @@ class MixEngine {
   _normEffect (inputSrc, baseLabel, params) {
     logger.debug(`MixEngine:_normEffect(): params: ${JSON5.stringify(params)} count: ${params.length}`);
     const newLabel = baseLabel + '_norm';
-    // Default / music: full streaming level (~-0.5dBFS peak, ~-10 to -14 LUFS)
-    let options = { p: 0.95, m: 10, f: 500, g: 301 };
+    // Default / music: foreground level (-3dBFS peak)
+    let options = { p: 0.708, m: 10, f: 500, g: 301 };
 
     if (params.length > 0) {
       const preset = params[0].toLowerCase();
       switch (preset) {
         case 'spoken':
         case 'voice':
-          // Slightly pulled back (~-1.4dBFS peak, ~-12 to -16 LUFS) for speech clarity
-          options = { p: 0.85, m: 10, f: 500, g: 301 };
+          // Foreground speech level (-3dBFS peak, ~-23 to -16 LUFS broadcast standard)
+          options = { p: 0.708, m: 10, f: 500, g: 301 };
           break;
         case 'music':
-          // Full streaming level (~-0.5dBFS peak, ~-10 to -14 LUFS)
-          options = { p: 0.95, m: 10, f: 500, g: 301 };
+          // Foreground music level (-3dBFS peak, ~-14 to -10 LUFS broadcast standard)
+          options = { p: 0.708, m: 10, f: 500, g: 301 };
           break;
         case 'musicbed':
         case 'bed':
-          // Quieter background level (~-6dBFS peak, ~-16 to -22 LUFS); m=5 limits boosting of quiet passages
-          options = { p: 0.5, m: 5, f: 750, g: 301 };
+          // Background music bed level (-12dBFS peak, ~-30 to -24 LUFS broadcast standard)
+          options = { p: 0.251, m: 5, f: 750, g: 301 };
           break;
         default:
           logger.debug(`MixEngine:_normEffect(): Unknown preset ${preset}, using default values.`);
