@@ -203,7 +203,11 @@ router.post('/profile/edit', verifyToken, async (req, res) => {
     const isEditable = allowedFields.includes('editable');
 
     // valid db fields
-    const validDBFields = ['username', 'email', 'firstname', 'lastname', 'url', 'bio', 'location', 'roleName', 'status'];
+    const validDBFields = ['username', 'email', 'firstname', 'lastname', 'url', 'bio', 'location', 'roleName', 'status', 'digestFrequency'];
+
+    // Fetch current role and digestFrequency before update — needed for auto-adjusting digest default on role change
+    const [currentRows] = await db.query('SELECT roleName, digestFrequency FROM users WHERE userID = ? LIMIT 1', [targetUserID]);
+    const { roleName: currentRole, digestFrequency: currentFreq } = currentRows[0] || {};
 
     // Prevent blanking required fields
     if (req.body.username !== undefined && req.body.username.trim() === '') {
@@ -228,6 +232,19 @@ router.post('/profile/edit', verifyToken, async (req, res) => {
         queryValues.push(req.body[field]);
       }
     });
+
+    // Auto-adjust digestFrequency when role changes, but only if user hasn't customized it
+    // (i.e. it still matches the default for their previous role)
+    const roleDefaults = { user: 'yearly', contributor: 'monthly', editor: 'weekly', mod: 'weekly', admin: 'weekly' };
+    const newRole = req.body.roleName;
+    if (newRole && newRole !== currentRole && !req.body.digestFrequency) {
+      const oldDefault = roleDefaults[currentRole];
+      const newDefault = roleDefaults[newRole];
+      if (newDefault && currentFreq === oldDefault) {
+        queryFields.push('digestFrequency = ?');
+        queryValues.push(newDefault);
+      }
+    }
 
     // Handle password change separately — hash before storing
     if (req.body.password && isEditable) {
@@ -295,6 +312,40 @@ router.post('/profile/edit', verifyToken, async (req, res) => {
     }
     logger.error(`userRoutes:/edit: Update failed: ${error}`);
     res.status(500).json({ error: { message: 'Server error. Try again later.' } });
+  }
+});
+
+/**
+ * One-click unsubscribe from digest emails via signed JWT link.
+ * Sets digestFrequency = 'nodigest' for the user. No auth required —
+ * the signed token in the URL is sufficient proof of identity.
+ * @route GET /unsubscribe
+ * @access Public (token-gated)
+ */
+router.get('/unsubscribe', async (req, res) => {
+  const { token } = req.query;
+  if (!token) {
+    return res.status(400).send('Missing unsubscribe token.');
+  }
+  try {
+    const decoded = jwt.verify(token, jwtSecretKey);
+    if (decoded.purpose !== 'unsubscribe' || !decoded.userID) {
+      return res.status(400).send('Invalid unsubscribe token.');
+    }
+    await db.query(
+      `UPDATE users SET digestFrequency = 'nodigest' WHERE userID = ?`,
+      [decoded.userID]
+    );
+    logger.info(`userRoutes:/unsubscribe: userID ${decoded.userID} unsubscribed from digest`);
+    res.send(`
+      <html><body style="font-family:Georgia,serif;max-width:480px;margin:4em auto;color:#333;text-align:center;">
+        <p style="font-size:1.2em;">You've been unsubscribed from digest emails.</p>
+        <p style="color:#888;font-size:0.9em;">You can re-enable digests at any time from your profile settings.</p>
+      </body></html>
+    `);
+  } catch (err) {
+    logger.error(`userRoutes:/unsubscribe: ${err.message}`);
+    res.status(400).send('Unsubscribe link is invalid or has expired.');
   }
 });
 
@@ -481,10 +532,10 @@ const getAllowedFields = (permissions, requestingUsername, targetUsername) => {
   switch (lookupStatus) {
     case "extended":
       // Return everything except password, adding 'editable' field
-      return ['userID', 'username', 'status', 'email', 'firstname', 'lastname', 'email', 'url', 'bio', 'location', 'roleName', 'addedOn', 'avatar_url', 'editable'];
+      return ['userID', 'username', 'status', 'email', 'firstname', 'lastname', 'email', 'url', 'bio', 'location', 'roleName', 'addedOn', 'avatar_url', 'digestFrequency', 'editable'];
     case "self":
       // Return everything except password, and replacing roleName with roleNameShow, adding 'editable' field
-      return ['userID', 'username', 'statusShow', 'email', 'firstname', 'lastname', 'email', 'url', 'bio', 'location', 'roleNameShow', 'addedOn', 'avatar_url', 'editable'];
+      return ['userID', 'username', 'statusShow', 'email', 'firstname', 'lastname', 'email', 'url', 'bio', 'location', 'roleNameShow', 'addedOn', 'avatar_url', 'digestFrequency', 'editable'];
     case "basic":
     default:
       return ['userID', 'username', 'firstname', 'lastname', 'url', 'bio', 'location', 'roleNameShow', 'addedOn', 'avatar_url'];

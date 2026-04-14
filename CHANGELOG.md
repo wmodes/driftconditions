@@ -9,6 +9,32 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-04-14] (7)
+
+### Added
+- **Contributor digest email system** — `AdminServer/utils/digestRunner.js` groups pending `userComms` events by user, fetches per-user stats (audio contributed, pending, top plays, recent pending, recipes), renders Handlebars templates, sends via `sendTemplate()`, and marks rows `sentAt = NOW()`. Handles both approved and disapproved events. `scripts/run-digest.js` is the entry point (must be run from `AdminServer/` or via `cd AdminServer && node ../scripts/run-digest.js`).
+- **Contributor digest templates** — `AdminServer/templates/email/contributor-digest/` — HTML and plain text versions. Sections: disapprovals (with editor notes in blockquote), approvals, stats (member since, last contributed, total plays, audio counts, recipes if any, top plays, waiting for approval). Signed JWT unsubscribe link in footer.
+- **Unsubscribe route** — `GET /api/user/unsubscribe?token=...` verifies signed JWT (purpose: `unsubscribe`), sets `digestFrequency = 'nodigest'`, returns HTML confirmation page.
+- **Digest frequency selector on ProfileEdit** — dropdown (Daily / Weekly / Monthly / None) with explanatory note. Exposed via `digestFrequency` in `getAllowedFields` for both `extended` and `self` cases.
+- **Role-based digest frequency defaults** — new users get `digestFrequency = 'yearly'` at signup (both regular and OAuth). On role change, digest frequency auto-updates to the new role's default (`contributor → 'monthly'`, `editor/mod/admin → 'weekly'`) but only if the user hasn't customized it (i.e. it still matches the previous role's default).
+
+### Changed
+- **Moderation notes only sent on disapproval** — `audioRoutes.js` now passes `notes: ''` for approved clips; disapproved clips include `record.comments` as notes. Prevents track metadata comments (e.g. "from freemusicarchive.org") from appearing as editor feedback in approval emails.
+- **`userComms` queues both approved and disapproved events** — previously only `audio_approved` was queued; `audio_disapproved` now also queued with notes in payload.
+- **Digest frequency values updated** — values are now `nodigest`, `daily`, `weekly`, `monthly`, `yearly` (was `nodigest`, `daily`, `weekly`, `monthly`). `nodigest` routes to immediate individual email; others batch to digest.
+
+### DB migrations required
+```sql
+-- Migrate existing users to role-based digest defaults (run on local and prod)
+UPDATE users SET digestFrequency = 'yearly'  WHERE roleName = 'user'                    AND digestFrequency = 'daily';
+UPDATE users SET digestFrequency = 'monthly' WHERE roleName = 'contributor'             AND digestFrequency = 'daily';
+UPDATE users SET digestFrequency = 'weekly'  WHERE roleName IN ('editor','mod','admin') AND digestFrequency = 'daily';
+-- Also update the column default
+ALTER TABLE users MODIFY COLUMN digestFrequency VARCHAR(16) DEFAULT 'yearly';
+```
+
+---
+
 ## [2026-04-14] (6)
 
 ### Added

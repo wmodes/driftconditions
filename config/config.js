@@ -192,7 +192,7 @@ const config = {
     },
     filters: {
       duck: {
-        threshold: '-30dB',
+        threshold: 0.03,  // linear (0-1); equivalent to -30dB (acompressor requires linear, not dB)
         ratio: 20,
         attack: 200,   // ms
         release: 1000, // ms

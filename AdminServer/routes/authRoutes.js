@@ -84,8 +84,8 @@ router.post('/signup', async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, saltRounds);
     
     // Construct db query to insert user into the database
-    const query = 'INSERT INTO users (username, password, firstname, lastname, location, email) VALUES (?, ?, ?, ?, ?, ?)';
-    const values = [username, hashedPassword, firstname, lastname, location, email];
+    const query = 'INSERT INTO users (username, password, firstname, lastname, location, email, digestFrequency) VALUES (?, ?, ?, ?, ?, ?, ?)';
+    const values = [username, hashedPassword, firstname, lastname, location, email, 'yearly'];
 
     const [result] = await db.query(query, values);
     
@@ -537,8 +537,8 @@ router.get('/callback/:provider', async (req, res) => {
         const passwordPlaceholder = crypto.randomBytes(32).toString('hex');
 
         const [insertResult] = await db.query(
-          'INSERT INTO users (username, password, email, firstname, lastname, displayName, avatar_url, lastLoginAt) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())',
-          [username, passwordPlaceholder, email, firstname, lastname, displayName, avatarUrl]
+          'INSERT INTO users (username, password, email, firstname, lastname, displayName, avatar_url, lastLoginAt, digestFrequency) VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), ?)',
+          [username, passwordPlaceholder, email, firstname, lastname, displayName, avatarUrl, 'yearly']
         );
         user = { userID: insertResult.insertId, username, roleName: 'user' };
         await db.query(
