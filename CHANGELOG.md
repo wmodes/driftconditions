@@ -9,6 +9,13 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-04-14]
+
+### Fixed
+- **Norm preset levels calibrated to broadcast standards** (`MixEngine.js`) — previous `dynaudnorm` peak targets were too high for background material. Adjusted to broadcast-standard dBFS peaks: `voice`/`spoken` and `music` → -3dBFS (`p=0.708`); `bed`/`musicbed` → -12dBFS (`p=0.251`). Default unchanged. Fixes bed tracks sounding too loud relative to foreground narrative in Drony Story and similar recipes.
+
+---
+
 ## [2026-04-13] (4)
 
 ### Fixed
