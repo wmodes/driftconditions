@@ -338,29 +338,42 @@ router.post('/update', verifyToken, async (req, res) => {
     }
     res.status(200).send({ message: 'Audio updated successfully' });
 
-    // Send moderation notice if status changed to Approved/Disapproved and notifyContributor is set
+    // Post-response: queue digest event and/or send moderation notice
     const notifyContributor = record.notifyContributor;
-    const isModAction = status === 'Approved' || status === 'Disapproved';
-    if (notifyContributor && isModAction) {
+    const isApproved = status === 'Approved';
+    const isModAction = isApproved || status === 'Disapproved';
+    // Fetch creator info if we need to queue a digest event (any approval) or send a notify email
+    if (isApproved || (notifyContributor && isModAction)) {
       const [rows] = await db.query(
-        `SELECT u.firstname, u.username, u.email, a.title
+        `SELECT u.userID, u.firstname, u.username, u.email, a.title
          FROM audio a JOIN users u ON u.userID = a.creatorID
          WHERE a.audioID = ? LIMIT 1`,
         [audioID]
       );
       if (rows.length > 0) {
-        const { firstname, username, email, title } = rows[0];
-        const approved = status === 'Approved';
-        sendTemplate('audio-moderation', {
-          firstname: firstname || username,
-          username,
-          clipTitle: title,
-          action: approved ? 'approved' : 'rejected',
-          approved,
-          notes: record.moderationNotes || '',
-        }, { to: email, from: FROM.noreply }).catch((err) => {
-          logger.error(`audioRoutes:/update: moderation email failed for ${username}: ${err.message}`);
-        });
+        const { userID: creatorID, firstname, username, email, title } = rows[0];
+
+        // Queue an audio_approved event for the contributor digest
+        if (isApproved) {
+          db.query(
+            `INSERT INTO userComms (userID, commType, payload) VALUES (?, 'audio_approved', ?)`,
+            [creatorID, JSON.stringify({ audioID, title })]
+          ).catch((err) => logger.error(`audioRoutes:/update: userComms insert failed: ${err.message}`));
+        }
+
+        // Send immediate moderation email if the editor checked "Notify contributor"
+        if (notifyContributor && isModAction) {
+          sendTemplate('audio-moderation', {
+            firstname: firstname || username,
+            username,
+            clipTitle: title,
+            action: isApproved ? 'approved' : 'rejected',
+            approved: isApproved,
+            notes: record.comments || '',
+          }, { to: email, from: FROM.noreply }).catch((err) => {
+            logger.error(`audioRoutes:/update: moderation email failed for ${username}: ${err.message}`);
+          });
+        }
       }
     }
   } catch (error) {
