@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Rubik+Distressed&display=swap" rel="stylesheet">
+  <style>
+    body { margin: 0; padding: 0; background: #f5f5f5; font-family: Georgia, serif; color: #222; }
+    .wrapper { max-width: 600px; margin: 32px auto; background: #fff; border-radius: 6px; overflow: hidden; }
+    .header { background: #336699; padding: 24px 32px; }
+    .header a { color: #fff; font-size: 32px; font-weight: normal; text-decoration: none; font-family: 'Rubik Distressed', Georgia, serif; }
+    .body { padding: 32px; line-height: 1.7; }
+    .body p { margin: 0 0 1em; }
+    .body a { color: #135394; }
+    .footer { padding: 16px 32px; border-top: 1px solid #ddd; font-size: 12px; color: #999; text-align: center; }
+    .footer a { color: #999; }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="header">
+      <a href="{{siteUrl}}">{{siteName}}</a>
+    </div>
+    <div class="body">
+      {{{body}}}
+    </div>
+    <div class="footer">
+      <a href="{{siteUrl}}">{{siteUrl}}</a>
+    </div>
+  </div>
+</body>
+</html>

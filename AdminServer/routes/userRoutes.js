@@ -18,6 +18,8 @@ const verifyToken = require('../middleware/authMiddleware');
 
 // configuration import
 const { config } = require('config');
+const brand = require('config/brand');
+const { sendTemplate, FROM } = require('../utils/mailer');
 // pull these out of the config object
 const jwtSecretKey = config.authToken.jwtSecretKey;
 
@@ -258,6 +260,34 @@ router.post('/profile/edit', verifyToken, async (req, res) => {
       res.status(500).json({ error: { message: 'Error updating user profile.' } });
     } else {
       res.status(200).send({ message: 'Profile updated successfully' });
+
+      // Send role-change notification if roleName changed and notifyUser is set
+      const newRole = req.body.roleName;
+      const notifyUser = req.body.notifyUser;
+      if (newRole && notifyUser) {
+        const roleTemplates = {
+          contributor: 'role-change-contributor',
+          editor:      'role-change-editor',
+          mod:         'role-change-mod',
+        };
+        const template = roleTemplates[newRole.toLowerCase()];
+        if (template) {
+          // Fetch the target user's email and firstname for the notification
+          const [rows] = await db.query(
+            'SELECT firstname, username, email FROM users WHERE userID = ? LIMIT 1',
+            [targetUserID]
+          );
+          if (rows.length > 0) {
+            const { firstname, username, email } = rows[0];
+            sendTemplate(template, {
+              firstname: firstname || username,
+              username,
+            }, { to: email, from: FROM.welcome }).catch((err) => {
+              logger.error(`userRoutes:/profile/edit: role-change email failed for ${username}: ${err.message}`);
+            });
+          }
+        }
+      }
     }
   } catch (error) {
     if (error.code === 'ER_DUP_ENTRY') {

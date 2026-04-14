@@ -9,6 +9,21 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-04-14] (3)
+
+### Added
+- **Email template system** (`AdminServer/utils/mailer.js`, `AdminServer/templates/email/`) — Handlebars-based email templates with shared layout (`layout.html`/`layout.txt`) and partials. `sendTemplate()` helper compiles inner template, wraps in layout, and calls `sendMail()`. Brand globals (`siteName`, `siteUrl`) injected automatically.
+- **Email templates** — welcome (auto on signup, from `wes@`), password-reset (extracted from inline HTML), role-change-contributor (with tips), role-change-editor, role-change-mod, audio-moderation (approved/rejected with optional notes), contributor-digest (stub).
+- **Contributor tips partial** — `partials/contributor-tips-html.html` and `contributor-tips-txt.txt`; used in contributor promotion and as P.S. in editor/mod emails.
+- **Welcome email** — sent automatically on signup; written in Wes's voice; includes mailto link pre-populated with subject `{{username}} wants to be a contributor to DriftConditions`.
+- **Role-change notifications** — `userRoutes.js /profile/edit` sends appropriate role-change template when `roleName` changes and `notifyUser` is true. UI: "Notify user" checkbox (default checked, grayed out until role changes) on User List quick edit and ProfileEdit, placed inline with the Role field.
+- **Audio moderation notifications** — `audioRoutes.js /audio/update` sends `audio-moderation` template when status changes to Approved/Disapproved and `notifyContributor` is true. UI: "Notify contributor" checkbox (default checked) and notes textarea shown conditionally on AudioEdit when status is Approved or Disapproved.
+
+### Fixed
+- Plain text email templates now compiled with `noEscape: true` to prevent Handlebars HTML-encoding apostrophes (e.g. `didn&#x27;t` → `didn't`).
+
+---
+
 ## [2026-04-14] (2)
 
 ### Added

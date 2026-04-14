@@ -14,6 +14,7 @@ function ProfileEdit() {
 
   // State hooks to store user profile information
   const [profile, setProfile] = useState({});
+  const [originalRoleName, setOriginalRoleName] = useState(null);
   // State hooks to store input values from the form.
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -32,6 +33,7 @@ function ProfileEdit() {
         if (res.payload && res.payload.data) {
           const newProfile = res.payload.data;
           setProfile(newProfile);
+          setOriginalRoleName(newProfile.roleName);
           // This is the case where we didn't provide a username 
           // and it returns the logged in user's info
           if (!username) {
@@ -191,13 +193,24 @@ function ProfileEdit() {
             {profile.roleName !== undefined && (
               <div>
                 <label className="form-label" htmlFor="roleName">Role: <Required /></label>
-                <select className="form-field" id="roleName" name="roleName" value={profile.roleName} onChange={handleChange}>
-                  <option value="user">User</option>
-                  <option value="contributor">Contributor</option>
-                  <option value="editor">Editor</option>
-                  <option value="mod">Mod</option>
-                  <option value="admin">Admin</option>
-                </select>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1em' }}>
+                  <select className="form-field" id="roleName" name="roleName" value={profile.roleName} onChange={handleChange}>
+                    <option value="user">User</option>
+                    <option value="contributor">Contributor</option>
+                    <option value="editor">Editor</option>
+                    <option value="mod">Mod</option>
+                    <option value="admin">Admin</option>
+                  </select>
+                  <label style={{ color: profile.roleName === originalRoleName ? '#999' : 'inherit', whiteSpace: 'nowrap' }}>
+                    <input
+                      type="checkbox"
+                      checked={profile.notifyUser !== false}
+                      disabled={profile.roleName === originalRoleName}
+                      onChange={(e) => setProfile(prev => ({ ...prev, notifyUser: e.target.checked }))}
+                    />
+                    {' '}Notify user
+                  </label>
+                </div>
               </div>
             )}
             {profile.status !== undefined && (
