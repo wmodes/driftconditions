@@ -7,6 +7,7 @@
   import { store } from './store/store';
   // Redux Provider to make the store available to all components.
   import { Provider } from 'react-redux';
+  import './brand/brand.css'; // Brand colors — edit here to retheme
   import './index.css';
   // import App from './App';
   // import 'react-tooltip/dist/react-tooltip.css'
