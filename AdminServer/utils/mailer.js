@@ -4,8 +4,18 @@
 
 const nodemailer = require('nodemailer');
 const logger = require('config/logger').custom('AdminServer', 'info');
+const brand = require('config/brand');
 
-const FROM_ADDRESS = '"DriftConditions" <noreply@driftconditions.org>';
+// Build a formatted From: header from brand config
+// e.g. '"DriftConditions" <noreply@driftconditions.org>'
+const fromAddr = (address) => `"${brand.email.fromName}" <${address}>`;
+
+const FROM = {
+  noreply: fromAddr(brand.email.noreply),   // automated system messages
+  welcome:  fromAddr(brand.email.welcome),   // personal welcome from Wes
+  contact:  fromAddr(brand.email.contact),   // general enquiries
+};
+
 const isDev = process.env.NODE_ENV !== 'production';
 
 // Create the appropriate transporter based on environment
@@ -39,11 +49,13 @@ async function createTransporter() {
  * @param {string} opts.subject - Email subject
  * @param {string} opts.text - Plain text body
  * @param {string} opts.html - HTML body
+ * @param {string} [opts.from] - From address; defaults to FROM.noreply.
+ *   Use FROM.welcome for personal welcome emails, FROM.contact for enquiries.
  */
-async function sendMail({ to, subject, text, html }) {
+async function sendMail({ to, subject, text, html, from = FROM.noreply }) {
   const transporter = await createTransporter();
   const info = await transporter.sendMail({
-    from: FROM_ADDRESS,
+    from,
     to,
     subject,
     text,
@@ -59,4 +71,4 @@ async function sendMail({ to, subject, text, html }) {
   return info;
 }
 
-module.exports = { sendMail };
+module.exports = { sendMail, FROM };

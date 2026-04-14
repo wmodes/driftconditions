@@ -9,6 +9,15 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-04-14] (2)
+
+### Added
+- **Brand abstraction layer** — `config/brand.js` is now the single source of truth for site identity (name, tagline, descriptions, site URL, OG image, email addresses). Symlinked into `AdminClient/src/brand/brand.js` for frontend access within CRA's `src/` boundary.
+- **`brand.css`** (`AdminClient/src/brand/brand.css`) — CSS-specific brand values (colors, nav, links, avatars) extracted from `index.css` into their own file. Imported before `index.css` so brand identity is clearly separated from layout/UI variables.
+- **`mailer.js` brand-driven FROM addresses** — hardcoded `FROM_ADDRESS` replaced with `FROM.noreply`, `FROM.welcome`, and `FROM.contact`, all sourced from `brand.js`. Callers may pass `from` to `sendMail()`; defaults to `FROM.noreply`.
+
+---
+
 ## [2026-04-14]
 
 ### Fixed
