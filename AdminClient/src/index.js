@@ -7,6 +7,7 @@
   import { store } from './store/store';
   // Redux Provider to make the store available to all components.
   import { Provider } from 'react-redux';
+  import { HelmetProvider } from 'react-helmet-async';
   import './brand/brand.css'; // Brand colors — edit here to retheme
   import './index.css';
   // import 'react-tooltip/dist/react-tooltip.css'
@@ -88,9 +89,11 @@
   const root = ReactDOM.createRoot(document.getElementById('root'));
   root.render(
     <React.StrictMode>
-      <Provider store={store}>
-        <RouterProvider router={router} />
-      </Provider>
+      <HelmetProvider>
+        <Provider store={store}>
+          <RouterProvider router={router} />
+        </Provider>
+      </HelmetProvider>
     </React.StrictMode>
   );
 

@@ -9,6 +9,16 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-04-14] (5)
+
+### Added
+- **react-helmet-async** — `<Helmet>` in `RootLayout.js` sets page title, meta description, and OG/Twitter social card tags at runtime from `brand.js`. `HelmetProvider` wraps the app in `index.js`.
+
+### Changed
+- **`index.html` stripped to minimal shell** — hardcoded title, description, and all OG/Twitter meta tags removed; comment left explaining they're set at runtime by Helmet. Do not add brand values here.
+
+---
+
 ## [2026-04-14] (4)
 
 ### Changed
