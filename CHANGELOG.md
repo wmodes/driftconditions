@@ -9,6 +9,14 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-04-14] (10)
+
+### Added
+- **`setupfiles/digest.service`** — systemd oneshot service that runs `scripts/run-digest.js` as `debian` user from `AdminServer/` working directory.
+- **`setupfiles/digest.timer`** — systemd timer that fires `digest.service` daily at 14:00 UTC (9 AM Eastern). `Persistent=true` catches any runs missed during server downtime. Link both into `/etc/systemd/system/` and enable with `systemctl enable --now digest.timer`.
+
+---
+
 ## [2026-04-14] (9)
 
 ### Added
