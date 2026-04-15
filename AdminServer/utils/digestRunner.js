@@ -30,7 +30,7 @@
 const { database: db } = require('config');
 const { config } = require('config');
 const brand = require('config/brand');
-const { sendTemplate, FROM } = require('./mailer'); // eslint-disable-line no-unused-vars
+const { sendTemplate, FROM } = require('./mailer');
 const logger = require('config/logger').custom('AdminServer', 'info');
 const jwt = require('jsonwebtoken');
 
@@ -483,9 +483,7 @@ async function runDigest() {
         if (!scheduledToday && !missed) continue;
 
         const { vars, commIDs } = await schedule.buildVars(user);
-        // TODO: remove dry-run stub and restore sendTemplate call before going live
-        logger.info(`digestRunner: [DRY RUN] would send "${schedule.template}" to ${user.email} — vars: ${JSON.stringify(vars)}`);
-        // await sendTemplate(schedule.template, vars, { to: user.email, from: FROM.noreply });
+        await sendTemplate(schedule.template, vars, { to: user.email, from: FROM.noreply });
 
         if (commIDs.length > 0) {
           await db.query(
