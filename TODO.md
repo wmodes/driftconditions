@@ -90,7 +90,8 @@
 - [x] Duplicate upload detection: MD5 checksum on upload; backfill script for existing records
 - [ ] Notify contributors by email when submitted audio is approved (see digest system plan, 8.4.2)
 - [ ] Audit table instrumentation: currently nothing is written to it — fix for auth and user change events
-- [ ] Fix direct navigation to protected URLs (e.g. /audio/upload) when not logged in — currently causes an error; user needs to log in first then navigate. Affects contributor-digest-reminder email links.
+- [x] Fix direct navigation to protected URLs (e.g. /audio/upload) when not logged in — redirects to signin with ?next= param, then forwards to original URL after login.
+- [ ] OAuth signin doesn't preserve ?next= redirect — after OAuth round-trip the destination is lost; requires threading next through OAuth state param on both initiation and callback.
 - [ ] YouTube / Twitch stream output
 
 ### Change
