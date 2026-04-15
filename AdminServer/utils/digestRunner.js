@@ -267,6 +267,62 @@ async function buildDigestVars(user) {
 }
 
 /**
+ * Returns active users (role='user') who signed up at least 30 days ago.
+ * Anniversary check is done per-user in isScheduledToday via isAnniversaryWindow.
+ * @returns {Promise<object[]>}
+ */
+async function getUsersForYearlyNudge() {
+  const [rows] = await db.query(
+    `SELECT u.userID, u.firstname, u.username, u.email, u.addedOn
+     FROM users u
+     WHERE u.roleName = 'user'
+       AND u.status = 'Active'
+       AND u.digestFrequency = 'yearly'
+       AND DATEDIFF(NOW(), u.addedOn) >= 30`
+  );
+  return rows;
+}
+
+/**
+ * Returns true if today falls within anniversaryWindowDays after the user's
+ * signup anniversary. Checks both this year and last year to handle the
+ * year-boundary edge case (e.g. Dec 31 anniversary, server up Jan 2).
+ * Combined with hasGottenLastDigest(350), the window safely catches missed
+ * sends without risk of double-sending.
+ * @param {Date|string} addedOn
+ * @returns {boolean}
+ */
+function isAnniversaryWindow(addedOn) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  for (const yearOffset of [0, -1]) {
+    const anniversary = new Date(addedOn);
+    anniversary.setFullYear(today.getFullYear() + yearOffset);
+    anniversary.setHours(0, 0, 0, 0);
+    const diffDays = Math.round((today - anniversary) / (1000 * 60 * 60 * 24));
+    if (diffDays >= 0 && diffDays < dc.anniversaryWindowDays) return true;
+  }
+  return false;
+}
+
+/**
+ * Builds template variables for the yearly user-reminder email.
+ * Sent to users (role='user') on their signup anniversary.
+ * @param {object} user
+ * @returns {Promise<{vars: object, commIDs: []}>}
+ */
+async function buildUserReminderVars(user) {
+  const { userID, firstname, username } = user;
+  const vars = {
+    firstname:    firstname || username,
+    username,
+    contactEmail: brand.email.contact,
+    unsubscribeUrl: makeUnsubscribeUrl(userID),
+  };
+  return { vars, commIDs: [] };
+}
+
+/**
  * Builds template variables for the contributor-digest-reminder email.
  * Sent to contributors who have never submitted audio.
  * @param {object} user
@@ -340,19 +396,15 @@ const schedules = [
     getRecipients:    () => getContributorsWithNoSubmissions(),
     buildVars:        buildReminderVars,
   },
-  // TODO: create user-reminder template, then uncomment this schedule entry.
-  // isAnniversaryWindow(), getUsersForYearlyNudge(), and buildUserReminderVars()
-  // are also stubbed out but commented until the template exists.
-  //
-  // {
-  //   name:             'user-reminder',
-  //   template:         'user-reminder',
-  //   commType:         'user_reminder_sent',
-  //   windowDays:       350,
-  //   isScheduledToday: (user) => isAnniversaryWindow(user.addedOn),
-  //   getRecipients:    () => getUsersForYearlyNudge(),
-  //   buildVars:        buildUserReminderVars,
-  // },
+  {
+    name:             'user-reminder',
+    template:         'user-reminder',
+    commType:         'user_reminder_sent',
+    windowDays:       350,
+    isScheduledToday: (user) => isAnniversaryWindow(user.addedOn),
+    getRecipients:    () => getUsersForYearlyNudge(),
+    buildVars:        buildUserReminderVars,
+  },
 ];
 
 // ─── Main runner ─────────────────────────────────────────────────────────────

@@ -1,0 +1,17 @@
+Hey {{firstname}},
+
+It's been about a year since you joined {{siteName}}. Just checking in.
+
+The stream is still going — still drifting through field recordings, found sounds, archival fragments, shortwave ghosts, and other audio wreckage. Maybe you've listened. Maybe you forgot we existed. Either way, glad you're here.
+
+And if you've ever thought, oh, I have something for this — the offer still stands.
+
+If you've got a recording, a fragment, a strange little sound that feels like it belongs in this world, just drop me a line at {{contactEmail}} (subject: "{{username}} wants to be a contributor") and I'll get you set up.
+
+Your profile: {{siteUrl}}/profile/{{username}}
+
+— Wes
+
+---
+You're receiving this because you're a member of {{siteName}}.
+Unsubscribe from annual reminders: {{unsubscribeUrl}}
