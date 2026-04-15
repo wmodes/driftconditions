@@ -1,0 +1,27 @@
+# Digest runner systemd service file
+# Invoked by digest.timer — do not start directly.
+#
+# Link into place with:
+# % sudo ln -sf /home/debian/driftconditions/setupfiles/digest.service /etc/systemd/system/digest.service
+# % sudo ln -sf /home/debian/driftconditions/setupfiles/digest.timer /etc/systemd/system/digest.timer
+# % systemctl daemon-reload
+# % sudo systemctl enable --now digest.timer
+#
+# Check timer status:
+# % systemctl status digest.timer
+#
+# View logs:
+# % journalctl -u digest.service --no-pager | less
+
+[Unit]
+Description=DriftConditions digest runner
+After=network.target
+
+[Service]
+Type=oneshot
+User=debian
+WorkingDirectory=/home/debian/driftconditions/AdminServer
+ExecStart=/usr/bin/node /home/debian/driftconditions/scripts/run-digest.js
+
+[Install]
+WantedBy=multi-user.target
