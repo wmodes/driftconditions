@@ -7,6 +7,7 @@ import { audioInfo } from '../store/audioSlice';
 import { initWaveSurfer, destroyWaveSurfer } from '../utils/waveUtils';
 
 import { formatDateAsFriendlyDate, formatListAsString, formatDuration } from '../utils/formatUtils';
+import { useAuthCheckAndNavigate } from '../utils/authUtils';
 
 // Import the config object from the config.js file
 import config from '../config/config';
@@ -19,21 +20,17 @@ function AudioView() {
   const dispatch = useDispatch();
 
   // get auth state from Redux store
+  useAuthCheckAndNavigate('audioView');
+
   const { user: userAuth } = useSelector((state) => state.auth);
   const [editPerm, setEditPerm] = useState(false);
   const [listPerm, setListPerm] = useState(false);
 
-  // Check if the user has permission to edit audio
+  // Check if the user has permission to edit/list audio
   useEffect(() => {
-    // Check if the user has permission to edit audio
-    if (userAuth.permissions.indexOf('audioEdit') !== -1) {
-      // console.log('User has permission to edit audio');
-      setEditPerm(true);
-    }
-    if (userAuth.permissions.indexOf('audioList') !== -1) {
-      // console.log('User has permission to edit audio');
-      setListPerm(true);
-    }
+    if (!userAuth?.permissions) return;
+    if (userAuth.permissions.indexOf('audioEdit') !== -1) setEditPerm(true);
+    if (userAuth.permissions.indexOf('audioList') !== -1) setListPerm(true);
   }, [userAuth.permissions]);
 
   const [isDomReady, setIsDomReady] = useState(false);

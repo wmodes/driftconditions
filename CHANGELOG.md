@@ -9,6 +9,38 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-04-15] (12)
+
+### Fixed
+- **Auth redirect for unauthenticated users** — visiting a protected URL while not logged in now redirects to `/signin?next=<url>` instead of crashing or showing the page blank. After login, the user is forwarded to the originally requested URL.
+  - `authUtils.js` — fixed `result.data?.error` path (was `result.error`, always undefined); added `?next=` param to redirect; distinguished unauthenticated (`not_authorized` + no `userID`) from unauthorized (`not_authorized` + `userID` present) — former goes to `/signin`, latter to `/notauth`.
+  - `Signin.js` — after successful login, reads `?next=` query param and navigates to it before falling back to profile redirect.
+  - `authSlice.js` — `initialState.user` changed to `{ permissions: [] }` to prevent "Cannot read properties of undefined (reading 'permissions')" crash on cold page load before auth check completes.
+  - `RootLayout.js` — added second render guard (`!isPublicPage && !user?.userID`) to hold render until redirect fires, preventing flash of protected content.
+  - `AudioView.js` — added `useAuthCheckAndNavigate('audioView')` and guarded `permissions` access with null check.
+
+---
+
+## [2026-04-15] (11)
+
+### Added
+- **`hasSentToday(userID, commType)`** — hard safety gate in `digestRunner.js` using `createdAt >= CURDATE()`. Checked at the top of each per-user loop before any other logic; prevents double-sends regardless of schedule, missed-send, or other conditions.
+- **`hasNewEvents(userID)`** — checks `userComms` for unsent `audio_approved` / `audio_disapproved` events for a user. Used by daily-digest `isScheduledToday`.
+
+### Changed
+- **Daily digest now event-driven with monthly fallback** — `isScheduledToday` for the daily schedule is now `async (user) => await hasNewEvents(user.userID) || isNthWeekdayOfMonth()`. Fires when there are new events to report OR on the configured day of the month; stays silent otherwise. Prevents empty daily emails for mods/admins with no recent activity.
+- **Role-based digest frequency defaults updated** — `mod` and `admin` default to `'daily'` (was `'weekly'`). Full table: `user → yearly`, `contributor → monthly`, `editor → weekly`, `mod → daily`, `admin → daily`.
+- **`user-reminder` schedule `windowDays` set to `null`** — removes missed-send fallback window that was triggering a blast to all users on first run (since none had a prior sentinel). Anniversary window alone is sufficient gating.
+- **ProfileEdit digest frequency dropdown** — added `Yearly` option; default display value set to `'yearly'` if `digestFrequency` is unset.
+
+### DB migrations required
+```sql
+-- Update mod and admin digest defaults to daily
+UPDATE users SET digestFrequency = 'daily' WHERE roleName IN ('mod', 'admin') AND digestFrequency = 'weekly';
+```
+
+---
+
 ## [2026-04-14] (10)
 
 ### Added

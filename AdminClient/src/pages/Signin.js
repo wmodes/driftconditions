@@ -62,9 +62,11 @@ function Signin() {
             // Use the username returned by the server (input may have been an email)
             const actualUsername = signinData?.username || username;
             // Hydrate Redux state with user/role info before navigating
+            const next = new URLSearchParams(location.search).get('next');
             dispatch(checkPageAuth({ context: 'profile' })).finally(() => {
-              // Send incomplete profiles to edit page to fill in missing fields
-              if (!signinData?.profileComplete) {
+              if (next) {
+                navigate(next);
+              } else if (!signinData?.profileComplete) {
                 navigate(`/profile/edit`);
               } else {
                 navigate(`/profile/${actualUsername}`);
