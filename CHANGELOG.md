@@ -9,6 +9,14 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-04-14] (9)
+
+### Added
+- **`user-reminder` template** — yearly anniversary nudge for users who haven't become contributors. Wes voice; brief evocation of the station, repeat of the contributor ask, mailto link pre-populated with subject. Signed `— Wes`.
+- **`user-reminder` schedule entry** wired into digest runner — fires on signup anniversary (±`anniversaryWindowDays`), gated by `hasGottenLastDigest(350)`. `isAnniversaryWindow()`, `getUsersForYearlyNudge()`, `buildUserReminderVars()` all live in `digestRunner.js`.
+
+---
+
 ## [2026-04-14] (8)
 
 ### Added
