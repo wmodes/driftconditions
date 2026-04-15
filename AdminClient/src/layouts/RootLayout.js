@@ -17,6 +17,7 @@ const RootLayout = () => {
   const dispatch = useDispatch();
   const projectName = getProjectName();
   const authChecked = useSelector(state => state.auth.authChecked);
+  const user = useSelector(state => state.auth.user);
   const currentPath = location.pathname;
 
   const [isPlayerVisible, setIsPlayerVisible] = useState(false);
@@ -37,9 +38,13 @@ const RootLayout = () => {
     } 
   }, [dispatch, projectName]);
 
-  if (!authChecked) {
-    return (<Waiting />);
-  }
+  const noAuthPages = ['error', 'notauth', 'homepage', 'signup', 'signin',
+                       'forgotpassword', 'resetpassword', 'howitworks', 'profile'];
+  const isPublicPage = noAuthPages.includes(pageContext.toLowerCase());
+
+  if (!authChecked) return <Waiting />;
+  // Hold the render for protected pages until redirect fires
+  if (!isPublicPage && !user?.userID) return <Waiting />;
 
   const togglePlayer = () => {
     setIsPlayerVisible(true);

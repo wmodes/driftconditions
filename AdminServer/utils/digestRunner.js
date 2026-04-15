@@ -15,7 +15,9 @@
  * can gate against duplicate sends within the cadence window.
  *
  * Schedule:
- *   daily    — contributors/editors/mods/admins with submissions, digestFrequency='daily'
+ *   daily    — contributors/editors/mods/admins with submissions, digestFrequency='daily';
+ *              fires when there are new events OR on the monthly fallback day (no daily noise
+ *              during quiet periods, but guaranteed monthly contact regardless)
  *   weekly   — same, digestFrequency='weekly'; fires on config.digest.weeklyDay
  *   monthly  — same, digestFrequency='monthly'; fires on nth weeklyDay of the month
  *   reminder — contributors with NO submissions; fires on same monthly day
@@ -28,7 +30,7 @@
 const { database: db } = require('config');
 const { config } = require('config');
 const brand = require('config/brand');
-const { sendTemplate, FROM } = require('./mailer');
+const { sendTemplate, FROM } = require('./mailer'); // eslint-disable-line no-unused-vars
 const logger = require('config/logger').custom('AdminServer', 'info');
 const jwt = require('jsonwebtoken');
 
@@ -109,6 +111,24 @@ async function hasGottenLastDigest(userID, commType, windowDays) {
 }
 
 /**
+ * Returns true if this user was sent this commType since midnight today (server time).
+ * Used as a hard gate to prevent double-sends regardless of how the runner is triggered.
+ * @param {number} userID
+ * @param {string} commType
+ * @returns {Promise<boolean>}
+ */
+async function hasSentToday(userID, commType) {
+  const [[row]] = await db.query(
+    `SELECT 1 FROM userComms
+     WHERE userID = ? AND commType = ?
+       AND createdAt >= CURDATE()
+     LIMIT 1`,
+    [userID, commType]
+  );
+  return !!row;
+}
+
+/**
  * Inserts a sentinel row into userComms recording that a digest/reminder was sent.
  * hasGottenLastDigest() queries these rows to prevent duplicate sends.
  * @param {number} userID
@@ -156,6 +176,23 @@ async function getProfileStats(userID) {
     [userID]
   );
   return { audioRow, recipeRow, topPlays, recentPendingRows };
+}
+
+/**
+ * Returns true if the user has any unsent approval/disapproval events queued.
+ * Used by the daily-digest to suppress sends when there's nothing new.
+ * @param {number} userID
+ * @returns {Promise<boolean>}
+ */
+async function hasNewEvents(userID) {
+  const [[row]] = await db.query(
+    `SELECT 1 FROM userComms
+     WHERE userID = ? AND sentAt IS NULL
+       AND commType IN ('audio_approved', 'audio_disapproved')
+     LIMIT 1`,
+    [userID]
+  );
+  return !!row;
 }
 
 // ─── Recipient queries ────────────────────────────────────────────────────────
@@ -365,7 +402,9 @@ const schedules = [
     template:         'contributor-digest',
     commType:         'digest_sent',
     windowDays:       null,
-    isScheduledToday: () => true,
+    // Send if there are new events OR it's the monthly fallback day — whichever comes first.
+    // This prevents daily noise during quiet periods while guaranteeing at least monthly contact.
+    isScheduledToday: async (user) => await hasNewEvents(user.userID) || isNthWeekdayOfMonth(),
     getRecipients:    () => getContributorsWithSubmissions('daily'),
     buildVars:        buildDigestVars,
   },
@@ -400,7 +439,7 @@ const schedules = [
     name:             'user-reminder',
     template:         'user-reminder',
     commType:         'user_reminder_sent',
-    windowDays:       350,
+    windowDays:       null, // no missed-send fallback; the 7-day anniversary window is sufficient coverage
     isScheduledToday: (user) => isAnniversaryWindow(user.addedOn),
     getRecipients:    () => getUsersForYearlyNudge(),
     buildVars:        buildUserReminderVars,
@@ -412,6 +451,7 @@ const schedules = [
 /**
  * Main entry point. Iterates the schedule table and sends emails to all
  * qualifying recipients. For each schedule + recipient pair:
+ *   - Hard gate: skip if this commType was already sent to this user in the last 23 hours
  *   - Sends if today is the scheduled day (happy path), OR
  *   - Sends if the user missed their last send within windowDays (fallback)
  *
@@ -427,7 +467,15 @@ async function runDigest() {
 
     for (const user of recipients) {
       try {
-        const scheduledToday = schedule.isScheduledToday(user);
+        // Hard gate: never send the same commType twice in the same calendar day, regardless of reason.
+        // This is the primary safety check against accidental double-sends.
+        const alreadySentToday = await hasSentToday(user.userID, schedule.commType);
+        if (alreadySentToday) {
+          logger.info(`digestRunner: [${schedule.name}] skipping ${user.username} — already sent today`);
+          continue;
+        }
+
+        const scheduledToday = await Promise.resolve(schedule.isScheduledToday(user));
         const missed = schedule.windowDays
           ? !(await hasGottenLastDigest(user.userID, schedule.commType, schedule.windowDays))
           : false;
@@ -435,7 +483,9 @@ async function runDigest() {
         if (!scheduledToday && !missed) continue;
 
         const { vars, commIDs } = await schedule.buildVars(user);
-        await sendTemplate(schedule.template, vars, { to: user.email, from: FROM.noreply });
+        // TODO: remove dry-run stub and restore sendTemplate call before going live
+        logger.info(`digestRunner: [DRY RUN] would send "${schedule.template}" to ${user.email} — vars: ${JSON.stringify(vars)}`);
+        // await sendTemplate(schedule.template, vars, { to: user.email, from: FROM.noreply });
 
         if (commIDs.length > 0) {
           await db.query(

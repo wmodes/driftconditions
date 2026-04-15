@@ -235,7 +235,7 @@ router.post('/profile/edit', verifyToken, async (req, res) => {
 
     // Auto-adjust digestFrequency when role changes, but only if user hasn't customized it
     // (i.e. it still matches the default for their previous role)
-    const roleDefaults = { user: 'yearly', contributor: 'monthly', editor: 'weekly', mod: 'weekly', admin: 'weekly' };
+    const roleDefaults = { user: 'yearly', contributor: 'monthly', editor: 'weekly', mod: 'daily', admin: 'daily' };
     const newRole = req.body.roleName;
     if (newRole && newRole !== currentRole && !req.body.digestFrequency) {
       const oldDefault = roleDefaults[currentRole];

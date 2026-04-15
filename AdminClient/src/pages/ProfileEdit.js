@@ -226,10 +226,11 @@ function ProfileEdit() {
             {profile.digestFrequency !== undefined && (
               <div>
                 <label className="form-label" htmlFor="digestFrequency">Digest emails:</label>
-                <select className="form-field" id="digestFrequency" name="digestFrequency" value={profile.digestFrequency || 'daily'} onChange={handleChange}>
+                <select className="form-field" id="digestFrequency" name="digestFrequency" value={profile.digestFrequency || 'yearly'} onChange={handleChange}>
                   <option value="daily">Daily</option>
                   <option value="weekly">Weekly</option>
                   <option value="monthly">Monthly</option>
+                  <option value="yearly">Yearly</option>
                   <option value="nodigest">None</option>
                 </select>
                 <p className="form-note">How often to receive a digest of your approvals and contribution stats.</p>
