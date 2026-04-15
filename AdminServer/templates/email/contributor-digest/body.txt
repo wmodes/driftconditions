@@ -65,4 +65,5 @@ If you have any questions, don't hesitate to reach out.
 
 ---
 You're receiving this because you're a contributor to {{siteName}}.
-Manage digest preferences: {{unsubscribeUrl}}
+Manage digest preferences: {{digestPrefsUrl}}
+Unsubscribe: {{unsubscribeUrl}}

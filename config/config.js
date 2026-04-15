@@ -145,6 +145,11 @@ const config = {
   bcrypt: {
     saltRounds: 10,
   },
+  digest: {
+    weeklyDay: 2,             // 0=Sun, 1=Mon, 2=Tue, ..., 6=Sat
+    monthlyWeek: 1,           // nth occurrence of weeklyDay in the month (1=first, 2=second, ...)
+    anniversaryWindowDays: 7, // days after signup anniversary to catch missed yearly sends
+  },
   recaptcha: {
     siteKey: '6LeGSaAsAAAAAC5vDSHIXZD291CnNXGTCfyrYF8b',  // public, used by frontend
     secretKey: process.env.RECAPTCHA_SECRET_KEY,           // private, used by backend

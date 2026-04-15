@@ -1,0 +1,22 @@
+Hey {{firstname}},
+
+Just a quick check-in from {{siteName}}.
+
+You signed up as a contributor a while back, which means your account is already set up — you can upload audio whenever you're ready. We're just waiting on you.
+
+If you've got something that might fit — a field recording, a fragment of sound, an overheard voice, some atmospheric wreckage, a strange little thing you captured and weren't sure what to do with — this is probably the right place for it.
+
+Upload here: {{siteUrl}}/audio/upload
+
+(You'll need to be logged in first. If you go straight to that link without a session you may see an error — just sign in at {{siteUrl}} and then head to the upload page.)
+
+Your profile: {{siteUrl}}/profile/{{username}}
+
+Hope to hear from you soon.
+
+— Wes
+
+---
+You're receiving this because you're a contributor to {{siteName}}.
+Manage digest preferences: {{digestPrefsUrl}}
+Unsubscribe from reminders: {{unsubscribeUrl}}

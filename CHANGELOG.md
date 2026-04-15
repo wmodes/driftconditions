@@ -9,6 +9,25 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-04-14] (8)
+
+### Added
+- **`contributor-digest-reminder` template** — sent monthly to contributors who have never submitted audio. Friendly nudge in Wes's voice; links to upload page with a note that the user must be logged in first. Footer has separate "Manage digest preferences" and "Unsubscribe" links.
+- **`config.digest` section** — `weeklyDay` (0–6), `monthlyWeek` (nth occurrence), `anniversaryWindowDays`. Controls cadence without touching code.
+
+### Changed
+- **`digestRunner.js` fully rewritten** — schedule-table architecture replaces ad-hoc logic. Each entry defines cadence, recipient query, var builder, commType sentinel, and missed-send window. Main loop is ~20 lines with no per-schedule special cases.
+  - Five schedules: daily digest, weekly digest, monthly digest, monthly contributor reminder, yearly user reminder (commented out pending `user-reminder` template).
+  - Recipient queries: `getContributorsWithSubmissions(freq)` — any role with audio submissions; `getContributorsWithNoSubmissions()` — contributor role, no submissions ever.
+  - Missed-send fallback: `hasGottenLastDigest(userID, commType, windowDays)` checks `userComms` for a sentinel row within the window. If absent, send fires regardless of day. Prevents gaps when server was down on a scheduled send day.
+  - `logSent(userID, commType)` inserts a sentinel row after each send, gating the missed-send check.
+  - All functions fully JSDoc'd.
+- **Digest footer updated** — both `contributor-digest` templates now have separate "Manage digest preferences" (profile edit link) and "Unsubscribe" (JWT link) in footer. `digestPrefsUrl` added to vars.
+- **`mailer.js` JSDoc'd** — file header converted to `@file` block; `createTransporter` documented.
+- **`TODO.md`** — noted that direct navigation to protected URLs (e.g. `/audio/upload`) without a session causes an error; affects digest reminder email links.
+
+---
+
 ## [2026-04-14] (7)
 
 ### Added
