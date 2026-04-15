@@ -1,6 +1,9 @@
-// utils/mailer.js - Email transport utility
-// Uses Ethereal fake SMTP in development (logs preview URL to console)
-// Uses local Postfix sendmail in production
+/**
+ * @file mailer.js
+ * @description Email transport utility.
+ * Uses Ethereal fake SMTP in development (logs preview URL to console).
+ * Uses local Postfix sendmail in production.
+ */
 
 const nodemailer = require('nodemailer');
 const path = require('path');
@@ -42,7 +45,12 @@ const FROM = {
 
 const isDev = process.env.NODE_ENV !== 'production';
 
-// Create the appropriate transporter based on environment
+/**
+ * Creates the appropriate nodemailer transporter based on environment.
+ * Development: Ethereal fake SMTP (no mail actually sent).
+ * Production: local Postfix via sendmail.
+ * @returns {Promise<import('nodemailer').Transporter>}
+ */
 async function createTransporter() {
   if (isDev) {
     // Ethereal fake SMTP — no mail actually sent, preview URL logged to console

@@ -90,6 +90,7 @@
 - [x] Duplicate upload detection: MD5 checksum on upload; backfill script for existing records
 - [ ] Notify contributors by email when submitted audio is approved (see digest system plan, 8.4.2)
 - [ ] Audit table instrumentation: currently nothing is written to it — fix for auth and user change events
+- [ ] Fix direct navigation to protected URLs (e.g. /audio/upload) when not logged in — currently causes an error; user needs to log in first then navigate. Affects contributor-digest-reminder email links.
 - [ ] YouTube / Twitch stream output
 
 ### Change
