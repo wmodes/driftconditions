@@ -7,8 +7,8 @@
  * runner checks two conditions:
  *
  *   1. isScheduledToday(user) — happy path; is today the right send day?
- *   2. missed — fallback; should this user have gotten this email recently
- *      but didn't? Catches missed sends when the server was down.
+ *   2. needsFallbackDigest — has enough time passed without a send to trigger
+ *      the monthly floor? Catches missed sends when the server was down.
  *
  * After sending, event rows in userComms are marked sentAt = NOW(), and a
  * sentinel row (e.g. commType='digest_sent') is inserted so hasGottenLastDigest()
@@ -18,7 +18,7 @@
  *   daily    — contributors/editors/mods/admins with submissions, digestFrequency='daily';
  *              fires when there are new events OR on the monthly fallback day (no daily noise
  *              during quiet periods, but guaranteed monthly contact regardless)
- *   weekly   — same, digestFrequency='weekly'; fires on config.digest.weeklyDay
+ *   weekly   — same, digestFrequency='weekly'; fires when there are new events OR on the monthly fallback day
  *   monthly  — same, digestFrequency='monthly'; fires on nth weeklyDay of the month
  *   reminder — contributors with NO submissions; fires on same monthly day
  *   yearly   — users (role='user'); fires on signup anniversary ± anniversaryWindowDays
@@ -92,45 +92,44 @@ function makeDigestPrefsUrl(username) {
 }
 
 /**
- * Returns true if this user received a commType email within the last windowDays.
- * Used to gate re-sends and to catch missed sends when the server was down.
- * @param {number} userID
- * @param {string} commType - sentinel commType (e.g. 'digest_sent', 'reminder_sent')
- * @param {number} windowDays
- * @returns {Promise<boolean>}
- */
-async function hasGottenLastDigest(userID, commType, windowDays) {
-  const [[row]] = await db.query(
-    `SELECT 1 FROM userComms
-     WHERE userID = ? AND commType = ?
-       AND createdAt > DATE_SUB(NOW(), INTERVAL ? DAY)
-     LIMIT 1`,
-    [userID, commType, windowDays]
-  );
-  return !!row;
-}
-
-/**
- * Returns true if this user was sent this commType since midnight today (server time).
- * Used as a hard gate to prevent double-sends regardless of how the runner is triggered.
+ * Returns the date of the most recent send of commType for this user, or null.
+ * Single query replacing the old hasSentToday + hasGottenLastDigest pair.
  * @param {number} userID
  * @param {string} commType
- * @returns {Promise<boolean>}
+ * @returns {Promise<Date|null>}
  */
-async function hasSentToday(userID, commType) {
+async function getLastDigestSent(userID, commType) {
   const [[row]] = await db.query(
-    `SELECT 1 FROM userComms
+    `SELECT createdAt FROM userComms
      WHERE userID = ? AND commType = ?
-       AND createdAt >= CURDATE()
-     LIMIT 1`,
+     ORDER BY createdAt DESC LIMIT 1`,
     [userID, commType]
   );
-  return !!row;
+  return row ? new Date(row.createdAt) : null;
+}
+
+/** Returns fractional days since a past date. */
+function daysSince(date) {
+  return (Date.now() - date.getTime()) / (1000 * 60 * 60 * 24);
+}
+
+/** True if the last send was today — prevents double-sends if runner fires twice. */
+function sentToday(lastSent) {
+  return !!lastSent && daysSince(lastSent) < 1;
+}
+
+/** True if the last send falls within the user's normal frequency window. */
+function sentWithinFreqWindow(lastSent, freqDays) {
+  return !!lastSent && !!freqDays && daysSince(lastSent) < freqDays;
+}
+
+/** True if enough time has passed without a send to trigger the fallback cadence. */
+function needsFallbackDigest(lastSent, fallbackDays) {
+  return !!fallbackDays && (!lastSent || daysSince(lastSent) >= fallbackDays);
 }
 
 /**
  * Inserts a sentinel row into userComms recording that a digest/reminder was sent.
- * hasGottenLastDigest() queries these rows to prevent duplicate sends.
  * @param {number} userID
  * @param {string} commType - e.g. 'digest_sent', 'reminder_sent'
  * @returns {Promise<void>}
@@ -243,7 +242,7 @@ async function getContributorsWithNoSubmissions() {
  * @returns {Promise<{vars: object, commIDs: number[]}>}
  */
 async function buildDigestVars(user) {
-  const { userID, firstname, username, addedOn } = user;
+  const { userID, firstname, username, addedOn, digestFrequency } = user;
 
   const [events] = await db.query(
     `SELECT commID, commType, payload FROM userComms
@@ -296,6 +295,9 @@ async function buildDigestVars(user) {
     hasApproved:        approved.length > 0,
     disapproved,
     hasDisapproved:     disapproved.length > 0,
+    digestFrequency,
+    // Set when a daily/weekly user has no new events and is receiving the monthly fallback send
+    fallbackFrequency:  (['daily', 'weekly'].includes(digestFrequency) && events.length === 0) ? dc.fallbackFrequency : null,
     unsubscribeUrl:     makeUnsubscribeUrl(userID),
     digestPrefsUrl:     makeDigestPrefsUrl(username),
   };
@@ -401,10 +403,9 @@ const schedules = [
     name:             'daily-digest',
     template:         'contributor-digest',
     commType:         'digest_sent',
-    windowDays:       null,
-    // Send if there are new events OR it's the monthly fallback day — whichever comes first.
-    // This prevents daily noise during quiet periods while guaranteeing at least monthly contact.
-    isScheduledToday: async (user) => await hasNewEvents(user.userID) || isNthWeekdayOfMonth(),
+    freqDays:         null, // daily: sentToday() is sufficient; no additional freq window
+    fallbackDays:     27,   // monthly minimum contact
+    isScheduledToday: async (user) => await hasNewEvents(user.userID),
     getRecipients:    () => getContributorsWithSubmissions('daily'),
     buildVars:        buildDigestVars,
   },
@@ -412,8 +413,9 @@ const schedules = [
     name:             'weekly-digest',
     template:         'contributor-digest',
     commType:         'digest_sent',
-    windowDays:       6,
-    isScheduledToday: () => isWeeklyDay(),
+    freqDays:         7,
+    fallbackDays:     27,
+    isScheduledToday: async (user) => isWeeklyDay() && await hasNewEvents(user.userID),
     getRecipients:    () => getContributorsWithSubmissions('weekly'),
     buildVars:        buildDigestVars,
   },
@@ -421,7 +423,8 @@ const schedules = [
     name:             'monthly-digest',
     template:         'contributor-digest',
     commType:         'digest_sent',
-    windowDays:       27,
+    freqDays:         27,
+    fallbackDays:     27,
     isScheduledToday: () => isNthWeekdayOfMonth(),
     getRecipients:    () => getContributorsWithSubmissions('monthly'),
     buildVars:        buildDigestVars,
@@ -430,18 +433,20 @@ const schedules = [
     name:             'contributor-reminder',
     template:         'contributor-digest-reminder',
     commType:         'reminder_sent',
-    windowDays:       27,
+    freqDays:         27,
+    fallbackDays:     27,
     isScheduledToday: () => isNthWeekdayOfMonth(),
-    getRecipients:    () => getContributorsWithNoSubmissions(),
+    getRecipients:    getContributorsWithNoSubmissions,
     buildVars:        buildReminderVars,
   },
   {
     name:             'user-reminder',
     template:         'user-reminder',
     commType:         'user_reminder_sent',
-    windowDays:       null, // no missed-send fallback; the 7-day anniversary window is sufficient coverage
+    freqDays:         350,
+    fallbackDays:     null, // anniversary window is self-contained; no separate fallback
     isScheduledToday: (user) => isAnniversaryWindow(user.addedOn),
-    getRecipients:    () => getUsersForYearlyNudge(),
+    getRecipients:    getUsersForYearlyNudge,
     buildVars:        buildUserReminderVars,
   },
 ];
@@ -451,9 +456,8 @@ const schedules = [
 /**
  * Main entry point. Iterates the schedule table and sends emails to all
  * qualifying recipients. For each schedule + recipient pair:
- *   - Hard gate: skip if this commType was already sent to this user in the last 23 hours
- *   - Sends if today is the scheduled day (happy path), OR
- *   - Sends if the user missed their last send within windowDays (fallback)
+ * For each recipient: skip if already sent today, skip if within their freq window,
+ * send if today is their scheduled day or the fallback cadence has elapsed.
  *
  * After sending: event rows are marked sentAt, a sentinel row is logged.
  * @returns {Promise<void>}
@@ -467,20 +471,14 @@ async function runDigest() {
 
     for (const user of recipients) {
       try {
-        // Hard gate: never send the same commType twice in the same calendar day, regardless of reason.
-        // This is the primary safety check against accidental double-sends.
-        const alreadySentToday = await hasSentToday(user.userID, schedule.commType);
-        if (alreadySentToday) {
+        const lastSent = await getLastDigestSent(user.userID, schedule.commType);
+        if (sentToday(lastSent)) {
           logger.info(`digestRunner: [${schedule.name}] skipping ${user.username} — already sent today`);
           continue;
         }
-
-        const scheduledToday = await Promise.resolve(schedule.isScheduledToday(user));
-        const missed = schedule.windowDays
-          ? !(await hasGottenLastDigest(user.userID, schedule.commType, schedule.windowDays))
-          : false;
-
-        if (!scheduledToday && !missed) continue;
+        if (sentWithinFreqWindow(lastSent, schedule.freqDays))            continue;
+        if (!await schedule.isScheduledToday(user)
+            && !needsFallbackDigest(lastSent, schedule.fallbackDays))     continue;
 
         const { vars, commIDs } = await schedule.buildVars(user);
         await sendTemplate(schedule.template, vars, { to: user.email, from: FROM.noreply });

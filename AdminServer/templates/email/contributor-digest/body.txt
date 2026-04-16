@@ -1,6 +1,6 @@
 Hey {{firstname}},
 
-Here's your periodic update from {{siteName}} — a summary of what's happened with your submissions and where things stand. We appreciate your contributions; they're what makes the stream interesting.
+Your {{digestFrequency}} {{siteName}} digest. Here's what happened with your audio, what got played, what's in the queue. We're always curious what you'll throw in next.{{#if fallbackFrequency}} Nothing new on your end lately, so we're keeping it to {{fallbackFrequency}} until things pick up.{{/if}}
 
 {{#if hasDisapproved}}
 DIDN'T MAKE IT THIS TIME
@@ -64,6 +64,6 @@ If you have any questions, don't hesitate to reach out.
 — The {{siteName}} Team
 
 ---
-You're receiving this because you're a contributor to {{siteName}}.
-Manage digest preferences: {{digestPrefsUrl}}
+You're getting this because you're a contributor to {{siteName}}.
+Adjust digest frequency: {{digestPrefsUrl}}
 Unsubscribe: {{unsubscribeUrl}}

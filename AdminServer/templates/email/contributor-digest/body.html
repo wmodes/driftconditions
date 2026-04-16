@@ -1,6 +1,6 @@
 <p>Hey {{firstname}},</p>
 
-<p>Here's your periodic update from <a href="{{siteUrl}}">{{siteName}}</a> — a summary of what's happened with your submissions and where things stand. We appreciate your contributions; they're what makes the stream interesting.</p>
+<p>Your {{digestFrequency}} <a href="{{siteUrl}}">{{siteName}}</a> digest. Here's what happened with your audio, what got played, what's in the queue. We're always curious what you'll throw in next.{{#if fallbackFrequency}} Nothing new on your end lately, so we're keeping it to {{fallbackFrequency}} until things pick up.{{/if}}</p>
 
 {{#if hasDisapproved}}
 <h3 style="margin: 1.5em 0 0.25em; color: #555; font-size: 1em; text-transform: uppercase; letter-spacing: 0.05em;">Didn't Make It This Time</h3>
@@ -77,4 +77,4 @@
 
 <p>— The {{siteName}} Team</p>
 
-<p style="margin-top: 2em; font-size: 0.8em; color: #aaa;">You're receiving this because you're a contributor to {{siteName}}. <a href="{{digestPrefsUrl}}" style="color: #aaa;">Manage digest preferences</a> · <a href="{{unsubscribeUrl}}" style="color: #aaa;">Unsubscribe</a>.</p>
+<p style="margin-top: 2em; font-size: 0.8em; color: #aaa;">You're getting this because you're a contributor to {{siteName}}. <a href="{{digestPrefsUrl}}" style="color: #aaa;">Adjust digest frequency</a> · <a href="{{unsubscribeUrl}}" style="color: #aaa;">Unsubscribe</a>.</p>
