@@ -1,0 +1,9 @@
+Hi {{name}},
+
+We received a request to reset your password. Click the link below to choose a new one:
+
+  {{resetUrl}}
+
+This link expires in 1 hour.
+
+If you didn't request a password reset, you can safely ignore this email. Your password will not be changed.

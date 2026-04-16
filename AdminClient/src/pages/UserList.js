@@ -128,7 +128,7 @@ function UserList() {
   const openEditRow = (userID) => {
     setEditUserID(editUserID === userID ? null : userID);
     const userToEdit = userList.find(u => u.userID === userID);
-    if (userToEdit) setEditedRecord({ userID: userToEdit.userID, username: userToEdit.username, roleName: userToEdit.roleName, status: userToEdit.status });
+    if (userToEdit) setEditedRecord({ userID: userToEdit.userID, username: userToEdit.username, roleName: userToEdit.roleName, _originalRoleName: userToEdit.roleName, status: userToEdit.status, notifyUser: true });
   };
 
   const handleQuickEditSubmit = async (e) => {
@@ -331,6 +331,17 @@ function UserList() {
                                       <option value="Active">Active</option>
                                       <option value="Inactive">Inactive</option>
                                     </select>
+                                  </div>
+                                  <div className="quick-edit-notify">
+                                    <label style={{ color: editedRecord.roleName === editedRecord._originalRoleName ? '#999' : 'inherit' }}>
+                                      <input
+                                        type="checkbox"
+                                        checked={editedRecord.notifyUser || false}
+                                        disabled={editedRecord.roleName === editedRecord._originalRoleName}
+                                        onChange={(e) => setEditedRecord({ ...editedRecord, notifyUser: e.target.checked })}
+                                      />
+                                      {' '}Notify user
+                                    </label>
                                   </div>
                                 </div>
                                 <div className="quick-edit-submit">

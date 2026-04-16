@@ -1,0 +1,18 @@
+# Digest runner systemd timer file
+# Fires digest.service daily at 9 AM Eastern (UTC-4 summer / UTC-5 winter).
+# Persistent=true catches up on any runs missed while the server was down.
+#
+# Link into place with digest.service (see digest.service for full instructions).
+#
+# Check next/last run:
+# % systemctl list-timers digest.timer
+
+[Unit]
+Description=Run DriftConditions digest daily at 9 AM Eastern
+
+[Timer]
+OnCalendar=*-*-* 14:00:00 UTC
+Persistent=true
+
+[Install]
+WantedBy=timers.target

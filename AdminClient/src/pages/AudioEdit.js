@@ -53,7 +53,10 @@ function AudioEdit() {
     // turn classificationOptions into an object with keys for each option (set to false)
     classification: {},
     copyrightCert: 0,
+    notifyContributor: true,
   });
+  // Track the status at load time so we can gray out Notify until it changes
+  const [originalStatus, setOriginalStatus] = useState('');
 
   useEffect(() => {
     if (!audioID) return;
@@ -65,6 +68,7 @@ function AudioEdit() {
         // Parse and transform the response as needed
         // console.log('Fetched audio details:', response);
         // console.log('Classification:', response.classification, 'type:', typeof response.classification);
+        setOriginalStatus(response.status);
         setRecord(prevState => ({
           ...prevState,
           ...response,
@@ -72,6 +76,7 @@ function AudioEdit() {
           createDate: formatDateAsFriendlyDate(response.createDate),
           editDate: formatDateAsFriendlyDate(response.editDate),
           classification: setClassificationFormOptions(classificationOptions, response.classification),
+          notifyContributor: true,
         }));
         setIsLoading(false); // Stop loading once data is fetched
       })
@@ -199,13 +204,32 @@ function AudioEdit() {
 
               <div className="form-row">
                 <label className="form-label" htmlFor="status">Status: <Required /></label>
-                <select name="status" value={record.status} onChange={handleChange} className="form-select">
+                <select name="status" value={record.status || ''} onChange={handleChange} className="form-select">
                   <option value="Review">Under Review</option>
                   <option value="Approved">Approved</option>
                   <option value="Disapproved">Disapproved</option>
                   <option value="Trashed">Trashed</option>
                 </select>
+                <label
+                  className="form-label checkbox-label"
+                  style={{
+                    marginLeft: '1rem',
+                    color: (record.status === originalStatus || (record.status !== 'Approved' && record.status !== 'Disapproved')) ? '#999' : 'inherit',
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={record.notifyContributor || false}
+                    disabled={
+                      record.status === originalStatus ||
+                      (record.status !== 'Approved' && record.status !== 'Disapproved')
+                    }
+                    onChange={(e) => setRecord(prev => ({ ...prev, notifyContributor: e.target.checked }))}
+                  />
+                  {' '}Notify contributor
+                </label>
               </div>
+              <p className="form-note mt-1">Approval/Disapproval notes go in comments below, sent to contributor</p>
 
               <div className="form-row">
                 <label className="form-label">Plays:</label> <span className="non-editable">{record.timesUsed || '—'}</span>

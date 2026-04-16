@@ -1,0 +1,1 @@
+Your submission "{{clipTitle}}" has been {{action}}

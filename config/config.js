@@ -145,6 +145,11 @@ const config = {
   bcrypt: {
     saltRounds: 10,
   },
+  digest: {
+    weeklyDay: 2,             // 0=Sun, 1=Mon, 2=Tue, ..., 6=Sat
+    monthlyWeek: 1,           // nth occurrence of weeklyDay in the month (1=first, 2=second, ...)
+    anniversaryWindowDays: 7, // days after signup anniversary to catch missed yearly sends
+  },
   recaptcha: {
     siteKey: '6LeGSaAsAAAAAC5vDSHIXZD291CnNXGTCfyrYF8b',  // public, used by frontend
     secretKey: process.env.RECAPTCHA_SECRET_KEY,           // private, used by backend
@@ -192,7 +197,7 @@ const config = {
     },
     filters: {
       duck: {
-        threshold: '-30dB',
+        threshold: 0.03,  // linear (0-1); equivalent to -30dB (acompressor requires linear, not dB)
         ratio: 20,
         attack: 200,   // ms
         release: 1000, // ms
@@ -201,8 +206,8 @@ const config = {
   },
   sounds: {
     static: {
-      am: "dirty-am-static.mp3",
-      shortwave: "short-wave-static.mp3",
+      am: "content/sounds/dirty-am-static.mp3",
+      shortwave: "content/sounds/short-wave-static.mp3",
     },
   },
   exprs3: {

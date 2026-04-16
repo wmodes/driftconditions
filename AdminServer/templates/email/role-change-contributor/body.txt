@@ -1,0 +1,15 @@
+Hey {{firstname}},
+
+You've been promoted to contributor on {{siteName}}. You can now upload audio for possible use in the stream.
+
+To contribute, select "Add New Audio" from the menu:
+  {{siteUrl}}/audio/upload
+
+{{> contributor-tips-txt}}
+
+Once you've submitted something, you can track your contributions and see which ones are waiting for approval on your profile page:
+  {{siteUrl}}/profile/{{username}}
+
+If you have any questions, don't hesitate to reach out.
+
+— Wes

@@ -1,0 +1,21 @@
+Hey {{firstname}},
+
+Welcome to DriftConditions.
+
+You've joined a strange little audio experiment: a continuously running stream built from found sound, field recordings, music, voices, atmospheres, archival fragments, and other beautiful wreckage. It drifts somewhere between late-night radio, dream logic, and the feeling that you've tuned into something you were not quite meant to hear.
+
+I hope you'll check in from time to time for a listen. Or, like some people, leave it on day and night and let it become the weird soundtrack of your life.
+
+And one other thing: if you ever hear this station and think, oh, I have something for this — you probably do.
+
+If you've got a field recording from a lonely roadside, a broken answering machine tape, a church sermon from a thrift-store cassette, distant machinery, shortwave ghosts, archival oddities, a rainstorm, a room tone, a fragment of song, an overheard voice, a strange little sound effect, or some other piece of audio debris that feels like it belongs in this world, you can become a contributor pretty easily.
+
+Just drop me a line at {{contactEmail}} (subject: "{{username}} wants to be a contributor to DriftConditions") and tell me your username and that you want to contribute. I'll upgrade your account, and then you'll be able to upload audio for possible use in the stream.
+
+After that, I'll send along some lightweight guidelines and what kinds of audio tend to work especially well.
+
+So that's the shape of it: listen, lurk, drift off, come back later, or decide one day that you want to feed the machine.
+
+Glad you found your way here.
+
+— Wes

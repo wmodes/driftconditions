@@ -38,19 +38,27 @@ export const useAuthCheckAndNavigate = (context) => {
           const actionResult = await dispatch(checkPageAuth({ context }));
           const result = actionResult.payload;
 
-          if (result && result.error) {
+          if (result && result.data?.error) {
             // Only redirect on auth failure for protected pages
             if (!isPublicPage) {
-              if (result.error.reason === "not_authenticated") {
-                navigate('/signin');
-              } else if (result.error.reason === "not_authorized") {
+              const reason = result.data.error.reason;
+              const hasUser = result.data.user?.userID;
+              if (reason === "not_authenticated" || (reason === "not_authorized" && !hasUser)) {
+                // Not logged in — send to signin with return URL
+                const next = encodeURIComponent(window.location.pathname + window.location.search);
+                navigate(`/signin?next=${next}`);
+              } else if (reason === "not_authorized" && hasUser) {
+                // Logged in but lacks permission
                 navigate('/notauth');
               }
             }
           }
         } catch (error) {
           console.error("Auth check failed:", error);
-          if (!isPublicPage) navigate('/signin');
+          if (!isPublicPage) {
+            const next = encodeURIComponent(window.location.pathname + window.location.search);
+            navigate(`/signin?next=${next}`);
+          }
         } finally {
           dispatch(setAuthChecked({ authChecked: true }));
         }

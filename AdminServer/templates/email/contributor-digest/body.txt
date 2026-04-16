@@ -1,0 +1,69 @@
+Hey {{firstname}},
+
+Here's your periodic update from {{siteName}} — a summary of what's happened with your submissions and where things stand. We appreciate your contributions; they're what makes the stream interesting.
+
+{{#if hasDisapproved}}
+DIDN'T MAKE IT THIS TIME
+-------------------------
+These submissions weren't approved. Notes on the submission are included. Feel free to reply if you have questions.
+
+{{#each disapproved}}
+  {{title}}
+  {{../siteUrl}}/audio/view/{{audioID}}
+  {{#if notes}}> {{notes}}{{/if}}
+
+{{/each}}
+{{/if}}
+{{#if hasApproved}}
+APPROVED — NOW IN THE STREAM!
+------------------------------
+These clips are now part of the {{siteName}} mix and may play at any time.
+
+{{#each approved}}
+  {{title}}
+  {{../siteUrl}}/audio/view/{{audioID}}
+{{/each}}
+
+{{/if}}
+YOUR STATS
+----------
+Member since:       {{memberSince}}
+{{#if lastContributed}}Last contributed:   {{lastContributed}}
+{{/if}}Total plays:        {{totalPlays}}
+
+Audio
+  Contributed:        {{audioContributed}}
+  Waiting for approval: {{audioPending}}
+
+{{#if hasRecipes}}
+Recipes
+  Contributed:        {{recipesContributed}}
+  Waiting for approval: {{recipesPending}}
+
+{{/if}}
+{{#if hasTopPlays}}
+Top Played Audio
+{{#each topPlays}}
+  {{title}} — {{timesUsed}} plays
+  {{../siteUrl}}/audio/view/{{audioID}}
+{{/each}}
+
+{{/if}}
+{{#if hasRecentPending}}
+Waiting for Approval
+{{#each recentPending}}
+  {{title}} ({{date}})
+  {{../siteUrl}}/audio/view/{{audioID}}
+{{/each}}
+
+{{/if}}
+Your full profile: {{siteUrl}}/profile/{{username}}
+
+If you have any questions, don't hesitate to reach out.
+
+— The {{siteName}} Team
+
+---
+You're receiving this because you're a contributor to {{siteName}}.
+Manage digest preferences: {{digestPrefsUrl}}
+Unsubscribe: {{unsubscribeUrl}}
