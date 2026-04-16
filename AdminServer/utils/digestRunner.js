@@ -487,7 +487,7 @@ async function runDigest() {
           logger.info(`digestRunner: [${schedule.name}] skipping ${user.username} — not scheduled, no fallback due`);
           continue;
         }
-        const reason = scheduledToday ? 'scheduled' : `fallback (${Math.floor(daysSince(lastSent))}d since last send)`;
+        const reason = scheduledToday ? 'scheduled' : `fallback (${lastSent ? Math.floor(daysSince(lastSent)) + 'd' : 'never'} since last send)`;
         logger.info(`digestRunner: [${schedule.name}] sending to ${user.username} — reason: ${reason}`);
 
         const { vars, commIDs } = await schedule.buildVars(user);
