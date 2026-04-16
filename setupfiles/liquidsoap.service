@@ -1,3 +1,10 @@
+# Liquidsoap systemctl service file
+#
+# Link and enable with:
+# % sudo ln -sf /home/debian/driftconditions/setupfiles/liquidsoap.service /etc/systemd/system/liquidsoap.service
+# % sudo systemctl daemon-reload
+# % sudo systemctl enable liquidsoap.service   # 'linked' won't auto-start on boot; enable creates the wants symlink
+
 [Unit]
 Description=Liquidsoap Streaming Service
 After=network.target mixengine.service

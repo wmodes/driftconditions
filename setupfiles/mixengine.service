@@ -1,8 +1,9 @@
 # MixEngine systemctl service file
 #
-# Link into systemctl with:
+# Link and enable with:
 # % sudo ln -sf /home/debian/driftconditions/setupfiles/mixengine.service /etc/systemd/system/mixengine.service
 # % sudo systemctl daemon-reload
+# % sudo systemctl enable mixengine.service   # 'linked' won't auto-start on boot; enable creates the wants symlink
 #
 # Start:
 # % sudo systemctl start mixengine.service
