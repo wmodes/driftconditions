@@ -14,7 +14,7 @@ dynamicplaylist = request.dynamic(id="dynamic_playlist", fun() ->
 crossfaded_dynamic = crossfade(dynamicplaylist)
 
 # Fallback: loop short-wave static if MixEngine source goes down
-static_fallback = single("/home/debian/driftconditions/content/sounds/short-wave-static.mp3")
+static_fallback = single("/home/debian/driftconditions/content/2024/06/short-wave-static-long.mp3")
 
 # Use fallback instead of mksafe — switches immediately on source failure
 safe_crossfaded_dynamic = fallback(track_sensitive=false, [crossfaded_dynamic, static_fallback])
