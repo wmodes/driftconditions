@@ -156,7 +156,6 @@ function Profile() {
                       : clip.title
                     }
                   </span>
-                  <span className="clip-count">{formatDate(clip.lastUsed)}</span>
                 </li>
               ))}
             </ul>
