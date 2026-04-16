@@ -206,8 +206,8 @@ const config = {
   },
   sounds: {
     static: {
-      am: "dirty-am-static.mp3",
-      shortwave: "short-wave-static.mp3",
+      am: "content/sounds/dirty-am-static.mp3",
+      shortwave: "content/sounds/short-wave-static.mp3",
     },
   },
   exprs3: {
