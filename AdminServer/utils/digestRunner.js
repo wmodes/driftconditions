@@ -476,9 +476,19 @@ async function runDigest() {
           logger.info(`digestRunner: [${schedule.name}] skipping ${user.username} — already sent today`);
           continue;
         }
-        if (sentWithinFreqWindow(lastSent, schedule.freqDays))            continue;
-        if (!await schedule.isScheduledToday(user)
-            && !needsFallbackDigest(lastSent, schedule.fallbackDays))     continue;
+        if (sentWithinFreqWindow(lastSent, schedule.freqDays)) {
+          logger.info(`digestRunner: [${schedule.name}] skipping ${user.username} — sent ${Math.floor(daysSince(lastSent))}d ago (freqDays=${schedule.freqDays})`);
+          continue;
+        }
+
+        const scheduledToday = await schedule.isScheduledToday(user);
+        const fallback = needsFallbackDigest(lastSent, schedule.fallbackDays);
+        if (!scheduledToday && !fallback) {
+          logger.info(`digestRunner: [${schedule.name}] skipping ${user.username} — not scheduled, no fallback due`);
+          continue;
+        }
+        const reason = scheduledToday ? 'scheduled' : `fallback (${Math.floor(daysSince(lastSent))}d since last send)`;
+        logger.info(`digestRunner: [${schedule.name}] sending to ${user.username} — reason: ${reason}`);
 
         const { vars, commIDs } = await schedule.buildVars(user);
         await sendTemplate(schedule.template, vars, { to: user.email, from: FROM.noreply });
