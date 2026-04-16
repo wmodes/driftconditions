@@ -59,8 +59,9 @@ https://driftconditions.org:8080 {
     reverse_proxy localhost:8081 {
         header_up Host {host}
         header_up X-Real-IP {remote}
-        header_up X-Forwarded-For {remote}
-        header_up X-Forwarded-Proto {scheme}
+        # X-Forwarded-For and X-Forwarded-Proto are set automatically by Caddy's reverse_proxy
+        # header_up X-Forwarded-For {remote}
+        # header_up X-Forwarded-Proto {scheme}
         flush_interval -1  # Disable buffering
     }
     tls wmodes@gmail.com
@@ -71,8 +72,9 @@ https://driftconditions.org:8082 {
     reverse_proxy localhost:8083 {
         header_up Host {host}
         header_up X-Real-IP {remote}
-        header_up X-Forwarded-For {remote}
-        header_up X-Forwarded-Proto {scheme}
+        # X-Forwarded-For and X-Forwarded-Proto are set automatically by Caddy's reverse_proxy
+        # header_up X-Forwarded-For {remote}
+        # header_up X-Forwarded-Proto {scheme}
         flush_interval -1  # Disable buffering
     }
     tls wmodes@gmail.com
@@ -83,8 +85,9 @@ https://driftconditions.org:8000 {
     reverse_proxy localhost:8001 {
         header_up Host {host}
         header_up X-Real-IP {remote}
-        header_up X-Forwarded-For {remote}
-        header_up X-Forwarded-Proto {scheme}
+        # X-Forwarded-For and X-Forwarded-Proto are set automatically by Caddy's reverse_proxy
+        # header_up X-Forwarded-For {remote}
+        # header_up X-Forwarded-Proto {scheme}
     }
     tls wmodes@gmail.com
 }
