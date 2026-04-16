@@ -1,14 +1,14 @@
-# Function to fetch the next track from your API
+# Fetch the next track path from MixEngine API.
+# Returns null() when MixEngine is unreachable so request.dynamic marks
+# the source unavailable and fallback switches to static audio immediately.
 def fetch_next_track()
-    # Using process.read to fetch the next track file path from the API
-    # Fetch the file path from the API and strip out double quotes
-    result = process.read("curl -s http://localhost:8083/api/queue/nextmix")
-    string.trim(result)
+    result = string.trim(process.read("curl -s http://localhost:8083/api/queue/nextmix"))
+    if result != "" then request.create(result)
+    else null()
+    end
 end
 
-dynamicplaylist = request.dynamic(id="dynamic_playlist", fun() ->
-  request.create(fetch_next_track())
-)
+dynamicplaylist = request.dynamic(id="dynamic_playlist", fetch_next_track)
 
 # Apply crossfade to the dynamic playlist
 crossfaded_dynamic = crossfade(dynamicplaylist)
