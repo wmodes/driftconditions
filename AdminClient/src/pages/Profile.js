@@ -85,9 +85,11 @@ function Profile() {
   // Renders the stats column
   function renderStats() {
     const topPlays = audioStats.topPlays || [];
+    const recentPlayed = audioStats.recentPlayed || [];
     const recentPending = audioStats.recentPending || [];
     const hasRecipes = recipeStats.contributed > 0;
     const hasPending = recentPending.length > 0;
+    const hasRecentPlayed = recentPlayed.length > 0;
 
     return (
       <div className="profile-stats">
@@ -139,6 +141,26 @@ function Profile() {
           </ul>
         ) : (
           <p className="stat-empty">No plays yet.</p>
+        )}
+
+        {hasRecentPlayed && (
+          <>
+            <hr />
+            <h3>Recently Played Audio</h3>
+            <ul className="stat-list">
+              {recentPlayed.map((clip) => (
+                <li key={clip.audioID}>
+                  <span className="clip-title" title={clip.title}>
+                    {canSeeDetails
+                      ? <Link to={`/audio/view/${clip.audioID}`}>{clip.title}</Link>
+                      : clip.title
+                    }
+                  </span>
+                  <span className="clip-count">{formatDate(clip.lastUsed)}</span>
+                </li>
+              ))}
+            </ul>
+          </>
         )}
 
         {hasPending && (

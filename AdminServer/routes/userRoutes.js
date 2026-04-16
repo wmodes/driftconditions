@@ -436,6 +436,14 @@ async function getProfileStats(userID, canViewExtras) {
     recentPending = rows;
   }
 
+  // Recently played audio (most recent 3 by lastUsed)
+  const [recentPlayed] = await db.query(
+    `SELECT audioID, title, lastUsed
+     FROM audio WHERE creatorID = ? AND lastUsed IS NOT NULL
+     ORDER BY lastUsed DESC LIMIT 3`,
+    [userID]
+  );
+
   return {
     general: {
       lastContributed: audioRow.lastContributed || null,
@@ -445,6 +453,7 @@ async function getProfileStats(userID, canViewExtras) {
       totalPlays: parseInt(audioRow.totalPlays, 10) || 0,
       ...(canViewExtras && { pending: audioRow.pending || 0 }),
       topPlays,
+      recentPlayed,
       ...(canViewExtras && { recentPending }),
     },
     recipes: {
