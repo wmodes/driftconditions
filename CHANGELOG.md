@@ -9,6 +9,13 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-04-16] (14)
+
+### Added
+- **Recently Played Audio** section on profile stats — shows the 3 most recently played clips (by `lastUsed`) for the user. Links to audio detail view for users with `audioView` permission. Section is hidden when no clips have been played.
+
+---
+
 ## [2026-04-16] (13)
 
 ### Fixed
