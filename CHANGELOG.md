@@ -9,6 +9,16 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-04-16] (13)
+
+### Fixed
+- **Liquidsoap fallback to shortwave static when MixEngine is down** — two bugs prevented the fallback from working:
+  - `liquidsoap.service` used `Requires=mixengine.service` (hard dependency), causing systemd to kill Liquidsoap the instant MixEngine stopped. Changed to `Wants=` (soft dependency) so Liquidsoap stays up independently.
+  - `fetch_next_track()` always returned a `request.create(...)` call, even on curl failure (empty string). `request.dynamic` retried indefinitely rather than becoming unavailable, so `fallback()` never triggered. Fixed by returning `null()` on empty result, which marks the source unavailable and switches fallback to static.
+  - Result: when MixEngine goes down, Liquidsoap plays out the current mix, then crossfades smoothly into looping shortwave static. When MixEngine recovers, it crossfades back seamlessly.
+
+---
+
 ## [2026-04-15] (12)
 
 ### Fixed
