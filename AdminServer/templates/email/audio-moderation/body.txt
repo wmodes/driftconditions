@@ -1,0 +1,17 @@
+Hey {{firstname}},
+
+{{#if approved}}
+Good news — your submission "{{clipTitle}}" has been approved and is now part of the pool of audio that may be used in the stream.
+{{else}}
+Your submission "{{clipTitle}}" was not approved at this time.
+{{/if}}
+{{#if notes}}
+Notes on your submission:
+
+  {{notes}}
+
+{{/if}}
+You can see all your contributions and any waiting for approval on your profile page:
+  {{siteUrl}}/profile/{{username}}
+
+— The {{siteName}} Team

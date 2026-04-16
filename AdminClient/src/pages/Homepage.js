@@ -5,15 +5,17 @@ import { useOutletContext, Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import FeatherIcon from 'feather-icons-react';
 import Playlist from '../components/Playlist';
-import { 
-  generateRandomTexts, getHeroImageURL, getLocation 
-} from '../utils/randomUtils'; 
+import {
+  generateRandomTexts, getHeroImageURL, getLocation
+} from '../utils/randomUtils';
+import brand from '../brand/brand';
 
 const Homepage = () => {
-  const [playlist, setPlaylist] = useState([]); 
+  const [playlist, setPlaylist] = useState([]);
   const [generatedText, setGeneratedText] = useState([]);
-  
-  const projectName = 'DriftConditions';
+
+  const projectName = brand.name;
+  const contactEmail = brand.email.contact;
   const location = getLocation();
 
   const { togglePlayer, isPlaying } = useOutletContext();
@@ -77,12 +79,12 @@ const Homepage = () => {
                 <p>
                   You have audio you think would fit {projectName}? <Link  className="link" to="/signup">Signup for an account,</Link> and then{' '}
                   <a className="link" target="_blank" rel="noopener noreferrer"
-                    href={`mailto:info@driftconditions.org?subject=Please%20promote%20me%20to%20a%20contributor${user?.username ? `&body=My%20user%20name%20is%20${encodeURIComponent(user.username)}` : ''}`}>
+                    href={`mailto:${contactEmail}?subject=Please%20promote%20me%20to%20a%20contributor${user?.username ? `&body=My%20user%20name%20is%20${encodeURIComponent(user.username)}` : ''}`}>
                     hit us up
                   </a>.
                 </p>
                 <p className="contact">
-                  Need to reach us for some other reason? <a className="link" href="mailto:info@driftconditions.org" target="_blank" rel="noopener noreferrer">Okay.</a>
+                  Need to reach us for some other reason? <a className="link" href={`mailto:${contactEmail}`} target="_blank" rel="noopener noreferrer">Okay.</a>
                 </p>
               </div>
             </div> {/* end narrative-wrapper */}

@@ -1,0 +1,19 @@
+Hey {{firstname}},
+
+You've been promoted to moderator on {{siteName}}. Thank you for taking on this responsibility.
+
+As a moderator, you can review and approve or reject audio submissions from contributors. When you review a submission, you can leave notes for the contributor explaining your decision — they'll get an email with your feedback.
+
+A few things to keep in mind:
+
+  - Approve audio that fits the vibe — strange, atmospheric, interesting, or beautiful
+  - Reject with kindness — a note explaining what didn't work goes a long way
+  - When in doubt, ask
+
+If you have questions, don't hesitate to reach out.
+
+— Wes
+
+P.S. Here's a reminder of our contributor pro-tips, in case it's helpful as you review submissions:
+
+{{> contributor-tips-txt}}

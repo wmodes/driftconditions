@@ -89,10 +89,10 @@ export const checkPageAuth = createAsyncThunk(
 );
 
 // Initial state for the auth slice, setting up default values for user authentication status.
-const initialState = {  
+const initialState = {
   // token: null,
   // userID: null,
-  user: {},
+  user: { permissions: [] },
   loading: false,
   error: null,
   authChecked: false,
@@ -145,8 +145,8 @@ export const authSlice = createSlice({
       .addCase(logout.fulfilled, (state) => {
         state.loading = false;
         state.error = null;
-        state.user = null; // Reset the user object upon successful logout
-        state.authChecked = false; // Reset authChecked to false
+        state.user = null;
+        state.authChecked = false;
       })
       .addCase(logout.rejected, (state, action) => {
         state.loading = false;
@@ -158,7 +158,6 @@ export const authSlice = createSlice({
         // console.log('Authentication check successful:', action.payload);
       })
       .addCase(checkPageAuth.rejected, (state, action) => {
-        // Handle rejected state. You might set an error state or flag the user as not authenticated
         console.error('Authentication check failed:', action.payload);
       });
   }

@@ -9,6 +9,157 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-04-15] (12)
+
+### Fixed
+- **Auth redirect for unauthenticated users** — visiting a protected URL while not logged in now redirects to `/signin?next=<url>` instead of crashing or showing the page blank. After login, the user is forwarded to the originally requested URL.
+  - `authUtils.js` — fixed `result.data?.error` path (was `result.error`, always undefined); added `?next=` param to redirect; distinguished unauthenticated (`not_authorized` + no `userID`) from unauthorized (`not_authorized` + `userID` present) — former goes to `/signin`, latter to `/notauth`.
+  - `Signin.js` — after successful login, reads `?next=` query param and navigates to it before falling back to profile redirect.
+  - `authSlice.js` — `initialState.user` changed to `{ permissions: [] }` to prevent "Cannot read properties of undefined (reading 'permissions')" crash on cold page load before auth check completes.
+  - `RootLayout.js` — added second render guard (`!isPublicPage && !user?.userID`) to hold render until redirect fires, preventing flash of protected content.
+  - `AudioView.js` — added `useAuthCheckAndNavigate('audioView')` and guarded `permissions` access with null check.
+
+---
+
+## [2026-04-15] (11)
+
+### Added
+- **`hasSentToday(userID, commType)`** — hard safety gate in `digestRunner.js` using `createdAt >= CURDATE()`. Checked at the top of each per-user loop before any other logic; prevents double-sends regardless of schedule, missed-send, or other conditions.
+- **`hasNewEvents(userID)`** — checks `userComms` for unsent `audio_approved` / `audio_disapproved` events for a user. Used by daily-digest `isScheduledToday`.
+
+### Changed
+- **Daily digest now event-driven with monthly fallback** — `isScheduledToday` for the daily schedule is now `async (user) => await hasNewEvents(user.userID) || isNthWeekdayOfMonth()`. Fires when there are new events to report OR on the configured day of the month; stays silent otherwise. Prevents empty daily emails for mods/admins with no recent activity.
+- **Role-based digest frequency defaults updated** — `mod` and `admin` default to `'daily'` (was `'weekly'`). Full table: `user → yearly`, `contributor → monthly`, `editor → weekly`, `mod → daily`, `admin → daily`.
+- **`user-reminder` schedule `windowDays` set to `null`** — removes missed-send fallback window that was triggering a blast to all users on first run (since none had a prior sentinel). Anniversary window alone is sufficient gating.
+- **ProfileEdit digest frequency dropdown** — added `Yearly` option; default display value set to `'yearly'` if `digestFrequency` is unset.
+
+### DB migrations required
+```sql
+-- Update mod and admin digest defaults to daily
+UPDATE users SET digestFrequency = 'daily' WHERE roleName IN ('mod', 'admin') AND digestFrequency = 'weekly';
+```
+
+---
+
+## [2026-04-14] (10)
+
+### Added
+- **`setupfiles/digest.service`** — systemd oneshot service that runs `scripts/run-digest.js` as `debian` user from `AdminServer/` working directory.
+- **`setupfiles/digest.timer`** — systemd timer that fires `digest.service` daily at 14:00 UTC (9 AM Eastern). `Persistent=true` catches any runs missed during server downtime. Link both into `/etc/systemd/system/` and enable with `systemctl enable --now digest.timer`.
+
+---
+
+## [2026-04-14] (9)
+
+### Added
+- **`user-reminder` template** — yearly anniversary nudge for users who haven't become contributors. Wes voice; brief evocation of the station, repeat of the contributor ask, mailto link pre-populated with subject. Signed `— Wes`.
+- **`user-reminder` schedule entry** wired into digest runner — fires on signup anniversary (±`anniversaryWindowDays`), gated by `hasGottenLastDigest(350)`. `isAnniversaryWindow()`, `getUsersForYearlyNudge()`, `buildUserReminderVars()` all live in `digestRunner.js`.
+
+---
+
+## [2026-04-14] (8)
+
+### Added
+- **`contributor-digest-reminder` template** — sent monthly to contributors who have never submitted audio. Friendly nudge in Wes's voice; links to upload page with a note that the user must be logged in first. Footer has separate "Manage digest preferences" and "Unsubscribe" links.
+- **`config.digest` section** — `weeklyDay` (0–6), `monthlyWeek` (nth occurrence), `anniversaryWindowDays`. Controls cadence without touching code.
+
+### Changed
+- **`digestRunner.js` fully rewritten** — schedule-table architecture replaces ad-hoc logic. Each entry defines cadence, recipient query, var builder, commType sentinel, and missed-send window. Main loop is ~20 lines with no per-schedule special cases.
+  - Five schedules: daily digest, weekly digest, monthly digest, monthly contributor reminder, yearly user reminder (commented out pending `user-reminder` template).
+  - Recipient queries: `getContributorsWithSubmissions(freq)` — any role with audio submissions; `getContributorsWithNoSubmissions()` — contributor role, no submissions ever.
+  - Missed-send fallback: `hasGottenLastDigest(userID, commType, windowDays)` checks `userComms` for a sentinel row within the window. If absent, send fires regardless of day. Prevents gaps when server was down on a scheduled send day.
+  - `logSent(userID, commType)` inserts a sentinel row after each send, gating the missed-send check.
+  - All functions fully JSDoc'd.
+- **Digest footer updated** — both `contributor-digest` templates now have separate "Manage digest preferences" (profile edit link) and "Unsubscribe" (JWT link) in footer. `digestPrefsUrl` added to vars.
+- **`mailer.js` JSDoc'd** — file header converted to `@file` block; `createTransporter` documented.
+- **`TODO.md`** — noted that direct navigation to protected URLs (e.g. `/audio/upload`) without a session causes an error; affects digest reminder email links.
+
+---
+
+## [2026-04-14] (7)
+
+### Added
+- **Contributor digest email system** — `AdminServer/utils/digestRunner.js` groups pending `userComms` events by user, fetches per-user stats (audio contributed, pending, top plays, recent pending, recipes), renders Handlebars templates, sends via `sendTemplate()`, and marks rows `sentAt = NOW()`. Handles both approved and disapproved events. `scripts/run-digest.js` is the entry point (must be run from `AdminServer/` or via `cd AdminServer && node ../scripts/run-digest.js`).
+- **Contributor digest templates** — `AdminServer/templates/email/contributor-digest/` — HTML and plain text versions. Sections: disapprovals (with editor notes in blockquote), approvals, stats (member since, last contributed, total plays, audio counts, recipes if any, top plays, waiting for approval). Signed JWT unsubscribe link in footer.
+- **Unsubscribe route** — `GET /api/user/unsubscribe?token=...` verifies signed JWT (purpose: `unsubscribe`), sets `digestFrequency = 'nodigest'`, returns HTML confirmation page.
+- **Digest frequency selector on ProfileEdit** — dropdown (Daily / Weekly / Monthly / None) with explanatory note. Exposed via `digestFrequency` in `getAllowedFields` for both `extended` and `self` cases.
+- **Role-based digest frequency defaults** — new users get `digestFrequency = 'yearly'` at signup (both regular and OAuth). On role change, digest frequency auto-updates to the new role's default (`contributor → 'monthly'`, `editor/mod/admin → 'weekly'`) but only if the user hasn't customized it (i.e. it still matches the previous role's default).
+
+### Changed
+- **Moderation notes only sent on disapproval** — `audioRoutes.js` now passes `notes: ''` for approved clips; disapproved clips include `record.comments` as notes. Prevents track metadata comments (e.g. "from freemusicarchive.org") from appearing as editor feedback in approval emails.
+- **`userComms` queues both approved and disapproved events** — previously only `audio_approved` was queued; `audio_disapproved` now also queued with notes in payload.
+- **Digest frequency values updated** — values are now `nodigest`, `daily`, `weekly`, `monthly`, `yearly` (was `nodigest`, `daily`, `weekly`, `monthly`). `nodigest` routes to immediate individual email; others batch to digest.
+
+### DB migrations required
+```sql
+-- Migrate existing users to role-based digest defaults (run on local and prod)
+UPDATE users SET digestFrequency = 'yearly'  WHERE roleName = 'user'                    AND digestFrequency = 'daily';
+UPDATE users SET digestFrequency = 'monthly' WHERE roleName = 'contributor'             AND digestFrequency = 'daily';
+UPDATE users SET digestFrequency = 'weekly'  WHERE roleName IN ('editor','mod','admin') AND digestFrequency = 'daily';
+-- Also update the column default
+ALTER TABLE users MODIFY COLUMN digestFrequency VARCHAR(16) DEFAULT 'yearly';
+```
+
+---
+
+## [2026-04-14] (6)
+
+### Added
+- **Contributor digest scaffolding** — `userComms` table created (commID, userID, commType, payload JSON, createdAt, sentAt). `digestFrequency VARCHAR(16) DEFAULT 'weekly'` added to `users` table (values: `weekly`, `monthly`, `none`).
+- **Digest event queuing** — `audioRoutes.js /audio/update` now inserts an `audio_approved` event into `userComms` whenever a clip is approved, independent of the notify checkbox. Basis for future periodic digest emails.
+
+### Changed
+- **Audio moderation notifications overhauled** — "Notify contributor" checkbox moved inline with Status on both AudioEdit and AudioList quick edit. Checkbox defaults to checked but is grayed out (label color `#999`, input disabled) until status is changed to Approved or Disapproved, matching the "Notify user" pattern on UserList.
+- **Moderation notes field removed** — separate `moderationNotes` textarea removed from AudioEdit. Notes to include in the notification email now go in the regular Comments field, which is saved to the DB and passed to the email template. Instructional note ("Approval/Disapproval notes go in comments below, sent to contributor") shown below the Status row.
+- **`audioRoutes.js`** — moderation email now uses `record.comments` for the notes field (was `record.moderationNotes`).
+- **AudioList quick edit layout** — Classification and Tags moved to their own row below Status/Notify, making room for the notify checkbox and note on the status row.
+
+---
+
+## [2026-04-14] (5)
+
+### Added
+- **react-helmet-async** — `<Helmet>` in `RootLayout.js` sets page title, meta description, and OG/Twitter social card tags at runtime from `brand.js`. `HelmetProvider` wraps the app in `index.js`.
+
+### Changed
+- **`index.html` stripped to minimal shell** — hardcoded title, description, and all OG/Twitter meta tags removed; comment left explaining they're set at runtime by Helmet. Do not add brand values here.
+
+---
+
+## [2026-04-14] (4)
+
+### Changed
+- **Tailwind `cornflower` color removed** (`tailwind.config.js`) — was unused in JS; brand colors are fully owned by `brand.css` via CSS variables. Stale `/* bg-cornflower */` comments cleaned from `index.css`.
+
+### Removed
+- `AdminClient/src/App.js`, `App.test.js`, `index-broken.js` — dead code, never imported by the running app.
+
+---
+
+## [2026-04-14] (3)
+
+### Added
+- **Email template system** (`AdminServer/utils/mailer.js`, `AdminServer/templates/email/`) — Handlebars-based email templates with shared layout (`layout.html`/`layout.txt`) and partials. `sendTemplate()` helper compiles inner template, wraps in layout, and calls `sendMail()`. Brand globals (`siteName`, `siteUrl`) injected automatically.
+- **Email templates** — welcome (auto on signup, from `wes@`), password-reset (extracted from inline HTML), role-change-contributor (with tips), role-change-editor, role-change-mod, audio-moderation (approved/rejected with optional notes), contributor-digest (stub).
+- **Contributor tips partial** — `partials/contributor-tips-html.html` and `contributor-tips-txt.txt`; used in contributor promotion and as P.S. in editor/mod emails.
+- **Welcome email** — sent automatically on signup; written in Wes's voice; includes mailto link pre-populated with subject `{{username}} wants to be a contributor to DriftConditions`.
+- **Role-change notifications** — `userRoutes.js /profile/edit` sends appropriate role-change template when `roleName` changes and `notifyUser` is true. UI: "Notify user" checkbox (default checked, grayed out until role changes) on User List quick edit and ProfileEdit, placed inline with the Role field.
+- **Audio moderation notifications** — `audioRoutes.js /audio/update` sends `audio-moderation` template when status changes to Approved/Disapproved and `notifyContributor` is true. UI: "Notify contributor" checkbox (default checked) and notes textarea shown conditionally on AudioEdit when status is Approved or Disapproved.
+
+### Fixed
+- Plain text email templates now compiled with `noEscape: true` to prevent Handlebars HTML-encoding apostrophes (e.g. `didn&#x27;t` → `didn't`).
+
+---
+
+## [2026-04-14] (2)
+
+### Added
+- **Brand abstraction layer** — `config/brand.js` is now the single source of truth for site identity (name, tagline, descriptions, site URL, OG image, email addresses). Symlinked into `AdminClient/src/brand/brand.js` for frontend access within CRA's `src/` boundary.
+- **`brand.css`** (`AdminClient/src/brand/brand.css`) — CSS-specific brand values (colors, nav, links, avatars) extracted from `index.css` into their own file. Imported before `index.css` so brand identity is clearly separated from layout/UI variables.
+- **`mailer.js` brand-driven FROM addresses** — hardcoded `FROM_ADDRESS` replaced with `FROM.noreply`, `FROM.welcome`, and `FROM.contact`, all sourced from `brand.js`. Callers may pass `from` to `sendMail()`; defaults to `FROM.noreply`.
+
+---
+
 ## [2026-04-14]
 
 ### Fixed

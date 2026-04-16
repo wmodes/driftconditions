@@ -1,13 +1,31 @@
 // Quick mailer utility test — run with: node tests/test-email.js
-const { sendMail } = require('../utils/mailer');
+const { sendTemplate, FROM } = require('../utils/mailer');
 
 async function main() {
-  await sendMail({
-    to: 'test@example.com',
-    subject: 'Reset your DriftConditions password',
-    text: 'Click here to reset your password: https://driftconditions.org/reset-password?token=abc123\n\nThis link expires in 1 hour.\n\nIf you did not request a password reset, you can safely ignore this email.',
-    html: '<p>Click here to reset your password: <a href="https://driftconditions.org/reset-password?token=abc123">Reset password</a></p><p>This link expires in 1 hour.</p><p>If you did not request a password reset, you can safely ignore this email.</p>',
-  });
+  const user = { firstname: 'Wes', username: 'wmodes', to: 'test@example.com' };
+
+  await sendTemplate('role-change-contributor', {
+    firstname: user.firstname,
+    username: user.username,
+  }, { to: user.to, from: FROM.welcome });
+
+  await sendTemplate('audio-moderation', {
+    firstname: user.firstname,
+    username: user.username,
+    clipTitle: 'Rain on a tin roof',
+    action: 'approved',
+    approved: true,
+    notes: '',
+  }, { to: user.to, from: FROM.noreply });
+
+  await sendTemplate('audio-moderation', {
+    firstname: user.firstname,
+    username: user.username,
+    clipTitle: 'My podcast episode',
+    action: 'rejected',
+    approved: false,
+    notes: 'This one is a bit too polished for the station. We tend toward rougher, more incidental sounds. Feel free to submit something else.',
+  }, { to: user.to, from: FROM.noreply });
 }
 
 main().catch(console.error);

@@ -15,6 +15,7 @@ const { database: db } = require('config');
 // authentication imports
 const jwt = require('jsonwebtoken');
 const verifyToken = require('../middleware/authMiddleware');
+const { sendTemplate, FROM } = require('../utils/mailer');
 
 // audio and file management imports
 const multer = require('multer');
@@ -336,6 +337,45 @@ router.post('/update', verifyToken, async (req, res) => {
       return res.status(404).json({ error: { message: 'Audio not found or no update was made.' } });
     }
     res.status(200).send({ message: 'Audio updated successfully' });
+
+    // Post-response: queue digest event or send immediate moderation notice
+    const notifyContributor = record.notifyContributor;
+    const isApproved = status === 'Approved';
+    const isDisapproved = status === 'Disapproved';
+    const isModAction = isApproved || isDisapproved;
+
+    if (notifyContributor && isModAction) {
+      const [rows] = await db.query(
+        `SELECT u.userID, u.firstname, u.username, u.email, u.digestFrequency, a.title
+         FROM audio a JOIN users u ON u.userID = a.creatorID
+         WHERE a.audioID = ? LIMIT 1`,
+        [audioID]
+      );
+      if (rows.length > 0) {
+        const { userID: creatorID, firstname, username, email, digestFrequency, title } = rows[0];
+
+        if (digestFrequency === 'nodigest') {
+          // Contributor wants individual emails — send immediately
+          sendTemplate('audio-moderation', {
+            firstname: firstname || username,
+            username,
+            clipTitle: title,
+            action: isApproved ? 'approved' : 'rejected',
+            approved: isApproved,
+            notes: isApproved ? '' : (record.comments || ''),
+          }, { to: email, from: FROM.noreply }).catch((err) => {
+            logger.error(`audioRoutes:/update: moderation email failed for ${username}: ${err.message}`);
+          });
+        } else {
+          // Contributor uses digest — queue the event for batch delivery
+          const commType = isApproved ? 'audio_approved' : 'audio_disapproved';
+          db.query(
+            `INSERT INTO userComms (userID, commType, payload) VALUES (?, ?, ?)`,
+            [creatorID, commType, JSON.stringify({ audioID, title, notes: isApproved ? '' : (record.comments || '') })]
+          ).catch((err) => logger.error(`audioRoutes:/update: userComms insert failed: ${err.message}`));
+        }
+      }
+    }
   } catch (error) {
     logger.error(`audioRoutes:/update: Server error during audio update: ${error}`);
     res.status(500).json({ error: { message: 'Server error. Try again later.' } });

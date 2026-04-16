@@ -1,0 +1,27 @@
+/*
+ * brand.css — CSS-specific brand values for DriftConditions.
+ *
+ * This is the single source of truth for brand colors and visual identity.
+ * For non-CSS brand values (site name, URLs, email addresses), see:
+ *   config/brand.js (backend) / src/brand/brand.js (frontend symlink)
+ *
+ * All other UI variables (layout, typography, table colors, etc.) live in
+ * index.css. Only brand-identity colors belong here.
+ */
+
+:root {
+  /* Primary brand color — nav background, buttons, key UI elements */
+  --nav-background-color: #336699;
+  --button-submit-background-color: #336699;
+
+  /* Accent / link color */
+  --link-color: #135394;
+
+  /* Text on brand-colored backgrounds */
+  --nav-text-color: #fff;
+  --logo-color: #fff;
+
+  /* Avatar — light tint of primary brand color */
+  --avatar-background-color: #9fbfdf;
+  --avatar-color: white;
+}

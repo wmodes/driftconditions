@@ -1,7 +1,7 @@
 [Unit]
 Description=Liquidsoap Streaming Service
 After=network.target mixengine.service
-Requires=mixengine.service
+Wants=mixengine.service
 
 [Service]
 User=liquidsoap

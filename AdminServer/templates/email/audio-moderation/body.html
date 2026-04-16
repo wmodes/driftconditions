@@ -1,0 +1,18 @@
+<p>Hey {{firstname}},</p>
+
+{{#if approved}}
+<p>Good news — your submission <strong>{{clipTitle}}</strong> has been approved and is now part of the pool of audio that may be used in the stream.</p>
+{{else}}
+<p>Your submission <strong>{{clipTitle}}</strong> was not approved at this time.</p>
+{{/if}}
+
+{{#if notes}}
+<p><strong>Notes on your submission:</strong></p>
+<blockquote style="border-left:3px solid #336699;margin:0;padding:0.5em 1em;color:#444">
+  {{notes}}
+</blockquote>
+{{/if}}
+
+<p>You can see all your contributions and any waiting for approval on <a href="{{siteUrl}}/profile/{{username}}">your profile page</a>.</p>
+
+<p>— The {{siteName}} Team</p>

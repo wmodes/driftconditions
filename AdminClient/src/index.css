@@ -7,14 +7,11 @@
   font-display: block;
 }
 
+/* Brand colors (--nav-background-color, --link-color, etc.) live in brand/brand.css */
+
 :root {
   --body-color: #f5f5f5;
   --default-text-color: #222;
-  --link-color: #135394;
-  --logo-color: #fff;
-
-  --nav-background-color: #336699;
-  --nav-text-color: #fff;
 
   --content-box-color: #E5E7EB;
   --content-box-border-color: #ccc;
@@ -32,16 +29,12 @@
 
   --button-cancel-background-color: #9CA3AF;
   --button-cancel-text-color: #fff;
-  --button-submit-background-color: #336699;
   --button-submit-text-color: #fff;
   --button-disabled-background-color: #cccccc;
   --button-disabled-text-color: #666666;
   --button-form-background-color: #849FBA;
   --button-form-reset-background-color: #BA8884;
   --button-form-text-color: white;
-
-  --avatar-background-color: #9fbfdf;
-  --avatar-color: white;
 
   --editor-string-color: rgb(68, 127, 68);
   --editor-track-color: rgb(204, 27, 27);
@@ -91,8 +84,7 @@ svg {
   padding-left: 7rem; /* px-28 */
   padding-right: 7rem; /* px-28 */
   margin-bottom: 0.25rem; /* mb-1 */
-  background-color: var(--nav-background-color); /* bg-cornflower */
-}
+  background-color: var(--nav-background-color);}
 
 @media (max-width: 695px){
   .navbar {
@@ -138,8 +130,7 @@ svg {
   position: absolute; /* absolute */
   right: 0; /* right-0 */
   width: 14rem; /* w-48 */
-  background-color: var(--nav-background-color); /* bg-cornflower */
-  color: var(--nav-text-color); /* text-white */
+  background-color: var(--nav-background-color);  color: var(--nav-text-color); /* text-white */
   z-index: 100;
 }
 
@@ -1350,8 +1341,7 @@ button:not(.link,.icon,.search-clear) {
 }
 
 .button.submit {
-  background-color: var(--button-submit-background-color); /* bg-cornflower */
-  color: var(--button-submit-text-color); /* text-white */
+  background-color: var(--button-submit-background-color);  color: var(--button-submit-text-color); /* text-white */
 }
 
 button.submit:disabled {

@@ -1,0 +1,80 @@
+<p>Hey {{firstname}},</p>
+
+<p>Here's your periodic update from <a href="{{siteUrl}}">{{siteName}}</a> — a summary of what's happened with your submissions and where things stand. We appreciate your contributions; they're what makes the stream interesting.</p>
+
+{{#if hasDisapproved}}
+<h3 style="margin: 1.5em 0 0.25em; color: #555; font-size: 1em; text-transform: uppercase; letter-spacing: 0.05em;">Didn't Make It This Time</h3>
+<p style="margin: 0 0 0.75em; font-size: 0.9em; color: #666;">These submissions weren't approved. Notes on the submission are included below. Feel free to reply if you have questions.</p>
+{{#each disapproved}}
+<div style="margin: 0 0 0.75em;">
+  <a href="{{../siteUrl}}/audio/view/{{audioID}}" style="color: #135394;">{{title}}</a>
+  {{#if notes}}
+  <blockquote style="border-left: 3px solid #ccc; margin: 0.25em 0 0; padding: 0.3em 0.75em; color: #666; font-size: 0.9em;">{{notes}}</blockquote>
+  {{/if}}
+</div>
+{{/each}}
+{{/if}}
+
+{{#if hasApproved}}
+<h3 style="margin: 1.5em 0 0.25em; color: #336699; font-size: 1em; text-transform: uppercase; letter-spacing: 0.05em;">Approved — Now in the Stream!</h3>
+<p style="margin: 0 0 0.75em; font-size: 0.9em; color: #666;">These clips are now part of the {{siteName}} mix and may play at any time.</p>
+{{#each approved}}
+<div style="margin: 0 0 0.35em;">
+  <a href="{{../siteUrl}}/audio/view/{{audioID}}" style="color: #135394;">{{title}}</a>
+</div>
+{{/each}}
+{{/if}}
+
+<h3 style="margin: 1.5em 0 0.5em; color: #555; font-size: 1em; text-transform: uppercase; letter-spacing: 0.05em;">Your Stats</h3>
+
+<table style="border-collapse: collapse; font-size: 0.9em; color: #444; margin-bottom: 1em;">
+  <tr><td style="padding: 0.15em 1.5em 0.15em 0; color: #888;">Member since</td><td>{{memberSince}}</td></tr>
+  {{#if lastContributed}}<tr><td style="padding: 0.15em 1.5em 0.15em 0; color: #888;">Last contributed</td><td>{{lastContributed}}</td></tr>{{/if}}
+  <tr><td style="padding: 0.15em 1.5em 0.15em 0; color: #888;">Total plays</td><td>{{totalPlays}}</td></tr>
+</table>
+
+<strong style="font-size: 0.9em; color: #555;">Audio</strong>
+<table style="border-collapse: collapse; font-size: 0.9em; color: #444; margin: 0.25em 0 1em;">
+  <tr><td style="padding: 0.15em 1.5em 0.15em 0; color: #888;">Contributed</td><td>{{audioContributed}}</td></tr>
+  <tr><td style="padding: 0.15em 1.5em 0.15em 0; color: #888;">Waiting for approval</td><td>{{audioPending}}</td></tr>
+</table>
+
+{{#if hasRecipes}}
+<strong style="font-size: 0.9em; color: #555;">Recipes</strong>
+<table style="border-collapse: collapse; font-size: 0.9em; color: #444; margin: 0.25em 0 1em;">
+  <tr><td style="padding: 0.15em 1.5em 0.15em 0; color: #888;">Contributed</td><td>{{recipesContributed}}</td></tr>
+  <tr><td style="padding: 0.15em 1.5em 0.15em 0; color: #888;">Waiting for approval</td><td>{{recipesPending}}</td></tr>
+</table>
+{{/if}}
+
+{{#if hasTopPlays}}
+<strong style="font-size: 0.9em; color: #555;">Top Played Audio</strong>
+<table style="border-collapse: collapse; font-size: 0.9em; color: #444; margin: 0.25em 0 1em;">
+  {{#each topPlays}}
+  <tr>
+    <td style="padding: 0.15em 1em 0.15em 0;"><a href="{{../siteUrl}}/audio/view/{{audioID}}" style="color: #135394;">{{title}}</a></td>
+    <td style="color: #888;">{{timesUsed}}</td>
+  </tr>
+  {{/each}}
+</table>
+{{/if}}
+
+{{#if hasRecentPending}}
+<strong style="font-size: 0.9em; color: #555;">Waiting for Approval</strong>
+<table style="border-collapse: collapse; font-size: 0.9em; color: #444; margin: 0.25em 0 1em;">
+  {{#each recentPending}}
+  <tr>
+    <td style="padding: 0.15em 1em 0.15em 0;"><a href="{{../siteUrl}}/audio/view/{{audioID}}" style="color: #135394;">{{title}}</a></td>
+    <td style="color: #888;">{{date}}</td>
+  </tr>
+  {{/each}}
+</table>
+{{/if}}
+
+<p>You can see your full profile and contribution history at <a href="{{siteUrl}}/profile/{{username}}">{{siteUrl}}/profile/{{username}}</a>.</p>
+
+<p>If you have any questions, don't hesitate to reach out.</p>
+
+<p>— The {{siteName}} Team</p>
+
+<p style="margin-top: 2em; font-size: 0.8em; color: #aaa;">You're receiving this because you're a contributor to {{siteName}}. <a href="{{digestPrefsUrl}}" style="color: #aaa;">Manage digest preferences</a> · <a href="{{unsubscribeUrl}}" style="color: #aaa;">Unsubscribe</a>.</p>

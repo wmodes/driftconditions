@@ -1,0 +1,19 @@
+Hey {{firstname}},
+
+The material you've been submitting has been spot-on. You've earned a promotion to editor on {{siteName}}.
+
+You'll notice a few new options in the menu:
+
+  - List All Audio
+  - Edit Audio
+  - Submit Batch Audio
+
+You'll also be able to self-approve your own submissions when you submit them.
+
+Use your new powers wisely. If you have questions, don't be afraid to ask.
+
+— Wes
+
+P.S. Here's a reminder of our contributor pro-tips, in case it's helpful as you review submissions:
+
+{{> contributor-tips-txt}}

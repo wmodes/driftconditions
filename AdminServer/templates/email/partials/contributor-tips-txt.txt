@@ -1,0 +1,29 @@
+A FEW TIPS TO GET YOU STARTED
+------------------------------
+
+Use simple, meaningful titles that credit the original source. These titles will appear in the playlist.
+
+Classification
+Classifications are broad categories that describe the type of audio. Pro-tip: use as few as applicable.
+
+  Ambient        — drone, ambient music, longer static audio, minimalist music
+  Atmospheric    — field recordings, found sounds, city ambiance, crowd noise
+  Environmental  — natural sounds: thunder, bird calls, rainfall, ocean waves
+  Premixed       — already assembled mixes: radio excerpts, mixed music tracks
+  Soundscape     — complex audio environments, theatrical sound design
+  Archival       — historical recordings: old radio, speeches, old TV shows
+  Spoken Word    — talks, poetry readings, speeches, interviews
+  Narrative      — radio dramas, storytelling, narrative podcasts
+  Instructional  — language lessons, how-to guides, training programs
+  Vocal Music    — music featuring vocals
+  Instrumental   — classical, instrumental jazz, ambient instrumental
+  Experimental   — noise music, sound experiments, unconventional audio
+  Digital        — synthesizer music, electronic beats, computer-generated
+  Effect         — short clips for layering: sound effects, stingers, transitions
+  Other          — unique or rare audio that doesn't fit elsewhere
+
+Tags
+Tags describe the topic, theme, or texture — things like "rainy night", "jazz", or "whispering". Use as many simple tags as you can think of, separated by commas. Rather than compound tags like "1950s-educational-film", use simple ones like "1950s, educational, instructional". The system handles plurals automatically.
+
+A word about copyright
+We think copyright is too often a way of locking in corporate profits, but we do want to show respect for other artists. Good sources include recordings in the public domain (archive.org), Creative Commons (freemusicarchive.org), public performances captured by spectators, and recordings so obscure that the crime of using them is offset by the opportunity that someone actually gets to hear them.

@@ -9,6 +9,7 @@ import FeatherIcon from 'feather-icons-react';
 // unsavedChanges: global state, listeners, and handlers
 // import { setUnsavedChanges } from '../store/formSlice';
 import { SafeLink, useSafeNavigate } from '../utils/formUtils';
+import brand from '../brand/brand';
 
 export default function Navigation() {
   const user = useSelector((state) => state.auth.user);
@@ -17,7 +18,7 @@ export default function Navigation() {
   // const navigate = useNavigate();
   const navigate = useSafeNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const projectName = 'DriftConditions';
+  const projectName = brand.name;
 
   const handleLogout = async () => {
     await dispatch(logout());
