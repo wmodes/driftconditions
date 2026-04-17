@@ -489,7 +489,7 @@ async function runDigest() {
 
         if (sentToday(lastSent) || sentWithinFreqWindow(lastSent, schedule.freqDays)) continue;
         if (await schedule.isScheduledToday(user))                reasons.push(schedule.scheduledReason);
-        if (needsFallbackDigest(lastSent, schedule.fallbackDays)) reasons.push(schedule.fallbackReason);
+        else if (needsFallbackDigest(lastSent, schedule.fallbackDays)) reasons.push(schedule.fallbackReason);
         if (!reasons.length) continue;
 
         const { vars, commIDs } = await schedule.buildVars(user);
