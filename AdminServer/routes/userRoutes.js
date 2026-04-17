@@ -20,6 +20,7 @@ const verifyToken = require('../middleware/authMiddleware');
 const { config } = require('config');
 const brand = require('config/brand');
 const { sendTemplate, FROM } = require('../utils/mailer');
+const { logAudit } = require('../utils/audit');
 // pull these out of the config object
 const jwtSecretKey = config.authToken.jwtSecretKey;
 
@@ -205,9 +206,13 @@ router.post('/profile/edit', verifyToken, async (req, res) => {
     // valid db fields
     const validDBFields = ['username', 'email', 'firstname', 'lastname', 'url', 'bio', 'location', 'roleName', 'status', 'digestFrequency'];
 
-    // Fetch current role and digestFrequency before update — needed for auto-adjusting digest default on role change
-    const [currentRows] = await db.query('SELECT roleName, digestFrequency FROM users WHERE userID = ? LIMIT 1', [targetUserID]);
-    const { roleName: currentRole, digestFrequency: currentFreq } = currentRows[0] || {};
+    // Fetch current state before update — used for digest auto-adjust logic and audit before/after diff
+    const [currentRows] = await db.query(
+      'SELECT username, email, roleName, status, digestFrequency FROM users WHERE userID = ? LIMIT 1',
+      [targetUserID]
+    );
+    const currentState = currentRows[0] || {};
+    const { roleName: currentRole, digestFrequency: currentFreq } = currentState;
 
     // Prevent blanking required fields
     if (req.body.username !== undefined && req.body.username.trim() === '') {
@@ -277,6 +282,44 @@ router.post('/profile/edit', verifyToken, async (req, res) => {
       res.status(500).json({ error: { message: 'Error updating user profile.' } });
     } else {
       res.status(200).send({ message: 'Profile updated successfully' });
+
+      // Audit high-value field changes — emit a separate record per change type
+      const actorID = requestingUserInfo.userID;
+      if (req.body.roleName && req.body.roleName !== currentState.roleName) {
+        logAudit({
+          tableName: 'users', recordID: targetUserID, actionType: 'role_change',
+          before: { roleName: currentState.roleName },
+          after:  { roleName: req.body.roleName },
+          actionBy: actorID,
+        });
+      }
+      if (req.body.status && req.body.status !== currentState.status) {
+        logAudit({
+          tableName: 'users', recordID: targetUserID, actionType: 'status_change',
+          before: { status: currentState.status },
+          after:  { status: req.body.status },
+          actionBy: actorID,
+        });
+      }
+      // Group lower-stakes field changes under a single profile_edit record
+      const editedFields = ['username', 'email', 'digestFrequency'].filter(
+        f => req.body[f] !== undefined && req.body[f] !== currentState[f]
+      );
+      if (editedFields.length > 0) {
+        logAudit({
+          tableName: 'users', recordID: targetUserID, actionType: 'profile_edit',
+          before: Object.fromEntries(editedFields.map(f => [f, currentState[f]])),
+          after:  Object.fromEntries(editedFields.map(f => [f, req.body[f]])),
+          actionBy: actorID,
+        });
+      }
+      if (req.body.password) {
+        // Don't log the password value — just that it changed
+        logAudit({
+          tableName: 'users', recordID: targetUserID, actionType: 'password_change',
+          actionBy: actorID,
+        });
+      }
 
       // Send role-change notification if roleName changed and notifyUser is set
       const newRole = req.body.roleName;
@@ -366,6 +409,10 @@ router.post('/disable', verifyToken, async (req, res) => {
     return res.status(400).json({ error: { message: 'User ID is required.' } });
   }
   try {
+    // Fetch current status before disabling — needed for audit before/after diff
+    const [currentRows] = await db.query('SELECT status FROM users WHERE userID = ? LIMIT 1', [userID]);
+    const currentStatus = currentRows[0]?.status || null;
+
     const query = `UPDATE users SET status = 'Disabled' WHERE userID = ?`;
     const values = [userID];
     const [result] = await db.query(query, values);
@@ -373,6 +420,12 @@ router.post('/disable', verifyToken, async (req, res) => {
       return res.status(404).json({ error: { message: 'User not found.' } });
     }
     res.status(200).json({ message: 'User disabled successfully' });
+    logAudit({
+      tableName: 'users', recordID: userID, actionType: 'status_change',
+      before: { status: currentStatus },
+      after:  { status: 'Disabled' },
+      actionBy: requestingUserInfo.userID,
+    });
   } catch (error) {
     logger.error(`userRoutes:/disable: Error disabling user: ${error}`);
     res.status(500).json({ error: { message: 'Server error. Try again later.' } });
