@@ -51,11 +51,18 @@ const isDev = process.env.NODE_ENV !== 'production';
  * Production: local Postfix via sendmail.
  * @returns {Promise<import('nodemailer').Transporter>}
  */
+// Cached transporter — created once per process so all emails in a run share
+// the same Ethereal account (otherwise each send gets a fresh ephemeral account
+// and the preview URLs are unreachable after the call returns).
+let _transporter = null;
+
 async function createTransporter() {
+  if (_transporter) return _transporter;
   if (isDev) {
     // Ethereal fake SMTP — no mail actually sent, preview URL logged to console
     const testAccount = await nodemailer.createTestAccount();
-    return nodemailer.createTransport({
+    logger.info(`mailer: Ethereal test account: ${testAccount.user} — https://ethereal.email`);
+    _transporter = nodemailer.createTransport({
       host: testAccount.smtp.host,
       port: testAccount.smtp.port,
       secure: testAccount.smtp.secure,
@@ -66,12 +73,13 @@ async function createTransporter() {
     });
   } else {
     // Production — send via local Postfix
-    return nodemailer.createTransport({
+    _transporter = nodemailer.createTransport({
       sendmail: true,
       newline: 'unix',
       path: '/usr/sbin/sendmail',
     });
   }
+  return _transporter;
 }
 
 /**
