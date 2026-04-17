@@ -24,6 +24,7 @@ const bcrypt = require('bcrypt-promise');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const { sendMail, sendTemplate, FROM } = require('../utils/mailer');
+const { logAudit } = require('../utils/audit');
 const brand = require('config/brand');
 
 // configuration import
@@ -95,6 +96,12 @@ router.post('/signup', async (req, res) => {
         firstname: firstname,
         lastname: lastname,
         email: email
+      });
+
+      logAudit({
+        tableName: 'users', recordID: result.insertId, actionType: 'user_created',
+        after: { username, email, firstname, lastname, location },
+        // self-registration — actionBy defaults to SYSTEM_USER (nobody)
       });
 
       // Send welcome email — fire and forget; don't let mail failure break signup
@@ -677,6 +684,10 @@ router.post('/reset-password', async (req, res) => {
 
     logger.info(`authRoutes:/reset-password: password reset for userID=${userID}`);
     res.status(200).json({ message: 'Password updated successfully' });
+    logAudit({
+      tableName: 'users', recordID: userID, actionType: 'password_reset',
+      // token-gated self-service — actionBy defaults to SYSTEM_USER (nobody)
+    });
   } catch (err) {
     logger.error(`authRoutes:/reset-password: ${err}`);
     res.status(500).json({ error: { message: 'Server error. Try again later.' } });
