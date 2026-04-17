@@ -45,38 +45,52 @@ const FROM = {
 
 const isDev = process.env.NODE_ENV !== 'production';
 
-// Dev email output directory — written alongside other logs
-const DEV_MAIL_DIR = path.join(__dirname, '../../logs/dev-mail');
-
 /**
- * In development, saves both HTML and plain text versions of an email to disk.
- * Files are written to logs/dev-mail/<timestamp>-<to>.(html|txt).
- * @param {Object} opts
- */
-function saveDevEmail({ to, subject, text, html }) {
-  if (!fs.existsSync(DEV_MAIL_DIR)) fs.mkdirSync(DEV_MAIL_DIR, { recursive: true });
-  const stamp = new Date().toISOString().replace(/[:.]/g, '-');
-  const safe  = to.replace(/[^a-z0-9@._-]/gi, '_');
-  const base  = path.join(DEV_MAIL_DIR, `${stamp}-${safe}`);
-  fs.writeFileSync(`${base}.html`, `<!-- To: ${to} | Subject: ${subject} -->\n${html}`, 'utf8');
-  fs.writeFileSync(`${base}.txt`,  `To: ${to}\nSubject: ${subject}\n\n${text}`, 'utf8');
-  logger.info(`mailer: dev email saved to ${base}.html`);
-}
-
-/**
- * Creates the production nodemailer transporter (Postfix sendmail).
- * In development, email is written to disk instead — no transporter needed.
+ * Creates the appropriate nodemailer transporter based on environment.
+ * Development: Ethereal fake SMTP (no mail actually sent, preview URL logged).
+ * Production: local Postfix via sendmail.
+ *
+ * Transporter is cached per process so all emails in a run share the same
+ * Ethereal account — use a permanent Ethereal account via env vars so messages
+ * persist and preview URLs remain valid after the process exits.
+ *
+ * Set ETHEREAL_USER and ETHEREAL_PASS in .env to use a permanent account.
  * @returns {Promise<import('nodemailer').Transporter>}
  */
 let _transporter = null;
 
 async function createTransporter() {
   if (_transporter) return _transporter;
-  _transporter = nodemailer.createTransport({
-    sendmail: true,
-    newline: 'unix',
-    path: '/usr/sbin/sendmail',
-  });
+  if (isDev) {
+    const user = process.env.ETHEREAL_USER;
+    const pass = process.env.ETHEREAL_PASS;
+    if (user && pass) {
+      // Permanent Ethereal account — messages persist and preview URLs stay valid
+      _transporter = nodemailer.createTransport({
+        host: 'smtp.ethereal.email',
+        port: 587,
+        auth: { user, pass },
+      });
+      logger.info(`mailer: Ethereal account: ${user} — https://ethereal.email`);
+    } else {
+      // Fallback: ephemeral test account (preview URLs expire when process exits)
+      const testAccount = await nodemailer.createTestAccount();
+      logger.info(`mailer: Ethereal test account: ${testAccount.user} — https://ethereal.email`);
+      _transporter = nodemailer.createTransport({
+        host: testAccount.smtp.host,
+        port: testAccount.smtp.port,
+        secure: testAccount.smtp.secure,
+        auth: { user: testAccount.user, pass: testAccount.pass },
+      });
+    }
+  } else {
+    // Production — send via local Postfix
+    _transporter = nodemailer.createTransport({
+      sendmail: true,
+      newline: 'unix',
+      path: '/usr/sbin/sendmail',
+    });
+  }
   return _transporter;
 }
 
@@ -91,15 +105,16 @@ async function createTransporter() {
  *   Use FROM.welcome for personal welcome emails, FROM.contact for enquiries.
  */
 async function sendMail({ to, subject, text, html, from = FROM.noreply }) {
-  if (isDev) {
-    // Development: save to disk instead of sending
-    saveDevEmail({ to, subject, text, html });
-    logger.info(`mailer: (dev) skipped send to ${to} — "${subject}"`);
-    return {};
-  }
-
   const transporter = await createTransporter();
   const info = await transporter.sendMail({ from, to, subject, text, html });
+
+  if (isDev) {
+    const previewUrl = nodemailer.getTestMessageUrl(info);
+    if (previewUrl) {
+      logger.info(`mailer: preview URL: ${previewUrl}`);
+    }
+  }
+
   logger.info(`mailer: sent "${subject}" to ${to} (messageId=${info.messageId})`);
   return info;
 }
