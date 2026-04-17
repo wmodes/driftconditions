@@ -132,12 +132,13 @@ function needsFallbackDigest(lastSent, fallbackDays) {
  * Inserts a sentinel row into userComms recording that a digest/reminder was sent.
  * @param {number} userID
  * @param {string} commType - e.g. 'digest_sent', 'reminder_sent'
+ * @param {object} payload - structured metadata: reason, template, daysSinceLastSend
  * @returns {Promise<void>}
  */
-async function logSent(userID, commType) {
+async function logSent(userID, commType, payload = {}) {
   await db.query(
-    `INSERT INTO userComms (userID, commType, payload) VALUES (?, ?, '{}')`,
-    [userID, commType]
+    `INSERT INTO userComms (userID, commType, payload) VALUES (?, ?, ?)`,
+    [userID, commType, JSON.stringify(payload)]
   );
 }
 
@@ -500,7 +501,11 @@ async function runDigest() {
           );
         }
 
-        await logSent(user.userID, schedule.commType);
+        await logSent(user.userID, schedule.commType, {
+          template:          schedule.template,
+          reason:            scheduledToday ? 'scheduled' : 'fallback',
+          daysSinceLastSend: lastSent ? Math.floor(daysSince(lastSent)) : null,
+        });
         logger.info(`digestRunner: [${schedule.name}] sent to ${user.username}`);
       } catch (err) {
         logger.error(`digestRunner: [${schedule.name}] failed for ${user.username}: ${err.message}`);
