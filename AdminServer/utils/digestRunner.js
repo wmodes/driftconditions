@@ -482,12 +482,15 @@ async function runDigest() {
 
     for (const user of recipients) {
       try {
-        const lastSent = await getLastDigestSent(user.userID, schedule.commType);
-        if (sentToday(lastSent) || sentWithinFreqWindow(lastSent, schedule.freqDays)) continue;
+        const lastSent  = await getLastDigestSent(user.userID, schedule.commType);
+        const dayCount  = lastSent ? Math.floor(daysSince(lastSent)) : null;
+        const sinceText = dayCount !== null ? `${dayCount}d since last send` : 'never sent before';
+        const reasons   = [];
 
-        const scheduledToday = await schedule.isScheduledToday(user);
-        const fallback = needsFallbackDigest(lastSent, schedule.fallbackDays);
-        if (!scheduledToday && !fallback) continue;
+        if (sentToday(lastSent) || sentWithinFreqWindow(lastSent, schedule.freqDays)) continue;
+        if (await schedule.isScheduledToday(user))                reasons.push(schedule.scheduledReason);
+        if (needsFallbackDigest(lastSent, schedule.fallbackDays)) reasons.push(schedule.fallbackReason);
+        if (!reasons.length) continue;
 
         const { vars, commIDs } = await schedule.buildVars(user);
         await sendTemplate(schedule.template, vars, { to: user.email, from: FROM.noreply });
@@ -499,16 +502,11 @@ async function runDigest() {
           );
         }
 
-        const dayCount = lastSent ? Math.floor(daysSince(lastSent)) : null;
-        const sinceText = dayCount !== null ? `${dayCount}d since last send` : 'never sent before';
-        const why = scheduledToday ? schedule.scheduledReason : schedule.fallbackReason;
         await logSent(user.userID, schedule.commType, {
           template:          schedule.template,
-          reason:            scheduledToday ? 'scheduled' : 'fallback',
+          reason:            reasons.join(', '),
           daysSinceLastSend: dayCount,
-          reasonText:        scheduledToday
-                               ? `${schedule.name} expected, ${why}`
-                               : `${schedule.name} expected, ${why} — ${sinceText}`,
+          reasonText:        `${schedule.name} expected, ${reasons.join(', ')} — ${sinceText}`,
         });
         logger.info(`digestRunner: [${schedule.name}] sent to ${user.username}`);
       } catch (err) {
