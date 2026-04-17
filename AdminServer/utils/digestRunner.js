@@ -489,10 +489,13 @@ async function runDigest() {
           );
         }
 
+        const dayCount = lastSent ? Math.floor(daysSince(lastSent)) : null;
+        const sinceText = dayCount !== null ? `${dayCount}d since last send` : 'never sent before';
         await logSent(user.userID, schedule.commType, {
           template:          schedule.template,
           reason:            scheduledToday ? 'scheduled' : 'fallback',
-          daysSinceLastSend: lastSent ? Math.floor(daysSince(lastSent)) : null,
+          daysSinceLastSend: dayCount,
+          reasonText:        scheduledToday ? `${schedule.name}, scheduled` : `${schedule.name}, fallback — ${sinceText}`,
         });
         logger.info(`digestRunner: [${schedule.name}] sent to ${user.username}`);
       } catch (err) {
