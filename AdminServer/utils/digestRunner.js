@@ -137,7 +137,7 @@ function needsFallbackDigest(lastSent, fallbackDays) {
  */
 async function logSent(userID, commType, payload = {}) {
   await db.query(
-    `INSERT INTO userComms (userID, commType, payload) VALUES (?, ?, ?)`,
+    `INSERT INTO userComms (userID, commType, payload, sentAt) VALUES (?, ?, ?, NOW())`,
     [userID, commType, JSON.stringify(payload)]
   );
 }
