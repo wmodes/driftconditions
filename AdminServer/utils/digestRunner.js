@@ -406,6 +406,8 @@ const schedules = [
     commType:         'digest_sent',
     freqDays:         null, // daily: sentToday() is sufficient; no additional freq window
     fallbackDays:     27,   // monthly minimum contact
+    scheduledReason:  'new activity',
+    fallbackReason:   'inactive so fell back to monthly',
     isScheduledToday: async (user) => await hasNewEvents(user.userID),
     getRecipients:    () => getContributorsWithSubmissions('daily'),
     buildVars:        buildDigestVars,
@@ -416,6 +418,8 @@ const schedules = [
     commType:         'digest_sent',
     freqDays:         7,
     fallbackDays:     27,
+    scheduledReason:  'new activity on weekly day',
+    fallbackReason:   'inactive so fell back to monthly',
     isScheduledToday: async (user) => isWeeklyDay() && await hasNewEvents(user.userID),
     getRecipients:    () => getContributorsWithSubmissions('weekly'),
     buildVars:        buildDigestVars,
@@ -426,6 +430,8 @@ const schedules = [
     commType:         'digest_sent',
     freqDays:         27,
     fallbackDays:     27,
+    scheduledReason:  'monthly scheduled day',
+    fallbackReason:   'missed usual day',
     isScheduledToday: () => isNthWeekdayOfMonth(),
     getRecipients:    () => getContributorsWithSubmissions('monthly'),
     buildVars:        buildDigestVars,
@@ -436,6 +442,8 @@ const schedules = [
     commType:         'reminder_sent',
     freqDays:         27,
     fallbackDays:     27,
+    scheduledReason:  'monthly schedule',
+    fallbackReason:   'missed usual day',
     isScheduledToday: () => isNthWeekdayOfMonth(),
     getRecipients:    getContributorsWithNoSubmissions,
     buildVars:        buildReminderVars,
@@ -446,6 +454,8 @@ const schedules = [
     commType:         'user_reminder_sent',
     freqDays:         350,
     fallbackDays:     null, // anniversary window is self-contained; no separate fallback
+    scheduledReason:  'within anniversary window',
+    fallbackReason:   null,
     isScheduledToday: (user) => isAnniversaryWindow(user.addedOn),
     getRecipients:    getUsersForYearlyNudge,
     buildVars:        buildUserReminderVars,
@@ -491,11 +501,14 @@ async function runDigest() {
 
         const dayCount = lastSent ? Math.floor(daysSince(lastSent)) : null;
         const sinceText = dayCount !== null ? `${dayCount}d since last send` : 'never sent before';
+        const why = scheduledToday ? schedule.scheduledReason : schedule.fallbackReason;
         await logSent(user.userID, schedule.commType, {
           template:          schedule.template,
           reason:            scheduledToday ? 'scheduled' : 'fallback',
           daysSinceLastSend: dayCount,
-          reasonText:        scheduledToday ? `${schedule.name}, scheduled` : `${schedule.name}, fallback — ${sinceText}`,
+          reasonText:        scheduledToday
+                               ? `${schedule.name} expected, ${why}`
+                               : `${schedule.name} expected, ${why} — ${sinceText}`,
         });
         logger.info(`digestRunner: [${schedule.name}] sent to ${user.username}`);
       } catch (err) {
