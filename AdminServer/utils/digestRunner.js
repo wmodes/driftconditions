@@ -473,23 +473,11 @@ async function runDigest() {
     for (const user of recipients) {
       try {
         const lastSent = await getLastDigestSent(user.userID, schedule.commType);
-        if (sentToday(lastSent)) {
-          logger.info(`digestRunner: [${schedule.name}] skipping ${user.username} — already sent today`);
-          continue;
-        }
-        if (sentWithinFreqWindow(lastSent, schedule.freqDays)) {
-          logger.info(`digestRunner: [${schedule.name}] skipping ${user.username} — sent ${Math.floor(daysSince(lastSent))}d ago (freqDays=${schedule.freqDays})`);
-          continue;
-        }
+        if (sentToday(lastSent) || sentWithinFreqWindow(lastSent, schedule.freqDays)) continue;
 
         const scheduledToday = await schedule.isScheduledToday(user);
         const fallback = needsFallbackDigest(lastSent, schedule.fallbackDays);
-        if (!scheduledToday && !fallback) {
-          logger.info(`digestRunner: [${schedule.name}] skipping ${user.username} — not scheduled, no fallback due`);
-          continue;
-        }
-        const reason = scheduledToday ? 'scheduled' : `fallback (${lastSent ? Math.floor(daysSince(lastSent)) + 'd' : 'never'} since last send)`;
-        logger.info(`digestRunner: [${schedule.name}] sending to ${user.username} — reason: ${reason}`);
+        if (!scheduledToday && !fallback) continue;
 
         const { vars, commIDs } = await schedule.buildVars(user);
         await sendTemplate(schedule.template, vars, { to: user.email, from: FROM.noreply });
