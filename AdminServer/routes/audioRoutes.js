@@ -16,6 +16,7 @@ const { database: db } = require('config');
 const jwt = require('jsonwebtoken');
 const verifyToken = require('../middleware/authMiddleware');
 const { sendTemplate, FROM } = require('../utils/mailer');
+const { logAudit } = require('../utils/audit');
 
 // audio and file management imports
 const multer = require('multer');
@@ -305,12 +306,19 @@ router.post('/update', verifyToken, async (req, res) => {
   const editorID = decoded.userID;
 
   const { audioID, title, status, classification, tags, comments } = req.body;
-  
+
   if (!record.audioID) {
     return res.status(400).json({ error: { message: 'Audio ID is required for update.' } });
   }
-  
+
   try {
+    // Fetch current state before update — needed for audit before/after diff
+    const [currentRows] = await db.query(
+      'SELECT title, status, classification, tags, comments, creatorID FROM audio WHERE audioID = ? LIMIT 1',
+      [audioID]
+    );
+    const currentState = currentRows[0] || {};
+
     const query = `UPDATE audio SET
         title = ?,
         editorID = ?,
@@ -337,6 +345,29 @@ router.post('/update', verifyToken, async (req, res) => {
       return res.status(404).json({ error: { message: 'Audio not found or no update was made.' } });
     }
     res.status(200).send({ message: 'Audio updated successfully' });
+
+    // Audit: status changes get their own action type; other edits grouped under audio_updated
+    if (status && status !== currentState.status) {
+      const actionType = status === 'Approved' ? 'audio_approved'
+                       : status === 'Disapproved' ? 'audio_disapproved'
+                       : 'audio_status_change';
+      logAudit({
+        tableName: 'audio', recordID: audioID, actionType,
+        before: { status: currentState.status, comments: currentState.comments },
+        after:  { status, comments: record.comments },
+        meta:   { creatorID: currentState.creatorID, title: record.title },
+        actionBy: editorID,
+      });
+    } else {
+      // Non-status edit (title, classification, tags, comments)
+      logAudit({
+        tableName: 'audio', recordID: audioID, actionType: 'audio_updated',
+        before: { title: currentState.title, classification: currentState.classification, tags: currentState.tags, comments: currentState.comments },
+        after:  { title: record.title, classification: record.classification, tags: record.tags, comments: record.comments },
+        meta:   { creatorID: currentState.creatorID },
+        actionBy: editorID,
+      });
+    }
 
     // Post-response: queue digest event or send immediate moderation notice
     const notifyContributor = record.notifyContributor;
@@ -393,14 +424,27 @@ router.post('/trash', verifyToken, async (req, res) => {
     // Verify the token to get user ID
     const decoded = jwt.verify(req.cookies.token, jwtSecretKey);
     const userID = decoded.userID;
-    // construct query and values
+
+    // Fetch current state before trashing — full snapshot for audit (record will be gone)
+    const [currentRows] = await db.query(
+      'SELECT title, status, classification, tags, creatorID FROM audio WHERE audioID = ? LIMIT 1',
+      [audioID]
+    );
+    const currentState = currentRows[0] || {};
+
     const query = `UPDATE audio SET status = 'Trashed' WHERE audioID = ?`;
     const values = [audioID];
     const [result] = await db.query(query, values);
     if (result.affectedRows === 0) {
       return res.status(404).json({ error: { message: 'Audio not found.' } });
     }
-    res.status(200).send({ message: 'Audio trashed successfully' });    
+    res.status(200).send({ message: 'Audio trashed successfully' });
+    logAudit({
+      tableName: 'audio', recordID: audioID, actionType: 'audio_trashed',
+      before: { title: currentState.title, status: currentState.status, classification: currentState.classification, tags: currentState.tags },
+      meta:   { creatorID: currentState.creatorID },
+      actionBy: userID,
+    });
   } catch (error) {
     logger.error(`audioRoutes:/trash: Error trashing audio file: ${error}`);
     res.status(500).json({ error: { message: 'Server error. Try again later.' } });
