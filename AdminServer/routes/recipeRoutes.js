@@ -8,6 +8,7 @@ const { parse: JSONparse, stringify: JSONstringify } = require('comment-json');
 
 const jwt = require('jsonwebtoken');
 const verifyToken = require('../middleware/authMiddleware');
+const { logAudit } = require('../utils/audit');
 
 const { config } = require('config');
 const jwtSecretKey = config.authToken.jwtSecretKey;
@@ -191,6 +192,13 @@ router.post('/update', verifyToken, async (req, res) => {
     return res.status(400).json({ error: { message: 'Recipe ID is required for update.' } });
   }
   try {
+    // Fetch current state before update — needed for audit before/after diff
+    const [currentRows] = await db.query(
+      'SELECT title, status, classification, tags, comments, creatorID FROM recipes WHERE recipeID = ? LIMIT 1',
+      [record.recipeID]
+    );
+    const currentState = currentRows[0] || {};
+
     const query = `UPDATE recipes SET
       title = ?,
       description = ?,
@@ -220,6 +228,28 @@ router.post('/update', verifyToken, async (req, res) => {
       return res.status(404).json({ error: { message: 'Recipe not found or no update was made.' } });
     }
     res.status(200).json({ message: 'Recipe updated successfully' });
+
+    // Audit: status changes get their own action type; other edits grouped under recipe_updated
+    if (record.status && record.status !== currentState.status) {
+      const actionType = record.status === 'Approved' ? 'recipe_approved'
+                       : record.status === 'Disapproved' ? 'recipe_disapproved'
+                       : 'recipe_status_change';
+      logAudit({
+        tableName: 'recipes', recordID: record.recipeID, actionType,
+        before: { status: currentState.status, comments: currentState.comments },
+        after:  { status: record.status, comments: record.comments },
+        meta:   { creatorID: currentState.creatorID, title: record.title },
+        actionBy: editorID,
+      });
+    } else {
+      logAudit({
+        tableName: 'recipes', recordID: record.recipeID, actionType: 'recipe_updated',
+        before: { title: currentState.title, classification: currentState.classification, tags: currentState.tags, comments: currentState.comments },
+        after:  { title: record.title, classification: record.classification, tags: record.tags, comments: record.comments },
+        meta:   { creatorID: currentState.creatorID },
+        actionBy: editorID,
+      });
+    }
   } catch (error) {
     logger.error(`recipeRoutes:/update: Server error during recipe update: ${error}`);
     res.status(500).json({ error: { message: 'Server error. Try again later.' } });
@@ -234,6 +264,16 @@ router.post('/trash', verifyToken, async (req, res) => {
     return res.status(400).json({ error: { message: 'Recipe ID is required.' } });
   }
   try {
+    const decoded = jwt.verify(req.cookies.token, jwtSecretKey);
+    const userID = decoded.userID;
+
+    // Fetch current state before trashing — full snapshot for audit (record will be gone)
+    const [currentRows] = await db.query(
+      'SELECT title, status, classification, tags, creatorID FROM recipes WHERE recipeID = ? LIMIT 1',
+      [recipeID]
+    );
+    const currentState = currentRows[0] || {};
+
     const query = `UPDATE recipes SET status = 'Trashed' WHERE recipeID = ?`;
     const values = [recipeID];
     const [result] = await db.query(query, values);
@@ -241,6 +281,12 @@ router.post('/trash', verifyToken, async (req, res) => {
       return res.status(404).json({ error: { message: 'Recipe not found.' } });
     }
     res.status(200).json({ message: 'Recipe deleted successfully' });
+    logAudit({
+      tableName: 'recipes', recordID: recipeID, actionType: 'recipe_trashed',
+      before: { title: currentState.title, status: currentState.status, classification: currentState.classification, tags: currentState.tags },
+      meta:   { creatorID: currentState.creatorID },
+      actionBy: userID,
+    });
   } catch (error) {
     logger.error(`recipeRoutes:/trash: Error trashing recipe: ${error}`);
     res.status(500).json({ error: { message: 'Server error. Try again later.' } });
