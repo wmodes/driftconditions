@@ -104,9 +104,9 @@ async function createTransporter() {
  * @param {string} [opts.from] - From address; defaults to FROM.noreply.
  *   Use FROM.welcome for personal welcome emails, FROM.contact for enquiries.
  */
-async function sendMail({ to, subject, text, html, from = FROM.noreply }) {
+async function sendMail({ to, subject, text, html, from = FROM.noreply, bcc }) {
   const transporter = await createTransporter();
-  const info = await transporter.sendMail({ from, to, subject, text, html });
+  const info = await transporter.sendMail({ from, to, ...(bcc && { bcc }), subject, text, html });
 
   if (isDev) {
     const previewUrl = nodemailer.getTestMessageUrl(info);
@@ -136,7 +136,7 @@ async function sendMail({ to, subject, text, html, from = FROM.noreply }) {
  * @param {string} opts.to - Recipient email address
  * @param {string} [opts.from] - From address; defaults to FROM.noreply
  */
-async function sendTemplate(templateName, variables, { to, from = FROM.noreply }) {
+async function sendTemplate(templateName, variables, { to, from = FROM.noreply, bcc }) {
   const templateDir = path.join(TEMPLATE_DIR, templateName);
 
   // Merge brand globals so every template can use {{siteName}}, {{siteUrl}}, etc.
@@ -158,7 +158,7 @@ async function sendTemplate(templateName, variables, { to, from = FROM.noreply }
   const html = compiledLayoutHtml({ ...ctx, body: innerHtml });
   const text = compiledLayoutTxt({ ...ctx, body: innerTxt });
 
-  return sendMail({ to, from, subject, text, html });
+  return sendMail({ to, from, bcc, subject, text, html });
 }
 
 module.exports = { sendMail, sendTemplate, FROM };
