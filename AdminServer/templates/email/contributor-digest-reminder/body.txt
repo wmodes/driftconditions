@@ -2,7 +2,7 @@ Hey {{firstname}},
 
 Just a quick check-in from {{siteName}}.
 
-You signed up as a contributor a while back, which means your account is already set up — you can upload audio whenever you're ready. We're just waiting on you.
+You were promoted to contributor a while back, so your account can already upload audio whenever you're ready. I'm still hoping you'll help shape the station.
 
 If you've got something that might fit — a field recording, a fragment of sound, an overheard voice, some atmospheric wreckage, a strange little thing you captured and weren't sure what to do with — this is probably the right place for it.
 
