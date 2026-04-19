@@ -393,7 +393,7 @@ router.post('/update', verifyToken, async (req, res) => {
             clipTitle: title,
             action: isApproved ? 'approved' : 'rejected',
             approved: isApproved,
-            notes: isApproved ? '' : (record.comments || ''),
+            notes: record.comments || '',
           }, { to: email, from: FROM.noreply }).catch((err) => {
             logger.error(`audioRoutes:/update: moderation email failed for ${username}: ${err.message}`);
           });
@@ -402,7 +402,7 @@ router.post('/update', verifyToken, async (req, res) => {
           const commType = isApproved ? 'audio_approved' : 'audio_disapproved';
           db.query(
             `INSERT INTO userComms (userID, commType, payload) VALUES (?, ?, ?)`,
-            [creatorID, commType, JSON.stringify({ audioID, title, notes: isApproved ? '' : (record.comments || '') })]
+            [creatorID, commType, JSON.stringify({ audioID, title, notes: record.comments || '' })]
           ).catch((err) => logger.error(`audioRoutes:/update: userComms insert failed: ${err.message}`));
         }
       }
