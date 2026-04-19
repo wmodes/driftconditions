@@ -10,7 +10,7 @@ These submissions weren't approved. Feel free to reply if you have questions.
 {{#each disapproved}}
   {{title}}
   {{../siteUrl}}/audio/view/{{audioID}}
-  {{#if notes}}> {{notes}}{{/if}}
+  {{#if notes}}{{notes}}{{/if}}
 
 {{/each}}
 {{/if}}
@@ -22,7 +22,7 @@ These clips are now part of the {{siteName}} mix and may play at any time.
 {{#each approved}}
   {{title}}
   {{../siteUrl}}/audio/view/{{audioID}}
-  {{#if notes}}> {{notes}}{{/if}}
+  {{#if notes}}{{notes}}{{/if}}
 
 {{/each}}
 {{/if}}
