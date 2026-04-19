@@ -9,6 +9,13 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-04-19] (15)
+
+### Changed
+- **Tag examples** updated in audio add/edit tooltip and contributor tips email — replaced generic examples with more evocative and musically specific ones: *thunderstorm*, *lo fi*, *haunting*, *E#m key*, *100 bpm*.
+
+---
+
 ## [2026-04-16] (14)
 
 ### Added
