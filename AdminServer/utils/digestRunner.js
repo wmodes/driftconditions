@@ -263,7 +263,7 @@ async function buildDigestVars(user) {
       ? JSON.parse(event.payload)
       : event.payload;
     if (event.commType === 'audio_approved') {
-      approved.push({ audioID: payload.audioID, title: payload.title });
+      approved.push({ audioID: payload.audioID, title: payload.title, notes: payload.notes || '' });
     } else if (event.commType === 'audio_disapproved') {
       disapproved.push({ audioID: payload.audioID, title: payload.title, notes: payload.notes || '' });
     }

@@ -5,7 +5,7 @@ Your {{digestFrequency}} {{siteName}} digest. Here's what happened with your aud
 {{#if hasDisapproved}}
 DIDN'T MAKE IT THIS TIME
 -------------------------
-These submissions weren't approved. Notes on the submission are included. Feel free to reply if you have questions.
+These submissions weren't approved. Feel free to reply if you have questions.
 
 {{#each disapproved}}
   {{title}}
@@ -22,8 +22,9 @@ These clips are now part of the {{siteName}} mix and may play at any time.
 {{#each approved}}
   {{title}}
   {{../siteUrl}}/audio/view/{{audioID}}
-{{/each}}
+  {{#if notes}}> {{notes}}{{/if}}
 
+{{/each}}
 {{/if}}
 YOUR STATS
 ----------
