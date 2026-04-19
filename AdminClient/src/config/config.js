@@ -130,7 +130,7 @@ const config = {
     ],
     fieldNotes: {
       classification: "A broad category that describes the broad type of audio. Pro-tip: Use as few classifications as applicable.",
-      tags: "Describe the topic, theme, or texture of the audio, such as 'rainy night', 'jazz', or 'whispering'. Use tags to highlight specific elements or moods in your audio. Separate tags with commas. Pro-tip: Use as many simple tags as you can think of.",
+      tags: "Describe the topic, theme, or texture of the audio, such as 'thunderstorm', 'lo fi', 'haunting', 'E#m key', or '100 bpm'. Use tags to highlight specific elements or moods in your audio. Separate tags with commas. Pro-tip: Use as many simple tags as you can think of.",
       filetypes: "Supported file types: mp3, wav, ogg, flac, aiff, m4a",
       status: "New uploads will be marked as 'Pending Review' until approved by a moderator.",
       copyright: "Please certify that this contains no copyrighted works for which you do not have a right to use.",

@@ -23,7 +23,7 @@ Classifications are broad categories that describe the type of audio. Pro-tip: u
   Other          — unique or rare audio that doesn't fit elsewhere
 
 Tags
-Tags describe the topic, theme, or texture — things like "rainy night", "jazz", or "whispering". Use as many simple tags as you can think of, separated by commas. Rather than compound tags like "1950s-educational-film", use simple ones like "1950s, educational, instructional". The system handles plurals automatically.
+Tags describe the topic, theme, or texture — things like "thunderstorm", "lo fi", "haunting", "E#m key", or "100 bpm". Use as many simple tags as you can think of, separated by commas. Rather than compound tags like "1950s-educational-film", use simple ones like "1950s, educational, instructional". The system handles plurals automatically.
 
 A word about copyright
 We think copyright is too often a way of locking in corporate profits, but we do want to show respect for other artists. Good sources include recordings in the public domain (archive.org), Creative Commons (freemusicarchive.org), public performances captured by spectators, and recordings so obscure that the crime of using them is offset by the opportunity that someone actually gets to hear them.
