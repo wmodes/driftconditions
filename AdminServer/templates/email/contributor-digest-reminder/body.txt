@@ -8,8 +8,6 @@ If you've got something that might fit — a field recording, a fragment of soun
 
 Upload here: {{siteUrl}}/audio/upload
 
-(You'll need to be logged in first. If you go straight to that link without a session you may see an error — just sign in at {{siteUrl}} and then head to the upload page.)
-
 Your profile: {{siteUrl}}/profile/{{username}}
 
 Hope to hear from you soon.
