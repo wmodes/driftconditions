@@ -508,7 +508,9 @@ async function runDigest() {
         if (!reasons.length) continue;
 
         const { vars, commIDs } = await schedule.buildVars(user);
-        await sendTemplate(schedule.template, vars, { to: user.email, from: FROM.noreply, bcc: process.env.DIGEST_BCC });
+        const to  = process.env.DIGEST_REDIRECT || user.email;
+        const bcc = process.env.DIGEST_REDIRECT ? undefined : process.env.DIGEST_BCC;
+        await sendTemplate(schedule.template, vars, { to, from: FROM.noreply, bcc });
 
         if (commIDs.length > 0) {
           await db.query(
