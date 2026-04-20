@@ -9,6 +9,13 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-04-20] (16)
+
+### Fixed
+- **ClipSelector tag scoring bug** — clips with no tags were returning a tag score of 1.0 (maximum) instead of 0. This caused untagged clips to score as perfect contextual matches regardless of recent playlist context, and actively dominated over tagged clips at session start when `recentTags` is empty. Fix: return 0 for tagless clips so they neither help nor benefit from contextual tag matching.
+
+---
+
 ## [2026-04-19] (15)
 
 ### Changed

@@ -394,7 +394,7 @@ class ClipSelector {
   _calculateTagScore (clip) {
     // Ensure the clip has tags
     if (!clip.tags || clip.tags.length === 0) {
-      return 1; // Return 0 if no tags are present
+      return 0; // No tags — can't match any context
     }
     let totalTagCount = 0;
     const numberOfTags = this.recentTags.length;
