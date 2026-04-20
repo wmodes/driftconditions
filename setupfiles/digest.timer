@@ -11,7 +11,7 @@
 Description=Run DriftConditions digest daily at 9 AM Eastern
 
 [Timer]
-OnCalendar=*-*-* 14:00:00 UTC
+OnCalendar=*-*-* 13:00:00 UTC
 Persistent=true
 
 [Install]
