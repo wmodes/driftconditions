@@ -6,6 +6,9 @@
  * a cadence, a recipient query, and a var builder. For each recipient the
  * runner checks two conditions:
  *
+ *   0. withinSendWindow(lastSent, addedOn, freqDays) — universal pre-filter;
+ *      skips if the later of lastSent and addedOn falls within the user's
+ *      frequency window. Treats new users identically to recently-sent users.
  *   1. isScheduledToday(user) — happy path; is today the right send day?
  *   2. needsFallbackDigest — has enough time passed without a send to trigger
  *      the monthly floor? Catches missed sends when the server was down.
@@ -113,14 +116,22 @@ function daysSince(date) {
   return (Date.now() - date.getTime()) / (1000 * 60 * 60 * 24);
 }
 
-/** True if the last send was today — prevents double-sends if runner fires twice. */
-function sentToday(lastSent) {
-  return !!lastSent && daysSince(lastSent) < 1;
-}
+// Maps digestFrequency values to their minimum send interval in days.
+// Used by withinSendWindow for digest schedules (useUserFreq: true).
+const FREQ_DAYS = { daily: 1, weekly: 7, monthly: 27 };
 
-/** True if the last send falls within the user's normal frequency window. */
-function sentWithinFreqWindow(lastSent, freqDays) {
-  return !!lastSent && !!freqDays && daysSince(lastSent) < freqDays;
+/**
+ * True if this user is within their send window and should be skipped.
+ * Uses the later of lastSent and addedOn as the reference — so a brand-new
+ * user is treated identically to one who just received a send.
+ * @param {Date|null} lastSent
+ * @param {Date|string} addedOn
+ * @param {number} freqDays
+ * @returns {boolean}
+ */
+function withinSendWindow(lastSent, addedOn, freqDays) {
+  const reference = lastSent && lastSent > new Date(addedOn) ? lastSent : new Date(addedOn);
+  return daysSince(reference) < freqDays;
 }
 
 /** True if enough time has passed without a send to trigger the fallback cadence. */
@@ -404,8 +415,9 @@ const schedules = [
     name:             'daily-digest',
     template:         'contributor-digest',
     commType:         'digest_sent',
-    freqDays:         null, // daily: sentToday() is sufficient; no additional freq window
+    freqDays:         1,    // fallback if digestFrequency unrecognised; normally overridden by useUserFreq
     fallbackDays:     27,   // monthly minimum contact
+    useUserFreq:      true, // derive send window from user.digestFrequency via FREQ_DAYS
     scheduledReason:  'new activity',
     fallbackReason:   'inactive so fell back to monthly',
     isScheduledToday: async (user) => await hasNewEvents(user.userID),
@@ -416,8 +428,9 @@ const schedules = [
     name:             'weekly-digest',
     template:         'contributor-digest',
     commType:         'digest_sent',
-    freqDays:         7,
+    freqDays:         7,    // fallback if digestFrequency unrecognised; normally overridden by useUserFreq
     fallbackDays:     27,
+    useUserFreq:      true,
     scheduledReason:  'new activity on weekly day',
     fallbackReason:   'inactive so fell back to monthly',
     isScheduledToday: async (user) => isWeeklyDay() && await hasNewEvents(user.userID),
@@ -428,8 +441,9 @@ const schedules = [
     name:             'monthly-digest',
     template:         'contributor-digest',
     commType:         'digest_sent',
-    freqDays:         27,
+    freqDays:         27,   // fallback if digestFrequency unrecognised; normally overridden by useUserFreq
     fallbackDays:     27,
+    useUserFreq:      true,
     scheduledReason:  'monthly scheduled day',
     fallbackReason:   'missed usual day',
     isScheduledToday: () => isNthWeekdayOfMonth(),
@@ -487,7 +501,8 @@ async function runDigest() {
         const sinceText = dayCount !== null ? `${dayCount}d since last send` : 'never sent before';
         const reasons   = [];
 
-        if (sentToday(lastSent) || sentWithinFreqWindow(lastSent, schedule.freqDays)) continue;
+        const freqDays = (schedule.useUserFreq && FREQ_DAYS[user.digestFrequency]) || schedule.freqDays;
+        if (withinSendWindow(lastSent, user.addedOn, freqDays)) continue;
         if (await schedule.isScheduledToday(user))                reasons.push(schedule.scheduledReason);
         else if (needsFallbackDigest(lastSent, schedule.fallbackDays)) reasons.push(schedule.fallbackReason);
         if (!reasons.length) continue;
