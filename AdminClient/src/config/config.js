@@ -289,7 +289,7 @@ const config = {
     // starting pattern for adding a new track (indentation matters here)
     newTrack: `
     {
-      label: "new track",
+      label: "new TRACK",
       volume: 100,
       // EFFECTS: trim, first, shortest, longest, loop, crossfade, fadeout
       //   level: norm, norm(voice), norm(music), norm(bed)
@@ -313,7 +313,7 @@ const config = {
     // starting pattern for adding a new clip (indentation matters here)
     newClip: `
         {
-          // New clip
+          // New CLIP
           classification: [ "ambient" ],
           tags: [],
           length: [ "medium" ],
@@ -323,7 +323,7 @@ const config = {
     // starting pattern for adding a new silence clip (indentation matters here)
     newSilence: `
         {
-          // Silent spacer
+          // SILENCE spacer
           classification: "silence",
           length: [ "tiny" ],
         },`,
