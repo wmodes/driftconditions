@@ -1,0 +1,18 @@
+# Audio analysis runner systemd timer file
+# Fires audio-analysis.service nightly at 8 AM UTC (3 AM Eastern).
+# Persistent=true catches up on any runs missed while the server was down.
+#
+# Link into place with audio-analysis.service (see audio-analysis.service for full instructions).
+#
+# Check next/last run:
+# % systemctl list-timers audio-analysis.timer
+
+[Unit]
+Description=Run DriftConditions audio analysis nightly at 3 AM Eastern (08:00 UTC)
+
+[Timer]
+OnCalendar=*-*-* 08:00:00 UTC
+Persistent=true
+
+[Install]
+WantedBy=timers.target

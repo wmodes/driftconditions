@@ -21,13 +21,31 @@ const fs   = require('fs');
 // Load env from AdminServer/.env (where DB credentials and API keys live)
 require('dotenv').config({ path: path.join(__dirname, '../AdminServer/.env') });
 
-// Change cwd to AdminServer so the config symlink resolves correctly
-process.chdir(path.join(__dirname, '../AdminServer'));
+// Add AdminServer/node_modules to the search path so we can require 'config',
+// 'mysql2', etc. without duplicating those deps at the root level.
+process.env.NODE_PATH = path.join(__dirname, '../AdminServer/node_modules');
+require('module').Module._initPaths();
 
-const Anthropic        = require('@anthropic-ai/sdk');
-const { database: db } = require('config');
+const Anthropic = require('@anthropic-ai/sdk');
 
-const BATCH_SIZE     = 10;
+// --prod flag connects directly to the production DB using DATABASE_REMOTE_PASSWORD
+const USE_PROD = process.argv.includes('--prod');
+let db;
+if (USE_PROD) {
+  const mysql = require('mysql2/promise');
+  db = mysql.createPool({
+    host:             'driftconditions.org',
+    user:             'mysql',
+    password:         process.env.DATABASE_REMOTE_PASSWORD,
+    database:         'driftconditions',
+    waitForConnections: true,
+    connectionLimit:  5,
+  });
+} else {
+  ({ database: db } = require('config'));
+}
+
+const BATCH_SIZE     = 5;
 const BATCH_DELAY_MS = 500;
 const MODEL          = 'claude-haiku-4-5-20251001';
 const OUTPUT_FILE    = path.join(__dirname, 'audio-audit-results.json');
@@ -46,6 +64,8 @@ async function main() {
     console.error('Missing ANTHROPIC_API_KEY in AdminServer/.env');
     process.exit(1);
   }
+  if (USE_PROD) console.log('Connecting to PRODUCTION database.');
+
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
   // 1. Fetch all approved, unlocked clips
@@ -103,7 +123,7 @@ async function main() {
     suggestions: results,
   };
 
-  fs.writeFileSync(OUTPUT_FILE, JSON.stringify(output, null, 2));
+  fs.writeFileSync(OUTPUT_FILE, compactStringArrays(JSON.stringify(output, null, 2)));
 
   console.log(`\nSummary:`);
   console.log(`  Clips with tag suggestions:     ${withTags}/${clips.length}`);
@@ -141,14 +161,31 @@ async function processBatch(client, batch, tagVocab) {
 
   const prompt = `You are auditing audio clips for a generative streaming radio station.
 
-TAGS: Tags describe the topic, theme, and/or texture — things like "thunderstorm", "lo fi", "haunting", "E#m key", or "100 bpm". Prefer single-word or short tags over compound ones — rather than "1950s-educational-film", use "1950s, educational, instructional". The system handles plurals automatically.
+TAGS: Tags are used by the system to match a clip to playlist recipes and to other clips. Essentially, the more meaningful tags provided, the more helpful. It is common to have as many as 20 tags. Look for obvious tags, adjacent tags, and synonyms.
+
+If you can surmise from the title and comments, try to create tags that describe every meaningful dimension of the audio. Think across all of these categories:
+- Sonic texture: crackle, hiss, buzz, wash, drone, shimmer, rumble, pulse, hum, squeal
+- Technical/production: analog, digital, detuned, broadcast, lo-fi, field-recording
+- Use-case: bed, texture, atmosphere, stinger, wash
+- Mood/feel: haunting, tense, peaceful, unsettling, meditative, eerie, dark
+- Subject/content: what the audio is of or about — rain, crowd, machinery, speech
+- Setting: urban, industrial, nighttime, indoors, outdoor
+- Musical (if applicable): tempo like "100 bpm", key like "E#m", genre like "jazz"
+
+For each clip, also think: What would a sound designer search for to find this? What adjacent sounds or textures does it share? How might it be used — as a bed, a wash, a texture layer?
+
+Use short, single-word tags where possible. Do not use compound tags like "train-station" — use "train, station" instead. The system handles plurals automatically.
+
+Example of a well-tagged clip:
+Title: "260414 Queensgate Rail Yard 1" | Classification: Atmospheric, Soundscape, Effect | Duration: 1053s
+Tags: field-recording, transportation, urban, ominous, tense, eerie, dark, overnight, night, nighttime, machinery, industrial, impact, coupling, clanking, crashing, steel, metal, screech, squeal, rail, railroad, trains, freight, hump-yard, train-yard, rail-yard
 
 CLASSIFICATION: Each clip has one or more of these classifications:
 ${classificationList}
 
 ${vocabSection}For each clip, do two things:
-1. Suggest additional tags to ADD (5–15, do not repeat existing tags).
-2. Check whether the classification seems right given the title, tags, duration, and notes. If it seems wrong or incomplete, set classificationFlag to true and suggest a corrected classificationList.
+1. Suggest additional tags to ADD (do not repeat existing tags). Be thorough — draw from all the categories above.
+2. Check whether the classification seems right given the title, tags, duration, and notes. If it seems wrong or incomplete, set classificationFlag to true and suggest a corrected classification.
 
 Return ONLY a valid JSON array — no explanation, no markdown:
 [
@@ -167,7 +204,7 @@ ${clipLines}`;
   try {
     const message = await client.messages.create({
       model:      MODEL,
-      max_tokens: 1024,
+      max_tokens: 2048,
       messages:   [{ role: 'user', content: prompt }],
     });
 
@@ -184,7 +221,10 @@ ${clipLines}`;
         duration:                 clip.duration ? Math.round(parseFloat(clip.duration)) : null,
         currentTags:              parseTags(clip.tags),
         comments:                 clip.comments || null,
-        suggestedTags:            s?.suggestedTags            || [],
+        suggestedTags:            [
+          ...(s?.suggestedTags || []),
+          ...(s?.classificationFlag ? ['classification-needs-review'] : []),
+        ],
         classificationFlag:       s?.classificationFlag       || false,
         suggestedClassification:  s?.suggestedClassification  || null,
         approved:                 true,
@@ -218,6 +258,15 @@ function parseTags(field) {
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// Collapse arrays of strings onto a single line for readability.
+// Leaves arrays of objects (like the suggestions array itself) untouched.
+function compactStringArrays(jsonStr) {
+  return jsonStr.replace(
+    /\[\n(\s+"[^"]*"(?:,\n\s+"[^"]*")*)\n\s+\]/g,
+    (_, inner) => '[' + inner.split(',\n').map(s => s.trim()).join(', ') + ']'
+  );
 }
 
 main().catch(err => { console.error(err); process.exit(1); });

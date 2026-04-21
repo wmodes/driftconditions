@@ -9,6 +9,17 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-04-20] (17)
+
+### Added
+- **`internalTags` field** — new JSON column on the `audio` table for admin/mod-only processing flags, invisible to contributors. Gated by new `specialTags` permission (admin + mod). Visible and editable in AudioView and AudioEdit.
+- **Essentia audio analysis experiment** — `experiments/essentia/analyze.js` analyzes an audio file and outputs BPM, key, and danceability tags (e.g. `102-bpm`, `g-minor-key`, `danceable`) with confidence thresholds. Analyzes the middle 180s of each file. BPM > 120 also emits a halved tag to catch double-time detection.
+- **Audio analysis pipeline** — nightly runner (`AdminServer/utils/audioAnalysisRunner.js`) processes clips tagged with `needs-audio-analysis` internal tag, merges Essentia results into visible tags, then swaps the queue tag for `audio-analyzed`. Fired by `audio-analysis.service` / `audio-analysis.timer` at 08:00 UTC (3 AM Eastern).
+- **Auto-queue on upload** — audio upload route sets `needs-audio-analysis` on new clips classified as Instrumental, VocalMusic, or Ambient.
+- **Config** — `audio.internalTags.{analysisQueue, analyzed}`, `audio.musicAnalysisClassifications`, and `audioAnalysis.runTimeUTC` added to shared config.
+
+---
+
 ## [2026-04-20] (16)
 
 ### Fixed

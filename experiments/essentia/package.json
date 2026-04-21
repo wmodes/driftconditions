@@ -1,0 +1,13 @@
+{
+  "name": "essentia-experiment",
+  "version": "1.0.0",
+  "description": "Essentia.js audio analysis experiment",
+  "main": "analyze.js",
+  "scripts": {
+    "analyze": "node analyze.js"
+  },
+  "dependencies": {
+    "audio-decode": "^3.0.0",
+    "essentia.js": "^0.1.3"
+  }
+}

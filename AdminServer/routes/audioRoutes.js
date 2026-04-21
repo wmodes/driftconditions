@@ -34,6 +34,8 @@ const { config } = require('config');
 const jwtSecretKey = config.authToken.jwtSecretKey;
 const contentFileDir = config.content.contentFileDir;
 const tmpFileDir = config.content.tmpFileDir;
+const musicAnalysisClassifications = config.audio.musicAnalysisClassifications;
+const audioInternalTags = config.audio.internalTags;
 
 // Multer configuration for temporary upload
 const upload = multer({ dest: tmpFileDir });
@@ -180,6 +182,7 @@ router.post('/info', verifyToken, async (req, res) => {
     record = result[0];
     record.classification = repairBrokenJSON(record.classification);
     record.tags = repairBrokenJSON(record.tags);
+    record.internalTags = repairBrokenJSON(record.internalTags);
     res.status(200).json(record);
   } catch (error) {
     logger.error(`audioRoutes:/info: Error verifying token or fetching audio info: ${error}`);
@@ -263,8 +266,13 @@ router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
     const filetype = path.extname(req.file.originalname).toLowerCase().substring(1);
     logger.debug(`audioRoutes:/upload: filetype: ${filetype}`);
 
+    // Flag for music analysis if classification warrants it
+    const classArr = coerceToArray(record.classification);
+    const needsAnalysis = classArr.some(c => musicAnalysisClassifications.includes(c));
+    const initialInternalTags = needsAnalysis ? JSON.stringify([audioInternalTags.analysisQueue]) : null;
+
     // Prep db params
-    const query = `INSERT INTO audio (title, status, filename, creatorID, duration, filetype, classification, tags, comments, copyrightCert, checksum) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+    const query = `INSERT INTO audio (title, status, filename, creatorID, duration, filetype, classification, tags, internalTags, comments, copyrightCert, checksum) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
     const values = [
       record.title,
       record.status,
@@ -274,6 +282,7 @@ router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
       filetype,
       record.classification,
       JSON.stringify(normalizeTagArray(record.tags)),
+      initialInternalTags,
       record.comments,
       record.copyrightCert,
       checksum
@@ -326,6 +335,7 @@ router.post('/update', verifyToken, async (req, res) => {
         status = ?,
         classification = ?,
         tags = ?,
+        internalTags = ?,
         comments = ?
       WHERE audioID = ?`;
     const values = [
@@ -334,6 +344,7 @@ router.post('/update', verifyToken, async (req, res) => {
       record.status,
       JSON.stringify(coerceToArray(record.classification)),
       JSON.stringify(normalizeTagArray(record.tags)),
+      record.internalTags != null ? JSON.stringify(normalizeTagArray(record.internalTags)) : null,
       record.comments,
       record.audioID
     ];

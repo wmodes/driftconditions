@@ -9,8 +9,10 @@
  * Classification flags are printed for manual review but NOT auto-applied.
  *
  * Usage (run from project root):
- *   node scripts/audio-audit-apply.js            # apply changes
+ *   node scripts/audio-audit-apply.js            # apply to local DB
  *   node scripts/audio-audit-apply.js --dry-run  # preview only, no writes
+ *   node scripts/audio-audit-apply.js --prod     # apply to production DB
+ *   node scripts/audio-audit-apply.js --prod --dry-run
  */
 
 'use strict';
@@ -19,18 +21,36 @@ const path = require('path');
 const fs   = require('fs');
 
 require('dotenv').config({ path: path.join(__dirname, '../AdminServer/.env') });
-process.chdir(path.join(__dirname, '../AdminServer'));
 
-const { database: db } = require('config');
-const { logAudit }     = require(path.join(__dirname, '../AdminServer/utils/audit'));
+process.env.NODE_PATH = path.join(__dirname, '../AdminServer/node_modules');
+require('module').Module._initPaths();
+
+const { logAudit } = require(path.join(__dirname, '../AdminServer/utils/audit'));
 
 const INPUT_FILE = path.join(__dirname, 'audio-audit-results.json');
 const DRY_RUN    = process.argv.includes('--dry-run');
+const USE_PROD   = process.argv.includes('--prod');
+
+let db;
+if (USE_PROD) {
+  const mysql = require('mysql2/promise');
+  db = mysql.createPool({
+    host:             'driftconditions.org',
+    user:             'mysql',
+    password:         process.env.DATABASE_REMOTE_PASSWORD,
+    database:         'driftconditions',
+    waitForConnections: true,
+    connectionLimit:  5,
+  });
+} else {
+  ({ database: db } = require('config'));
+}
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 async function main() {
-  if (DRY_RUN) console.log('[DRY RUN] No changes will be written.\n');
+  if (USE_PROD) console.log('Connecting to PRODUCTION database.');
+  if (DRY_RUN)  console.log('[DRY RUN] No changes will be written.\n');
 
   if (!fs.existsSync(INPUT_FILE)) {
     console.error(`Input file not found: ${INPUT_FILE}`);
@@ -72,7 +92,7 @@ async function main() {
     const currentComments = row.comments || '';
     const newComments     = currentComments.includes('Claude Haiku')
       ? currentComments
-      : [currentComments, aiNote].filter(Boolean).join(' ');
+      : [currentComments, aiNote].filter(Boolean).join('\n');
 
     console.log(`  [${entry.audioID}] "${entry.title}"`);
     console.log(`    + ${addedTags.join(', ')}`);

@@ -288,3 +288,56 @@ FastCast4u
 128kbps: $18.75 per month / $149.25 per year / $224.25 per 2 years
 Stream address:
 https://usa14.fastcast4u.com/proxy/wmodes?mp=/1
+
+---
+
+## Audio Analysis — Essentia.js
+
+### Onset Detection for DJ-style entry points
+
+Goal: find musically meaningful breakpoints where a new clip (e.g. a narrative) could be
+layered on top of a bed. A good DJ starts a narrative at a notable textural or structural
+change, not just any transient.
+
+#### The four algorithms
+
+**HFC (High Frequency Content)**
+Fires on sharp percussive transients — drum hits, attacks, hard consonants.
+For our library: very granular, will produce many onsets on any rhythmic content.
+Useful as a secondary signal to snap candidate breaks to a nearby beat/hit.
+*Weight high for: music with clear percussion. Weight low for: ambient, drone, field recording.*
+
+**Complex**
+Measures spectral differences in both magnitude and phase between frames.
+Catches genuine musical changes — new notes, chord shifts, textural transitions.
+The most general-purpose detector; good workhorse for mixed content.
+*Weight high for: most clips. Best single algorithm if only using one.*
+
+**Complex Phase**
+Phase-only variant of Complex, weighted by magnitude.
+Sensitive to tonal/melodic shifts (e.g. bowed strings, sustained synths changing pitch).
+Tends to over-detect on percussive content.
+*Weight high for: sustained tonal material. Weight low for: anything rhythmic or percussive.*
+
+**Flux (Spectral Flux)**
+Measures rate of change in frequency components over time — a timbre-change detector.
+Works well on material with no clear transients: field recordings, found sound, noise, drones.
+For our library: especially useful for ambient and environmental clips where texture shifts
+are the meaningful signal, not attacks.
+*Weight high for: ambient, soundscape, field recording. Works where HFC is blind.*
+
+#### Balancing strategy by classification
+
+| Classification         | HFC | Complex | Complex Phase | Flux |
+|------------------------|-----|---------|---------------|------|
+| Instrumental / Music   | ●●● | ●●●     | ●             | ●●   |
+| Ambient / Atmospheric  | ●   | ●●●     | ●●            | ●●●  |
+| Environmental / Field  | ●   | ●●      | ●             | ●●●  |
+| Soundscape             | ●   | ●●●     | ●●            | ●●●  |
+| Experimental / Digital | ●●  | ●●●     | ●●            | ●●●  |
+
+#### Open questions
+- Onset detection gives candidate points — still need a threshold + minimum gap to avoid
+  clustering. What minimum gap makes sense for DJ use? (4 bars? 8 bars?)
+- Should we store onset timestamps in the DB, or compute on-the-fly at mix time?
+- Is the goal auto-cueing by the system, or generating editor markers for human review?
