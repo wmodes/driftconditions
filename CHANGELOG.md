@@ -9,6 +9,20 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-04-21] (25)
+
+### Changed
+- **Recipe templates** — revised the example recipe, new track, new clip, and new silence templates to use compact cheatsheet-style comments (uppercase section labels, one-line lists) instead of verbose multi-line prose. Field order in clip objects is now classification → tags → length → volume → effects.
+
+---
+
+## [2026-04-21] (24)
+
+### Changed
+- **Recipe editor syntax highlighting** — switched from a minimal custom text mode to full JSON5 syntax highlighting (keys, strings, numbers, booleans, comments). `tracks` and `clips` keywords appear bold red; other unquoted keys appear in steel blue (`#336699`). Applied to both Recipe Edit and Recipe View.
+
+---
+
 ## [2026-04-21] (23)
 
 ### Added

@@ -1,58 +1,50 @@
 // editorUtils.js
 
 import ace from 'ace-builds/src-noconflict/ace';
-import 'ace-builds/src-noconflict/mode-json'; // Import base mode if extending from it
-// const langTools = ace.require("ace/ext/language_tools");
+import 'ace-builds/src-noconflict/mode-json5';
 
-// Define Custom Highlight Rules
-export const defineCustomHighlightRules = () => {
-  const oop = ace.require("ace/lib/oop");
-  const TextHighlightRules = ace.require("ace/mode/text_highlight_rules").TextHighlightRules;
-
-  let CustomHighlightRules = function() {
-    this.$rules = {
-      start: [
-        {
-          token: "quoted-string", // Apply string styling
-          // Matches single-quoted strings, allowing escaped characters
-          regex: /'(?:\\.|[^'\\])*'|"(?:\\.|[^"\\])*"/,
-          next: "start" // Return to start state after matching a string
-        },
-        { 
-          regex: "\\btrack\\b",
-          token: "editor-highlight-track",  
-        },
-        { 
-          regex: "\\bclips\\b",
-          token: "editor-highlight-clip", 
-        }
-      ]
-    };
-    this.normalizeRules();
-  };
-
-  oop.inherits(CustomHighlightRules, TextHighlightRules);
-  return CustomHighlightRules;
-};
-
-// Define Custom Mode
+// Define a custom Ace mode that extends the built-in JSON5 mode,
+// adding keyword highlights for `track` and `clips`.
+//
+// Because JSON5 strings and comments are tokenized in their own states,
+// these keyword rules only fire in code positions — not inside comments or strings.
 export const defineCustomEditorMode = () => {
   const oop = ace.require("ace/lib/oop");
-  const TextMode = ace.require("ace/mode/text").Mode;
-  const CustomHighlightRules = defineCustomHighlightRules();
+  const Json5Mode = ace.require("ace/mode/json5").Mode;
 
-  let Mode = function() {
+  // Get the HighlightRules class from a temporary JSON5 mode instance
+  const Json5HighlightRules = (new Json5Mode()).HighlightRules;
+
+  function CustomHighlightRules() {
+    Json5HighlightRules.call(this);
+
+    const keywordRules = [
+      { token: "editor-highlight-track", regex: "\\btracks\\b" },
+      { token: "editor-highlight-clip",  regex: "\\bclips\\b" },
+    ];
+
+    // The JSON5 tokenizer uses multiple states (start, object, array, etc.).
+    // We don't know exactly which state handles unquoted keys, so prepend to all
+    // states except string and comment states — those consume their own content
+    // and won't accidentally match our word-bounded keyword rules anyway.
+    Object.keys(this.$rules).forEach(state => {
+      if (!/string|comment/i.test(state)) {
+        this.$rules[state].unshift(...keywordRules);
+      }
+    });
+
+    this.normalizeRules();
+  }
+  oop.inherits(CustomHighlightRules, Json5HighlightRules);
+
+  function Mode() {
+    Json5Mode.call(this);
     this.HighlightRules = CustomHighlightRules;
-  };
+  }
+  oop.inherits(Mode, Json5Mode);
+  Mode.prototype.$id = "ace/mode/custom_json5";
 
-  oop.inherits(Mode, TextMode);
-
-  (function() {
-    // Additional mode setup if needed
-    this.$id = "ace/mode/custom_json"; // Ensure this ID matches what you use in your component
-  }).call(Mode.prototype);
-
-  ace.define('ace/mode/custom_json', [], function(require, exports, module) {
+  ace.define('ace/mode/custom_json5', [], function(require, exports, module) {
     exports.Mode = Mode;
   });
 };
