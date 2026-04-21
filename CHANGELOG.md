@@ -9,6 +9,18 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-04-21] (18)
+
+### Fixed
+- **Spurious digest events** — `audioRoutes:/update` was writing `audio_approved`/`audio_disapproved` events to `userComms` whenever the saved status equalled 'Approved' or 'Disapproved', even if the status hadn't changed. Now only writes when status actually transitions to those values.
+- **Duplicate clips in digest** — digest runner now walks events newest-first and skips any audioID already resolved, so each clip appears at most once. Also resolves approve→disapprove conflicts naturally: the most recent event wins.
+- **Email logotype** — replaced Google Fonts text header (rendered only for users with the font installed) with a hosted PNG logotype served from `siteUrl/img/logotype/`.
+
+### Fixed (audio analysis)
+- **`audio-decode` ESM incompatibility on Node 18** — pinned to `3.0.0` and switched `require()` to dynamic `import()`. Node 23 silently supports `require()` of ES modules; Node 18 does not.
+
+---
+
 ## [2026-04-20] (17)
 
 ### Added
