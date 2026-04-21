@@ -260,29 +260,27 @@ async function buildDigestVars(user) {
     `SELECT commID, commType, payload FROM userComms
      WHERE userID = ? AND sentAt IS NULL
        AND commType IN ('audio_approved', 'audio_disapproved')
-     ORDER BY createdAt ASC`,
+     ORDER BY createdAt DESC`,
     [userID]
   );
 
   const commIDs = [];
-  // Use Maps keyed by audioID to deduplicate — later events overwrite earlier ones
-  const approvedMap = new Map();
-  const disapprovedMap = new Map();
+  const approved = [];
+  const disapproved = [];
+  const seen = new Set();
 
   for (const event of events) {
     commIDs.push(event.commID);
     const payload = typeof event.payload === 'string'
       ? JSON.parse(event.payload)
       : event.payload;
-    if (event.commType === 'audio_approved') {
-      approvedMap.set(payload.audioID, { audioID: payload.audioID, title: payload.title, notes: payload.notes || '' });
-    } else if (event.commType === 'audio_disapproved') {
-      disapprovedMap.set(payload.audioID, { audioID: payload.audioID, title: payload.title, notes: payload.notes || '' });
-    }
+    // Most recent event per audioID wins — skip if already resolved
+    if (seen.has(payload.audioID)) continue;
+    seen.add(payload.audioID);
+    const entry = { audioID: payload.audioID, title: payload.title, notes: payload.notes || '' };
+    if (event.commType === 'audio_approved') approved.push(entry);
+    else if (event.commType === 'audio_disapproved') disapproved.push(entry);
   }
-
-  const approved = [...approvedMap.values()];
-  const disapproved = [...disapprovedMap.values()];
 
   const { audioRow, recipeRow, topPlays, recentPendingRows } = await getProfileStats(userID);
 
