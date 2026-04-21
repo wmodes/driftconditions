@@ -1,329 +1,202 @@
-# DriftCondition Technical Notes
+# DriftConditions Technical Notes
 
-Here are critical or useful technical notes (largely for myself since I forget this stufff if I don't write it down).
+Critical and useful technical notes — largely for myself since I forget this stuff if I don't write it down.
 
-## Port Management
+---
 
-### Local/dev
+## Port Reference
 
-- https://localhost:3000 - React build of AdminClient 
-- http://localhost:3001 - Dev version of AdminClient
-- https://localhost:8080 - Secure reverse proxy to AdminServer
-- http://localhost:8081 - AdminServer
-- https://localhost:8082 - Secure reverse proxy to MixEngine
-- http://localhost:8083 - MixEngine
-- mysql://localhost:3306 - MySQL server
-- https://localhost:8000 - Icecast secure stream
-- http://localhost:8001 - Icecast stream (stream source & listener)
+### Local / Dev
 
-### Server
+| Port | Service |
+|------|---------|
+| https://localhost:3000 | React build of AdminClient (via Caddy) |
+| http://localhost:3001  | AdminClient dev server (hot reload) |
+| https://localhost:8080 | Secure reverse proxy → AdminServer |
+| http://localhost:8081  | AdminServer (direct) |
+| https://localhost:8082 | Secure reverse proxy → MixEngine |
+| http://localhost:8083  | MixEngine (direct) |
+| mysql://localhost:3306 | MySQL |
+| https://localhost:8000 | Icecast secure stream |
+| http://localhost:8001  | Icecast stream (source + listener) |
 
-- http://driftconditions.org:80 - redirects to https on port 443
-- https://driftconditions.org:443 - React build of AdminClient
-- https://driftconditions.org:8080 - Secure reverse proxy to AdminServer (ufw limited)
-- http://driftconditions.org:8081 - AdminServer (ufw limited)
-- https://driftconditions.org:8082 - Secure reverse proxy to MixEngine (ufw limited)
-- http://driftconditions.org:8083 - MixEngine (ufw limited)
-- mysql://driftconditions.org:3306 - MySQL server (ufw limited)
-- https://driftconditions.org:8000 - Icecast secure stream (ufw limited)
-- http://driftconditions.org:8001 - Icecast stream (stream source & listener - ufw blocked)
+### Production (driftconditions.org)
 
-## Scripts
+| Port | Service |
+|------|---------|
+| :80  | Redirects to HTTPS :443 |
+| :443 | AdminClient (React build via Caddy) |
+| :8080 | Secure reverse proxy → AdminServer (ufw limited) |
+| :8081 | AdminServer (ufw limited) |
+| :8082 | Secure reverse proxy → MixEngine (ufw limited) |
+| :8083 | MixEngine (ufw limited) |
+| :3306 | MySQL (ufw limited) |
+| :8000 | Icecast secure stream (ufw limited) |
+| :8001 | Icecast stream source/listener (ufw blocked) |
 
-- scripts/rebuild-client.sh - rebuild AdminClient
-- scripts/restart.sh - restart all servers (except mysql which never needs it)
+---
 
-## Start Up
+## Development Setup
 
-Note that on the server, systemctl takes care of startup upon boot. I did development on MacOS and production on a Debian server and these instructions reflect that. Your mileage may vary.
+Development is on macOS; production runs on Debian. Systemd handles startup on the server automatically.
 
-### Local Live Testing (without building)
+### Useful scripts
 
-Start the mysql server (probably already running):
-```
-% brew services start mysql
-```
-
-Start AdminServer in its own terminal:
-```
-% cd AdminServer
-% npm start
+```bash
+scripts/rebuild-client.sh   # rebuild AdminClient
+scripts/restart.sh          # restart all servers (MySQL excluded — never needs it)
 ```
 
-Start MixEngine in its own terminal:
-```
-% cd MixEngine
-% npm start
-```
+### Local dev (hot reload, no build)
 
-Start AdminClient in its own terminal:
-```
-% cd AdminServer
-% npm start
-```
+Each service runs in its own terminal. Access the client at **http://localhost:3001**.
 
-Start reverse proxies for AdminServer and MixEngine in its own terminal:
-```
-% cd interference
-% sudo caddy run --config setupfiles/Caddyfile.local
-```
-Access client at http://localhost:3001
+```bash
+# MySQL (probably already running)
+brew services start mysql
 
-Start liquidsoap in its own terminal:
-```
-% cd interference
-% liquidsoap setupfiles/liquidsoap.liq
-```
+# AdminServer
+cd AdminServer && npm start
 
-Start Icecast server with:
-```
-% icecast -c /usr/local/etc/icecast.xml
+# MixEngine
+cd MixEngine && npm start
+
+# AdminClient (hot reload)
+cd AdminClient && npm start
+
+# Caddy reverse proxy
+sudo caddy run --config setupfiles/Caddyfile.local
+
+# Liquidsoap (optional — only needed for stream testing)
+liquidsoap setupfiles/liquidsoap.liq
+
+# Icecast (optional — only needed for stream testing)
+icecast -c /usr/local/etc/icecast.xml
 ```
 
 ### Local build testing
 
-Start AdminServer in its own terminal:
-```
-% cd AdminServer
-% npm start
+Same as above but skip `AdminClient` dev server. Caddy serves the built React app instead.
+Access the client at **https://localhost:3000**.
+
+```bash
+cd AdminClient && npm run build   # build first
+
+# Then start AdminServer, MixEngine, Caddy, Liquidsoap, Icecast as above
 ```
 
-Start MixEngine in its own terminal:
-```
-% cd MixEngine
-% npm start
-```
+---
 
-Start Caddy including AdminClient build along with the reverse proxies in its own terminal:
-```
-% cd interference
-% sudo caddy run --config setupfiles/Caddyfile.local
-```
-Access client at https://localhost:3000
+## Production Deployment
 
-Start Icecast server with:
-```
-% icecast -c /usr/local/etc/icecast.xml
-```
+Systemd manages all services and restarts them on reboot.
 
-Start liquidsoap in its own terminal:
-```
-% cd interference
-% liquidsoap setupfiles/liquidsoap.liq
-```
+### Deploy after a push
 
-### Server build testing
+```bash
+cd ~/driftconditions && git pull
 
-Start/restart AdminServer (one or the other, depending):
-```
-% sudo systemctl start adminserver.service
-% sudo systemctl restart adminserver.service
-```
+# If frontend files changed, rebuild the client
+cd AdminClient && npm run build
 
-Start/restart MixEngine (one or the other, depending):
-```
-% sudo systemctl start mixengine.service
-% sudo systemctl restart mixengine.service
-```
-
-Start/restart Caddy including AdminClient build along with the reverse proxies:
-```
-% sudo systemctl start caddy
-% sudo systemctl restart caddy
-```
-
-Start/restart Icecast:
-```
-sudo systemctl start icecast2
+# Restart services as needed
+sudo systemctl restart adminserver
+sudo systemctl restart mixengine
+sudo systemctl restart caddy
 sudo systemctl restart icecast2
+sudo systemctl restart liquidsoap
 ```
 
-Start/restart liquidsoap:
-```
-% sudo systemctl start liquidsoap.service
-% sudo systemctl restart liquidsoap.service
-```
+### Systemd service commands
 
-## Technologies
+```bash
+# Start / restart / status
+sudo systemctl start <service>
+sudo systemctl restart <service>
+sudo systemctl status <service>
 
-Here is a list of technologies we are relying on:
-
-### AdminServer:
-
-- **Node.js**: Used as the runtime environment for the server.
-- **Express**: Framework for handling server-side logic.
-  - **body-parser**: Middleware to parse incoming request bodies.
-  - **cookie-parser**: Middleware to parse cookies attached to the client request object.
-  - **cors**: Middleware to enable CORS (Cross-Origin Resource Sharing).
-  - **express-sslify**: Middleware to enforce SSL in your Node.js Express apps.
-- **MySQL**: Database system used for data storage.
-- **bcrypt**: Library to help you hash passwords.
-- **bcrypt-promise**: Promisified version of bcrypt for use with async/await.
-- **jsonwebtoken**: Implementation of JSON Web Tokens for authentication.
-- **config**: Configuration management for Node.js.
-- **ffprobe-static** & **fluent-ffmpeg**: Tools for working with audio and video formats.
-- **fs-extra**: Extension of the standard `fs` module with extra file system methods.
-- **get-audio-duration**: Module to determine the duration of audio files.
-- **mkdirp**: Utility to create directories with a given path.
-- **multer**: Middleware for handling `multipart/form-data`, primarily used for uploading files.
-
-### AdminClient:
-
-- **React**: A JavaScript library for building user interfaces.
-  - **axios**: Promise-based HTTP client for making requests to external services.
-  - **react-router-dom**: DOM bindings for React Router; manages navigation and rendering of components in React applications.
-  - **@reduxjs/toolkit**: Toolset for efficient Redux development.
-  - **react-redux**: Official React bindings for Redux.
-  - **react-ace**: React component for Ace editor.
-  - **react-dom**: React package for working with the DOM.
-  - **react-scripts**: Configuration and scripts for Create React App.
-- **TailwindCSS**: A utility-first CSS framework for rapidly building custom designs.
-- **Babel**: JavaScript compiler that lets you use next generation JavaScript, today.
-- **Prettier**: An opinionated code formatter.
-- **Various utilities**:
-  - **ldrs**: Custom library/package.
-  - **tracery-grammar**: Library to generate text based on a grammar specification.
-  - **wavesurfer.js**: Interactive navigable audio visualization using Web Audio and Canvas.
-- **Development tools**:
-  - **eslint**: Linter tool to standardize code quality.
-  - **feather-icons-react**: React component for Feather icons.
-  - **react-tag-input**: Component to handle tag inputs in React.
-  - **crypto**, **os**, **path**: Node.js libraries for cryptographic functions, operating system related utility methods, and working with file and directory paths.
-
-### MixEngine:
-
-- **Node.js**: Used as the runtime environment for the server.
-- **Express**: Web application framework for Node.js.
-  - **cookie-parser**: Middleware to parse cookies attached to the client request object.
-  - **cors**: Package to enable CORS (Cross-Origin Resource Sharing).
-- **ffmpeg**:
-  - **fluent-ffmpeg**: A fluent API to interact with FFmpeg.
-  - **ffprobe-static**: Provides static binaries for FFprobe.
-- **Filesystem**:
-  - **fs-extra**: Extra methods for the fs object in Node.js like copy, remove, mkdirs.
-- **JSON**:
-  - **json5**: JSON for humans (enhanced version of JSON with additional syntax for ease of use).
-- **Security**:
-  - **jsonwebtoken**: Implementation of JSON Web Tokens to transmit information between parties as a JSON object securely.
-- **Configuration**:
-  - **config**: Local module linked from another location, managing configurations.
-- **Module Aliasing**:
-  - **module-alias**: Simplifies module resolution by providing aliases.
-- **Development and Code Quality Tools**:
-  - **eslint**: Linting utility for JavaScript and JSX, with plugins for standards and promises.
-  - **globals**: Provides global variables for linting environments.
-
-### Local Configuration Module (`config`):
-
-- **Node.js**: Used as the runtime environment for the configuration settings.
-- **dotenv**: Loads environment variables from a `.env` file into `process.env`.
-- **mysql2**: MySQL client for Node.js with focus on performance. Supports prepared statements, non-blocking API, connection pooling, and more.
-- **winston**: A logger for just about everything in Node.js.
-
-This module is essential for managing the settings and configurations that dictate how the application behaves in different environments, and it abstracts away the complexities of environment-specific configurations.
-
-## Generalized Noise Equation for ffmpeg
-
-Here 'noise' refers to coherent noise filters, a harmonic series based on sine and cosine general harmonic sumation filter:
-
-```
-min(1, max(0, ((
-    cos(PI * t * fs / f0 + fo) * a0 + 
-    cos(PI * t * fs / f1 + fo) * a1 + 
-    cos(PI * t * fs / f2 + fo) * a2) + ao ) * as  * po + q))
+# Watch live logs
+sudo journalctl -u <service> -f --no-pager
 ```
 
-where:
+Services: `adminserver`, `mixengine`, `caddy`, `icecast2`, `liquidsoap`, `digest`, `audio-analysis`
 
-* **[f0, f1, f2]** designate increasingly finer frequencies, default [17, 7, 3]
-* **[a0, a1, a2]** scale the wave to decreased amplidtude, default [1, 0.5, 0.25]
-* **fs** is a general frequency scaler, default 0.25, an nice large period
-* **fo** is a general frequency offset, default 0, to create different period offsets
-* **as** is a general amplitude scaler, default 0.75, creates a 3/4 height wave
-* **ao** is a general amplitude offset, default 0.5, offset 1/2 from 0
-* **po** is polarity [-1, 1], default 1, used to create an inverse wave
-* **q** offsets the entire wave, default 0.5, centered at 1/2
+---
 
-## Server Maintenance Notes
+## Server Maintenance
 
 ### systemd services must be `enabled`, not just `linked`
 
 After adding a new service file with `sudo ln -sf ... /etc/systemd/system/`, always run:
+
+```bash
+sudo systemctl enable <service>.service
 ```
-% sudo systemctl enable <service>.service
-```
-A `linked` service shows in `systemctl status` but **will not auto-start on reboot**. Only `enabled`
-services (with a symlink in `multi-user.target.wants/`) survive a reboot. Check with:
-```
-% systemctl is-enabled <service>.service
+
+A `linked` service appears in `systemctl status` but **will not auto-start on reboot**. Only `enabled` services (with a symlink in `multi-user.target.wants/`) survive a reboot. Verify with:
+
+```bash
+systemctl is-enabled <service>.service
 ```
 
 ### IPv6 NDisc failure can take down IPv4
 
-On 2026-04-15, the server lost IPv4 connectivity after `systemd-networkd` reported an IPv6 NDisc
-(neighbor discovery) timeout and marked `enX0: Failed`. This cascaded to drop the IPv4 DHCP lease
-as well, taking the server fully offline.
+On 2026-04-15, the server lost IPv4 connectivity after `systemd-networkd` reported an IPv6 NDisc (neighbor discovery) timeout and marked `enX0: Failed`. This cascaded to drop the IPv4 DHCP lease, taking the server fully offline.
 
-**Fix applied:** a `systemd-networkd` drop-in at
-`/etc/systemd/network/10-netplan-enX0.network.d/keep-config.conf` sets `KeepConfiguration=dhcp-on-stop`
-so DHCP-assigned addresses are preserved even if the link reports a failure.
+**Fix applied:** a `systemd-networkd` drop-in at `/etc/systemd/network/10-netplan-enX0.network.d/keep-config.conf` sets `KeepConfiguration=dhcp-on-stop` so DHCP-assigned addresses are preserved even if the link reports a failure.
 
-Note: the main netplan config (`/run/systemd/network/10-netplan-enX0.network`) is regenerated by
-cloud-init on every reboot and cannot be edited directly. The drop-in survives reboots.
-
-### FAT-fs (xvda15) needs fsck
-
-After the Apr 16 2026 reboot, kernel logged:
-`FAT-fs (xvda15): Volume was not properly unmounted. Some data may be corrupt. Please run fsck.`
-This is the EFI partition. Low urgency — run at next maintenance window:
-```
-% sudo fsck /dev/xvda15
-```
+Note: the main netplan config (`/run/systemd/network/10-netplan-enX0.network`) is regenerated by cloud-init on every reboot and cannot be edited directly. The drop-in survives reboots.
 
 ---
 
-## Streaming services
+## DSP Reference
 
-FastCast4u
-128kbps: $18.75 per month / $149.25 per year / $224.25 per 2 years
-Stream address:
-https://usa14.fastcast4u.com/proxy/wmodes?mp=/1
+### Coherent noise / wave effect equation (FFmpeg)
+
+The `wave` and `noise` effects use a harmonic series of cosines to modulate audio volume — similar to Perlin noise but computed inline in FFmpeg's `volume` filter expression:
+
+```
+min(1, max(0, ((
+    cos(PI * t * fs / f0 + fo) * a0 +
+    cos(PI * t * fs / f1 + fo) * a1 +
+    cos(PI * t * fs / f2 + fo) * a2) + ao) * as * po + q))
+```
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `f0, f1, f2` | `17, 7, 3` | Increasingly fine frequency components |
+| `a0, a1, a2` | `1, 0.5, 0.25` | Amplitudes (decreasing for each harmonic) |
+| `fs` | `0.25` | Global frequency scaler — controls overall period |
+| `fo` | `0` | Frequency offset — shifts phase to create variety |
+| `as` | `0.75` | Amplitude scaler — limits wave to 3/4 height |
+| `ao` | `0.5` | Amplitude offset — centers the wave |
+| `po` | `1` | Polarity: `1` or `-1` for inverted wave |
+| `q` | `0.5` | DC offset — centers the whole expression at 0.5 |
 
 ---
 
-## Audio Analysis — Essentia.js
+## Audio Analysis Research
 
-### Onset Detection for DJ-style entry points
+### Onset detection for DJ-style entry points (future work)
 
-Goal: find musically meaningful breakpoints where a new clip (e.g. a narrative) could be
-layered on top of a bed. A good DJ starts a narrative at a notable textural or structural
-change, not just any transient.
+**Goal:** find musically meaningful breakpoints where a new clip (e.g. a narrative) could be layered on top of a bed. A good DJ starts a narrative at a notable textural or structural change, not just any transient.
 
-#### The four algorithms
+#### The four Essentia algorithms
 
 **HFC (High Frequency Content)**
-Fires on sharp percussive transients — drum hits, attacks, hard consonants.
-For our library: very granular, will produce many onsets on any rhythmic content.
-Useful as a secondary signal to snap candidate breaks to a nearby beat/hit.
+Fires on sharp percussive transients — drum hits, attacks, hard consonants. Very granular; will produce many onsets on rhythmic content. Useful as a secondary signal to snap candidate breaks to a nearby beat.
 *Weight high for: music with clear percussion. Weight low for: ambient, drone, field recording.*
 
 **Complex**
-Measures spectral differences in both magnitude and phase between frames.
-Catches genuine musical changes — new notes, chord shifts, textural transitions.
-The most general-purpose detector; good workhorse for mixed content.
+Measures spectral differences in both magnitude and phase between frames. Catches genuine musical changes — new notes, chord shifts, textural transitions. Best general-purpose detector for mixed content.
 *Weight high for: most clips. Best single algorithm if only using one.*
 
 **Complex Phase**
-Phase-only variant of Complex, weighted by magnitude.
-Sensitive to tonal/melodic shifts (e.g. bowed strings, sustained synths changing pitch).
-Tends to over-detect on percussive content.
-*Weight high for: sustained tonal material. Weight low for: anything rhythmic or percussive.*
+Phase-only variant of Complex, weighted by magnitude. Sensitive to tonal/melodic shifts (bowed strings, sustained synths changing pitch). Over-detects on percussive content.
+*Weight high for: sustained tonal material. Weight low for: anything rhythmic.*
 
 **Flux (Spectral Flux)**
-Measures rate of change in frequency components over time — a timbre-change detector.
-Works well on material with no clear transients: field recordings, found sound, noise, drones.
-For our library: especially useful for ambient and environmental clips where texture shifts
-are the meaningful signal, not attacks.
+Measures rate of change in frequency components — a timbre-change detector. Works well on material with no clear transients: field recordings, found sound, noise, drones.
 *Weight high for: ambient, soundscape, field recording. Works where HFC is blind.*
 
 #### Balancing strategy by classification
@@ -337,7 +210,18 @@ are the meaningful signal, not attacks.
 | Experimental / Digital | ●●  | ●●●     | ●●            | ●●●  |
 
 #### Open questions
-- Onset detection gives candidate points — still need a threshold + minimum gap to avoid
-  clustering. What minimum gap makes sense for DJ use? (4 bars? 8 bars?)
-- Should we store onset timestamps in the DB, or compute on-the-fly at mix time?
+
+- Onset detection gives candidate points — still need a threshold + minimum gap to avoid clustering. What minimum gap makes sense for DJ use? (4 bars? 8 bars?)
+- Should onset timestamps be stored in the DB, or computed on-the-fly at mix time?
 - Is the goal auto-cueing by the system, or generating editor markers for human review?
+
+---
+
+## External Services
+
+### FastCast4u (backup streaming)
+
+External hosted streaming service, used as a fallback or alternative stream source.
+
+- **128kbps:** $18.75/month · $149.25/year · $224.25/2 years
+- **Stream URL:** https://usa14.fastcast4u.com/proxy/wmodes?mp=/1
