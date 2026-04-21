@@ -9,6 +9,13 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-04-21] (20)
+
+### Changed
+- **User search** — expanded to also search location and bio fields.
+
+---
+
 ## [2026-04-21] (19)
 
 ### Added
