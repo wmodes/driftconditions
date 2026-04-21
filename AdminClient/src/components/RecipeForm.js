@@ -5,7 +5,6 @@ import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import AceEditor from 'react-ace';
 import 'ace-builds/src-noconflict/mode-json5';
-// import 'ace-builds/src-noconflict/mode-json';
 import 'ace-builds/src-noconflict/worker-json';
 // import 'ace-builds/src-noconflict/theme-github';
 import 'ace-builds/src-noconflict/theme-tomorrow';
@@ -68,7 +67,7 @@ function RecipeForm({ action, initialRecord, onSave, onCancel, onChange }) {
     if (isEditorReady) {
       const editor = editorRef.editor;
       defineCustomEditorMode(); // Ensure this function is correctly setting up the mode
-      editor.session.setMode('ace/mode/custom_json'); // Apply the custom mode
+      editor.session.setMode('ace/mode/custom_json5'); // Apply the custom mode
       validateOnTheFly(record.recipeData); // Validate the initial content
     }
     // eslint-disable-next-line
@@ -275,7 +274,7 @@ function RecipeForm({ action, initialRecord, onSave, onCancel, onChange }) {
         <label className="form-label" htmlFor="recipeData">Recipe Data: <Required /></label>
 
         <AceEditor
-          mode="json"
+          mode="json5"
           theme="tomorrow"
           name="recipeData"
           ref={(editor) => setEditorRef(editor)}

@@ -39,6 +39,7 @@
   --editor-string-color: rgb(68, 127, 68);
   --editor-track-color: rgb(204, 27, 27);
   --editor-clip-color: rgb(213, 101, 26);
+  --editor-keyword-color: #336699;
 
   --form-tag-color: #dae3ec;
 }
@@ -1033,13 +1034,17 @@ tr.row-even.quick-edit textarea {
   font-weight: normal;
 }
 
+.ace-tomorrow .ace_variable {
+  color: var(--editor-keyword-color);
+}
+
 .ace_editor-highlight-track {
   color: var(--editor-track-color);
   font-weight: bold;
 }
 
 .ace_editor-highlight-clip {
-  color: var(--editor-clip-color);
+  color: var(--editor-track-color);
   font-weight: bold;
 }
 

@@ -9,10 +9,12 @@ import {
 // import FeatherIcon from 'feather-icons-react';
 
 import AceEditor from 'react-ace';
-import 'ace-builds/src-noconflict/mode-json';
-import 'ace-builds/src-noconflict/theme-github';
+import 'ace-builds/src-noconflict/mode-json5';
+import 'ace-builds/src-noconflict/theme-tomorrow';
 
-// get config object from config.js file 
+import { defineCustomEditorMode } from '../utils/editorUtils';
+
+// get config object from config.js file
 import config from '../config/config';
 const aceOptions = config.aceEditor;
 
@@ -20,6 +22,15 @@ function RecipeView() {
   const { recipeID } = useParams();
   // const navigate = useNavigate();
   const dispatch = useDispatch();
+
+  // Editor ref and custom mode setup
+  const [editorRef, setEditorRef] = useState(null);
+  useEffect(() => {
+    if (editorRef?.editor) {
+      defineCustomEditorMode();
+      editorRef.editor.session.setMode('ace/mode/custom_json5');
+    }
+  }, [editorRef]);
 
   // Success and error handling
   const [isLoading, setIsLoading] = useState(true);
@@ -124,9 +135,10 @@ function RecipeView() {
           <div className="form-group">
             <div className="form-label">Recipe Data:</div>
             <AceEditor
-              mode="json"
-              theme="github"
+              mode="json5"
+              theme="tomorrow"
               name="recipeData"
+              ref={(editor) => setEditorRef(editor)}
               className="code-editor"
               value={recipeRecord.recipeData}
               readOnly={true}
