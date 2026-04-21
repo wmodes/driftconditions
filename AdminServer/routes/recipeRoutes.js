@@ -61,10 +61,11 @@ router.post('/list', verifyToken, async (req, res) => {
     const sort = req.body.sort || 'date';
     const order = req.body.order === 'ASC' ? 'ASC' : 'DESC';
     const filter = req.body.filter || 'all';
-    const targetID = req.body.targetID || req.user.userID;
+    const targetID = req.body.targetID ? parseInt(req.body.targetID, 10) : null;
     const page = parseInt(req.body.page || 1, 10);
     const recordsPerPage = parseInt(req.body.recordsPerPage || 20, 10);
     const offset = (page - 1) * recordsPerPage;
+    const searchRaw = req.body.search || '';
 
     const sortOptions = {
       id: 'recipeID',
@@ -79,13 +80,9 @@ router.post('/list', verifyToken, async (req, res) => {
 
     // Define filter options
     const filterOptions = {
-      all : {
-        query: 'AND a.status != ?', 
+      all: {
+        query: 'AND a.status != ?',
         values: ['Trashed']
-      },
-      user: {
-        query: 'AND a.creatorID = ? AND a.status != ?',
-        values: [targetID, 'Trashed'] 
       },
       trash: {
         query: 'AND a.status = ?',
@@ -109,28 +106,45 @@ router.post('/list', verifyToken, async (req, res) => {
     let filterQuery = filterCondition.query;
     let filterValues = filterCondition.values;
 
+    // User filter — stacks with status filter
+    const userQuery = targetID ? 'AND (a.creatorID = ? OR a.editorID = ?)' : '';
+    const userValues = targetID ? [targetID, targetID] : [];
+
+    // Parse search string into tokens, respecting quoted phrases.
+    // Each token is ANDed across title, description, tags, and comments.
+    const searchTokens = [];
+    const tokenRegex = /"([^"]+)"|(\S+)/g;
+    let tokenMatch;
+    while ((tokenMatch = tokenRegex.exec(searchRaw)) !== null) {
+      searchTokens.push(tokenMatch[1] || tokenMatch[2]);
+    }
+    const searchQuery = searchTokens
+      .map(() => 'AND (a.title LIKE ? OR a.description LIKE ? OR a.classification LIKE ? OR a.tags LIKE ? OR a.comments LIKE ? OR a.recipeData LIKE ?)')
+      .join(' ');
+    const searchValues = searchTokens.flatMap(t => [`%${t}%`, `%${t}%`, `%${t}%`, `%${t}%`, `%${t}%`, `%${t}%`]);
+
     // Execute countQuery to get the total number of records
     const [countResult] = await db.query(`
       SELECT COUNT(*) AS totalRecords
       FROM recipes a
-      WHERE 1=1 ${filterQuery};
-    `, filterValues);
-    
+      WHERE 1=1 ${filterQuery} ${userQuery} ${searchQuery};
+    `, [...filterValues, ...userValues, ...searchValues]);
+
     const totalRecords = countResult[0].totalRecords;
 
-    // Get the audio list with filter, sort, and pagination
+    // Get the recipe list with filter, sort, and pagination
     const [recipeList] = await db.query(`
-      SELECT 
+      SELECT
         a.*,
         u1.username AS creatorUsername,
         u2.username AS editorUsername
       FROM recipes a
       LEFT JOIN users u1 ON a.creatorID = u1.userID
       LEFT JOIN users u2 ON a.editorID = u2.userID
-      WHERE 1=1 ${filterQuery}
+      WHERE 1=1 ${filterQuery} ${userQuery} ${searchQuery}
       ORDER BY ${sortColumn} ${order}
       LIMIT ? OFFSET ?;
-    `, [...filterValues, recordsPerPage, offset]);
+    `, [...filterValues, ...userValues, ...searchValues, recordsPerPage, offset]);
 
     // Respond with the fetched data
     res.status(200).json({
