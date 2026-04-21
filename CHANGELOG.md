@@ -9,6 +9,13 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-04-21] (22)
+
+### Changed
+- **README** — full overhaul: updated architecture diagram, added sections for authentication, email/digest system, audio analysis pipeline, user roles, accurate effects reference, and current technology stack.
+
+---
+
 ## [2026-04-21] (21)
 
 ### Added
