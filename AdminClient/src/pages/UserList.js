@@ -261,7 +261,7 @@ function UserList() {
                     <input
                       type="text"
                       className="search-input"
-                      placeholder="Search username, name, email..."
+                      placeholder="Search username, name, email, location..."
                       value={searchInput}
                       onChange={(e) => setSearchInput(e.target.value)}
                     />

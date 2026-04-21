@@ -75,9 +75,9 @@ router.post('/list', verifyToken, async (req, res) => {
     }
     // Build one AND clause per token across user fields
     const searchQuery = searchTokens
-      .map(() => 'AND (username LIKE ? OR firstname LIKE ? OR lastname LIKE ? OR email LIKE ? OR notes LIKE ?)')
+      .map(() => 'AND (username LIKE ? OR firstname LIKE ? OR lastname LIKE ? OR email LIKE ? OR location LIKE ? OR bio LIKE ? OR notes LIKE ?)')
       .join(' ');
-    const searchValues = searchTokens.flatMap(t => [`%${t}%`, `%${t}%`, `%${t}%`, `%${t}%`, `%${t}%`]);
+    const searchValues = searchTokens.flatMap(t => [`%${t}%`, `%${t}%`, `%${t}%`, `%${t}%`, `%${t}%`, `%${t}%`, `%${t}%`]);
 
     const [countResult] = await db.query(`
       SELECT COUNT(*) AS totalRecords
