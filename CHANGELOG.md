@@ -9,6 +9,15 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-04-21] (21)
+
+### Added
+- **Recipe search** — recipe list now has a search box filtering across title, description, classification, tags, comments, and recipe data. Token-based AND logic, quoted phrases supported.
+- **Recipe filter chips** — status filter buttons now highlight the active selection.
+- **Recipe user filter** — clicking a creator or editor username filters the list to their recipes, shown as a dismissible chip. Fixes broken user filter (was passing username string where backend expected numeric ID).
+
+---
+
 ## [2026-04-21] (20)
 
 ### Changed

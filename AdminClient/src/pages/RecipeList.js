@@ -1,7 +1,5 @@
 // RecipeList.js - Edit recipe details
 
-// TODO: Add search field
-
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
@@ -9,8 +7,6 @@ import { recipeList as recipeListAction, recipeTrash as recipeTrashAction, recip
 import { parseQuery, stringifyQuery } from '../utils/queryUtils';
 import { renderPagination } from '../utils/listUtils'; 
 import { formatDateAsFriendlyDate, formatListAsString, formatDuration } from '../utils/formatUtils';
-
-// TODO: test and debug user filter
 
 // Import the config object from the config.js file
 import config from '../config/config';
@@ -39,6 +35,12 @@ function RecipeList() {
   const [editedRecord, setEditedRecord] = useState({});
   const [updateTrigger, setUpdateTrigger] = useState(false);
 
+  // Search input state — initialized from URL and kept in sync with URL changes
+  const [searchInput, setSearchInput] = useState(() => new URLSearchParams(location.search).get('search') || '');
+  useEffect(() => {
+    setSearchInput(new URLSearchParams(location.search).get('search') || '');
+  }, [location.search]);
+
   // Parse current URL search params
   const currentFilters = parseQuery(location.search);
 
@@ -49,6 +51,8 @@ function RecipeList() {
       sort: searchParams.get('sort') || 'date',
       order: searchParams.get('order') || 'DESC',
       filter: searchParams.get('filter') || 'all',
+      targetID: searchParams.get('targetID') || null,
+      search: searchParams.get('search') || '',
     };
   };
 
@@ -119,18 +123,52 @@ function RecipeList() {
     return <span className="sort-indicator">{order === 'ASC' ? ' ▲' : ' ▼'}</span>;
   };
   
-  const handleFilter = (newFilter, targetID = null) => {
+  const handleFilter = (newFilter) => {
     const searchParams = new URLSearchParams(location.search);
     if (newFilter === 'all') {
       searchParams.delete('filter');
     } else {
       searchParams.set('filter', newFilter);
-      if (newFilter === 'user' && targetID) {
-        searchParams.set('targetID', targetID);
-      } else {
-        searchParams.delete('targetID');
-      }
     }
+    searchParams.delete('targetID');
+    searchParams.delete('targetUsername');
+    searchParams.delete('page');
+    navigate(`${location.pathname}?${searchParams.toString()}`);
+  };
+
+  const handleUserFilter = (creatorID, creatorUsername) => {
+    const searchParams = new URLSearchParams(location.search);
+    searchParams.set('targetID', creatorID);
+    searchParams.set('targetUsername', creatorUsername);
+    searchParams.delete('page');
+    navigate(`${location.pathname}?${searchParams.toString()}`);
+  };
+
+  const handleUserClear = () => {
+    const searchParams = new URLSearchParams(location.search);
+    searchParams.delete('targetID');
+    searchParams.delete('targetUsername');
+    searchParams.delete('page');
+    navigate(`${location.pathname}?${searchParams.toString()}`);
+  };
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    const searchParams = new URLSearchParams(location.search);
+    if (searchInput.trim()) {
+      searchParams.set('search', searchInput.trim());
+    } else {
+      searchParams.delete('search');
+    }
+    searchParams.delete('page');
+    navigate(`${location.pathname}?${searchParams.toString()}`);
+  };
+
+  const handleSearchClear = () => {
+    setSearchInput('');
+    const searchParams = new URLSearchParams(location.search);
+    searchParams.delete('search');
+    searchParams.delete('page');
     navigate(`${location.pathname}?${searchParams.toString()}`);
   };
 
@@ -164,36 +202,26 @@ function RecipeList() {
     setError('');
   };
 
-  // Function to render controls
+  // Function to render filter chips
   const renderFilters = () => {
-    return (                
+    const activeFilter = new URLSearchParams(location.search).get('filter') || 'all';
+    const activeUser = new URLSearchParams(location.search).get('targetID');
+    const chipClass = (name) => `link filter-chip${activeFilter === name ? ' active' : ''}`;
+    return (
       <div className="filter-box">
         <ul>
-          <li>
-            <button className="link" onClick={() => handleFilter('all')}>
-              All
-            </button>
-          </li>
-          <li>
-            <button className="link" onClick={() => handleFilter('review')}>
-              Review
-            </button>
-          </li>
-          <li>
-            <button className="link" onClick={() => handleFilter('approved')}>
-              Approved
-            </button>
-          </li>
-          <li>
-            <button className="link" onClick={() => handleFilter('disapproved')}>
-              Disapproved
-            </button>
-          </li>
-          <li>
-            <button className="link" onClick={() => handleFilter('trash')}>
-              Trash
-            </button>
-          </li>
+          <li><button className={chipClass('all')} onClick={() => handleFilter('all')}>All</button></li>
+          <li><button className={chipClass('review')} onClick={() => handleFilter('review')}>Review</button></li>
+          <li><button className={chipClass('approved')} onClick={() => handleFilter('approved')}>Approved</button></li>
+          <li><button className={chipClass('disapproved')} onClick={() => handleFilter('disapproved')}>Disapproved</button></li>
+          <li><button className={chipClass('trash')} onClick={() => handleFilter('trash')}>Trash</button></li>
+          {activeUser && (
+            <li>
+              <button className="link filter-chip active filter-chip-user" onClick={handleUserClear}>
+                {new URLSearchParams(location.search).get('targetUsername') || activeUser} ×
+              </button>
+            </li>
+          )}
         </ul>
       </div>
     );
@@ -211,6 +239,23 @@ function RecipeList() {
           </div>
           {!error && !isLoading ? (
             <div>
+              <div className="search-box">
+                <form onSubmit={handleSearch}>
+                  <div className="search-input-wrap">
+                    <input
+                      type="text"
+                      className="search-input"
+                      placeholder="Search title, description, classification, tags..."
+                      value={searchInput}
+                      onChange={(e) => setSearchInput(e.target.value)}
+                    />
+                    {searchInput && (
+                      <button type="button" className="search-clear" onClick={handleSearchClear} aria-label="Clear search">×</button>
+                    )}
+                  </div>
+                  <button type="submit" className="button search-submit">Search</button>
+                </form>
+              </div>
               <div className="top-controls">
                 {renderFilters()}
                 {renderPagination(totalRecords, recordsPerPage, page, handlePageChange)}
@@ -276,7 +321,7 @@ function RecipeList() {
                           <div className="authorline">
                             Upload:&nbsp;
                             <button className="link"
-                              onClick={() => handleFilter('user', recipe.creatorUsername)}>
+                              onClick={() => handleUserFilter(recipe.creatorID, recipe.creatorUsername)}>
                               {recipe.creatorUsername}
                             </button>
                             &nbsp;on {formatDateAsFriendlyDate(recipe.createDate)}
@@ -285,7 +330,7 @@ function RecipeList() {
                             <div className="authorline">
                               Edit:&nbsp;
                               <button className="link"
-                                onClick={() => handleFilter('user', recipe.editorUsername)}>
+                                onClick={() => handleUserFilter(recipe.editorID, recipe.editorUsername)}>
                                 {recipe.editorUsername}
                               </button>
                               &nbsp;on {formatDateAsFriendlyDate(recipe.editDate)}
