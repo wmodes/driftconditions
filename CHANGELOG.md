@@ -9,6 +9,18 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-04-21] (19)
+
+### Added
+- **User search** — user list now has a search box that filters across username, firstname, lastname, email, and notes. Stackable with the role filter. Mirrors the audio list search pattern (token-based AND logic, quoted phrases).
+- **User filter chips** — role filter buttons now highlight the active selection. Fixed broken "User" filter button (missing `case 'user'` in switch).
+- **User notes field** — new `notes TEXT` column on the `users` table. Visible and editable for admins/mods (gated by `userList` permission) in the user list, user list quick-edit, profile view, and profile edit page. Notes are also included in user search.
+
+### Fixed
+- **Profile Edit button** — always linked to `/profile/edit` (the logged-in user's own profile) regardless of whose profile was being viewed. Now links to `/profile/edit/:username` so admins editing another user's profile land on the correct page.
+
+---
+
 ## [2026-04-21] (18)
 
 ### Fixed

@@ -43,6 +43,7 @@ router.post('/list', verifyToken, async (req, res) => {
     const pageArg = req.body.page ? parseInt(req.body.page, 10) : null;
     const recordsPerPage = req.body.recordsPerPage ? parseInt(req.body.recordsPerPage, 10) : null;
     const offset = pageArg && recordsPerPage ? (pageArg - 1) * recordsPerPage : null;
+    const searchRaw = req.body.search || '';
 
     const sortOptions = {
       user: { field: 'userID', order: orderArg || 'ASC' },
@@ -64,23 +65,38 @@ router.post('/list', verifyToken, async (req, res) => {
     let filterQuery = filterCondition.query;
     let filterValues = filterCondition.values;
 
+    // Parse search string into tokens, respecting quoted phrases.
+    // Each token is ANDed across username, firstname, lastname, and email.
+    const searchTokens = [];
+    const tokenRegex = /"([^"]+)"|(\S+)/g;
+    let tokenMatch;
+    while ((tokenMatch = tokenRegex.exec(searchRaw)) !== null) {
+      searchTokens.push(tokenMatch[1] || tokenMatch[2]);
+    }
+    // Build one AND clause per token across user fields
+    const searchQuery = searchTokens
+      .map(() => 'AND (username LIKE ? OR firstname LIKE ? OR lastname LIKE ? OR email LIKE ? OR notes LIKE ?)')
+      .join(' ');
+    const searchValues = searchTokens.flatMap(t => [`%${t}%`, `%${t}%`, `%${t}%`, `%${t}%`, `%${t}%`]);
+
     const [countResult] = await db.query(`
       SELECT COUNT(*) AS totalRecords
       FROM users
-      WHERE status != "Disabled" ${filterQuery};
-    `, filterValues);
+      WHERE status != "Disabled" ${filterQuery} ${searchQuery};
+    `, [...filterValues, ...searchValues]);
 
     const totalRecords = countResult[0].totalRecords;
 
     // Only add LIMIT and OFFSET if page and recordsPerPage are provided
     let limitOffsetQuery = '';
+    let paginationValues = [];
     if (pageArg && recordsPerPage) {
       limitOffsetQuery = `LIMIT ? OFFSET ?`;
-      filterValues = [...filterValues, recordsPerPage, offset];
+      paginationValues = [recordsPerPage, offset];
     }
 
     const [userList] = await db.query(`
-      SELECT 
+      SELECT
         userID,
         username,
         firstname,
@@ -90,12 +106,13 @@ router.post('/list', verifyToken, async (req, res) => {
         location,
         roleName,
         status,
-        addedOn
+        addedOn,
+        notes
       FROM users
-      WHERE status != "Disabled" ${filterQuery}
+      WHERE status != "Disabled" ${filterQuery} ${searchQuery}
       ORDER BY ${sortColumn} ${sortOrder}
       ${limitOffsetQuery};
-    `, filterValues);
+    `, [...filterValues, ...searchValues, ...paginationValues]);
 
     res.status(200).json({
       totalRecords,
@@ -204,7 +221,7 @@ router.post('/profile/edit', verifyToken, async (req, res) => {
     const isEditable = allowedFields.includes('editable');
 
     // valid db fields
-    const validDBFields = ['username', 'email', 'firstname', 'lastname', 'url', 'bio', 'location', 'roleName', 'status', 'digestFrequency'];
+    const validDBFields = ['username', 'email', 'firstname', 'lastname', 'url', 'bio', 'location', 'roleName', 'status', 'digestFrequency', 'notes'];
 
     // Fetch current state before update — used for digest auto-adjust logic and audit before/after diff
     const [currentRows] = await db.query(
@@ -594,7 +611,7 @@ const getAllowedFields = (permissions, requestingUsername, targetUsername) => {
   switch (lookupStatus) {
     case "extended":
       // Return everything except password, adding 'editable' field
-      return ['userID', 'username', 'status', 'email', 'firstname', 'lastname', 'email', 'url', 'bio', 'location', 'roleName', 'addedOn', 'avatar_url', 'digestFrequency', 'editable'];
+      return ['userID', 'username', 'status', 'email', 'firstname', 'lastname', 'email', 'url', 'bio', 'location', 'roleName', 'addedOn', 'avatar_url', 'digestFrequency', 'notes', 'editable'];
     case "self":
       // Return everything except password, and replacing roleName with roleNameShow, adding 'editable' field
       return ['userID', 'username', 'statusShow', 'email', 'firstname', 'lastname', 'email', 'url', 'bio', 'location', 'roleNameShow', 'addedOn', 'avatar_url', 'digestFrequency', 'editable'];

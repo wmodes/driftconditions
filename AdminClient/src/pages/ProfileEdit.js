@@ -223,6 +223,13 @@ function ProfileEdit() {
               </div>
             )}
 
+            {profile.notes !== undefined && (
+              <div>
+                <label className="form-label" htmlFor="notes">Notes:</label>
+                <textarea className="form-textarea" id="notes" name="notes" value={profile.notes || ''} onChange={handleChange} />
+              </div>
+            )}
+
             {profile.digestFrequency !== undefined && (
               <div>
                 <label className="form-label" htmlFor="digestFrequency">Digest emails:</label>
