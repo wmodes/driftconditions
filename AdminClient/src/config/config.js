@@ -239,7 +239,7 @@ const config = {
     
     // starting pattern for creating a new recipe (indentation matters here)
     example: `{
-  // This is a basic recipe.
+  // This is a basic RECIPE.
   //
   // Note that the system ignores any keys it doesn't recognize,
   // and comments like this are ignored as well 😀.
