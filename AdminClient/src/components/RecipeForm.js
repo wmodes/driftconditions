@@ -15,7 +15,7 @@ import { set } from 'ace-builds/src-noconflict/ace';
 import JSON5 from 'json5';
 import _ from 'lodash';
 
-import { insertNewElementIntoJsonStr } from '../utils/recipeUtils';
+import { insertNewTrack, insertNewClip } from '../utils/recipeUtils';
 import { defineCustomEditorMode } from '../utils/editorUtils';
 import { ClassificationCheckboxes, TagInput } from '../utils/formUtils';
 
@@ -179,54 +179,36 @@ function RecipeForm({ action, initialRecord, onSave, onCancel, onChange }) {
   }
 
   const addTrack = () => {
-    setError(''); // Clear any previous error
-    const recipeData = record.recipeData;
-    if (!isValidJSON(recipeData) || !Array.isArray(recipeData)) return; // Error parsing content  
-    // Find the highest existing track number
-    const maxTrackNumber = recipeData.reduce((max, item) => {
-      return item.track && item.track > max ? item.track : max;
-    }, 0);
-    // Clone the newTrackPattern and update the track number
-    const newTrack = {
-      ...newTrackPattern,
-      track: maxTrackNumber + 1
-    };
-    recipeData.push(newTrack); // Assuming data is an array
-    const updatedRecipeData = JSON5.stringify(recipeData, null, 2);
-    handleRecipeChanges(updatedRecipeData);
-  }
-
-  const addClip = (type=null) => {
-    let newPattern;
-    if (type === "silence") {
-      newPattern = newSilencePattern;
-      type = "silence";
-    } else {
-      newPattern = newClipPattern;
-      type = "clip";
-    }
-    setError(''); // Clear any previous error
+    setError('');
+    const { row } = editorRef.editor.getCursorPosition();
+    if (!isValidJSON(record.recipeData)) return;
     try {
-      const { row } = editorRef.editor.getCursorPosition();
-      const modifiedRecord = insertNewElementIntoJsonStr(
-        record.recipeData, 
-        'clip',
-        row, 
-        newPattern
-      );
-      // console.log("addClip modifiedRecord", modifiedRecord);
-      // Handle the success case, such as updating state or UI with modifiedRecord
-      handleRecipeChanges(modifiedRecord);
+      const updated = insertNewTrack(record.recipeData, row, newTrackPattern);
+      handleRecipeChanges(updated);
     } catch (error) {
-      console.error(`Error adding new ${type}:`, error);
-      // Handle the error, such as displaying an error message to the user
-      setError(`Error adding new ${type}:`, error.message);
+      console.error('Error adding track:', error);
+      setError(`Error adding track: ${error.message}`);
     }
-  }
+  };
 
-  const addSilence = (type=null) => {
+  const addClip = (type = null) => {
+    setError('');
+    const pattern = type === 'silence' ? newSilencePattern : newClipPattern;
+    const typeName = type === 'silence' ? 'silence' : 'clip';
+    const { row } = editorRef.editor.getCursorPosition();
+    if (!isValidJSON(record.recipeData)) return;
+    try {
+      const updated = insertNewClip(record.recipeData, row, pattern);
+      handleRecipeChanges(updated);
+    } catch (error) {
+      console.error(`Error inserting ${typeName}:`, error);
+      setError(`Error inserting ${typeName}: ${error.message}`);
+    }
+  };
+
+  const addSilence = () => {
     addClip('silence');
-  }
+  };
 
   const Required = () => <span className="required">*</span>;
 
