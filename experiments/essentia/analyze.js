@@ -47,8 +47,8 @@ async function main() {
   const Essentia     = require('essentia.js/dist/essentia.js-core.umd.js');
   const essentia     = new Essentia(EssentiaWASM);
 
-  // Decode audio
-  const { default: decode } = require('audio-decode');
+  // Decode audio (dynamic import — audio-decode is ESM, not CJS)
+  const { default: decode } = await import('audio-decode');
   const audioData = await decode(fs.readFileSync(filePath));
   const { channelData, sampleRate } = audioData;
   const numChannels  = channelData.length;
