@@ -25,12 +25,14 @@ function AudioView() {
   const { user: userAuth } = useSelector((state) => state.auth);
   const [editPerm, setEditPerm] = useState(false);
   const [listPerm, setListPerm] = useState(false);
+  const [specialTagsPerm, setSpecialTagsPerm] = useState(false);
 
   // Check if the user has permission to edit/list audio
   useEffect(() => {
     if (!userAuth?.permissions) return;
     if (userAuth.permissions.indexOf('audioEdit') !== -1) setEditPerm(true);
     if (userAuth.permissions.indexOf('audioList') !== -1) setListPerm(true);
+    if (userAuth.permissions.indexOf('specialTags') !== -1) setSpecialTagsPerm(true);
   }, [userAuth.permissions]);
 
   const [isDomReady, setIsDomReady] = useState(false);
@@ -55,6 +57,7 @@ function AudioView() {
           ...response,
           classification: formatListAsString(response.classification),
           tags: formatListAsString(response.tags),
+          internalTags: formatListAsString(response.internalTags),
           createDate: formatDateAsFriendlyDate(response.createDate),
           editDate: formatDateAsFriendlyDate(response.editDate),
         });
@@ -179,6 +182,12 @@ function AudioView() {
               <div className="form-label">Tags:</div>
               <div className="form-value">{record.tags}</div>
             </div>
+            {specialTagsPerm && (
+              <div className="form-col">
+                <div className="form-label">Internal Tags:</div>
+                <div className="form-value">{record.internalTags || '—'}</div>
+              </div>
+            )}
             <div className="form-col">
               <div className="form-label">Comments:</div>
               <div className="form-value">{record.comments}</div>

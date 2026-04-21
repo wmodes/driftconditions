@@ -4,7 +4,7 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { audioInfo, audioUpdate } from '../store/audioSlice';
 import { initWaveSurfer, destroyWaveSurfer } from '../utils/waveUtils';
 
@@ -28,8 +28,15 @@ const fieldNotes = config.audio.fieldNotes;
 function AudioEdit() {
   const { audioID } = useParams();
   const dispatch = useDispatch();
-  // const navigate = useNavigate();
   const navigate = useSafeNavigate();
+
+  const { user: userAuth } = useSelector((state) => state.auth);
+  const [specialTagsPerm, setSpecialTagsPerm] = useState(false);
+
+  useEffect(() => {
+    if (!userAuth?.permissions) return;
+    if (userAuth.permissions.indexOf('specialTags') !== -1) setSpecialTagsPerm(true);
+  }, [userAuth.permissions]);
 
   // Call the useUnsavedChangesEvents hook to create event listeners
   useUnsavedChangesEvents();
@@ -105,6 +112,11 @@ function AudioEdit() {
     dispatch(setUnsavedChanges(true));
     setRecord(prevState => ({ ...prevState, tags:newTags }));
     // console.log('AudioEdit new tags:', newTags);
+  };
+
+  const handleInternalTagChange = (newTags) => {
+    dispatch(setUnsavedChanges(true));
+    setRecord(prevState => ({ ...prevState, internalTags: newTags }));
   };
 
   const handleSubmit = (e) => { 
@@ -258,6 +270,18 @@ function AudioEdit() {
                 />
               )}
               <p className="form-note mt-1">{fieldNotes.tags || ""}</p>
+
+              {specialTagsPerm && (
+                <>
+                  <label className="form-label" htmlFor="internalTags">Internal Tags:</label>
+                  {record?.internalTags !== undefined && (
+                    <TagInput
+                      initialTags={record.internalTags}
+                      onTagChange={handleInternalTagChange}
+                    />
+                  )}
+                </>
+              )}
 
               <label className="form-label" htmlFor="comments">Comments:</label>
               <textarea className="form-textarea" id="comments" name="comments" value={record.comments || ""} onChange={handleChange}></textarea>

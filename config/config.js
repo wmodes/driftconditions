@@ -61,22 +61,29 @@ const config = {
     usageScoreWeight: 0.5,    // weight for clip usage score; less-used clips score higher
     silenceAdjustMaxAttempts: 100, // max rejection-sampling attempts before scaling fallback
     classification: [
-      'Ambient', 
-      'Atmospheric', 
-      'Environmental', 
-      'Premixed', 
-      'Soundscape', 
-      'Archival', 
-      'Spoken', 
-      'Narrative', 
-      'Instructional', 
-      'VocalMusic', 
-      'Instrumental', 
-      'Experimental', 
-      'Digital', 
+      'Ambient',
+      'Atmospheric',
+      'Environmental',
+      'Premixed',
+      'Soundscape',
+      'Archival',
+      'Spoken',
+      'Narrative',
+      'Instructional',
+      'VocalMusic',
+      'Instrumental',
+      'Experimental',
+      'Digital',
       'Effect',
       'Other'
     ],
+    // Classifications that warrant music analysis (BPM, key, danceability)
+    musicAnalysisClassifications: ['Instrumental', 'VocalMusic', 'Ambient'],
+    // Internal tags used by the audio analysis pipeline
+    internalTags: {
+      analysisQueue: 'needs-audio-analysis', // set on upload to trigger analysis
+      analyzed:      'audio-analyzed',        // set after analysis completes
+    },
     clipLength: {   // in seconds
       tiny: {
         // 0 to 10 seconds - most sound effects
@@ -144,6 +151,9 @@ const config = {
   },
   bcrypt: {
     saltRounds: 10,
+  },
+  audioAnalysis: {
+    runTimeUTC: '08:00:00', // 3 AM Eastern (UTC-5 winter / UTC-4 summer)
   },
   digest: {
     weeklyDay: 2,             // 0=Sun, 1=Mon, 2=Tue, ..., 6=Sat
