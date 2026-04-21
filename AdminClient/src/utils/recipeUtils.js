@@ -1,338 +1,212 @@
 // Recipe processing utils
 
-import JSON5 from 'json5';
-const { parse: JSONparse, stringify: JSONstringify } = require('comment-json');
+// Scan lines from 0 through endRow, tracking brace/bracket depth.
+// Respects strings (single, double, backtick) and comments (// and /* */).
+// Returns { depth } at the end of endRow.
+export function scanToRow(lines, endRow) {
+  if (endRow < 0) return { depth: 0 };
 
-// Insert a new clip into a JSON string based on a specified row
-// @PARAM type: string - the type of JSON element to insert, 'track' or 'clip'
-// @PARAM jsonStr: string - the JSON string to insert the new element into
-// @PARAM currentRow: number - the row number to insert the new element after
-// @PARAM newPattern: string - the new JSON element to insert
-// @RETURN string - the updated JSON string
-// TODO: Generalize this function to insert any JSON-like string at the proper boundary
-export const insertNewElementIntoJsonStr = (jsonStr, type, currentRow, newPattern) => {
-  try {
-    // console.log(`recipeUtils:insertNewClipIntoJsonStr: jsonStr: ${jsonStr}, typof: ${typeof jsonStr}, length: ${jsonStr.length}`);
-    const jsonElementArray = splitJsonElements(jsonStr);
-    // console.log(`recipeUtils:insertNewClipIntoJsonStr: jsonElementArray: ${jsonElementArray}`);
-    const position = getPositionForInsert(jsonElementArray, type, currentRow);
-    return;
-    const { track: trackIndex, clip: clipIndex } = position;
-    console.log('position', position);
-    // const parsedJsonData = JSONparse(jsonStr); 
-    // console.log(`recipeUtils:insertNewClipIntoJsonStr: parsedJsonData: ${parsedJsonData}`)
-    // const updatedJsonData = insertClipIntoTrack(parsedJsonData, trackIndex, clipIndex, newPattern);
-    // 
+  let depth = 0;
+  let inString = false;
+  let stringChar = '';
+  let inLineComment = false;
+  let inBlockComment = false;
 
-    // return JSON5.stringify(updatedJsonData, null, 2); // Stringifying the updated JSON
-  } catch (error) {
-    // Rethrowing the error with additional context
-    throw new Error(error);
+  for (let i = 0; i <= Math.min(endRow, lines.length - 1); i++) {
+    const line = lines[i];
+    inLineComment = false; // reset each line
+
+    for (let col = 0; col < line.length; col++) {
+      const ch = line[col];
+      const next = col + 1 < line.length ? line[col + 1] : '';
+
+      if (inBlockComment) {
+        if (ch === '*' && next === '/') { inBlockComment = false; col++; }
+        continue;
+      }
+      if (inLineComment) continue;
+      if (inString) {
+        if (ch === '\\') { col++; continue; } // skip escaped char
+        if (ch === stringChar) inString = false;
+        continue;
+      }
+
+      if (ch === '/' && next === '/') { inLineComment = true; continue; }
+      if (ch === '/' && next === '*') { inBlockComment = true; col++; continue; }
+      if (ch === '"' || ch === "'" || ch === '`') { inString = true; stringChar = ch; continue; }
+
+      if (ch === '{' || ch === '[') depth++;
+      else if (ch === '}' || ch === ']') depth--;
+    }
   }
-};
 
-// splits a JSON string into an array of JSON elements
-// @PARAM jsonStr: string - the JSON string to split
-// @RETURN array - an array of JSON elements
-function splitJsonElements(jsonStr) {
-  // This regex captures various JSON elements including quoted strings, unquoted keys, brackets,
-  // braces, colons, commas, newlines, comments (both single-line and multi-line), and whitespace.
-  const elements = jsonStr.match(/"[^"\\]*(\\.[^"\\]*)*"|'[^'\\]*(\\.[^'\\]*)*'|\b\w+\b|[\[\]{}:,]|\n|\/\/.*|\/\*[\s\S]*?\*\/|\s+/g);
-  // console.log(`splitJsonElements: ${elements}`);
-  return elements;
+  return { depth };
 }
 
-// gets the position to insert a new JSON element after a specified row
-// @PARAM jsonElementArray: array - the destructured JSON elements
-// @PARAM type: string - the type of JSON element to insert, 'track' or 'clip'
-// @PARAM row: number - the row number to insert the new element after
-// @RETURN object - line and row position to insert the new element
-function getPositionForInsert(jsonElementArray, type, row) {
-  // This function is a state machine that tracks the depth of the JSON structure
-  // and counts the number of tracks and clips to determine the position to insert
-  // 
-  // Possibilities:
-  //   Inserting a track:
-  //     t1. Insert a new track at the top level after the last track 
-  //   Inserting a clip:
-  //     c1. CurrentPosition is before the first track
-  //         (track==0 && trackFlag==false),
-  //         insert a clip at the beginning of the first track
-  //     c2. CurrentPosition is after the last track
-  //         (track>0 && trackFlag==false),
-  //         insert a clip at the end of the last track
-  //     c3. CurrentPosition is between tracks
-  //         (track>0 && trackFlag==true && clipFlag==false),
-  //         insert a clip at the beginning of the next clip list
-  //     c4. CurrentPosition is inside a track but before the clip list
-  //         (track>0 && trackFlag==true && clipFlag==false),
-  //         insert a clip at the beginning of the next clip list
-  //     c5. CurrentPosition is inside a clip
-  //         (clipFlag==true),
-  //         insert a clip after the current clip
-  //
-  // JSON structure:
-  //   {
-  //     tracks: [
-  //       {
-  //         track: 0,
-  //         clips:[
-  //           (c1)
-  //           {},
-  //           (c5)
-  //           {}
-  //         ] // clips
-  //       }, // track0
-  //       {
-  //         track: 1,
-  //         clips:[
-  //           (c3)(c4)
-  //           {},
-  //           {}
-  //           (c2)
-  //         ] // clips
-  //       } // track1
-  //       (t1)
-  //     ] // tracks
-  //   } // JSON
-  //
-  // We will have to make sure that commas are added to the previous tracks or clips
-  //
-  try {
-    let lineNumber = 0;
-    // tracks the depth of the JSON structure
-    let depthTracker = [];
-    let trackCount = 0;
-    let clipCount = 0;
-    // are we in a track or clip?
-    let trackFlag = false;
-    let clipFlag = false;
-    // keeping track of character position within JSON-like string
-    let charPosCount = 0;
-    // flag to indicate if the cursor position has been found
-    let currentPosFound = false;
-    let insertPosFound = false;
-    let placeCertainComma = false;
-    let trailingCommaLikely = false;
-    let trailingCommaFound = false;
-    // these are candidates for the position to insert the new element
-    let potentialInsertPosition = 0;
+// Scan forward from startRow with initialDepth, looking for targetChar at targetDepth
+// (checked before decrement, so targetDepth is the depth while INSIDE the element).
+// Returns the line index where found, or null.
+function scanForwardFor(lines, startRow, initialDepth, targetDepth, targetChar) {
+  let depth = initialDepth;
+  let inString = false;
+  let stringChar = '';
+  let inLineComment = false;
+  let inBlockComment = false;
 
-    function depthPattern() {
-      return depthTracker.join('');
-    }
+  for (let i = Math.max(0, startRow); i < lines.length; i++) {
+    const line = lines[i];
+    inLineComment = false;
 
-    console.log('Searching for insertion position...');
-    for (let item of jsonElementArray) {
-      // keep a character count
-      charPosCount += item.length;
-      //
-      // the section where we deal with irritating special cases
-      //
-      // single-line comments: skip
-      if (item.startsWith('//')) {
-        // console.log('skipping comment');
-        continue;
-      } 
-      // multi-line comments: skip
-      else if (item.startsWith('/*')) {
-        // console.log('skipping comment');
-        // count the number of newlines in the comment
-        const commentLines = item.split('\n').length;
-        lineNumber += commentLines - 1;
+    for (let col = 0; col < line.length; col++) {
+      const ch = line[col];
+      const next = col + 1 < line.length ? line[col + 1] : '';
+
+      if (inBlockComment) {
+        if (ch === '*' && next === '/') { inBlockComment = false; col++; }
         continue;
       }
-      // sequences of tabs and spaces: skip
-      else if (item.match(/^[ /t]]+$/)) {
-        // console.log('skipping whitespace');
+      if (inLineComment) continue;
+      if (inString) {
+        if (ch === '\\') { col++; continue; }
+        if (ch === stringChar) inString = false;
         continue;
       }
-      // verify that we have a trailing comma
-      else if (trailingCommaLikely) {
-        // turn off the flag immediately regardless of what we find
-        trailingCommaLikely = false;
-        // we expected a comma, we found a comma
-        if (item === ',') {
-          console.log('trailing comma found');
-          // this will affect whether we insert a comma or not
-          trailingCommaFound = true;
-          // update the position to insert the new element after the trailing comma
-          potentialInsertPosition = charPosCount;
-          continue;
+
+      if (ch === '/' && next === '/') { inLineComment = true; continue; }
+      if (ch === '/' && next === '*') { inBlockComment = true; col++; continue; }
+      if (ch === '"' || ch === "'" || ch === '`') { inString = true; stringChar = ch; continue; }
+
+      if (ch === '{' || ch === '[') {
+        depth++;
+      } else if (ch === '}' || ch === ']') {
+        if (depth === targetDepth && ch === targetChar) {
+          return i; // found the closing char at the right depth
         }
-        // we expected a comma, we found something else
-        else {
-          console.log('trailing comma not found');
-        }
-      }
-      console.log('item:', item);
-      //
-      // now consider item and what to do with it
-      switch (item) {
-        //
-        // newlines: how we tell when we are at the cursor position
-        case '\n':
-          lineNumber++;
-          // console.log(`new line. Linenumber: ${lineNumber} (${row + 1})`);
-          // TODO: We might miss the position if we are in a multi-line comment, so this should be fixed
-          if (lineNumber >= row + 1 && !currentPosFound) {
-            console.log(`cursor position found at line ${lineNumber}`);
-            currentPosFound = true;
-          }
-          break;
-        //
-        // entering an object
-        case '{':
-          depthTracker.push(item);
-          // entering JSON structure
-          if (depthPattern() === '{') {
-            console.log('Entering JSON structure');
-          } 
-          // entering a track
-          else if (depthPattern() === '{[{' && trackFlag) {
-            console.log('Entering a track');
-            trackCount++; 
-            // Resetting clipCount as we enter a new track.
-            clipCount = 0;
-          } 
-          // entering a clip
-          else if (depthPattern() === '{[{[{' && clipFlag) {
-            console.log('Entering a clip');
-            clipCount++;
-          }
-          break;
-        //
-        // entering an array
-        case '[':
-          depthTracker.push(item);
-          // entering a track array
-          if (depthPattern() === '{[' && trackFlag) {
-            console.log('Entering a track array');
-          }
-          // entering a clip array
-          else if (depthPattern() === '{[{[' && clipFlag) {
-            console.log('Entering a clip array');
-          }
-          break;
-        //
-        // exiting an object
-        case '}':
-          if (depthTracker.pop() !== '{') {
-            throw new Error('Unmatched closing brace.');
-          }
-          // exiting a clip
-          if (depthPattern() === '{[{[' && clipFlag) {
-            console.log('Exiting a clip');
-          }
-          // exiting a track
-          else if (depthPattern() === '{[' && trackFlag) {
-            console.log('Exiting a track');
-            // this is a good place to insert a track
-            // TODO: this will mess up the comma placement
-            if (type==='track' && 
-              currentPosFound && !insertPosFound) {
-              console('INSERT track here');
-              potentialInsertPosition = charPosCount;
-              insertPosFound = true;
-              placeCertainComma = true;
-              trailingCommaLikely = true;
-            }
-          }
-          // exiting JSON structure
-          else if (depthPattern() === '') {
-            console.log('Exiting JSON structure');
-          }
-          break;
-        //
-        // exiting an array
-        case ']':
-          if (depthTracker.pop() !== '[') {
-            throw new Error('Unmatched closing bracket.');
-          }
-          // exiting a clip array
-          if (depthPattern() === '{[{' && clipFlag) {
-            console.log('Exiting a clip array');
-            clipFlag = false;
-          }
-          // exiting a track array
-          else if (depthPattern() === '{' && trackFlag) {
-            console.log('Exiting a track array');
-            trackFlag = false;
-          }
-          break;
-        // 
-        // encountering tracks key
-        case 'tracks':
-          if (depthPattern() === '{') {
-            console.log('Found tracks key');
-            trackFlag = true;
-          }
-          break;
-        //
-        // encountering clips key
-        case 'clips':
-          if (depthPattern() === '{[{') {
-            console.log('Found clips key');
-            clipFlag = true;
-          }
-          break;
-        default:
-          break;
+        depth--;
       }
     }
-    console.log(`trackCount: ${trackCount}, clipCount: ${clipCount}, charPosCount: ${charPosCount}`);
-    return { track: trackCount, clip: clipCount };
-  } catch (error) {
-    // Handle or re-throw the error as needed
-    console.error('JSON Error:', error);
-    throw error; // Re-throwing for the calling function to handle
   }
+
+  return null;
 }
 
-const insertClipIntoTrack = (jsonData, trackIndex, clipIndex, newClipPattern) => {
-  // for tracks, -1 means prepend to the track[0]'s clips array, 
-  // or append if no track exists
-  if (trackIndex === -1) {
-    trackIndex = 0;
+// Insert pattern lines after a given line index, return the updated string.
+// Strips a leading empty line from the pattern (artifact of template literal newline).
+// If the preceding line ends with `}` but no comma, adds one — JSON5 allows trailing
+// commas in arrays, and the sibling element we're inserting requires a separator.
+function spliceAfterLine(lines, afterLine, pattern) {
+  const patternLines = pattern.split('\n');
+  if (patternLines[0] === '') patternLines.shift(); // strip leading blank from template literal
+
+  // Ensure the line we're inserting after has a trailing comma
+  const before = lines.slice(0, afterLine + 1);
+  const trimmed = before[afterLine].trimEnd();
+  if (trimmed.endsWith('}')) {
+    before[afterLine] = trimmed + ',';
   }
 
-  // if the top level is not an array, this is an errror
-  if (!Array.isArray(jsonData)) {
-    throw new Error('Top level is not an array');
-  }
-  const trackArray = jsonData;
-  var trackCount = -1;
-  var index;
-  // iterate over trackArray
-  for (index = 0; index < trackArray.length; index++) {
-    // check for existence of "track" key
-    if (trackArray[index].track !== undefined) {
-      // keep a count each time one is found
-      trackCount++;
-      // Break when trackCount == trackIndex
-      if (trackCount === trackIndex) {
-        break;
-      }
+  return [
+    ...before,
+    ...patternLines,
+    ...lines.slice(afterLine + 1),
+  ].join('\n');
+}
+
+// Insert a new track at an appropriate position near the cursor.
+//
+// depth >= 3 (inside a track):
+//   scan forward for next track `}` at depth 3, insert after it.
+//   Fallback: insert before the tracks array `]`.
+//
+// depth < 3 (in top-level or tracks array, before any track):
+//   find the `tracks:` line and insert right after it — new track goes BEFORE
+//   any existing tracks rather than after the last one.
+export const insertNewTrack = (jsonStr, cursorRow, pattern) => {
+  const lines = jsonStr.split('\n');
+
+  // Use depth at the START of the cursor line (= end of previous line)
+  const { depth: initialDepth } = scanToRow(lines, cursorRow - 1);
+
+  let insertAfterLine;
+
+  if (initialDepth >= 3) {
+    // Inside a track — insert after the current track's closing }
+    insertAfterLine = scanForwardFor(lines, cursorRow, initialDepth, 3, '}');
+    if (insertAfterLine === null) {
+      // No track close ahead — insert before tracks array `]`
+      const tracksClose = scanForwardFor(lines, cursorRow, initialDepth, 2, ']');
+      insertAfterLine = tracksClose !== null ? tracksClose - 1 : lines.length - 2;
+    }
+  } else {
+    // Cursor is before any tracks (depth <= 2) — insert at START of tracks array
+    const tracksClose = scanForwardFor(lines, cursorRow, initialDepth, 2, ']');
+    const tracksKeyLine = findTracksKeyLine(lines, cursorRow, tracksClose);
+    if (tracksKeyLine !== null) {
+      insertAfterLine = tracksKeyLine; // insert right after `tracks: [`
+    } else {
+      insertAfterLine = tracksClose !== null ? tracksClose - 1 : lines.length - 2;
     }
   }
-  // if trackCount is still -1, then no track was found, error
-  if (trackCount === -1) {
-    throw new Error('No tracks found');
-  }
-  // note there may be other objects/arrays in the top level
-  // so here we have the absolute index of the track object 
-  const targetTrack = trackArray[index];
-  // console.log('targetTrack', targetTrack);
-  // are there clips in the target track?
-  if (targetTrack.clips === undefined) {
-    // if not, create the clips array
-    targetTrack.clips = [newClipPattern];
-    // and our work is done here
-    return jsonData;
-  }
-  // if there are clips, insert the new clip at the specified index
-  // this time, everything in the array is considered a clip
-  targetTrack.clips.splice(clipIndex + 1, 0, newClipPattern);
-  return jsonData;
+
+  return spliceAfterLine(lines, insertAfterLine, pattern);
 };
 
+// Find the line containing the `tracks:` key, scanning from startRow up to endRow.
+function findTracksKeyLine(lines, startRow, endRow) {
+  const limit = endRow != null ? Math.min(endRow, lines.length - 1) : lines.length - 1;
+  for (let i = startRow; i <= limit; i++) {
+    if (/\btracks\s*:/.test(lines[i])) return i;
+  }
+  return null;
+}
+
+// Insert a new clip at an appropriate position near the cursor.
+//
+// depth >= 4 (in clips array or inside a clip):
+//   scan forward for next clip `}` at depth 5, insert after it.
+//   Fallback: insert before the clips array `]`.
+//
+// depth < 4 (in track header, before clips array):
+//   find the `clips:` line and insert right after it — new clip goes BEFORE
+//   any existing clips rather than after the last one.
+export const insertNewClip = (jsonStr, cursorRow, pattern) => {
+  const lines = jsonStr.split('\n');
+
+  const { depth: initialDepth } = scanToRow(lines, cursorRow - 1);
+
+  let insertAfterLine;
+
+  if (initialDepth >= 4) {
+    // Already in clips array or inside a clip — insert after next clip close
+    insertAfterLine = scanForwardFor(lines, cursorRow, initialDepth, 5, '}');
+    if (insertAfterLine === null) {
+      // No clip close ahead — insert before clips array `]`
+      const clipsClose = scanForwardFor(lines, cursorRow, initialDepth, 4, ']');
+      insertAfterLine = clipsClose !== null ? clipsClose - 1 : lines.length - 2;
+    }
+  } else {
+    // Cursor is in the track header (depth <= 3) — insert at START of clips array
+    // Find the track close first so we don't scan past it
+    const trackCloseLine = scanForwardFor(lines, cursorRow, initialDepth, 3, '}');
+    const clipsKeyLine = findClipsKeyLine(lines, cursorRow, trackCloseLine);
+    if (clipsKeyLine !== null) {
+      insertAfterLine = clipsKeyLine; // insert right after `clips: [`
+    } else if (trackCloseLine !== null) {
+      insertAfterLine = trackCloseLine - 1;
+    } else {
+      insertAfterLine = lines.length - 2;
+    }
+  }
+
+  return spliceAfterLine(lines, insertAfterLine, pattern);
+};
+
+// Find the line containing the `clips:` key, scanning from startRow up to endRow.
+// Uses a regex so it works regardless of spacing around the colon.
+function findClipsKeyLine(lines, startRow, endRow) {
+  const limit = endRow != null ? Math.min(endRow, lines.length - 1) : lines.length - 1;
+  for (let i = startRow; i <= limit; i++) {
+    if (/\bclips\s*:/.test(lines[i])) return i;
+  }
+  return null;
+}

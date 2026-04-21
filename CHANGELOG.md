@@ -9,6 +9,17 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-04-21] (23)
+
+### Added
+- **Recipe editor smart insert** — Add Track, Insert Clip, and Insert Silence buttons now use cursor position to find the nearest appropriate insertion point rather than always appending to the end.
+  - Cursor inside a track → Add Track inserts after that track; cursor before/above tracks → inserts at the start of the tracks array.
+  - Cursor inside a clip → Insert Clip/Silence inserts after that clip; cursor in the track header (before the clips array) → inserts at the start of clips; cursor in the clips array → inserts after the next clip.
+  - Trailing comma automatically added when inserting a sibling element after a `}` that lacks one (JSON5 allows trailing commas).
+  - Implementation is text-based (line splicing) so comments and formatting are fully preserved.
+
+---
+
 ## [2026-04-21] (22)
 
 ### Changed
