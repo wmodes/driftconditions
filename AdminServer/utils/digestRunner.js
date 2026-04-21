@@ -264,9 +264,10 @@ async function buildDigestVars(user) {
     [userID]
   );
 
-  const approved = [];
-  const disapproved = [];
   const commIDs = [];
+  // Use Maps keyed by audioID to deduplicate — later events overwrite earlier ones
+  const approvedMap = new Map();
+  const disapprovedMap = new Map();
 
   for (const event of events) {
     commIDs.push(event.commID);
@@ -274,11 +275,14 @@ async function buildDigestVars(user) {
       ? JSON.parse(event.payload)
       : event.payload;
     if (event.commType === 'audio_approved') {
-      approved.push({ audioID: payload.audioID, title: payload.title, notes: payload.notes || '' });
+      approvedMap.set(payload.audioID, { audioID: payload.audioID, title: payload.title, notes: payload.notes || '' });
     } else if (event.commType === 'audio_disapproved') {
-      disapproved.push({ audioID: payload.audioID, title: payload.title, notes: payload.notes || '' });
+      disapprovedMap.set(payload.audioID, { audioID: payload.audioID, title: payload.title, notes: payload.notes || '' });
     }
   }
+
+  const approved = [...approvedMap.values()];
+  const disapproved = [...disapprovedMap.values()];
 
   const { audioRow, recipeRow, topPlays, recentPendingRows } = await getProfileStats(userID);
 

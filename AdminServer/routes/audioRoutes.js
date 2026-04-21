@@ -382,8 +382,9 @@ router.post('/update', verifyToken, async (req, res) => {
 
     // Post-response: queue digest event or send immediate moderation notice
     const notifyContributor = record.notifyContributor;
-    const isApproved = status === 'Approved';
-    const isDisapproved = status === 'Disapproved';
+    const statusChanged = status && status !== currentState.status;
+    const isApproved = statusChanged && status === 'Approved';
+    const isDisapproved = statusChanged && status === 'Disapproved';
     const isModAction = isApproved || isDisapproved;
 
     if (notifyContributor && isModAction) {
