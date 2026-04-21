@@ -21,6 +21,7 @@ function Profile() {
   const navigate = useNavigate();
   const { user: userAuth } = useSelector((state) => state.auth);
   const canSeeDetails = userAuth?.permissions?.includes('audioView');
+  const canSeeNotes = userAuth?.permissions?.includes('userList');
 
   const notFoundUser = {
     username: '$&**$%@!',
@@ -267,9 +268,15 @@ function Profile() {
                   Status: <span className="italic capitalize">{profile.statusShow || profile.status}</span>
                 </div>
               )}
+              {canSeeNotes && profile.notes && (
+                <div className="admin-notes">
+                  <strong>Notes:</strong>
+                  <p>{profile.notes}</p>
+                </div>
+              )}
               {profile.edit && (
                 <div className="edit-box">
-                  <Link to="/profile/edit" className="edit-button">
+                  <Link to={`/profile/edit/${profile.username}`} className="edit-button">
                     Edit
                   </Link>
                 </div>

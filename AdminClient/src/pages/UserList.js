@@ -38,6 +38,12 @@ function UserList() {
   const [editedRecord, setEditedRecord] = useState({});
   const [updateTrigger, setUpdateTrigger] = useState(false);
 
+  // Search input state — initialized from URL and kept in sync with URL changes
+  const [searchInput, setSearchInput] = useState(() => new URLSearchParams(location.search).get('search') || '');
+  useEffect(() => {
+    setSearchInput(new URLSearchParams(location.search).get('search') || '');
+  }, [location.search]);
+
   const currentFilters = parseQuery(location.search);
 
   const getCurrentQueryParams = () => {
@@ -49,6 +55,7 @@ function UserList() {
       order: searchParams.get('order') || 'DESC',
       filter: searchParams.get('filter') || 'all',
       role: searchParams.get('role'),
+      search: searchParams.get('search') || '',
     };
   };
 
@@ -87,9 +94,12 @@ function UserList() {
   
   const handleFilter = (newFilter) => {
     const searchParams = new URLSearchParams(location.search);
-  
+
     let role;
     switch (newFilter) {
+      case 'user':
+        role = 'user';
+        break;
       case 'contrib':
         role = 'contributor';
         break;
@@ -113,6 +123,27 @@ function UserList() {
       searchParams.delete('filter');
       searchParams.delete('role');
     }
+    searchParams.delete('page');
+    navigate(`${location.pathname}?${searchParams.toString()}`);
+  };
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    const searchParams = new URLSearchParams(location.search);
+    if (searchInput.trim()) {
+      searchParams.set('search', searchInput.trim());
+    } else {
+      searchParams.delete('search');
+    }
+    searchParams.delete('page');
+    navigate(`${location.pathname}?${searchParams.toString()}`);
+  };
+
+  const handleSearchClear = () => {
+    setSearchInput('');
+    const searchParams = new URLSearchParams(location.search);
+    searchParams.delete('search');
+    searchParams.delete('page');
     navigate(`${location.pathname}?${searchParams.toString()}`);
   };
 
@@ -128,7 +159,7 @@ function UserList() {
   const openEditRow = (userID) => {
     setEditUserID(editUserID === userID ? null : userID);
     const userToEdit = userList.find(u => u.userID === userID);
-    if (userToEdit) setEditedRecord({ userID: userToEdit.userID, username: userToEdit.username, roleName: userToEdit.roleName, _originalRoleName: userToEdit.roleName, status: userToEdit.status, notifyUser: true });
+    if (userToEdit) setEditedRecord({ userID: userToEdit.userID, username: userToEdit.username, roleName: userToEdit.roleName, _originalRoleName: userToEdit.roleName, status: userToEdit.status, notes: userToEdit.notes || '', notifyUser: true });
   };
 
   const handleQuickEditSubmit = async (e) => {
@@ -177,39 +208,27 @@ function UserList() {
 
   // Function to render controls
   const renderFilters = () => {
-    return (  
+    const activeFilter = new URLSearchParams(location.search).get('filter') || 'all';
+    const activeRole   = new URLSearchParams(location.search).get('role') || '';
+    // A chip is active if filter=all (for All), or filter=role and role matches
+    const chipClass = (filterName, roleName = null) => {
+      let isActive;
+      if (filterName === 'all') {
+        isActive = activeFilter !== 'role';
+      } else {
+        isActive = activeFilter === 'role' && activeRole === roleName;
+      }
+      return `link filter-chip${isActive ? ' active' : ''}`;
+    };
+    return (
       <div className="filter-box">
         <ul>
-          <li>
-            <button className="link" onClick={() => handleFilter('all')}>
-              All
-            </button>
-          </li>
-          <li>
-            <button className="link" onClick={() => handleFilter('user')}>
-              User
-            </button>
-          </li>
-          <li>
-            <button className="link" onClick={() => handleFilter('contrib')}>
-              Contrib
-            </button>
-          </li>
-          <li>
-            <button className="link" onClick={() => handleFilter('editor')}>
-              Editor
-            </button>
-          </li>
-          <li>
-            <button className="link" onClick={() => handleFilter('mod')}>
-              Mod
-            </button>
-          </li>
-          <li>
-            <button className="link" onClick={() => handleFilter('admin')}>
-              Admin
-            </button>
-          </li>
+          <li><button className={chipClass('all')} onClick={() => handleFilter('all')}>All</button></li>
+          <li><button className={chipClass('user', 'user')} onClick={() => handleFilter('user')}>User</button></li>
+          <li><button className={chipClass('contrib', 'contributor')} onClick={() => handleFilter('contrib')}>Contrib</button></li>
+          <li><button className={chipClass('editor', 'editor')} onClick={() => handleFilter('editor')}>Editor</button></li>
+          <li><button className={chipClass('mod', 'mod')} onClick={() => handleFilter('mod')}>Mod</button></li>
+          <li><button className={chipClass('admin', 'admin')} onClick={() => handleFilter('admin')}>Admin</button></li>
         </ul>
       </div>
     );
@@ -236,6 +255,23 @@ function UserList() {
           </div>
           {!criticalError && !isLoading ? (
             <dir>
+              <div className="search-box">
+                <form onSubmit={handleSearch}>
+                  <div className="search-input-wrap">
+                    <input
+                      type="text"
+                      className="search-input"
+                      placeholder="Search username, name, email..."
+                      value={searchInput}
+                      onChange={(e) => setSearchInput(e.target.value)}
+                    />
+                    {searchInput && (
+                      <button type="button" className="search-clear" onClick={handleSearchClear} aria-label="Clear search">×</button>
+                    )}
+                  </div>
+                  <button type="submit" className="button search-submit">Search</button>
+                </form>
+              </div>
               <div className="top-controls">
                 {renderFilters()}
                 <div className="right-side">
@@ -273,6 +309,7 @@ function UserList() {
                         Date Added
                       </button>
                     </th>
+                    <th>Notes</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -299,6 +336,7 @@ function UserList() {
                         <td>{user.roleName}</td>
                         <td>{user.status}</td>
                         <td>{formatDateAsFriendlyDate(user.addedOn)}</td>
+                        <td className="notes-cell">{user.notes}</td>
                       </tr>
                       {editUserID === user.userID && (
                         <tr className={`${index % 2 === 0 ? 'row-even' : 'row-odd'} quick-edit`}>
@@ -343,6 +381,16 @@ function UserList() {
                                       {' '}Notify user
                                     </label>
                                   </div>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  <label className="block text-sm font-medium text-gray-700" htmlFor="notes">Notes:</label>
+                                  <textarea
+                                    name="notes"
+                                    value={editedRecord.notes || ''}
+                                    onChange={(e) => setEditedRecord({ ...editedRecord, notes: e.target.value })}
+                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm"
+                                    rows={2}
+                                  />
                                 </div>
                                 <div className="quick-edit-submit">
                                   <button className="button submit" type="submit">Update</button>
