@@ -18,6 +18,7 @@ import { insertNewTrack, insertNewClip } from '../utils/recipeUtils';
 import { defineCustomEditorMode } from '../utils/editorUtils';
 import { ClassificationCheckboxes, TagInput } from '../utils/formUtils';
 
+import FeatherIcon from 'feather-icons-react';
 import { formatDuration } from '../utils/formatUtils';
 import config from '../config/config';
 const fieldNotes = config.recipes.fieldNotes;
@@ -160,6 +161,11 @@ function RecipeForm({ action, initialRecord, onSave, onCancel, onChange }) {
     performValidation(record.recipeData, true);
   };
 
+  // Open recipe reference in a floating window
+  const openRecipeReference = () => {
+    window.open('/recipe-reference.html', 'recipe-reference', 'width=720,height=900,resizable=yes,scrollbars=yes');
+  };
+
   const reset = () => {
     // console.log("RecipeForm: resetRecord", resetRecord)
     setRecord(resetRecord);
@@ -289,6 +295,7 @@ function RecipeForm({ action, initialRecord, onSave, onCancel, onChange }) {
         <div className="form-button-box">
           <button className="button left reset" type="button" onClick={reset}>Reset</button>
           <div className="form-button-right">
+            <button className="button right icon-only" type="button" onClick={openRecipeReference} title="Recipe Reference"><FeatherIcon icon="info" size={16} /></button>
             <button className="button right" type="button" onClick={validateOnCall}>Validate</button>
             <button className="button right" type="button" onClick={addTrack}>Add Track</button>
             <button className="button right mr-0" type="button" onClick={addClip}>Insert Clip</button>

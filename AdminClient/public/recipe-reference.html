@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recipe Reference — DriftConditions</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      background: #f5f5f5;
+      color: #222;
+      margin: 0;
+      padding: 1.25rem 1.5rem 2rem;
+    }
+
+    h1 {
+      font-size: 1.25rem;
+      color: #fff;
+      background: #336699;
+      margin: -1.25rem -1.5rem 1.25rem;
+      padding: 0.75rem 1.5rem;
+    }
+
+    h2 {
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #336699;
+      border-bottom: 1px solid #c0cfe0;
+      padding-bottom: 0.25rem;
+      margin: 1.5rem 0 0.6rem;
+    }
+
+    h3 {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #555;
+      margin: 0.9rem 0 0.3rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    p { margin: 0.4rem 0 0.6rem; }
+
+    code {
+      font-family: 'Fira Code', 'Menlo', 'Consolas', monospace;
+      font-size: 0.82rem;
+      background: #dde5ee;
+      color: #1a3a5c;
+      padding: 0.1em 0.35em;
+      border-radius: 3px;
+    }
+
+    pre {
+      font-family: 'Fira Code', 'Menlo', 'Consolas', monospace;
+      font-size: 0.8rem;
+      background: #e8edf3;
+      border-left: 3px solid #336699;
+      padding: 0.75rem 1rem;
+      overflow-x: auto;
+      margin: 0.5rem 0 0.75rem;
+      line-height: 1.45;
+      color: #1a3a5c;
+    }
+
+    pre .comment { color: #6b8aab; }
+    pre .key     { color: #cc1b1b; font-weight: 600; }
+    pre .str     { color: #447f44; }
+    pre .num     { color: #9b5000; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 0.4rem 0 0.75rem;
+      font-size: 0.82rem;
+    }
+
+    th {
+      background: #c8d8e8;
+      color: #1a3a5c;
+      font-weight: 700;
+      text-align: left;
+      padding: 0.3rem 0.6rem;
+    }
+
+    td {
+      padding: 0.3rem 0.6rem;
+      border-bottom: 1px solid #d1d9e0;
+      vertical-align: top;
+    }
+
+    tr:nth-child(even) td { background: #eef2f6; }
+
+    td code { background: #d0dce8; }
+
+    .effect-grid {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 0.15rem 0.75rem;
+      margin: 0.3rem 0 0.75rem;
+      font-size: 0.82rem;
+      align-items: baseline;
+    }
+
+    .effect-grid code {
+      white-space: nowrap;
+    }
+
+    .effect-grid span {
+      color: #444;
+    }
+
+    .note {
+      background: #dde8f5;
+      border-left: 3px solid #336699;
+      padding: 0.4rem 0.75rem;
+      margin: 0.5rem 0;
+      font-size: 0.82rem;
+      color: #1a3a5c;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Recipe Reference — DriftConditions</h1>
+
+<!-- ─── Structure ──────────────────────────────────────────── -->
+<h2>Structure</h2>
+<p>A recipe is a JSON5 object (comments allowed). Tracks play simultaneously; clips within a track play one after another.</p>
+<pre>
+{
+  <span class="key">tracks</span>: [
+    {
+      label: <span class="str">"my track"</span>,   <span class="comment">// optional name (used by duck)</span>
+      volume: <span class="num">100</span>,            <span class="comment">// 0–100, default 100</span>
+      effects: [ ],
+      <span class="key">clips</span>: [
+        {
+          classification: [ <span class="str">'ambient'</span> ],
+          tags: [ <span class="str">'drone'</span> ],
+          length: [ <span class="str">'long'</span> ],
+          volume: <span class="num">100</span>,            <span class="comment">// 0–100, default 100</span>
+          effects: [ ],
+        }
+      ]
+    },
+  ]
+}
+</pre>
+
+<!-- ─── Classifications ────────────────────────────────────── -->
+<h2>Classifications</h2>
+<p>Use lowercase values in recipes. Apply as few as accurately describe the clip.</p>
+<table>
+  <tr><th>Value</th><th>Description</th></tr>
+  <tr><td><code>ambient</code></td><td>Drone, ambient music, minimalist or bed-style audio</td></tr>
+  <tr><td><code>atmospheric</code></td><td>Field recordings, city ambiance, cafe, crowd noise</td></tr>
+  <tr><td><code>environmental</code></td><td>Natural sounds — thunder, birdsong, rain, ocean</td></tr>
+  <tr><td><code>premixed</code></td><td>Already-assembled mixes — radio excerpts, podcast clips</td></tr>
+  <tr><td><code>soundscape</code></td><td>Complex audio environments, theatrical sound design</td></tr>
+  <tr><td><code>archival</code></td><td>Historical recordings, old radio, vintage speeches</td></tr>
+  <tr><td><code>spoken</code></td><td>Talks, poetry, speeches, interviews</td></tr>
+  <tr><td><code>narrative</code></td><td>Radio dramas, storytelling, narrative podcasts</td></tr>
+  <tr><td><code>instructional</code></td><td>Educational audio — lessons, how-tos, training</td></tr>
+  <tr><td><code>vocalmusic</code></td><td>Music with prominent vocals</td></tr>
+  <tr><td><code>instrumental</code></td><td>Music without vocals — classical, jazz, ambient instrumental</td></tr>
+  <tr><td><code>experimental</code></td><td>Avant-garde, noise music, unconventional compositions</td></tr>
+  <tr><td><code>digital</code></td><td>Synthesizer, electronic beats, computer-generated sounds</td></tr>
+  <tr><td><code>effect</code></td><td>Short clips for layering — stingers, transitions, foley</td></tr>
+  <tr><td><code>other</code></td><td>Anything that doesn't fit another category</td></tr>
+  <tr><td><code>silence</code></td><td>Special value — inserts a silent gap (use in clips only)</td></tr>
+</table>
+
+<!-- ─── Length ─────────────────────────────────────────────── -->
+<h2>Length Categories</h2>
+<table>
+  <tr><th>Value</th><th>Range</th><th>Typical use</th></tr>
+  <tr><td><code>tiny</code></td><td>0 – 10 s</td><td>Sound effects, short stingers</td></tr>
+  <tr><td><code>short</code></td><td>10 s – 2 min</td><td>Shorter effects, brief clips, silences</td></tr>
+  <tr><td><code>medium</code></td><td>2 – 5 min</td><td>Most music tracks</td></tr>
+  <tr><td><code>long</code></td><td>5 – 10 min</td><td>Longer music, spoken pieces</td></tr>
+  <tr><td><code>huge</code></td><td>10 min – 2 hr</td><td>Long soundscapes, environmental recordings</td></tr>
+</table>
+
+<!-- ─── Track Effects ──────────────────────────────────────── -->
+<h2>Track Effects</h2>
+<p>Applied to the whole track.</p>
+
+<h3>Duration / structure</h3>
+<div class="effect-grid">
+  <code>trim</code>         <span>This track's duration sets the mix length</span>
+  <code>first</code>        <span>The first track in the recipe determines the mix length</span>
+  <code>shortest</code>     <span>Mix ends when the shortest finite track ends</span>
+  <code>longest</code>      <span>Mix ends when the longest finite track ends (default behavior)</span>
+</div>
+
+<h3>Looping</h3>
+<div class="effect-grid">
+  <code>loop</code>         <span>Loop clips to fill the mix duration</span>
+  <code>loop(n)</code>      <span>Loop exactly <em>n</em> times</span>
+</div>
+
+<h3>Fade</h3>
+<div class="effect-grid">
+  <code>crossfade</code>    <span>Crossfade between clips on this track</span>
+  <code>fadeout</code>      <span>Fade the track out at the end of the mix (default 3s)</span>
+  <code>fadeout(n)</code>   <span>Fade out over <em>n</em> seconds</span>
+</div>
+
+<h3>Level / normalization</h3>
+<div class="effect-grid">
+  <code>norm</code>          <span>Normalize to default level</span>
+  <code>norm(voice)</code>   <span>Optimize for speech (foreground level)</span>
+  <code>norm(music)</code>   <span>Optimize for foreground music</span>
+  <code>norm(bed)</code>     <span>Background music bed level (quieter)</span>
+</div>
+
+<h3>Color / texture</h3>
+<div class="effect-grid">
+  <code>backward</code>      <span>Reverse playback</span>
+  <code>faraway</code>       <span>Low-pass filter + reverb — sounds distant</span>
+  <code>faraway(vol)</code>  <span>Same, plus volume reduced to 30%</span>
+  <code>telephone</code>     <span>Narrow bandpass — telephone or AM radio effect</span>
+</div>
+
+<h3>Volume modulation</h3>
+<div class="effect-grid">
+  <code>wave()</code>        <span>Smooth volume oscillation — see Wave Modifiers below</span>
+</div>
+
+<h3>Routing</h3>
+<div class="effect-grid">
+  <code>duck(label)</code>   <span>Lowers this track's volume when the named track is playing — keeps a music bed from competing with a narrator</span>
+</div>
+
+<!-- ─── Clip Effects ────────────────────────────────────────── -->
+<h2>Clip Effects</h2>
+<p>Applied to individual clips within a track.</p>
+
+<h3>Looping</h3>
+<div class="effect-grid">
+  <code>loop</code>         <span>Loop this clip to fill remaining track duration</span>
+  <code>loop(n)</code>      <span>Loop exactly <em>n</em> times</span>
+</div>
+
+<h3>Fade</h3>
+<div class="effect-grid">
+  <code>fadeout</code>      <span>Fade this clip out at its end (default 3s)</span>
+  <code>fadeout(n)</code>   <span>Fade out over <em>n</em> seconds</span>
+</div>
+
+<h3>Level / normalization</h3>
+<div class="effect-grid">
+  <code>norm</code>          <span>Normalize to default level</span>
+  <code>norm(voice)</code>   <span>Optimize for speech (foreground level)</span>
+  <code>norm(music)</code>   <span>Optimize for foreground music</span>
+  <code>norm(bed)</code>     <span>Background music bed level (quieter)</span>
+</div>
+
+<h3>Color / texture</h3>
+<div class="effect-grid">
+  <code>backward</code>      <span>Reverse playback</span>
+  <code>faraway</code>       <span>Low-pass filter + reverb — sounds distant</span>
+  <code>faraway(vol)</code>  <span>Same, plus volume reduced to 30%</span>
+  <code>telephone</code>     <span>Narrow bandpass — telephone or AM radio effect</span>
+</div>
+
+<h3>Volume modulation</h3>
+<div class="effect-grid">
+  <code>wave()</code>        <span>Smooth volume oscillation — see Wave Modifiers below</span>
+</div>
+
+<h3>Routing</h3>
+<div class="effect-grid">
+  <code>duck(label)</code>   <span>Lowers this clip's volume when the named track is playing</span>
+</div>
+
+<!-- ─── Wave Modifiers ─────────────────────────────────────── -->
+<h2>Wave Modifiers</h2>
+<p><code>wave()</code> modulates volume with a smooth coherent-noise function. Parameters can be combined in any order.</p>
+
+<h3>Presets (speed)</h3>
+<div class="effect-grid">
+  <code>wave()</code>          <span>Default — active, noticeable oscillation</span>
+  <code>wave(fast)</code>      <span>Rapid, more agitated oscillation</span>
+  <code>wave(slow)</code>      <span>Gentler, longer period</span>
+  <code>wave(slower)</code>    <span>Very slow, barely perceptible movement</span>
+</div>
+
+<h3>Modifiers (shape)</h3>
+<div class="effect-grid">
+  <code>counter</code>    <span>Invert the wave — loud when base is quiet (aliases: inverse, invert, inverted)</span>
+  <code>soft</code>       <span>Subtle amplitude — wave stays in upper range, less dramatic</span>
+  <code>lifted</code>     <span>Raised floor — wave never drops to silence</span>
+  <code>bridge</code>     <span>Peaks at crossings of normal and inverted wave (alias: transition)</span>
+</div>
+
+<h3>Combining</h3>
+<p>Preset and modifiers can be combined in any order, comma-separated:</p>
+<div class="effect-grid">
+  <code>wave(slow, counter)</code>         <span>Slow + inverted</span>
+  <code>wave(slow, soft)</code>            <span>Slow + subtle</span>
+  <code>wave(lifted, counter)</code>       <span>Raised floor + inverted</span>
+  <code>wave(slow, lifted, counter)</code> <span>All three combined</span>
+</div>
+
+<!-- ─── Example ────────────────────────────────────────────── -->
+<h2>Example Recipe</h2>
+<p>Spoken narrative over a looping ambient bed, with sidechain ducking:</p>
+<pre>
+{
+  <span class="key">tracks</span>: [
+    {
+      <span class="comment">// Ambient drone bed — loops, fades out, ducks when narrator speaks</span>
+      label: <span class="str">"bed"</span>,
+      volume: <span class="num">60</span>,
+      effects: [ <span class="str">"loop"</span>, <span class="str">"norm(bed)"</span>, <span class="str">"wave(slow, soft)"</span>, <span class="str">"duck(narrator)"</span> ],
+      <span class="key">clips</span>: [
+        {
+          classification: [ <span class="str">'ambient'</span> ],
+          tags: [ <span class="str">'drone'</span>, <span class="str">'minimalist'</span>, <span class="str">'sustained'</span>, <span class="str">'atmospheric'</span> ],
+          length: [ <span class="str">'long'</span>, <span class="str">'huge'</span> ],
+        }
+      ]
+    },
+    {
+      <span class="comment">// Spoken word — sets mix duration</span>
+      label: <span class="str">"narrator"</span>,
+      volume: <span class="num">100</span>,
+      effects: [ <span class="str">"trim"</span> ],
+      <span class="key">clips</span>: [
+        {
+          classification: <span class="str">"silence"</span>,
+          length: [ <span class="str">'short'</span> ]
+        },
+        {
+          classification: [ <span class="str">'narrative'</span>, <span class="str">'spoken'</span> ],
+          tags: [ <span class="str">'story'</span>, <span class="str">'storytelling'</span>, <span class="str">'reading'</span>, <span class="str">'monologue'</span> ],
+          length: [ <span class="str">'medium'</span>, <span class="str">'long'</span> ],
+          effects: [ <span class="str">"norm(voice)"</span> ],
+        },
+        {
+          classification: <span class="str">"silence"</span>,
+          length: [ <span class="str">'short'</span> ]
+        }
+      ]
+    }
+  ]
+}
+</pre>
+
+</body>
+</html>

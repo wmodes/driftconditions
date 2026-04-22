@@ -1264,7 +1264,12 @@ tr.row-even.quick-edit textarea {
 
 .form-button-right {
   display: flex;
-  gap: 10px; 
+  gap: 10px;
+}
+
+.form-button-box button.icon-only {
+  padding: 0.3rem 0.5rem;
+  line-height: 1;
 }
 
 /* Success and error messages */
