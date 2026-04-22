@@ -1,5 +1,7 @@
 # DriftConditions
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19688234.svg)](https://doi.org/10.5281/zenodo.19688234)
+
 *DriftConditions* is an online audio source that captures the chaos and serendipity of late-night radio tuning — an uncanny audio stream generated entirely on the fly by code. Overlapping fragmented stories, ambient sounds, and mysterious crosstalk weave a vivid sonic tapestry, drawing listeners into an immersive and unpredictable listening experience.
 
 Inspired by the unpredictability of real-world radio interference, *DriftConditions* explores the boundaries between intention and happenstance, inviting listeners to eavesdrop on a hidden world of voices and atmospheres unconstrained by traditional narrative structures. Every session is unique — it will never be heard exactly the same way again.
