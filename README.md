@@ -361,8 +361,6 @@ If you use or reference *DriftConditions* in academic work, please cite it as:
 }
 ```
 
-> Replace `19688234` with the Zenodo DOI assigned after your first release.
-
 ---
 
 ## License
