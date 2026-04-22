@@ -1,6 +1,6 @@
 
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import AceEditor from 'react-ace';
@@ -56,6 +56,19 @@ function RecipeForm({ action, initialRecord, onSave, onCancel, onChange }) {
   // State for handling loading, success, and error feedback
   const [successMessage, setSuccessMessage] = useState('');
   const [error, setError] = useState('');
+
+  // Track editor wrapper height so CSS resize sticks across re-renders
+  const [editorHeight, setEditorHeight] = useState(300);
+  const editorWrapperRef = useRef(null);
+  useEffect(() => {
+    const wrapper = editorWrapperRef.current;
+    if (!wrapper) return;
+    const observer = new ResizeObserver(entries => {
+      setEditorHeight(entries[0].contentRect.height);
+    });
+    observer.observe(wrapper);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     if (editorRef && editorRef.editor) {
@@ -279,23 +292,25 @@ function RecipeForm({ action, initialRecord, onSave, onCancel, onChange }) {
       <div className="form-group pb-1">
         <label className="form-label" htmlFor="recipeData">Recipe Data: <Required /></label>
 
-        <AceEditor
-          mode="json5"
-          theme="tomorrow"
-          name="recipeData"
-          ref={(editor) => setEditorRef(editor)}
-          className="code-editor"
-          value={record.recipeData}
-          onChange={handleRecipeChanges}
-          editorProps={{ $blockScrolling: true }}
-          setOptions={aceOptions}
-          style={{ width: '', height: 'auto' }}
-          fontSize="14px"
-        />
+        <div ref={editorWrapperRef} className="code-editor-wrapper">
+          <AceEditor
+            mode="json5"
+            theme="tomorrow"
+            name="recipeData"
+            ref={(editor) => setEditorRef(editor)}
+            className="code-editor"
+            value={record.recipeData}
+            onChange={handleRecipeChanges}
+            editorProps={{ $blockScrolling: true }}
+            setOptions={{ ...aceOptions, minLines: undefined, maxLines: undefined }}
+            style={{ width: '100%', height: editorHeight + 'px' }}
+            fontSize="14px"
+          />
+        </div>
         <div className="form-button-box">
           <button className="button left reset" type="button" onClick={reset}>Reset</button>
           <div className="form-button-right">
-            <button className="button right icon-only" type="button" onClick={openRecipeReference} title="Recipe Reference"><FeatherIcon icon="info" size={16} /></button>
+            <button className="button right icon-only" type="button" onClick={openRecipeReference} title="Recipe Reference"><span className="info-circle">i</span></button>
             <button className="button right" type="button" onClick={validateOnCall}>Validate</button>
             <button className="button right" type="button" onClick={addTrack}>Add Track</button>
             <button className="button right mr-0" type="button" onClick={addClip}>Insert Clip</button>
