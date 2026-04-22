@@ -78,7 +78,7 @@ const config = {
       'Other'
     ],
     // Classifications that warrant music analysis (BPM, key, danceability)
-    musicAnalysisClassifications: ['Instrumental', 'VocalMusic', 'Ambient'],
+    musicAnalysisClassifications: ['instrumental', 'vocalmusic', 'ambient'],
     // Internal tags used by the audio analysis pipeline
     internalTags: {
       analysisQueue: 'needs-audio-analysis', // set on upload to trigger analysis
