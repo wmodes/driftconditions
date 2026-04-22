@@ -355,13 +355,13 @@ If you use or reference *DriftConditions* in academic work, please cite it as:
   title     = {{DriftConditions}: A Generative Audio Streaming Platform},
   year      = {2026},
   publisher = {Zenodo},
-  doi       = {10.5281/zenodo.XXXXXXX},
-  url       = {https://doi.org/10.5281/zenodo.XXXXXXX},
+  doi       = {10.5281/zenodo.19688234},
+  url       = {https://doi.org/10.5281/zenodo.19688234},
   orcid     = {0009-0000-1191-8245}
 }
 ```
 
-> Replace `XXXXXXX` with the Zenodo DOI assigned after your first release.
+> Replace `19688234` with the Zenodo DOI assigned after your first release.
 
 ---
 
