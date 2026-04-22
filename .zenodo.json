@@ -1,0 +1,34 @@
+{
+  "title": "DriftConditions: A Generative Audio Streaming Platform",
+  "description": "DriftConditions is an online audio source that captures the chaos and serendipity of late-night radio tuning — an uncanny audio stream generated entirely on the fly by code. Overlapping fragmented stories, ambient sounds, and mysterious crosstalk weave a vivid sonic tapestry. The platform includes a contributor upload system, a recipe-based mix engine, and a live Icecast audio stream.",
+  "upload_type": "software",
+  "access_right": "open",
+  "license": "MIT",
+  "creators": [
+    {
+      "name": "Modes, Wesley",
+      "affiliation": "University of Cincinnati",
+      "orcid": "0009-0000-1191-8245"
+    }
+  ],
+  "keywords": [
+    "generative audio",
+    "audio streaming",
+    "algorithmic composition",
+    "radio art",
+    "sound art",
+    "media arts",
+    "creative coding",
+    "Node.js",
+    "FFmpeg",
+    "Icecast"
+  ],
+  "language": "eng",
+  "related_identifiers": [
+    {
+      "identifier": "https://driftconditions.org/",
+      "relation": "isDocumentedBy",
+      "resource_type": "other"
+    }
+  ]
+}
