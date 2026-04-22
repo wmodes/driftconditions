@@ -267,8 +267,8 @@ router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
     logger.debug(`audioRoutes:/upload: filetype: ${filetype}`);
 
     // Flag for music analysis if classification warrants it
-    const classArr = coerceToArray(record.classification);
-    const needsAnalysis = classArr.some(c => musicAnalysisClassifications.includes(c));
+    const classArr = coerceToArray(record.classification).map(c => c.toLowerCase());
+    const needsAnalysis = classArr.some(c => musicAnalysisClassifications.map(m => m.toLowerCase()).includes(c));
     const initialInternalTags = needsAnalysis ? JSON.stringify([audioInternalTags.analysisQueue]) : null;
 
     // Prep db params

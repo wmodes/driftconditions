@@ -9,6 +9,13 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-04-22] (26)
+
+### Fixed
+- **Audio analysis queue** — classification comparison on upload was case-sensitive, so clips classified as `instrumental`, `vocalmusic`, or `ambient` (lowercase, as the form sends) never matched `musicAnalysisClassifications` (mixed case). Both sides are now lowercased before comparison. Clips uploaded before this fix will need a one-time backfill.
+
+---
+
 ## [2026-04-21] (25)
 
 ### Changed
