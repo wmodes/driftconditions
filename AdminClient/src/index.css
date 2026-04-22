@@ -1022,10 +1022,15 @@ tr.row-even.quick-edit textarea {
  * Code Editor
  */
 
- .code-editor {
-  height: auto;
+.code-editor-wrapper {
+  height: 300px;
+  min-height: 150px;
   resize: vertical;
-  overflow-x: hidden; 
+  overflow: hidden;
+}
+
+.code-editor {
+  overflow-x: hidden;
   overflow-y: auto;
 }
 
@@ -1268,8 +1273,23 @@ tr.row-even.quick-edit textarea {
 }
 
 .form-button-box button.icon-only {
-  padding: 0.3rem 0.5rem;
+  padding: 0.25rem 0.5rem;
+  line-height: 0;
+}
+
+.info-circle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: 2px solid white;
+  border-radius: 50%;
+  font-size: 15px;
+  font-weight: 400;
+  font-style: normal;
   line-height: 1;
+  padding-bottom: 1px;
 }
 
 /* Success and error messages */

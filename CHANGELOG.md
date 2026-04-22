@@ -9,6 +9,21 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-04-22] (29)
+
+### Fixed
+- **Recipe reference button** — replaced Feather info SVG (serif "i", hard to read) with a CSS circle + plain letter "i" in the button's own font, matching the style of adjacent button text.
+
+---
+
+## [2026-04-22] (28)
+
+### Fixed
+- **Recipe editor resize** — editor height now persists when dragged; ResizeObserver tracks wrapper height and feeds it to AceEditor as an explicit pixel value, preventing Ace's minLines/maxLines from snapping it back.
+- **Recipe reference button** — info icon enlarged from 16px to 22px and button padding tightened so the icon reads clearly at button size.
+
+---
+
 ## [2026-04-22] (27)
 
 ### Added
