@@ -337,6 +337,34 @@ We ask that all submissions be original works, public domain, or Creative Common
 
 ---
 
+## Author
+
+**Wesley Modes**  
+University of Cincinnati  
+ORCID: [0009-0000-1191-8245](https://orcid.org/0009-0000-1191-8245)
+
+---
+
+## Citation
+
+If you use or reference *DriftConditions* in academic work, please cite it as:
+
+```bibtex
+@software{modes_2026_driftconditions,
+  author    = {Modes, Wesley},
+  title     = {{DriftConditions}: A Generative Audio Streaming Platform},
+  year      = {2026},
+  publisher = {Zenodo},
+  doi       = {10.5281/zenodo.XXXXXXX},
+  url       = {https://doi.org/10.5281/zenodo.XXXXXXX},
+  orcid     = {0009-0000-1191-8245}
+}
+```
+
+> Replace `XXXXXXX` with the Zenodo DOI assigned after your first release.
+
+---
+
 ## License
 
 MIT — see `MIT-LICENSE.txt`
