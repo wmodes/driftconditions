@@ -9,6 +9,13 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-04-22] (27)
+
+### Added
+- **Recipe reference page** — comprehensive static reference at `/recipe-reference.html` covering recipe structure, all classifications with descriptions, length categories, track effects, clip effects, and wave modifiers with combination examples. Opened in a floating window via a new info icon button to the left of Validate in the recipe editor.
+
+---
+
 ## [2026-04-22] (26)
 
 ### Fixed
