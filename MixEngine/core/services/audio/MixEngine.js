@@ -17,6 +17,7 @@ const ffmpegOutput = config.ffmpeg.output;
 const filterConfig = config.filters;
 const exprs3Config = config.exprs3;
 const streamArtist = config.brand.streamArtist;
+const streamAlbum  = config.brand.streamAlbum;
 
 // Preferred effect application order — effects are sorted by category before processing
 // regardless of the order they appear in the recipe. This prevents effects like norm
@@ -1191,6 +1192,7 @@ class MixEngine {
         '-id3v2_version', '3',
         '-metadata', `title=${mixTitle || ''}`,
         '-metadata', `artist=${streamArtist}`,
+        '-metadata', `album=${streamAlbum}`,
       ];
 
       let cmd = ffmpeg(filepath).audioCodec('copy');
