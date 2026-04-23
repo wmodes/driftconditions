@@ -9,6 +9,16 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-04-23] (36)
+
+### Added
+- **Cover image backfill script** (`scripts/backfill-cover-images.js`) — two-phase pipeline to populate `coverImage` for existing approved clips with no art.
+  - Phase 1: extracts embedded APIC cover art from each MP3 via ffmpeg; normalizes to 500×500 JPEG; tags `image-from-embed`.
+  - Phase 2: remaining clips sent to Claude Haiku in batches; Haiku identifies the source and constructs an iTunes Search API query; first result's artwork fetched, normalized, and saved; tags `image-from-haiku` (found) or `image-not-found` (not found). No API key required for iTunes.
+  - Flags: `--prod`, `--phase1`, `--phase2`, `--limit N`, `--offset N`, `--threshold N`, `--dry-run`.
+
+---
+
 ## [2026-04-23] (35)
 
 ### Added
