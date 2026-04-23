@@ -30,12 +30,12 @@ const path      = require('path');
 const fs        = require('fs');
 const { spawn } = require('child_process');
 
-// Load env from AdminServer/.env (DB credentials, API keys, BASEDIR)
-require('dotenv').config({ path: path.join(__dirname, '../AdminServer/.env') });
-
-// Add AdminServer/node_modules so we can require 'config', 'mysql2', etc.
+// Add AdminServer/node_modules first so dotenv and other deps resolve correctly
 process.env.NODE_PATH = path.join(__dirname, '../AdminServer/node_modules');
 require('module').Module._initPaths();
+
+// Load env from AdminServer/.env (DB credentials, API keys, BASEDIR)
+require('dotenv').config({ path: path.join(__dirname, '../AdminServer/.env') });
 
 const Anthropic = require('@anthropic-ai/sdk');
 
