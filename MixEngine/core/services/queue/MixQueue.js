@@ -53,20 +53,21 @@ class MixQueue {
     try {
       // SQL Query to insert a new mix entry
       const queryStr = `
-        INSERT INTO mixQueue 
-          (recipeID, title, status, filename, duration, playlist, recipeObj, classification, tags)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO mixQueue
+          (recipeID, title, status, filename, duration, playlist, recipeObj, classification, tags, coverImage)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `;
       const queryValues = [
-        recipe.recipeID, 
-        recipe.title, 
+        recipe.recipeID,
+        recipe.title,
         "Queued",
         mixDetails.filename,
         mixDetails.duration,
         JSON.stringify(mixDetails.playlist),
         JSON.stringify(recipe.recipeObj),
-        JSON.stringify(recipe.classification), 
-        JSON.stringify(recipe.tags)
+        JSON.stringify(recipe.classification),
+        JSON.stringify(recipe.tags),
+        mixDetails.coverImage || null,
       ];
       logger.debug(`MixQueue:createMixQueueEntry(): queryStr: ${queryStr}`);
       logger.debug(`MixQueue:createMixQueueEntry(): queryValues: ${JSON.stringify(queryValues, null, 2)}`);
