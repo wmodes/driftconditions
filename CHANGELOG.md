@@ -9,6 +9,18 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-04-23] (37)
+
+### Added
+- **Mix cover image and metadata (Phase 5)** — mixes now carry a cover image and ID3 tags.
+  - `ClipSelector.js` — `coverImage` added to the fields propagated from the DB clip onto the recipe clip object (including the `repeat(n)` path).
+  - `CoverSelector.js` (new, `MixEngine/core/services/covers/`) — walks recipe tracks/clips in order, returns the first clip's `coverImage`; falls back to a randomly chosen alt image. Silence and no-art clips are skipped naturally.
+  - `Conductor.js` — instantiates `CoverSelector`; after clip selection sets `mixDetails.coverImage`, `mixDetails.coverImagePath`, and `mixDetails.mixTitle` (`"Recipe - First Clip"`).
+  - `MixEngine.js` — `_embedMetadata()` runs a second ffmpeg pass (audio stream-copy, no re-encode) after the mix is built, embedding ID3 title, artist (`DriftConditions - driftconditions.org`), and APIC cover art.
+  - `MixQueue.js` — `coverImage` added to the `createMixQueueEntry` INSERT.
+
+---
+
 ## [2026-04-23] (36)
 
 ### Added

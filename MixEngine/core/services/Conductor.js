@@ -11,6 +11,7 @@ const ClipAdjustor = require('@services/clips/ClipAdjustor');
 const MixEngine = require('@services/audio/MixEngine');
 const MixQueue = require('@services/queue/MixQueue');
 const RecordKeeper = require('@services/recordkeeper/RecordKeeper');
+const CoverSelector = require('@services/covers/CoverSelector');
 
 const { config } = require('config');
 const maxQueued = config.mixes.maxQueued;
@@ -29,6 +30,7 @@ class Conductor {
     this.mixEngine = new MixEngine();
     this.mixQueue = new MixQueue();
     this.recordKeeper = new RecordKeeper();
+    this.coverSelector = new CoverSelector();
   }
 
   /**
@@ -102,6 +104,17 @@ class Conductor {
         //
         // Record what was actually heard, update lastUsed, log clipUsage, build accurate playlist
         mixDetails.playlist = await this.recordKeeper.record(selectedRecipe, mixDetails.duration);
+        //
+        // Select cover image from recipe clips (first clip with art wins; falls back to alt)
+        const { coverImage, coverImagePath } = this.coverSelector.selectCoverImage(selectedRecipe);
+        mixDetails.coverImage     = coverImage;
+        mixDetails.coverImagePath = coverImagePath;
+        //
+        // Build mix title for ID3 metadata: "Recipe Title - First Playlist Title"
+        const firstClipTitle = mixDetails.playlist[0]?.title || '';
+        mixDetails.mixTitle = firstClipTitle
+          ? `${selectedRecipe.title} - ${firstClipTitle}`
+          : selectedRecipe.title;
         //
         // Get next mix ID
         mixDetails.mixID = await this.mixQueue.getNextMixID();

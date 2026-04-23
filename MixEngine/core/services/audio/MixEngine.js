@@ -113,6 +113,9 @@ class MixEngine {
     //
     // Configure output and run the ffmpeg process
     await this._configureAndRun(ffmpegCmd);
+    //
+    // Embed ID3 metadata and cover art into the finished mix file
+    await this._embedMetadata(mixDetails);
   }
 
   /**
@@ -1164,6 +1167,58 @@ class MixEngine {
           logger.error('Cannot process audio: ' + err.message);
           console.log('ffmpeg stdout:\n' + stdout);
           console.log('ffmpeg stderr:\n' + stderr);
+          reject(err);
+        })
+        .run();
+    });
+  }
+
+  /**
+   * Embeds ID3 metadata and cover art into the finished mix MP3 via a second
+   * ffmpeg pass. Audio is stream-copied (no re-encode). The tagged file replaces
+   * the original in-place.
+   *
+   * @param {Object} mixDetails - Must include filepath, mixTitle, coverImagePath.
+   */
+  _embedMetadata (mixDetails) {
+    const { filepath, mixTitle, coverImagePath } = mixDetails;
+    const artist   = 'DriftConditions - driftconditions.org';
+    const tmpPath  = filepath + '.tmp.mp3';
+
+    return new Promise((resolve, reject) => {
+      let cmd = ffmpeg(filepath)
+        .audioCodec('copy')           // no re-encode
+        .outputOptions([
+          '-id3v2_version', '3',
+          '-metadata', `title=${mixTitle || ''}`,
+          '-metadata', `artist=${artist}`,
+        ]);
+
+      if (coverImagePath) {
+        cmd = cmd
+          .input(coverImagePath)
+          .outputOptions([
+            '-map', '0:a',
+            '-map', '1:v',
+            '-c:v', 'copy',
+            '-metadata:s:v', 'title=Album cover',
+            '-metadata:s:v', 'comment=Cover (Front)',
+          ]);
+      }
+
+      cmd
+        .output(tmpPath)
+        .on('end', () => {
+          try {
+            require('fs').renameSync(tmpPath, filepath);
+            logger.debug('MixEngine:_embedMetadata: metadata embedded successfully');
+            resolve();
+          } catch (err) {
+            reject(err);
+          }
+        })
+        .on('error', (err) => {
+          logger.error('MixEngine:_embedMetadata: ' + err.message);
           reject(err);
         })
         .run();

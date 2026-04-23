@@ -57,6 +57,7 @@ class ClipSelector {
             clip.duration = source.duration;
             clip.creatorID = source.creatorID;
             clip.creatorUsername = source.creatorUsername;
+            clip.coverImage = source.coverImage;
             logger.debug(`ClipSelector: repeat(${n}) reusing clip "${source.title}"`);
             selectedClips.push(clip);
             continue;
@@ -105,6 +106,7 @@ class ClipSelector {
         clip.duration = parseFloat(selectedAudioClip.duration);
         clip.creatorID = selectedAudioClip.creatorID;
         clip.creatorUsername = selectedAudioClip.creatorUsername;
+        clip.coverImage = selectedAudioClip.coverImage;
         selectedClips.push(clip);
       }
     }
