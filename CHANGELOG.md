@@ -9,6 +9,19 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-04-23] (35)
+
+### Added
+- **Cover image infrastructure (Phase 1–3)** — groundwork for per-clip and per-mix cover art.
+  - Config: `content.coverImage` block added (`dir`, `ext`, `size`, `altDir`, `altNum`) and four new `audio.internalTags` entries (`image-from-embed`, `image-from-haiku`, `image-from-user`, `image-not-found`).
+  - Alt image library: 15 homepage PNGs converted to 500×500 JPEG and saved as `content/images/alt/coveralt-00.jpg` through `coveralt-14.jpg` (local and production).
+  - Database: `coverImage TEXT NULL` column added to `audio` and `mixQueue` tables (local and production).
+
+### Changed
+- **Production digest** — `DIGEST_REDIRECT` commented out in production `.env`; digests and reminders now deliver to real recipients with `DIGEST_BCC` silently copying the admin.
+
+---
+
 ## [2026-04-23] (32)
 
 ### Fixed
