@@ -18,12 +18,13 @@ import { setUnsavedChanges } from '../store/formSlice';
 import { useUnsavedChangesEvents, SafeLink, useSafeNavigate } from '../utils/formUtils';
 
 // Import the config object from the config.js file
-import config from '../config/config'; 
+import config from '../config/config';
 // pull variables from the config object
 const allowedFileTypes = config.audio.allowedFileTypes;
 const classificationOptions = config.audio.classification;
 const classificationFields = config.audio.classificationFields;
 const fieldNotes = config.audio.fieldNotes;
+const adminServerBaseURL = config.adminServer.baseURL;
 
 function AudioUpload() {
   const dispatch = useDispatch();  
@@ -48,6 +49,10 @@ function AudioUpload() {
   const [file, setFile] = useState(null);
   const [uploadedAudioID, setUploadedAudioID] = useState(null);
 
+  // Cover image state
+  const [coverImageFile, setCoverImageFile] = useState(null);
+  const [coverImagePreview, setCoverImagePreview] = useState(null);
+
   // Success and error handling
   const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState(''); // New state for success message
@@ -59,6 +64,7 @@ function AudioUpload() {
     // turn classificationOptions into an object with keys for each option (set to false)
     classification: setClassificationFormOptions(classificationOptions, false),
     copyrightCert: 0,
+    tags: [],
   });
 
   /**
@@ -137,7 +143,17 @@ function AudioUpload() {
     };
     dispatch(audioUpload({ audioRecord: adjustedRecord, file }))
       .unwrap()
-      .then(response => {
+      .then(async response => {
+        // Save cover image if one was selected
+        if (coverImageFile && response.audioID) {
+          const formData = new FormData();
+          formData.append('coverImage', coverImageFile);
+          await fetch(`${adminServerBaseURL}/api/audio/cover/${response.audioID}`, {
+            method: 'POST',
+            credentials: 'include',
+            body: formData,
+          });
+        }
         setIsLoading(false);
         setSuccessMessage('Upload successful!');
         setError('');
@@ -157,7 +173,7 @@ function AudioUpload() {
       });
   };
 
-  const isFormValid = record.title && file && record.copyrightCert && record.classification && record.tags && Object.values(record.classification).includes(true);
+  const isFormValid = record.title && file && record.copyrightCert && record.tags?.length > 0 && Object.values(record.classification).includes(true);
   const Required = () => <span className="required">*</span>;
 
   const renderBreadcrumbs = () => {
@@ -183,23 +199,60 @@ function AudioUpload() {
             {renderBreadcrumbs()}
 
             <div className="form-group">
-              <label className="form-label" htmlFor="file">Audio File: <Required /></label>
-              <input className="form-upload" type="file" id="file" onChange={handleFileChange} />
-              <p className="form-note">{fieldNotes.filetypes}</p>
-            </div>
+              <div className="form-group-with-image">
+                <div className="form-fields">
+                  <label className="form-label" htmlFor="file">Audio File: <Required /></label>
+                  <input className="form-upload" type="file" id="file" onChange={handleFileChange} />
+                  <p className="form-note">{fieldNotes.filetypes}</p>
 
-            <div className="form-group">
-              <label className="form-label" htmlFor="title">Title: <Required /></label>
-              <input name="title" className="form-field" type="text" id="title" value={record.title} onChange={handleChange} />
+                  <label className="form-label" htmlFor="title">Title: <Required /></label>
+                  <input name="title" className="form-field" type="text" id="title" value={record.title || ''} onChange={handleChange} />
 
-              <label className="form-label" htmlFor="status">Status: <Required /></label>
-              <select name="status" value={record.status} onChange={handleChange} className="form-select">
-                <option value="Review">Under Review</option>
-                <option value="Approved" disabled={!editPerm} selected={editPerm}>Approved</option>
-                <option value="Disapproved" disabled={!editPerm}>Disapproved</option>
-                <option value="Trashed" disabled={!editPerm}>Trashed</option>
-              </select>
-              <p className="form-note mt-1">{fieldNotes.status}</p>
+                  <label className="form-label" htmlFor="status">Status: <Required /></label>
+                  <select name="status" value={record.status} onChange={handleChange} className="form-select">
+                    <option value="Review">Under Review</option>
+                    <option value="Approved" disabled={!editPerm}>Approved</option>
+                    <option value="Disapproved" disabled={!editPerm}>Disapproved</option>
+                    <option value="Trashed" disabled={!editPerm}>Trashed</option>
+                  </select>
+                  <p className="form-note mt-1">{fieldNotes.status}</p>
+                </div>
+
+                <div className="cover-image-panel">
+                  {coverImagePreview ? (
+                    <img className="cover-image" src={coverImagePreview} alt="Cover preview" />
+                  ) : (
+                    <div className="cover-image-placeholder">No cover image</div>
+                  )}
+                  <div className="cover-image-upload">
+                    <input
+                      type="file"
+                      id="coverImageInput"
+                      accept="image/*"
+                      style={{ display: 'none' }}
+                      onChange={(e) => {
+                        const f = e.target.files[0] || null;
+                        setCoverImageFile(f);
+                        setCoverImagePreview(f ? URL.createObjectURL(f) : null);
+                      }}
+                    />
+                    <label
+                      htmlFor="coverImageInput"
+                      className="cover-image-upload-btn"
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        const f = e.dataTransfer.files[0] || null;
+                        if (!f) return;
+                        setCoverImageFile(f);
+                        setCoverImagePreview(URL.createObjectURL(f));
+                      }}
+                    >
+                      Choose Image
+                    </label>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div className="form-group">

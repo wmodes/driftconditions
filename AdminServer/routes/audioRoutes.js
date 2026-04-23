@@ -26,6 +26,7 @@ const fsExtra = require('fs-extra');
 const path = require('path');
 const { mkdirp } = require('mkdirp');
 const crypto = require('crypto');
+const { spawn } = require('child_process');
 
 // configuration import
 const { config } = require('config');
@@ -34,11 +35,16 @@ const { config } = require('config');
 const jwtSecretKey = config.authToken.jwtSecretKey;
 const contentFileDir = config.content.contentFileDir;
 const tmpFileDir = config.content.tmpFileDir;
+const coverImageDir = config.content.coverImage.dir;
+const coverImageSize = config.content.coverImage.size;
 const musicAnalysisClassifications = config.audio.musicAnalysisClassifications;
 const audioInternalTags = config.audio.internalTags;
 
 // Multer configuration for temporary upload
 const upload = multer({ dest: tmpFileDir });
+
+// Multer configuration for cover image upload
+const uploadCover = multer({ dest: tmpFileDir });
 
 
 //
@@ -460,6 +466,54 @@ router.post('/trash', verifyToken, async (req, res) => {
   } catch (error) {
     logger.error(`audioRoutes:/trash: Error trashing audio file: ${error}`);
     res.status(500).json({ error: { message: 'Server error. Try again later.' } });
+  }
+});
+
+//
+// COVER IMAGE UPLOAD
+//
+
+// POST /api/audio/cover/:audioID
+// Accept a user-supplied cover image, resize to coverImageSize JPEG,
+// save to coverImageDir/{audioID}.jpg, update DB.
+router.post('/cover/:audioID', verifyToken, uploadCover.single('coverImage'), async (req, res) => {
+  const { audioID } = req.params;
+  if (!req.file) {
+    return res.status(400).json({ error: { message: 'No image file provided.' } });
+  }
+
+  const tmpPath  = req.file.path;
+  const outPath  = path.join(coverImageDir, `${audioID}.jpg`);
+  const [w, h]   = coverImageSize;
+  const vf       = `scale=${w}:${h}:force_original_aspect_ratio=decrease`;
+
+  try {
+    // Resize and convert to JPEG via ffmpeg
+    await new Promise((resolve, reject) => {
+      const proc = spawn('ffmpeg', ['-y', '-i', tmpPath, '-vf', vf, '-q:v', '2', outPath],
+        { stdio: 'pipe' });
+      proc.on('close', (code) => code === 0 ? resolve() : reject(new Error(`ffmpeg exited ${code}`)));
+    });
+
+    // Fetch current internalTags, remove image-not-found, add image-from-user
+    const [[row]] = await db.query('SELECT internalTags FROM audio WHERE audioID = ?', [audioID]);
+    const tags = (row?.internalTags || [])
+      .filter(t => t !== audioInternalTags.imageNotFound);
+    if (!tags.includes(audioInternalTags.imageFromUser)) tags.push(audioInternalTags.imageFromUser);
+
+    await db.query(
+      'UPDATE audio SET coverImage = ?, internalTags = ? WHERE audioID = ?',
+      [String(audioID), JSON.stringify(tags), audioID]
+    );
+
+    res.json({ coverImage: String(audioID) });
+    logger.info(`audioRoutes:/cover: Cover image saved for audioID ${audioID}`);
+  } catch (err) {
+    logger.error(`audioRoutes:/cover: Error saving cover image: ${err.message}`);
+    res.status(500).json({ error: { message: 'Failed to save cover image.' } });
+  } finally {
+    // Clean up temp file
+    fs.unlink(tmpPath).catch(() => {});
   }
 });
 

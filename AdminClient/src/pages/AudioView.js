@@ -13,6 +13,7 @@ import { useAuthCheckAndNavigate } from '../utils/authUtils';
 import config from '../config/config';
 // pull variables from the config object
 const audioBaseURL = config.adminServer.audioBaseURL;
+const coverImageURLBase = config.app.coverImageURLBase;
 // const fieldNotes = config.audio.fieldNotes;
 
 function AudioView() {
@@ -122,47 +123,62 @@ function AudioView() {
           <h2 className='title'>View Audio Details</h2>
           {renderBreadcrumbs()}
           <div className="form-group">
-            <div className="form-row">
-              <span className="form-label">Title:</span>
-              <span className="form-value">{record.title}</span>
-            </div>
-
-            <div className="form-row">
-              <span className="form-label">Filename:</span>
-              <span className="form-value">{record.filename}</span>
-            </div>
-
-            <div className="form-row">
-              <span className="form-label">Created:</span>
-              <span className="form-value">
-                <Link to={`/recipe/list?filter=user&targetID=${record.creatorUsername}`}>
-                  {record.creatorUsername}
-                </Link>
-                {" on " + record.createDate}
-              </span>
-            </div>
-
-            {record.editorUsername && (
+            <div className="form-group-with-image">
+              <div className="form-fields">
                 <div className="form-row">
-                  <span className="form-label">Edited:</span>
+                  <span className="form-label">Title:</span>
+                  <span className="form-value">{record.title}</span>
+                </div>
+
+                <div className="form-row">
+                  <span className="form-label">Filename:</span>
+                  <span className="form-value">{record.filename}</span>
+                </div>
+
+                <div className="form-row">
+                  <span className="form-label">Created:</span>
                   <span className="form-value">
-                    <Link to={`/recipe/list?filter=user&targetID=${record.editorUsername}`}>
-                      {record.editorUsername}
+                    <Link to={`/recipe/list?filter=user&targetID=${record.creatorUsername}`}>
+                      {record.creatorUsername}
                     </Link>
-                    {" on " + record.editDate}
+                    {" on " + record.createDate}
                   </span>
                 </div>
-              )
-            }
-            
-            <div className="form-row">
-              <span className="form-label">Status:</span>
-              <span className="form-value">{record.status}</span>
-            </div>
 
-            <div className="form-row">
-              <span className="form-label">Plays:</span>
-              <span className="form-value">{record.timesUsed || '—'}</span>
+                {record.editorUsername && (
+                  <div className="form-row">
+                    <span className="form-label">Edited:</span>
+                    <span className="form-value">
+                      <Link to={`/recipe/list?filter=user&targetID=${record.editorUsername}`}>
+                        {record.editorUsername}
+                      </Link>
+                      {" on " + record.editDate}
+                    </span>
+                  </div>
+                )}
+
+                <div className="form-row">
+                  <span className="form-label">Status:</span>
+                  <span className="form-value">{record.status}</span>
+                </div>
+
+                <div className="form-row">
+                  <span className="form-label">Plays:</span>
+                  <span className="form-value">{record.timesUsed || '—'}</span>
+                </div>
+              </div>
+
+              <div className="cover-image-panel">
+                {record.coverImage ? (
+                  <img
+                    className="cover-image"
+                    src={`${coverImageURLBase}/${record.coverImage}.jpg`}
+                    alt="Cover"
+                  />
+                ) : (
+                  <div className="cover-image-placeholder">No cover image</div>
+                )}
+              </div>
             </div>
           </div>
 

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { setUnsavedChanges } from '../store/formSlice';
-import { WithContext as ReactTags, SEPARATORS } from 'react-tag-input';
+import { WithOutContext as ReactTags, SEPARATORS } from 'react-tag-input';
 import { normalizeTag } from './formatUtils';
 import { Tooltip } from 'react-tooltip';
 import FeatherIcon from 'feather-icons-react';

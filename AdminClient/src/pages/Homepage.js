@@ -58,7 +58,7 @@ const Homepage = () => {
 
             <div className="image-wrapper mb-8">
               <div className="hero-image-container">
-                <img src={heroImageURL} alt="Hero" />
+                <img src={heroImageURL} alt="Hero" onError={(e) => { e.target.src = getHeroImageURL(); }} />
               </div>
             </div>
 
