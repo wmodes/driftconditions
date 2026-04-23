@@ -12,6 +12,7 @@ const config = {
   brand: {
     siteName: 'DriftConditions',
     siteUrl:  'https://driftconditions.org',
+    streamAlbum: '',                          // intentionally blank — clears any ffmpeg-generated album tag
     // Artist tag embedded in mix MP3s: "SiteName - siteUrl"
     get streamArtist() { return `${this.siteName} - ${this.siteUrl}`; },
   },
