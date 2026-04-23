@@ -60,6 +60,7 @@ export default function Navigation() {
       items: [
         { text: "All Users", link: "/user/list", permission: "userList" },
         { text: "Roles", link: "/role/list", permission: "roleList" },
+        { text: "Post Updates", link: "/admin/news", permission: "adminNews" },
       ],
     },
     {

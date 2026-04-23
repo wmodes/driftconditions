@@ -190,6 +190,35 @@ async function getProfileStats(userID) {
 }
 
 /**
+ * Returns all unsent admin_news items, oldest first.
+ * Included in contributor digests and reminders.
+ * @returns {Promise<{commID: number, content: string}[]>}
+ */
+async function getAdminNews() {
+  const [rows] = await db.query(
+    `SELECT commID, payload FROM userComms
+     WHERE commType = 'admin_news' AND sentAt IS NULL
+     ORDER BY createdAt ASC`
+  );
+  return rows.map(r => {
+    const payload = typeof r.payload === 'string' ? JSON.parse(r.payload) : r.payload;
+    return { commID: r.commID, content: payload.content };
+  });
+}
+
+/**
+ * Marks all unsent admin_news rows as sent (monthly archive step).
+ * Called once at the end of a monthly run day.
+ * @returns {Promise<void>}
+ */
+async function clearAdminNews() {
+  await db.query(
+    `UPDATE userComms SET sentAt = NOW()
+     WHERE commType = 'admin_news' AND sentAt IS NULL`
+  );
+}
+
+/**
  * Returns true if the user has any unsent approval/disapproval events queued.
  * Used by the daily-digest to suppress sends when there's nothing new.
  * @param {number} userID
@@ -283,12 +312,15 @@ async function buildDigestVars(user) {
   }
 
   const { audioRow, recipeRow, topPlays, recentPendingRows } = await getProfileStats(userID);
+  const adminNewsRows = await getAdminNews();
 
   const recentPending = recentPendingRows.map(r => ({
     audioID: r.audioID,
     title: r.title,
     date: formatMonthYear(r.createDate),
   }));
+
+  const adminNews = adminNewsRows.map(r => ({ content: r.content }));
 
   const vars = {
     firstname:          firstname || username,
@@ -309,6 +341,8 @@ async function buildDigestVars(user) {
     hasApproved:        approved.length > 0,
     disapproved,
     hasDisapproved:     disapproved.length > 0,
+    adminNews,
+    hasAdminNews:       adminNews.length > 0,
     digestFrequency,
     // Set when a daily/weekly user has no new events and is receiving the monthly fallback send
     fallbackFrequency:  (['daily', 'weekly'].includes(digestFrequency) && events.length === 0) ? dc.fallbackFrequency : null,
@@ -383,9 +417,13 @@ async function buildUserReminderVars(user) {
  */
 async function buildReminderVars(user) {
   const { userID, firstname, username } = user;
+  const adminNewsRows = await getAdminNews();
+  const adminNews = adminNewsRows.map(r => ({ content: r.content }));
   const vars = {
     firstname:      firstname || username,
     username,
+    adminNews,
+    hasAdminNews:   adminNews.length > 0,
     unsubscribeUrl: makeUnsubscribeUrl(userID),
     digestPrefsUrl: makeDigestPrefsUrl(username),
   };
@@ -532,6 +570,12 @@ async function runDigest() {
         logger.error(`digestRunner: [${schedule.name}] failed for ${user.username}: ${err.message}`);
       }
     }
+  }
+
+  // Archive admin news items on monthly run day so they don't accumulate indefinitely
+  if (isNthWeekdayOfMonth()) {
+    await clearAdminNews();
+    logger.info('digestRunner: archived admin news items (monthly clear)');
   }
 
   logger.info('digestRunner: run complete');

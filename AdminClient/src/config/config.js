@@ -21,6 +21,9 @@ const config = {
       // role
       roleList: '/api/role/list',
       roleUpdate: '/api/role/update',
+      // admin
+      adminNewsList: '/api/admin/news/list',
+      adminNewsCreate: '/api/admin/news/create',
       // audio
       audioUpload: '/api/audio/upload',
       audioInfo: '/api/audio/info',
@@ -47,6 +50,8 @@ const config = {
       userLookup: null, 
       userEdit: null,
       roleList: '/role/list',
+      adminNews: '/admin/news',
+      // note: adminNews permission is also used by backend to gate /api/admin/news routes
       audioUpload: '/audio/upload',
       audioBatch: '/audio/upload/batch',
       audioList: '/audio/list',

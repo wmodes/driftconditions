@@ -9,6 +9,17 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-04-22] (30)
+
+### Added
+- **Admin News** — admins and mods can post news items via a new "Post Updates" page under the Admin nav section. Pending items appear in contributor digests and contributor-reminder emails as a "Recent Updates" section. Items are archived on the monthly digest run.
+  - Backend: `adminRoutes.js` with `POST /api/admin/news/list` and `POST /api/admin/news/create`, gated by new `adminNews` permission added to admin and mod roles. Poster's username stored in payload at create time (no join needed on read).
+  - Frontend: `AdminNews.js` — queued items displayed digest-style above the compose form, with small `(date by username)` attribution. `adminSlice.js` for Redux thunks.
+  - Digest: `getAdminNews()` and `clearAdminNews()` in `digestRunner.js`; `hasAdminNews` / `adminNews` vars injected into `buildDigestVars` and `buildReminderVars`; archived after monthly run.
+  - Templates: "Recent Updates" block added to `contributor-digest` and `contributor-digest-reminder` (HTML and plain-text).
+
+---
+
 ## [2026-04-22] (29)
 
 ### Fixed

@@ -28,6 +28,13 @@
 {{/each}}
 {{/if}}
 
+{{#if hasAdminNews}}
+<h3 style="margin: 1.5em 0 0.25em; color: #555; font-size: 1em; text-transform: uppercase; letter-spacing: 0.05em;">Recent Updates</h3>
+{{#each adminNews}}
+<p style="margin: 0 0 0.75em;">{{content}}</p>
+{{/each}}
+{{/if}}
+
 <h3 style="margin: 1.5em 0 0.5em; color: #555; font-size: 1em; text-transform: uppercase; letter-spacing: 0.05em;">Your Stats</h3>
 
 <table style="border-collapse: collapse; font-size: 0.9em; color: #444; margin-bottom: 1em;">

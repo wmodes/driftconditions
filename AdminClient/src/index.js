@@ -23,6 +23,7 @@
   import UserList from './pages/UserList';
   import UserDownload from './pages/UserDownload';
   import RoleList from './pages/RoleList';
+  import AdminNews from './pages/AdminNews';
   import AudioUpload from './pages/AudioUpload';
   import AudioBatchUpload from './pages/AudioBatchUpload';
   import AudioList from './pages/AudioList';
@@ -69,6 +70,7 @@
         <Route path='/user/list' element={<UserList />} />
         <Route path='/user/download' element={<UserDownload />} />
         <Route path='/role/list' element={<RoleList />} />
+        <Route path='/admin/news' element={<AdminNews />} />
         <Route path='/audio/upload/batch' element={<AudioBatchUpload />} />
         <Route path='/audio/upload' element={<AudioUpload />} />
         <Route path='/audio/list' element={<AudioList />} /> 
