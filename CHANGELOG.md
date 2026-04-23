@@ -9,6 +9,23 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-04-23] (39)
+
+### Added
+- **User-facing cover image UI (Phase 7–8)** — contributors and admins can now upload cover art from AudioUpload, AudioEdit, and AudioBatchUpload.
+  - `AdminServer/routes/audioRoutes.js` — new `POST /api/audio/cover/:audioID` route: accepts an image upload, resizes via ffmpeg (`scale` only, no letterbox padding), saves as JPEG to `content/images/audio/`, updates `coverImage` in the DB, and stamps `image-from-user` on `internalTags`.
+  - `AudioView.js` — displays existing cover art (or placeholder) in a two-column layout alongside the metadata fields.
+  - `AudioEdit.js` — cover image panel with live preview; image is uploaded on form Save (no separate button); supports drag-and-drop onto the Choose Image button.
+  - `AudioUpload.js` — same cover image panel; image is uploaded immediately after the audio file upload succeeds, before navigating away.
+  - `AudioBatchUpload.js` — cover image panel applies the same image to every file in the batch; Upload Status moved back to its own group.
+  - `index.css` — two-column `form-group-with-image` layout, 160×160 cover panel, `object-fit: cover` display, styled `cover-image-upload-btn` matching native file-input appearance.
+
+### Fixed
+- **react-dnd dual-backend crash** — `react-tag-input`'s `WithContext` wrapper mounts its own `DndProvider` per instance; having two `TagInput` components on the same page (tags + internalTags) caused "Cannot have two HTML5 backends at the same time." Switched to `WithOutContext` in `formUtils.js` and added a single `DndProvider` at the app root in `index.js`.
+- **Upload button stayed disabled** — `record.tags` was not initialized in `AudioUpload` state, so it was `undefined` (falsy) until a tag was committed. Fixed by initializing `tags: []` and checking `record.tags?.length > 0` in `isFormValid`.
+
+---
+
 ## [2026-04-23] (38)
 
 ### Added

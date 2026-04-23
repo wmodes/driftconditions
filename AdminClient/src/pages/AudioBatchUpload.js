@@ -17,11 +17,12 @@ import { setUnsavedChanges } from '../store/formSlice';
 import { useUnsavedChangesEvents, SafeLink, useSafeNavigate } from '../utils/formUtils';
 
 // Import the config object from the config.js file
-import config from '../config/config'; 
+import config from '../config/config';
 const allowedFileTypes = config.audio.allowedFileTypes;
 const classificationOptions = config.audio.classification;
 const classificationFields = config.audio.classificationFields;
 const fieldNotes = config.audio.fieldNotes;
+const adminServerBaseURL = config.adminServer.baseURL;
 
 // Register the loading ring component
 zoomies.register();
@@ -59,6 +60,11 @@ function AudioBatchUpload() {
   const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [error, setError] = useState('');
+
+  // Cover image state — applied after upload completes
+  const [coverImageFile, setCoverImageFile] = useState(null);
+  const [coverImagePreview, setCoverImagePreview] = useState(null);
+  const [coverImageMessage, setCoverImageMessage] = useState('');
 
   // State for managing form inputs
   const [record, setRecord] = useState({
@@ -103,6 +109,13 @@ function AudioBatchUpload() {
     setRecord(prevState => ({ ...prevState, tags: newTags }));
   };
 
+  const handleCoverImageChange = (e) => {
+    const file = e.target.files[0] || null;
+    setCoverImageFile(file);
+    setCoverImagePreview(file ? URL.createObjectURL(file) : null);
+    setCoverImageMessage('');
+  };
+
   /**
    * Helper function to create an array of objects containing file information.
    * @returns {Array<Object>} - Array of objects containing file information.
@@ -144,6 +157,16 @@ function AudioBatchUpload() {
 
       try {
         const response = await dispatch(audioUpload({ audioRecord: adjustedRecord, file })).unwrap();
+        // If a cover image was selected, save it for this newly created clip
+        if (coverImageFile && response.audioID) {
+          const formData = new FormData();
+          formData.append('coverImage', coverImageFile);
+          await fetch(`${adminServerBaseURL}/api/audio/cover/${response.audioID}`, {
+            method: 'POST',
+            credentials: 'include',
+            body: formData,
+          });
+        }
         uploadResults.push({ success: true });
         setUploadStatus(prevStatus => {
           const newStatus = [...prevStatus];
@@ -246,6 +269,9 @@ function AudioBatchUpload() {
     setSuccessMessage('');
     setError('');
     setIsSubmitted(false);
+    setCoverImageFile(null);
+    setCoverImagePreview(null);
+    setCoverImageMessage('');
     dispatch(setUnsavedChanges(false));
     if (fileInputRef.current) fileInputRef.current.value = '';
     setBatchKey(k => k + 1);
@@ -271,25 +297,59 @@ function AudioBatchUpload() {
             {renderBreadcrumbs()}
 
             <div className="form-group">
-              <label className="form-label" htmlFor="file">Audio Files: <Required /></label>
-              <input className="form-upload" type="file" id="file" onChange={handleFileChange} multiple ref={fileInputRef} />
-              <p className="form-note">{fieldNotes.filetypes}</p>
+              <div className="form-group-with-image">
+                <div className="form-fields">
+                  <label className="form-label" htmlFor="file">Audio Files: <Required /></label>
+                  <input className="form-upload" type="file" id="file" onChange={handleFileChange} multiple ref={fileInputRef} />
+                  <p className="form-note">{fieldNotes.filetypes}</p>
+
+                  <label className="form-label mt-2" htmlFor="status">Status: <Required /></label>
+                  <select name="status" value={record.status} onChange={handleChange} className="form-select">
+                    <option value="Review">Under Review</option>
+                    <option value="Approved" disabled={!editPerm}>Approved</option>
+                    <option value="Disapproved" disabled={!editPerm}>Disapproved</option>
+                    <option value="Trashed" disabled={!editPerm}>Trashed</option>
+                  </select>
+                  <p className="form-note mt-1">{fieldNotes.status}</p>
+                </div>
+
+                <div className="cover-image-panel">
+                  {coverImagePreview ? (
+                    <img className="cover-image" src={coverImagePreview} alt="Cover preview" />
+                  ) : (
+                    <div className="cover-image-placeholder">No cover image</div>
+                  )}
+                  <div className="cover-image-upload">
+                    <input
+                      type="file"
+                      id="coverImageInput"
+                      accept="image/*"
+                      style={{ display: 'none' }}
+                      onChange={handleCoverImageChange}
+                    />
+                    <label
+                      htmlFor="coverImageInput"
+                      className="cover-image-upload-btn"
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        const file = e.dataTransfer.files[0] || null;
+                        if (!file) return;
+                        setCoverImageFile(file);
+                        setCoverImagePreview(URL.createObjectURL(file));
+                        setCoverImageMessage('');
+                      }}
+                    >
+                      Choose Image
+                    </label>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div className="form-group">
               <label className="form-label">Upload Status:</label>
               {renderUploadProgress()}
-            </div>
-
-            <div className="form-group">
-              <label className="form-label" htmlFor="status">Status: <Required /></label>
-              <select name="status" value={record.status} onChange={handleChange} className="form-select">
-                <option value="Review">Under Review</option>
-                <option value="Approved" disabled={!editPerm}>Approved</option>
-                <option value="Disapproved" disabled={!editPerm}>Disapproved</option>
-                <option value="Trashed" disabled={!editPerm}>Trashed</option>
-              </select>
-              <p className="form-note mt-1">{fieldNotes.status}</p>
             </div>
 
             <div className="form-group">

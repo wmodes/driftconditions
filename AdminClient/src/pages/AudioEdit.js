@@ -22,6 +22,8 @@ import { ClassificationCheckboxes, TagInput } from '../utils/formUtils';
 import config from '../config/config';
 // pull variables from the config object
 const audioBaseURL = config.adminServer.audioBaseURL;
+const coverImageURLBase = config.app.coverImageURLBase;
+const adminServerBaseURL = config.adminServer.baseURL;
 const classificationOptions = config.audio.classification;
 const fieldNotes = config.audio.fieldNotes;
 
@@ -54,6 +56,10 @@ function AudioEdit() {
   const [isLoading, setIsLoading] = useState(true);
   const [successMessage, setSuccessMessage] = useState('');
   const [error, setError] = useState('');
+
+  // Cover image upload state
+  const [coverImageFile, setCoverImageFile] = useState(null);
+  const [coverImagePreview, setCoverImagePreview] = useState(null);
 
   // State for managing form inputs
   const [record, setRecord] = useState({
@@ -119,7 +125,28 @@ function AudioEdit() {
     setRecord(prevState => ({ ...prevState, internalTags: newTags }));
   };
 
-  const handleSubmit = (e) => { 
+  const handleCoverImageSave = async () => {
+    if (!coverImageFile) return;
+    try {
+      const formData = new FormData();
+      formData.append('coverImage', coverImageFile);
+      const res = await fetch(`${adminServerBaseURL}/api/audio/cover/${audioID}`, {
+        method: 'POST',
+        credentials: 'include',
+        body: formData,
+      });
+      if (!res.ok) throw new Error((await res.json()).error?.message || 'Upload failed');
+      const data = await res.json();
+      // Update coverImage in local record so the preview refreshes
+      setRecord(prev => ({ ...prev, coverImage: data.coverImage }));
+      setCoverImageFile(null);
+      setCoverImagePreview(null);
+    } catch (err) {
+      console.error('Cover image save error:', err.message);
+    }
+  };
+
+  const handleSubmit = (e) => {
     e.preventDefault();
     // Prep fields before submitting
     const adjustedRecord = {
@@ -129,7 +156,9 @@ function AudioEdit() {
     };
     dispatch(audioUpdate({audioRecord: adjustedRecord}))
       .unwrap()
-      .then(() => {
+      .then(async () => {
+        // Save cover image alongside metadata if one was selected
+        if (coverImageFile) await handleCoverImageSave();
         setSuccessMessage('Update successful!');
         setError('');
         dispatch(setUnsavedChanges(false));
@@ -199,52 +228,93 @@ function AudioEdit() {
             <h2 className='title'>Edit Audio</h2>
             {renderBreadcrumbs()}
             <div className="form-group">
-              <label className="form-label" htmlFor="title">Title: <Required /></label>
-              <input className="form-field" type="text" id="title" name="title" value={record.title || ""} onChange={handleChange} />
-              
-              <div className="form-row">
-                <label className="form-label">Filename: <Required /></label> <span className="non-editable">{record.filename}</span>
-              </div>
+              <div className="form-group-with-image">
+                <div className="form-fields">
+                  <label className="form-label" htmlFor="title">Title: <Required /></label>
+                  <input className="form-field" type="text" id="title" name="title" value={record.title || ""} onChange={handleChange} />
 
-              <div className="form-row">
-                <label className="form-label">Author: <Required /></label> <span className="non-editable">{record.creatorUsername}</span>
-              </div>
+                  <div className="form-row">
+                    <label className="form-label">Filename: <Required /></label> <span className="non-editable">{record.filename}</span>
+                  </div>
 
-              <div className="form-row">
-                <label className="form-label">Date: <Required /></label> <span className="non-editable">{record.createDate}</span>
-              </div>
+                  <div className="form-row">
+                    <label className="form-label">Author: <Required /></label> <span className="non-editable">{record.creatorUsername}</span>
+                  </div>
 
-              <div className="form-row">
-                <label className="form-label" htmlFor="status">Status: <Required /></label>
-                <select name="status" value={record.status || ''} onChange={handleChange} className="form-select">
-                  <option value="Review">Under Review</option>
-                  <option value="Approved">Approved</option>
-                  <option value="Disapproved">Disapproved</option>
-                  <option value="Trashed">Trashed</option>
-                </select>
-                <label
-                  className="form-label checkbox-label"
-                  style={{
-                    marginLeft: '1rem',
-                    color: (record.status === originalStatus || (record.status !== 'Approved' && record.status !== 'Disapproved')) ? '#999' : 'inherit',
-                  }}
-                >
-                  <input
-                    type="checkbox"
-                    checked={record.notifyContributor || false}
-                    disabled={
-                      record.status === originalStatus ||
-                      (record.status !== 'Approved' && record.status !== 'Disapproved')
-                    }
-                    onChange={(e) => setRecord(prev => ({ ...prev, notifyContributor: e.target.checked }))}
-                  />
-                  {' '}Notify contributor
-                </label>
-              </div>
-              <p className="form-note mt-1">Approval/Disapproval notes go in comments below, sent to contributor</p>
+                  <div className="form-row">
+                    <label className="form-label">Date: <Required /></label> <span className="non-editable">{record.createDate}</span>
+                  </div>
 
-              <div className="form-row">
-                <label className="form-label">Plays:</label> <span className="non-editable">{record.timesUsed || '—'}</span>
+                  <div className="form-row">
+                    <label className="form-label" htmlFor="status">Status: <Required /></label>
+                    <select name="status" value={record.status || ''} onChange={handleChange} className="form-select">
+                      <option value="Review">Under Review</option>
+                      <option value="Approved">Approved</option>
+                      <option value="Disapproved">Disapproved</option>
+                      <option value="Trashed">Trashed</option>
+                    </select>
+                    <label
+                      className="form-label checkbox-label"
+                      style={{
+                        marginLeft: '1rem',
+                        color: (record.status === originalStatus || (record.status !== 'Approved' && record.status !== 'Disapproved')) ? '#999' : 'inherit',
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={record.notifyContributor || false}
+                        disabled={
+                          record.status === originalStatus ||
+                          (record.status !== 'Approved' && record.status !== 'Disapproved')
+                        }
+                        onChange={(e) => setRecord(prev => ({ ...prev, notifyContributor: e.target.checked }))}
+                      />
+                      {' '}Notify contributor
+                    </label>
+                  </div>
+                  <p className="form-note mt-1">Approval/Disapproval notes go in comments below, sent to contributor</p>
+
+                  <div className="form-row">
+                    <label className="form-label">Plays:</label> <span className="non-editable">{record.timesUsed || '—'}</span>
+                  </div>
+                </div>
+
+                <div className="cover-image-panel">
+                  {coverImagePreview ? (
+                    <img className="cover-image" src={coverImagePreview} alt="Cover preview" />
+                  ) : record.coverImage ? (
+                    <img className="cover-image" src={`${coverImageURLBase}/${record.coverImage}.jpg`} alt="Cover" />
+                  ) : (
+                    <div className="cover-image-placeholder">No cover image</div>
+                  )}
+                  <div className="cover-image-upload">
+                    <input
+                      type="file"
+                      id="coverImageInput"
+                      accept="image/*"
+                      style={{ display: 'none' }}
+                      onChange={(e) => {
+                        const file = e.target.files[0] || null;
+                        setCoverImageFile(file);
+                        setCoverImagePreview(file ? URL.createObjectURL(file) : null);
+                      }}
+                    />
+                    <label
+                      htmlFor="coverImageInput"
+                      className="cover-image-upload-btn"
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        const file = e.dataTransfer.files[0] || null;
+                        if (!file) return;
+                        setCoverImageFile(file);
+                        setCoverImagePreview(URL.createObjectURL(file));
+                      }}
+                    >
+                      Choose Image
+                    </label>
+                  </div>
+                </div>
               </div>
             </div>
 

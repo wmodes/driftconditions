@@ -8,6 +8,8 @@
   // Redux Provider to make the store available to all components.
   import { Provider } from 'react-redux';
   import { HelmetProvider } from 'react-helmet-async';
+  import { DndProvider } from 'react-dnd';
+  import { HTML5Backend } from 'react-dnd-html5-backend';
   import './brand/brand.css'; // Brand colors — edit here to retheme
   import './index.css';
   // import 'react-tooltip/dist/react-tooltip.css'
@@ -93,7 +95,9 @@
     <React.StrictMode>
       <HelmetProvider>
         <Provider store={store}>
-          <RouterProvider router={router} />
+          <DndProvider backend={HTML5Backend}>
+            <RouterProvider router={router} />
+          </DndProvider>
         </Provider>
       </HelmetProvider>
     </React.StrictMode>
