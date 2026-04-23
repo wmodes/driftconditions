@@ -9,6 +9,13 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-04-22] (31)
+
+### Fixed
+- **Admin News sort order** — news items now display oldest-to-newest on the Admin News page, matching the order they appear in digests.
+
+---
+
 ## [2026-04-22] (30)
 
 ### Added
