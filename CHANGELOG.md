@@ -16,7 +16,8 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   - `ClipSelector.js` — `coverImage` added to the fields propagated from the DB clip onto the recipe clip object (including the `repeat(n)` path).
   - `CoverSelector.js` (new, `MixEngine/core/services/covers/`) — walks recipe tracks/clips in order, returns the first clip's `coverImage`; falls back to a randomly chosen alt image. Silence and no-art clips are skipped naturally.
   - `Conductor.js` — instantiates `CoverSelector`; after clip selection sets `mixDetails.coverImage`, `mixDetails.coverImagePath`, and `mixDetails.mixTitle` (`"Recipe - First Clip"`).
-  - `MixEngine.js` — `_embedMetadata()` runs a second ffmpeg pass (audio stream-copy, no re-encode) after the mix is built, embedding ID3 title, artist (`DriftConditions - driftconditions.org`), and APIC cover art.
+  - `MixEngine.js` — `_embedMetadata()` runs a second ffmpeg pass (audio stream-copy, no re-encode) after the mix is built, embedding ID3 title, artist (from `config.brand.streamArtist`), and APIC cover art.
+- **Brand config abstraction** — site name, URL, and artist tag moved to `config.brand` (`siteName`, `siteUrl`, `streamArtist` getter) so they have a single source of truth across the system.
   - `MixQueue.js` — `coverImage` added to the `createMixQueueEntry` INSERT.
 
 ---

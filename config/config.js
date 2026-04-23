@@ -9,6 +9,12 @@ const CLIENTPORT = process.env.CLIENTPORT;
 
 
 const config = {
+  brand: {
+    siteName: 'DriftConditions',
+    siteUrl:  'https://driftconditions.org',
+    // Artist tag embedded in mix MP3s: "SiteName - siteUrl"
+    get streamArtist() { return `${this.siteName} - ${this.siteUrl}`; },
+  },
   adminServer: {
     protocol: 'http',
     host: 'localhost',

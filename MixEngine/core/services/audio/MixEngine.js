@@ -16,6 +16,7 @@ const mixFileDir = config.content.mixFileDir;
 const ffmpegOutput = config.ffmpeg.output;
 const filterConfig = config.filters;
 const exprs3Config = config.exprs3;
+const streamArtist = config.brand.streamArtist;
 
 // Preferred effect application order — effects are sorted by category before processing
 // regardless of the order they appear in the recipe. This prevents effects like norm
@@ -1182,32 +1183,27 @@ class MixEngine {
    */
   _embedMetadata (mixDetails) {
     const { filepath, mixTitle, coverImagePath } = mixDetails;
-    const artist   = 'DriftConditions - driftconditions.org';
-    const tmpPath  = filepath + '.tmp.mp3';
+    const tmpPath = filepath + '.tmp.mp3';
 
     return new Promise((resolve, reject) => {
-      let cmd = ffmpeg(filepath)
-        .audioCodec('copy')           // no re-encode
-        .outputOptions([
-          '-id3v2_version', '3',
-          '-metadata', `title=${mixTitle || ''}`,
-          '-metadata', `artist=${artist}`,
-        ]);
+      // Build output options in one array so fluent-ffmpeg sees them in order
+      const outputOpts = [
+        '-id3v2_version', '3',
+        '-metadata', `title=${mixTitle || ''}`,
+        '-metadata', `artist=${streamArtist}`,
+      ];
+
+      let cmd = ffmpeg(filepath).audioCodec('copy');
 
       if (coverImagePath) {
-        cmd = cmd
-          .input(coverImagePath)
-          .outputOptions([
-            '-map', '0:a',
-            '-map', '1:v',
-            '-c:v', 'copy',
-            '-metadata:s:v', 'title=Album cover',
-            '-metadata:s:v', 'comment=Cover (Front)',
-          ]);
+        cmd = cmd.input(coverImagePath);
+        outputOpts.push('-map', '0:a', '-map', '1:v', '-c:v', 'copy');
       }
 
       cmd
+        .outputOptions(outputOpts)
         .output(tmpPath)
+        .on('start', (cmdLine) => logger.debug('MixEngine:_embedMetadata ffmpeg cmd: ' + cmdLine))
         .on('end', () => {
           try {
             require('fs').renameSync(tmpPath, filepath);
