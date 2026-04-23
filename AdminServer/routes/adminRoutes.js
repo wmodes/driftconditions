@@ -45,7 +45,7 @@ router.post('/news/list', verifyToken, async (req, res) => {
       `SELECT commID, payload, createdAt
        FROM userComms
        WHERE commType = 'admin_news' AND sentAt IS NULL
-       ORDER BY createdAt DESC`
+       ORDER BY createdAt ASC`
     );
 
     const news = rows.map(r => {
