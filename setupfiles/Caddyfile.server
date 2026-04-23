@@ -26,6 +26,14 @@ https://driftconditions.org {
     file_server
     encode gzip
     tls wmodes@gmail.com
+
+    # Serve cover images: /img/audio/* and /img/alt/*
+    handle /img/* {
+        root * /home/debian/driftconditions/content/images
+        uri strip_prefix /img
+        file_server
+    }
+
     try_files {path} /index.html
 
     # Enable access logs with default log format

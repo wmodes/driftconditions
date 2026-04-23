@@ -9,6 +9,17 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-04-23] (38)
+
+### Added
+- **Homepage cover image (Phase 6)** — hero image on the homepage now shows the cover art of the most recently played mix; falls back to a random homepage image when no recent mix has cover art.
+  - `Caddyfile.local` / `Caddyfile.server` — added `handle /img/*` block serving `content/images/` so cover images are accessible at `/img/audio/{id}.jpg` and `/img/alt/{name}.jpg`.
+  - `AdminClient/src/config/config.js` — added `coverImageURLBase` (`/img/audio`) and `altImageURLBase` (`/img/alt`).
+  - `store/store.js` — registered `queueSlice` in the Redux store (was missing; caused runtime crash).
+  - `Homepage.js` — reads `playlist[0].coverImage` from Redux queue state; resolves to URL via `resolveCoverImageURL()` (routes alt names vs clip IDs to the correct base path); falls back to `getHeroImageURL()`.
+
+---
+
 ## [2026-04-23] (37)
 
 ### Added
