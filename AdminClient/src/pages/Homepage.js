@@ -9,14 +9,31 @@ import {
   generateRandomTexts, getHeroImageURL, getLocation
 } from '../utils/randomUtils';
 import brand from '../brand/brand';
+import config from '../config/config';
+
+const { coverImageURLBase, altImageURLBase } = config.app;
+
+// Resolve a coverImage identifier (e.g. "152" or "coveralt-02") to a URL.
+// Alt images live under altImageURLBase; clip images live under coverImageURLBase.
+const resolveCoverImageURL = (coverImage) => {
+  if (!coverImage) return null;
+  if (coverImage.startsWith('coveralt-')) {
+    return `${altImageURLBase}/${coverImage}.jpg`;
+  }
+  return `${coverImageURLBase}/${coverImage}.jpg`;
+};
 
 const Homepage = () => {
-  const [playlist, setPlaylist] = useState([]);
   const [generatedText, setGeneratedText] = useState([]);
 
   const projectName = brand.name;
   const contactEmail = brand.email.contact;
   const location = getLocation();
+
+  // Pull cover image from the most recently played mix in the queue playlist
+  const queuePlaylist = useSelector(state => state.queue.playlist);
+  const recentCoverImage = resolveCoverImageURL(queuePlaylist?.[0]?.coverImage);
+  const heroImageURL = recentCoverImage || getHeroImageURL();
 
   const { togglePlayer, isPlaying } = useOutletContext();
   const user = useSelector(state => state.auth.user);
@@ -41,7 +58,7 @@ const Homepage = () => {
 
             <div className="image-wrapper mb-8">
               <div className="hero-image-container">
-                <img src={getHeroImageURL()} alt="Hero" />
+                <img src={heroImageURL} alt="Hero" />
               </div>
             </div>
 

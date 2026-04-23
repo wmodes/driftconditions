@@ -6,6 +6,7 @@ import userSlice from './userSlice';
 import appSlice from './appSlice';
 import formSlice from './formSlice';
 import adminSlice from './adminSlice';
+import queueSlice from './queueSlice';
 
 // Include any initial state you want preloaded, especially the token from sessionStorage
 const preloadedState = {
@@ -23,6 +24,7 @@ export const store = configureStore({
     app: appSlice, // Add the app slice to the store
     form: formSlice, // Add the unsavedChanges slice to the store
     admin: adminSlice, // Add the admin slice to the store
+    queue: queueSlice, // Add the queue slice to the store
   },
   preloadedState
   // With this setup, your store is now equipped to handle state management for authentication, audio, user, and app-specific states.
