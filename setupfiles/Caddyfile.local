@@ -13,19 +13,8 @@
 
 # AdminClient
 https://localhost:3000 {
-    root * /Users/wmodes/dev/driftconditions/AdminClient/build
-    file_server
     encode gzip
     tls internal  # Use 'tls internal' for development to avoid using real email
-
-    # Serve cover images: /img/audio/* and /img/alt/*
-    handle /img/* {
-        root * /Users/wmodes/dev/driftconditions/content/images
-        uri strip_prefix /img
-        file_server
-    }
-
-    try_files {path} /index.html
 
     # Enable access logs with default log format
     log {
@@ -34,6 +23,20 @@ https://localhost:3000 {
             roll_keep 7
             roll_keep_for 720h
         }
+    }
+
+    # Serve cover images: /img/audio/* and /img/alt/*
+    handle /img/* {
+        root * /Users/wmodes/dev/driftconditions/content/images
+        uri strip_prefix /img
+        file_server
+    }
+
+    # Catch-all: serve React SPA (try file, fall back to index.html)
+    handle {
+        root * /Users/wmodes/dev/driftconditions/AdminClient/build
+        try_files {path} /index.html
+        file_server
     }
 }
 

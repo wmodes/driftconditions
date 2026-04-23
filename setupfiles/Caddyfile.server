@@ -22,19 +22,8 @@ http://driftconditions.org:80 {
 
 # AdminClient
 https://driftconditions.org {
-    root * /home/debian/driftconditions/AdminClient/build
-    file_server
     encode gzip
     tls wmodes@gmail.com
-
-    # Serve cover images: /img/audio/* and /img/alt/*
-    handle /img/* {
-        root * /home/debian/driftconditions/content/images
-        uri strip_prefix /img
-        file_server
-    }
-
-    try_files {path} /index.html
 
     # Enable access logs with default log format
     log {
@@ -45,9 +34,23 @@ https://driftconditions.org {
         }
     }
 
+    # Serve cover images: /img/audio/* and /img/alt/*
+    handle /img/* {
+        root * /home/debian/driftconditions/content/images
+        uri strip_prefix /img
+        file_server
+    }
+
     # Serve static assets for fallback separately
     handle /fallback/* {
         root * /home/debian/driftconditions/fallback
+        file_server
+    }
+
+    # Catch-all: serve React SPA (try file, fall back to index.html)
+    handle {
+        root * /home/debian/driftconditions/AdminClient/build
+        try_files {path} /index.html
         file_server
     }
 
