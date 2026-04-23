@@ -25,10 +25,17 @@ https://localhost:3000 {
         }
     }
 
-    # Serve cover images: /img/audio/* and /img/alt/*
-    handle /img/* {
-        root * /Users/wmodes/dev/driftconditions/content/images
-        uri strip_prefix /img
+    # Serve per-clip cover images
+    handle /img/audio/* {
+        root * /Users/wmodes/dev/driftconditions/content/images/audio
+        uri strip_prefix /img/audio
+        file_server
+    }
+
+    # Serve alt/fallback cover images
+    handle /img/alt/* {
+        root * /Users/wmodes/dev/driftconditions/content/images/alt
+        uri strip_prefix /img/alt
         file_server
     }
 
