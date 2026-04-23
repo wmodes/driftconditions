@@ -81,8 +81,12 @@ const config = {
     musicAnalysisClassifications: ['instrumental', 'vocalmusic', 'ambient'],
     // Internal tags used by the audio analysis pipeline
     internalTags: {
-      analysisQueue: 'needs-audio-analysis', // set on upload to trigger analysis
-      analyzed:      'audio-analyzed',        // set after analysis completes
+      analysisQueue:  'needs-audio-analysis', // set on upload to trigger analysis
+      analyzed:       'audio-analyzed',        // set after analysis completes
+      imageFromEmbed: 'image-from-embed',      // cover image extracted from MP3 APIC tag
+      imageFromHaiku: 'image-from-haiku',      // cover image sourced via Claude Haiku lookup
+      imageFromUser:  'image-from-user',       // cover image uploaded or URL-supplied by user
+      imageNotFound:  'image-not-found',       // no cover image found after all attempts
     },
     clipLength: {   // in seconds
       tiny: {
@@ -194,9 +198,16 @@ const config = {
   },
   content: {
     contentFileDir: BASEDIR + '/content',
-    tmpFileDir: BASEDIR + '/content/tmp',
-    mixFileDir: BASEDIR + '/content/mixes',
-    soundsFileDir: BASEDIR + '/content/sounds',
+    tmpFileDir:     BASEDIR + '/content/tmp',
+    mixFileDir:     BASEDIR + '/content/mixes',
+    soundsFileDir:  BASEDIR + '/content/sounds',
+    coverImage: {
+      dir:    BASEDIR + '/content/images/audio', // per-clip cover images
+      ext:    'jpg',
+      size:   [500, 500],
+      altDir: BASEDIR + '/content/images/alt',   // fallback alt images
+      altNum: 15,                                 // count of available alt images
+    },
   },
   ffmpeg: {
     output: {
