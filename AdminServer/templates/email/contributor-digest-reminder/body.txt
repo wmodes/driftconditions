@@ -6,6 +6,10 @@ You were promoted to contributor a while back, so your account can already uploa
 
 If you've got something that might fit — a field recording, a fragment of sound, an overheard voice, some atmospheric wreckage, a strange little thing you captured and weren't sure what to do with — this is probably the right place for it.
 
+Upload here: {{siteUrl}}/audio/upload
+
+Your profile: {{siteUrl}}/profile/{{username}}
+
 {{#if hasAdminNews}}
 RECENT UPDATES
 --------------
@@ -14,10 +18,6 @@ RECENT UPDATES
 
 {{/each}}
 {{/if}}
-Upload here: {{siteUrl}}/audio/upload
-
-Your profile: {{siteUrl}}/profile/{{username}}
-
 Hope to hear from you soon.
 
 — Wes
