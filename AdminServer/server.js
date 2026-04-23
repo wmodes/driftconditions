@@ -45,6 +45,7 @@ const userRoutes = require('./routes/userRoutes');
 const audioRoutes = require('./routes/audioRoutes');
 const recipeRoutes = require('./routes/recipeRoutes');
 const roleRoutes = require('./routes/roleRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 
 // Use the library's ipKeyGenerator to correctly normalize IPv6 addresses
 const keyGenerator = (req) => ipKeyGenerator(req);
@@ -78,6 +79,7 @@ app.use('/api/user', userRoutes);
 app.use('/api/audio', audioRoutes);
 app.use('/api/recipe', recipeRoutes);
 app.use('/api/role', roleRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Use the notFound middleware
 app.use(notFound);

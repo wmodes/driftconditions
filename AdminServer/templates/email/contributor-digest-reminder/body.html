@@ -6,6 +6,13 @@
 
 <p>If you've got something that might fit — a field recording, a fragment of sound, an overheard voice, some atmospheric wreckage, a strange little thing you captured and weren't sure what to do with — this is probably the right place for it.</p>
 
+{{#if hasAdminNews}}
+<h3 style="margin: 1.5em 0 0.25em; color: #555; font-size: 1em; text-transform: uppercase; letter-spacing: 0.05em;">Recent Updates</h3>
+{{#each adminNews}}
+<p style="margin: 0 0 0.75em;">{{content}}</p>
+{{/each}}
+{{/if}}
+
 <p><a href="{{siteUrl}}/audio/upload" style="color: #135394;">Upload audio here →</a></p>
 
 <p>Your full profile is at <a href="{{siteUrl}}/profile/{{username}}" style="color: #135394;">{{siteUrl}}/profile/{{username}}</a>.</p>

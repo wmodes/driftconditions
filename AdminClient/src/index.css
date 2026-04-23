@@ -1022,6 +1022,21 @@ tr.row-even.quick-edit textarea {
  * Code Editor
  */
 
+.news-list {
+  margin: 0.5rem 0 0.5rem;
+  padding-left: 1.25rem;
+}
+
+.news-list li {
+  margin-bottom: 0.4rem;
+}
+
+.news-contrib {
+  color: #444;
+  font-size: 0.75rem;
+  font-weight: 300;
+}
+
 .code-editor-wrapper {
   height: 300px;
   min-height: 150px;

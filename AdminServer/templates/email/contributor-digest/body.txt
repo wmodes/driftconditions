@@ -26,6 +26,14 @@ These clips are now part of the {{siteName}} mix and may play at any time.
 
 {{/each}}
 {{/if}}
+{{#if hasAdminNews}}
+RECENT UPDATES
+--------------
+{{#each adminNews}}
+{{content}}
+
+{{/each}}
+{{/if}}
 YOUR STATS
 ----------
 Member since:       {{memberSince}}

@@ -2,9 +2,10 @@
 import { configureStore } from '@reduxjs/toolkit';
 import authSlice from './authSlice';
 import audioSlice from './audioSlice';
-import userSlice from './userSlice'; 
-import appSlice from './appSlice'; 
+import userSlice from './userSlice';
+import appSlice from './appSlice';
 import formSlice from './formSlice';
+import adminSlice from './adminSlice';
 
 // Include any initial state you want preloaded, especially the token from sessionStorage
 const preloadedState = {
@@ -21,6 +22,7 @@ export const store = configureStore({
     user: userSlice, // Add the user slice to the store
     app: appSlice, // Add the app slice to the store
     form: formSlice, // Add the unsavedChanges slice to the store
+    admin: adminSlice, // Add the admin slice to the store
   },
   preloadedState
   // With this setup, your store is now equipped to handle state management for authentication, audio, user, and app-specific states.
