@@ -9,6 +9,13 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-04-23] (32)
+
+### Fixed
+- **contributor-digest-reminder template** — "Recent Updates" block moved to after the upload link and profile link, just before the sign-off, so the invite-to-upload flow is no longer interrupted.
+
+---
+
 ## [2026-04-22] (31)
 
 ### Fixed
