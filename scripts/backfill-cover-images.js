@@ -20,8 +20,9 @@
  *   --phase2        Run Phase 2 only (Haiku + Google search; skip embed extraction)
  *   --limit N       Process at most N clips (useful for calibration runs)
  *   --offset N      Skip first N eligible clips (useful for calibration runs)
- *   --threshold N   Confidence threshold 0–1 for attempting Google search (default: 0.75)
- *   --dry-run       Report what would happen without writing files or updating the DB
+ *   --threshold N        Confidence threshold 0–1 for attempting iTunes search (default: 0.70)
+ *   --dry-run            Report what would happen without writing files or updating the DB
+ *   --retry-not-found    Re-run Phase 2 on clips previously marked image-not-found
  */
 
 'use strict';
@@ -42,10 +43,11 @@ const Anthropic = require('@anthropic-ai/sdk');
 // ─── Args ─────────────────────────────────────────────────────────────────────
 
 const args        = process.argv.slice(2);
-const USE_PROD    = args.includes('--prod');
-const PHASE1_ONLY = args.includes('--phase1');
-const PHASE2_ONLY = args.includes('--phase2');
-const DRY_RUN     = args.includes('--dry-run');
+const USE_PROD       = args.includes('--prod');
+const PHASE1_ONLY    = args.includes('--phase1');
+const PHASE2_ONLY    = args.includes('--phase2');
+const DRY_RUN        = args.includes('--dry-run');
+const RETRY_NOT_FOUND = args.includes('--retry-not-found'); // re-run Phase 2 on image-not-found clips
 
 const limitIdx  = args.indexOf('--limit');
 const LIMIT     = limitIdx !== -1 ? parseInt(args[limitIdx + 1], 10) : null;
@@ -91,15 +93,19 @@ async function main() {
   if (DRY_RUN)  console.log('DRY RUN — no files written, no DB changes.');
   if (USE_PROD) console.log('Connecting to PRODUCTION database.');
 
-  // Fetch approved clips with no cover image that haven't already been marked image-not-found
+  // Fetch approved clips with no cover image.
+  // Default: skip clips already marked image-not-found.
+  // --retry-not-found: include only clips marked image-not-found (for re-running with improved prompt).
   const limitClause = LIMIT ? `LIMIT ${LIMIT} OFFSET ${OFFSET}` : (OFFSET ? `LIMIT 99999 OFFSET ${OFFSET}` : '');
+  const notFoundFilter = RETRY_NOT_FOUND
+    ? `AND JSON_CONTAINS(COALESCE(internalTags, '[]'), '"${INTERNAL_TAGS.imageNotFound}"', '$')`
+    : `AND (internalTags IS NULL OR NOT JSON_CONTAINS(internalTags, '"${INTERNAL_TAGS.imageNotFound}"', '$'))`;
   const [clips] = await db.query(`
     SELECT audioID, title, filename, internalTags
     FROM audio
     WHERE status = 'Approved'
       AND coverImage IS NULL
-      AND (internalTags IS NULL
-           OR NOT JSON_CONTAINS(internalTags, '"${INTERNAL_TAGS.imageNotFound}"', '$'))
+      ${notFoundFilter}
     ORDER BY audioID
     ${limitClause}
   `);
@@ -247,7 +253,17 @@ async function buildSearchQueries(client, batch) {
 
   const prompt = `You are helping find cover art for audio clips in a generative streaming radio station. Clips are mostly archival recordings, field recordings, ambient music, and experimental audio. Titles typically contain artist name and work title derived from the original filename.
 
-For each clip, identify the most likely commercially released album or single it comes from, and construct a search term optimized for the iTunes Search API — just "Artist Album" with no extra words (e.g. "Podington Bear Starling" or "Tom Waits Rain Dogs" or "Boards of Canada Music Has the Right to Children"). Do NOT add "cover art", "album cover", or any other suffix.
+For each clip, identify the most likely commercially released album or single it comes from, and construct a search term optimized for the iTunes Search API — just "Artist Title" with no extra words (e.g. "Podington Bear Starling" or "Tom Waits Rain Dogs" or "Boards of Canada Music Has the Right to Children"). Do NOT add "cover art", "album cover", or any other suffix.
+
+IMPORTANT — strip all modifiers from the search query. Use only the core artist name and original song/album title. Remove:
+- Version descriptors: "isolated vocals", "acapella", "instrumental", "karaoke", "cover", "remix", "edit", "remaster", "remastered"
+- Speed/pitch modifications: "slowed", "sped up", "pitched down", "nightcore", "daycore"
+- Audio effects: "reverb", "reverb'd", "lofi", "lo-fi", "bass boosted"
+- Dates and years: "(2023)", "- 1987", etc.
+- Track/disc numbers: "01 -", "Track 03", etc.
+- Any other non-title qualifiers in parentheses or after dashes
+
+Example: "Pearl Jam - Black - Isolated Vocals (Slowed + Reverb)" → searchQuery: "Pearl Jam Black"
 
 Return ONLY a valid JSON array — no explanation, no markdown:
 [
@@ -353,9 +369,27 @@ async function fetchAndNormalize(url, outPath) {
 
 // ─── DB helpers ───────────────────────────────────────────────────────────────
 
+// Remove a specific tag value from a JSON array column.
+// MySQL lacks a direct JSON_ARRAY_REMOVE_VALUE; we rebuild using JSON_SEARCH.
+async function removeTag(audioID, tagValue) {
+  // JSON_REMOVE needs a path; JSON_UNQUOTE(JSON_SEARCH(...)) gives us e.g. '$[2]'
+  await db.query(
+    `UPDATE audio
+     SET internalTags = JSON_REMOVE(internalTags,
+           JSON_UNQUOTE(JSON_SEARCH(internalTags, 'one', ?)))
+     WHERE audioID = ?
+       AND JSON_CONTAINS(COALESCE(internalTags, '[]'), ?, '$')`,
+    [tagValue, audioID, JSON.stringify(tagValue)]
+  );
+}
+
 // Set coverImage and append the source tag to internalTags.
 // Pass coverImage=null to only update internalTags (image-not-found case).
+// If RETRY_NOT_FOUND, first strip the old image-not-found tag to avoid duplicates.
 async function setCoverImage(audioID, coverImage, tag) {
+  if (RETRY_NOT_FOUND) {
+    await removeTag(audioID, INTERNAL_TAGS.imageNotFound);
+  }
   if (coverImage !== null) {
     await db.query(
       `UPDATE audio

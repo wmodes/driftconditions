@@ -30,6 +30,7 @@ const queueSlice = createSlice({
   name: 'queue',
   initialState: {
     playlist: [],
+    currentMix: null,   // the mix actually on air (playlist[1], skipping Liquidsoap's prefetch at [0])
     isLoading: false,
     error: null
   },
@@ -43,6 +44,9 @@ const queueSlice = createSlice({
       })
       .addCase(fetchQueuePlaylist.fulfilled, (state, action) => {
         state.playlist = action.payload;
+        // playlist[0] is the next/prefetched mix (Liquidsoap marks it Played immediately on fetch).
+        // playlist[1] is what's actually on air — the Playlist component uses slice(1) for the same reason.
+        state.currentMix = action.payload[1] ?? null;
         state.isLoading = false;
         state.error = null;
       })
