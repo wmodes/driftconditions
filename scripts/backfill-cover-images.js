@@ -34,6 +34,7 @@
  *   --prod               Connect to production DB (uses DATABASE_REMOTE_PASSWORD)
  *   --phase1             Run Phase 1 only (extraction; skip Phases 2–3)
  *   --phase2             Skip Phase 1 (extraction), start at Phase 2 (Album Lookup)
+ *   --phase3             Skip Phases 1–2, start at Phase 3 (Image Lookup via DDG)
  *   --limit N            Process at most N clips (useful for calibration runs)
  *   --offset N           Skip first N eligible clips (useful for calibration runs)
  *   --threshold N        Haiku confidence threshold 0–1 (default: 0.50)
@@ -62,6 +63,7 @@ const args            = process.argv.slice(2);
 const USE_PROD        = args.includes('--prod');
 const PHASE1_ONLY     = args.includes('--phase1');
 const PHASE2_ONLY     = args.includes('--phase2');    // skip Phase 1 (extraction), start at Phase 2 (Album Lookup)
+const PHASE3_ONLY     = args.includes('--phase3');    // skip Phases 1–2, start at Phase 3 (Image Lookup)
 const DRY_RUN         = args.includes('--dry-run');
 const RETRY_NOT_FOUND = args.includes('--retry-not-found');
 
@@ -138,7 +140,7 @@ async function main() {
 
   const needsQuery = [];   // clips that need Haiku query generation
 
-  if (!PHASE2_ONLY) {
+  if (!PHASE2_ONLY && !PHASE3_ONLY) {
     console.log('── Phase 1: Extraction ────────────────────────────────────────');
     let extracted = 0;
 
@@ -166,7 +168,7 @@ async function main() {
 
     console.log(`\nPhase 1 complete: ${extracted} extracted, ${needsQuery.length} queued for Phase 2a.\n`);
   } else {
-    // --phase2: skip Phase 1, send everything directly to Phase 2a
+    // --phase2 or --phase3: skip Phase 1, clips go directly to Phase 2a or Phase 3
     needsQuery.push(...clips);
   }
 
@@ -176,18 +178,25 @@ async function main() {
     process.exit(0);
   }
 
-  // ── Phase 2a: Query generation (Haiku) ───────────────────────────────────────
-  // Send clips to Haiku in batches. Haiku identifies the likely commercial source
-  // and constructs an optimized search query with a confidence score.
-  // Clips below the confidence threshold are tagged image-not-found and dropped.
-  // Output: needsAlbumSearch[] — clips with a search query ready for Phase 2b.
-
   if (!process.env.ANTHROPIC_API_KEY) {
     console.error('Missing ANTHROPIC_API_KEY in AdminServer/.env');
     process.exit(1);
   }
 
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
+  const needsImageSearch = [];   // clips that failed Phase 2 → fall through to Phase 3
+
+  if (PHASE3_ONLY) {
+    // Skip Phase 2 entirely — send all clips straight to DDG image search
+    needsImageSearch.push(...needsQuery.map(c => ({ audioID: c.audioID, title: c.title })));
+  } else {
+
+  // ── Phase 2a: Query generation (Haiku) ───────────────────────────────────────
+  // Send clips to Haiku in batches. Haiku identifies the likely commercial source
+  // and constructs an optimized search query with a confidence score.
+  // Clips below the confidence threshold are tagged image-not-found and dropped.
+  // Output: needsAlbumSearch[] — clips with a search query ready for Phase 2b.
 
   console.log(`── Phase 2a: Query generation (${needsQuery.length} clips, threshold ${THRESHOLD}) ──`);
 
@@ -251,7 +260,6 @@ async function main() {
   console.log(`── Phase 2b: iTunes lookup (${needsAlbumSearch.length} clips) ──`);
 
   const needsCandidateSelect = [];   // clips with iTunes candidates for Phase 2d
-  const needsImageSearch     = [];   // clips that failed Phase 2 → fall through to Phase 3
   let p2bNotFound = 0, p2bErrors = 0;
 
   for (const clip of needsAlbumSearch) {
@@ -345,6 +353,7 @@ async function main() {
   }
 
   console.log(`\nPhase 2d complete: ${p2dFound} saved, ${p2dRejected} rejected (→ Phase 3), ${p2dErrors} errors.`);
+  } // end Phase 2 (skipped when --phase3)
 
   if (needsImageSearch.length === 0) {
     console.log('\nDone.');
