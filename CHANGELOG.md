@@ -9,6 +9,23 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-04-24] (43)
+
+### Fixed
+- **Hero image now reliably shows what's actually on air** — previous approaches independently re-derived the "current mix" from the Redux playlist array, which could diverge from what the Playlist component was actually rendering. The Playlist component now calls an `onCurrentMix` callback with `result[1]` (its first rendered mix) after each fetch; Homepage holds that in local state and uses it for the hero image. No extra fetch needed — the cover is already part of the playlist payload. Also makes per-item cover images trivially available for future playlist display.
+
+### Added
+- **Cover image backfill: `--retry-not-found` flag** — re-runs Phase 2 (Haiku + iTunes) on clips previously tagged `image-not-found`, stripping version/modifier suffixes (isolated vocals, slowed, dates, etc.) from search queries so the base artist + title hits iTunes correctly (e.g. "Pearl Jam - Black - Isolated Vocals" → search "Pearl Jam Black").
+
+---
+
+## [2026-04-23] (42)
+
+### Fixed
+- **Hero image index corrected** — initial fix used `[0]` → `[1]` in `Homepage.js`, but the production client was not rebuilt so the change never took effect. This release delivers the properly rebuilt client.
+
+---
+
 ## [2026-04-23] (41)
 
 ### Fixed
