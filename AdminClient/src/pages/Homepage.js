@@ -1,6 +1,6 @@
 // client/src/pages/Homepage.js
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useOutletContext, Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import FeatherIcon from 'feather-icons-react';
@@ -25,14 +25,15 @@ const resolveCoverImageURL = (coverImage) => {
 
 const Homepage = () => {
   const [generatedText, setGeneratedText] = useState([]);
+  const [currentMix, setCurrentMix] = useState(null);
 
   const projectName = brand.name;
   const contactEmail = brand.email.contact;
   const location = getLocation();
 
-  // currentMix is set by queueSlice when the playlist is fetched.
-  // It's playlist[1] — skipping playlist[0] which is the Liquidsoap prefetch (not yet on air).
-  const currentMix = useSelector(state => state.queue.currentMix);
+  // Playlist calls this with the currently-on-air mix (its first rendered item, playlist[1]).
+  const handleCurrentMix = useCallback((mix) => setCurrentMix(mix), []);
+
   const recentCoverImage = resolveCoverImageURL(currentMix?.coverImage);
   const heroImageURL = recentCoverImage || getHeroImageURL();
 
@@ -113,7 +114,7 @@ const Homepage = () => {
             <div className='playlist-wrapper mt-4'>
               <h2 className='title'>
               <FeatherIcon icon="list" />&nbsp;playlist</h2>
-              <Playlist />
+              <Playlist onCurrentMix={handleCurrentMix} />
             </div>
           </div> {/* end column2 */}
 
