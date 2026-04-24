@@ -3,7 +3,7 @@
  *       formatted according to the user's local time, and refreshing it at regular intervals.
  */
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { fetchQueuePlaylist } from '../store/queueSlice';
@@ -13,17 +13,12 @@ import { fetchQueuePlaylist } from '../store/queueSlice';
  *
  * @returns {JSX.Element[]} A list of JSX elements representing the rendered playlist.
  */
-// onCurrentMix: optional callback — called with the currently-on-air mix object
-// (fullPlaylist[1], the first displayed item after skipping the Liquidsoap prefetch at [0])
-const Playlist = ({ onCurrentMix }) => {
+const Playlist = () => {
   const [fullPlaylist, setFullPlaylist] = useState([]);
   const [seeMore, setSeeMore] = useState(false);
   const [error, setError] = useState(false);
   const dispatch = useDispatch();
   const { user: userAuth } = useSelector((state) => state.auth);
-  // Ref so the interval callback always sees the latest onCurrentMix without restarting the interval
-  const onCurrentMixRef = useRef(onCurrentMix);
-  useEffect(() => { onCurrentMixRef.current = onCurrentMix; }, [onCurrentMix]);
 
   useEffect(() => {
     // console.log(`Playlist component: userAuth.permissions: ${userAuth.permissions}`)
@@ -35,8 +30,6 @@ const Playlist = ({ onCurrentMix }) => {
       try {
         const result = await dispatch(fetchQueuePlaylist()).unwrap();
         setFullPlaylist(result);
-        // Notify parent of the currently-playing mix (same index the playlist renders first)
-        if (onCurrentMixRef.current) onCurrentMixRef.current(result[1] ?? null);
         setError(false); // Clear error if data is successfully fetched
       } catch (error) {
         console.error('Failed to fetch playlist:', error);
