@@ -30,9 +30,10 @@ const Homepage = () => {
   const contactEmail = brand.email.contact;
   const location = getLocation();
 
-  // Pull cover image from the most recently played mix in the queue playlist
+  // Pull cover image from the currently playing mix — [1] not [0] because
+  // [0] is the prefetched-but-not-yet-on-air mix (same offset the Playlist component uses)
   const queuePlaylist = useSelector(state => state.queue.playlist);
-  const recentCoverImage = resolveCoverImageURL(queuePlaylist?.[0]?.coverImage);
+  const recentCoverImage = resolveCoverImageURL(queuePlaylist?.[1]?.coverImage);
   const heroImageURL = recentCoverImage || getHeroImageURL();
 
   const { togglePlayer, isPlaying } = useOutletContext();

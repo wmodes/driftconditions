@@ -9,6 +9,21 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-04-23] (41)
+
+### Fixed
+- **Homepage hero image now tracks what's actually on air** — Liquidsoap prefetches the next mix for crossfading, marking it `Played` in the DB before it starts. `queuePlaylist[0]` is therefore always one mix ahead of what listeners hear. Switched hero image source from `[0]` to `[1]`, matching the same offset the Playlist component already uses intentionally.
+- **Lower clip newness score weight** (0.75 → 0.5) to reduce burst playback when large batches of new clips are uploaded simultaneously.
+
+---
+
+## [2026-04-23] (40)
+
+### Fixed
+- **Cover image sync on prod** — set `coverImage = '1827'` on all 46 Bruce Miller clips uploaded to production.
+
+---
+
 ## [2026-04-23] (39)
 
 ### Added
