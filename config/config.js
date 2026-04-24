@@ -63,7 +63,7 @@ const config = {
   audio: {
     selectPoolPercentSize: 10,
     selectPoolMinSize: 25,
-    newnessScoreWeight: 0.75,
+    newnessScoreWeight: 0.5,
     tagScoreWeight: 1,
     usageScoreWeight: 0.5,    // weight for clip usage score; less-used clips score higher
     silenceAdjustMaxAttempts: 100, // max rejection-sampling attempts before scaling fallback
