@@ -2,39 +2,43 @@
 /**
  * backfill-cover-images.js — Cover image backfill for audio clips
  *
- * Phase 1: Extract  — Extracts embedded APIC cover art from each MP3, normalizes
- *          to 500×500 JPEG. Tags successful clips image-from-embed; passes the
- *          rest to Phase 2.
+ * Phase 1: Extraction
+ *   Extracts embedded APIC cover art from each MP3, normalizes to 500×500 JPEG.
+ *   Tags successful clips image-from-embed; passes the rest to Phase 2.
  *
- * Phase 2: Query    — Clips are sent to Claude Haiku in batches. Haiku identifies
- *          the likely commercial source and generates an optimized iTunes search
- *          query with a confidence score. Clips below the threshold are tagged
- *          image-not-found and dropped here.
+ * Phase 2: Album Lookup
+ *   2a. Query generation  — Clips are sent to Claude Haiku in batches. Haiku
+ *       identifies the likely commercial source and generates an optimized search
+ *       query with a confidence score. Below-threshold clips are tagged
+ *       image-not-found and dropped.
+ *   2b. iTunes lookup     — Clips are searched against the iTunes Search API
+ *       (entity=song), returning up to ITUNES_LIMIT candidates per clip.
+ *   2c. (extensible)      — Additional album art APIs (MusicBrainz, Discogs,
+ *       Spotify, etc.) can be inserted here, merging candidates into the pool
+ *       before 2d sees them.
+ *   2d. Candidate selection — iTunes candidates are sent back to Haiku. Haiku
+ *       picks the best match or rejects all (mashup, novelty, false positive).
+ *       Confirmed matches are downloaded, normalized, and saved.
+ *       Tags: image-from-haiku or image-not-found.
  *
- * Phase 3: Lookup   — Clips that passed Phase 2 are searched against the iTunes
- *          Search API, returning up to 5 album candidates per clip. Clips with
- *          no results are tagged image-not-found and dropped.
- *          (Additional search APIs — Discogs, Spotify, etc. — can be inserted
- *          here and their candidates merged before Phase 4.)
- *
- * Phase 4: Verify   — iTunes candidates are sent back to Claude Haiku in batches.
- *          Haiku compares the original clip title to each candidate and selects
- *          the best match, or rejects all if none qualify (e.g. mashup, novelty,
- *          keyword-only false positive). Confirmed matches are downloaded,
- *          normalized, and saved. Tags: image-from-haiku or image-not-found.
+ * Phase 3: Image Lookup  (fallback for clips that failed Phase 2)
+ *   3a. Google Custom Image Search — broad web image search for album art.
+ *   3b. Candidate selection — Haiku sanity-checks Google results (lower bar
+ *       than 2d: "plausible?" rather than "exact match?").
+ *       Tags: image-from-google or image-not-found.
  *
  * Usage (run from project root):
  *   node scripts/backfill-cover-images.js [options]
  *
  * Options:
  *   --prod               Connect to production DB (uses DATABASE_REMOTE_PASSWORD)
- *   --phase1             Run Phase 1 only (embed extraction; skip Phases 2–4)
- *   --phase2             Start at Phase 2, skipping embed extraction
+ *   --phase1             Run Phase 1 only (extraction; skip Phases 2–3)
+ *   --phase2             Skip Phase 1 (extraction), start at Phase 2 (Album Lookup)
  *   --limit N            Process at most N clips (useful for calibration runs)
  *   --offset N           Skip first N eligible clips (useful for calibration runs)
- *   --threshold N        Haiku confidence threshold 0–1 (default: 0.75)
+ *   --threshold N        Haiku confidence threshold 0–1 (default: 0.50)
  *   --dry-run            Report what would happen without writing files or updating DB
- *   --retry-not-found    Re-run Phases 2–4 on clips previously marked image-not-found
+ *   --retry-not-found    Re-run Phases 2–3 on clips previously marked image-not-found
  */
 
 'use strict';
@@ -57,7 +61,7 @@ const Anthropic = require('@anthropic-ai/sdk');
 const args            = process.argv.slice(2);
 const USE_PROD        = args.includes('--prod');
 const PHASE1_ONLY     = args.includes('--phase1');
-const PHASE2_ONLY     = args.includes('--phase2');    // start at Phase 2, skip embed extraction
+const PHASE2_ONLY     = args.includes('--phase2');    // skip Phase 1 (extraction), start at Phase 2 (Album Lookup)
 const DRY_RUN         = args.includes('--dry-run');
 const RETRY_NOT_FOUND = args.includes('--retry-not-found');
 
@@ -73,7 +77,8 @@ const THRESHOLD = threshIdx !== -1 ? parseFloat(args[threshIdx + 1]) : 0.50;
 const MODEL        = 'claude-haiku-4-5-20251001';
 const BATCH_SIZE   = 5;
 const BATCH_DELAY  = 500;   // ms between Haiku batches
-const ITUNES_LIMIT = 5;     // max candidates to fetch from iTunes per clip
+const ITUNES_LIMIT  = 5;     // max candidates to fetch from iTunes per clip
+const DDG_LIMIT     = 5;     // max candidates to fetch from DDG image search per clip
 
 // ─── DB setup ─────────────────────────────────────────────────────────────────
 
@@ -126,15 +131,15 @@ async function main() {
   console.log(`Found ${clips.length} clip(s) to process.\n`);
   if (clips.length === 0) { await db.end(); process.exit(0); }
 
-  // ── Phase 1: Embed extraction ─────────────────────────────────────────────────
+  // ── Phase 1: Extraction ───────────────────────────────────────────────────────
   // Try to pull APIC cover art directly from the MP3 file. This is the cleanest
   // source — no API calls, no guessing. Clips without embedded art are queued
-  // for Phase 2 (Haiku query generation).
+  // for Phase 2a (query generation).
 
   const needsQuery = [];   // clips that need Haiku query generation
 
   if (!PHASE2_ONLY) {
-    console.log('── Phase 1: Embed extraction ──────────────────────────────────');
+    console.log('── Phase 1: Extraction ────────────────────────────────────────');
     let extracted = 0;
 
     for (const clip of clips) {
@@ -143,7 +148,7 @@ async function main() {
       const label     = `[${clip.audioID}] ${clip.title.slice(0, 55)}`;
 
       if (!fs.existsSync(audioPath)) {
-        console.log(`  ${label} — file missing, queuing for Phase 2`);
+        console.log(`  ${label} — file missing, queuing for Phase 2a`);
         needsQuery.push(clip);
         continue;
       }
@@ -159,9 +164,9 @@ async function main() {
       }
     }
 
-    console.log(`\nPhase 1 complete: ${extracted} extracted, ${needsQuery.length} queued for Phase 2.\n`);
+    console.log(`\nPhase 1 complete: ${extracted} extracted, ${needsQuery.length} queued for Phase 2a.\n`);
   } else {
-    // --phase2: skip embed extraction, send everything directly to Phase 2
+    // --phase2: skip Phase 1, send everything directly to Phase 2a
     needsQuery.push(...clips);
   }
 
@@ -171,11 +176,11 @@ async function main() {
     process.exit(0);
   }
 
-  // ── Phase 2: Haiku query generation ──────────────────────────────────────────
+  // ── Phase 2a: Query generation (Haiku) ───────────────────────────────────────
   // Send clips to Haiku in batches. Haiku identifies the likely commercial source
-  // and constructs an optimized iTunes search query with a confidence score.
+  // and constructs an optimized search query with a confidence score.
   // Clips below the confidence threshold are tagged image-not-found and dropped.
-  // Output: needsLookup[] — clips with a search query ready for Phase 3.
+  // Output: needsAlbumSearch[] — clips with a search query ready for Phase 2b.
 
   if (!process.env.ANTHROPIC_API_KEY) {
     console.error('Missing ANTHROPIC_API_KEY in AdminServer/.env');
@@ -184,19 +189,19 @@ async function main() {
 
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-  console.log(`── Phase 2: Haiku query generation (${needsQuery.length} clips, threshold ${THRESHOLD}) ──`);
+  console.log(`── Phase 2a: Query generation (${needsQuery.length} clips, threshold ${THRESHOLD}) ──`);
 
-  const needsLookup = [];   // clips with a confirmed search query for Phase 3
-  let p2NotFound = 0, p2Errors = 0;
+  const needsAlbumSearch = [];   // clips with a confirmed search query for Phase 2b
+  let p2aNotFound = 0, p2aErrors = 0;
 
-  const p2Batches = [];
+  const p2aBatches = [];
   for (let i = 0; i < needsQuery.length; i += BATCH_SIZE) {
-    p2Batches.push(needsQuery.slice(i, i + BATCH_SIZE));
+    p2aBatches.push(needsQuery.slice(i, i + BATCH_SIZE));
   }
 
-  for (let i = 0; i < p2Batches.length; i++) {
-    console.log(`\nBatch ${i + 1}/${p2Batches.length}:`);
-    const results = await buildSearchQueries(client, p2Batches[i]);
+  for (let i = 0; i < p2aBatches.length; i++) {
+    console.log(`\nBatch ${i + 1}/${p2aBatches.length}:`);
+    const results = await buildSearchQueries(client, p2aBatches[i]);
 
     for (const result of results) {
       const clip  = needsQuery.find(c => c.audioID === result.audioID);
@@ -205,7 +210,7 @@ async function main() {
       if (result.error) {
         console.log(`${label} — haiku error: ${result.error}`);
         if (!DRY_RUN) await setCoverImage(result.audioID, null, INTERNAL_TAGS.imageNotFound);
-        p2Errors++;
+        p2aErrors++;
         continue;
       }
 
@@ -213,105 +218,108 @@ async function main() {
         const conf = result.confidence != null ? result.confidence.toFixed(2) : 'n/a';
         console.log(`${label} — low confidence (${conf}), skipping`);
         if (!DRY_RUN) await setCoverImage(result.audioID, null, INTERNAL_TAGS.imageNotFound);
-        p2NotFound++;
+        p2aNotFound++;
         continue;
       }
 
       console.log(`${label} — query: "${result.searchQuery}" (${result.confidence.toFixed(2)})`);
-      needsLookup.push({ audioID: result.audioID, title: clip.title, source: result.source, searchQuery: result.searchQuery });
+      needsAlbumSearch.push({ audioID: result.audioID, title: clip.title, source: result.source, searchQuery: result.searchQuery });
     }
 
-    if (i < p2Batches.length - 1) await sleep(BATCH_DELAY);
+    if (i < p2aBatches.length - 1) await sleep(BATCH_DELAY);
   }
 
-  console.log(`\nPhase 2 complete: ${needsLookup.length} queued for lookup, ${p2NotFound} skipped, ${p2Errors} errors.\n`);
+  console.log(`\nPhase 2a complete: ${needsAlbumSearch.length} queued for album search, ${p2aNotFound} skipped, ${p2aErrors} errors.\n`);
 
-  if (needsLookup.length === 0) {
+  if (needsAlbumSearch.length === 0) {
     console.log('Done.');
     await db.end();
     process.exit(0);
   }
 
-  // ── Phase 3: iTunes lookup ────────────────────────────────────────────────────
+  // ── Phase 2b: iTunes lookup ───────────────────────────────────────────────────
   // Query the iTunes Search API for each clip's search query, returning up to
-  // ITUNES_LIMIT album candidates per clip. Clips with no results are tagged
-  // image-not-found and dropped here.
+  // ITUNES_LIMIT album candidates per clip. Clips with no results fall through
+  // to Phase 3 (Google Image Lookup).
   //
-  // This is the right place to add additional search APIs (Discogs, Spotify,
-  // MusicBrainz, etc.) — fetch their candidates and merge them into the array
-  // before the needsVerification push, then Phase 4 sees all candidates at once.
+  // Phase 2c extension point: additional album art APIs (MusicBrainz, Discogs,
+  // Spotify, etc.) go here — fetch candidates and merge into the array before
+  // the needsCandidateSelect push so Phase 2d sees all candidates at once.
   //
-  // Output: needsVerification[] — clips with candidate lists for Phase 4.
+  // Output: needsCandidateSelect[] — clips with candidate lists for Phase 2d.
 
-  console.log(`── Phase 3: iTunes lookup (${needsLookup.length} clips) ──`);
+  console.log(`── Phase 2b: iTunes lookup (${needsAlbumSearch.length} clips) ──`);
 
-  const needsVerification = [];   // clips with iTunes candidates for Phase 4
-  let p3NotFound = 0, p3Errors = 0;
+  const needsCandidateSelect = [];   // clips with iTunes candidates for Phase 2d
+  const needsImageSearch     = [];   // clips that failed Phase 2 → fall through to Phase 3
+  let p2bNotFound = 0, p2bErrors = 0;
 
-  for (const clip of needsLookup) {
+  for (const clip of needsAlbumSearch) {
     const label = `  [${clip.audioID}] ${clip.title.slice(0, 50)}`;
     try {
       const candidates = await itunesCandidates(clip.searchQuery);
       if (candidates.length === 0) {
-        console.log(`${label} — no iTunes results`);
-        if (!DRY_RUN) await setCoverImage(clip.audioID, null, INTERNAL_TAGS.imageNotFound);
-        p3NotFound++;
+        console.log(`${label} — no iTunes results (→ Phase 3)`);
+        if (RETRY_NOT_FOUND && !DRY_RUN) await removeTag(clip.audioID, INTERNAL_TAGS.imageNotFound);
+        needsImageSearch.push({ audioID: clip.audioID, title: clip.title });
+        p2bNotFound++;
       } else {
         const names = candidates.map(c => `${c.artistName} — ${c.collectionName}`).join(', ');
         console.log(`${label} — ${candidates.length} candidate(s): ${names.slice(0, 80)}`);
-        needsVerification.push({ ...clip, candidates });
+        needsCandidateSelect.push({ ...clip, candidates });
       }
     } catch (err) {
       console.log(`${label} — iTunes error: ${err.message}`);
       if (!DRY_RUN) await setCoverImage(clip.audioID, null, INTERNAL_TAGS.imageNotFound);
-      p3Errors++;
+      p2bErrors++;
     }
   }
 
-  console.log(`\nPhase 3 complete: ${needsVerification.length} queued for verification, ${p3NotFound} no results, ${p3Errors} errors.\n`);
+  console.log(`\nPhase 2b complete: ${needsCandidateSelect.length} queued for candidate selection, ${p2bNotFound} no results, ${p2bErrors} errors.\n`);
 
-  if (needsVerification.length === 0) {
+  if (needsCandidateSelect.length === 0) {
     console.log('Done.');
     await db.end();
     process.exit(0);
   }
 
-  // ── Phase 4: Haiku verification ───────────────────────────────────────────────
-  // Send clips with iTunes candidates back to Haiku for a final match check.
+  // ── Phase 2d: Candidate selection (Haiku) ────────────────────────────────────
+  // Send clips with album candidates back to Haiku for final match check.
   // Haiku compares the original clip title to each candidate and either selects
-  // the best match or rejects all (e.g. when iTunes returned a keyword-only false
-  // positive for a mashup, novelty track, or unrelated release).
-  // Confirmed matches are downloaded, normalized, and saved.
+  // the best match or rejects all (e.g. mashup, novelty track, keyword-only
+  // false positive). Confirmed matches are downloaded, normalized, and saved.
+  // Rejected clips fall through to Phase 3 (Google Image Lookup).
 
-  console.log(`── Phase 4: Haiku verification (${needsVerification.length} clips) ──`);
+  console.log(`── Phase 2d: Candidate selection (${needsCandidateSelect.length} clips) ──`);
 
-  let p4Found = 0, p4Rejected = 0, p4Errors = 0;
+  let p2dFound = 0, p2dRejected = 0, p2dErrors = 0;
 
-  const p4Batches = [];
-  for (let i = 0; i < needsVerification.length; i += BATCH_SIZE) {
-    p4Batches.push(needsVerification.slice(i, i + BATCH_SIZE));
+  const p2dBatches = [];
+  for (let i = 0; i < needsCandidateSelect.length; i += BATCH_SIZE) {
+    p2dBatches.push(needsCandidateSelect.slice(i, i + BATCH_SIZE));
   }
 
-  for (let i = 0; i < p4Batches.length; i++) {
-    console.log(`\nBatch ${i + 1}/${p4Batches.length}:`);
-    const verifications = await verifyMatches(client, p4Batches[i]);
+  for (let i = 0; i < p2dBatches.length; i++) {
+    console.log(`\nBatch ${i + 1}/${p2dBatches.length}:`);
+    const verifications = await verifyMatches(client, p2dBatches[i]);
 
     for (const v of verifications) {
-      const clip    = needsVerification.find(c => c.audioID === v.audioID);
+      const clip    = needsCandidateSelect.find(c => c.audioID === v.audioID);
       const label   = `  [${v.audioID}] ${(clip?.title || '').slice(0, 50)}`;
       const outPath = path.join(COVER_DIR, `${v.audioID}.${COVER_EXT}`);
 
       if (v.error) {
         console.log(`${label} — verify error: ${v.error}`);
         if (!DRY_RUN) await setCoverImage(v.audioID, null, INTERNAL_TAGS.imageNotFound);
-        p4Errors++;
+        p2dErrors++;
         continue;
       }
 
       if (v.matchIndex === null) {
-        console.log(`${label} — rejected (${v.reason})`);
-        if (!DRY_RUN) await setCoverImage(v.audioID, null, INTERNAL_TAGS.imageNotFound);
-        p4Rejected++;
+        console.log(`${label} — rejected (${v.reason}) — (→ Phase 3)`);
+        if (RETRY_NOT_FOUND && !DRY_RUN) await removeTag(v.audioID, INTERNAL_TAGS.imageNotFound);
+        needsImageSearch.push({ audioID: v.audioID, title: clip.title });
+        p2dRejected++;
         continue;
       }
 
@@ -319,32 +327,142 @@ async function main() {
       console.log(`${label} — matched: ${match.artistName} — ${match.collectionName}`);
       console.log(`    url: ${match.artworkUrl}`);
 
-      if (DRY_RUN) { p4Found++; continue; }
+      if (DRY_RUN) { p2dFound++; continue; }
 
       const fetched = await fetchAndNormalize(match.artworkUrl, outPath);
       if (fetched) {
         console.log(`    saved`);
         await setCoverImage(v.audioID, String(v.audioID), INTERNAL_TAGS.imageFromHaiku);
-        p4Found++;
+        p2dFound++;
       } else {
         console.log(`    fetch/normalize failed`);
         await setCoverImage(v.audioID, null, INTERNAL_TAGS.imageNotFound);
-        p4Errors++;
+        p2dErrors++;
       }
     }
 
-    if (i < p4Batches.length - 1) await sleep(BATCH_DELAY);
+    if (i < p2dBatches.length - 1) await sleep(BATCH_DELAY);
   }
 
-  console.log(`\nPhase 4 complete: ${p4Found} verified and saved, ${p4Rejected} rejected, ${p4Errors} errors.`);
+  console.log(`\nPhase 2d complete: ${p2dFound} saved, ${p2dRejected} rejected (→ Phase 3), ${p2dErrors} errors.`);
+
+  if (needsImageSearch.length === 0) {
+    console.log('\nDone.');
+    await db.end();
+    process.exit(0);
+  }
+
+  // ── Phase 3a: DDG image search ────────────────────────────────────────────────
+  // Fallback for clips that failed Phase 2 (no iTunes candidates, or all
+  // candidates rejected by Phase 2d). Searches DuckDuckGo Images using the
+  // full original clip title — more context is better here since we're doing
+  // open web search, not structured album lookup.
+  //
+  // Returns direct image URLs plus page metadata (title, source URL) that
+  // Phase 3b passes to Haiku for sanity-checking.
+
+  console.log(`\n── Phase 3a: DDG image search (${needsImageSearch.length} clips) ──`);
+
+  const needsImageSelect = [];   // clips with DDG candidates for Phase 3b
+  let p3aNotFound = 0, p3aErrors = 0;
+
+  for (const clip of needsImageSearch) {
+    const label = `  [${clip.audioID}] ${clip.title.slice(0, 50)}`;
+    try {
+      const candidates = await ddgCandidates(clip.title);
+      if (candidates.length === 0) {
+        console.log(`${label} — no DDG results`);
+        if (!DRY_RUN) await setCoverImage(clip.audioID, null, INTERNAL_TAGS.imageNotFound);
+        p3aNotFound++;
+      } else {
+        const sources = candidates.map(c => new URL(c.url).hostname).join(', ');
+        console.log(`${label} — ${candidates.length} candidate(s): ${sources.slice(0, 80)}`);
+        needsImageSelect.push({ ...clip, candidates });
+      }
+    } catch (err) {
+      console.log(`${label} — DDG error: ${err.message}`);
+      if (!DRY_RUN) await setCoverImage(clip.audioID, null, INTERNAL_TAGS.imageNotFound);
+      p3aErrors++;
+    }
+  }
+
+  console.log(`\nPhase 3a complete: ${needsImageSelect.length} queued for image selection, ${p3aNotFound} no results, ${p3aErrors} errors.\n`);
+
+  if (needsImageSelect.length === 0) {
+    console.log('Done.');
+    await db.end();
+    process.exit(0);
+  }
+
+  // ── Phase 3b: Candidate selection (Haiku) ────────────────────────────────────
+  // Send clips with DDG candidates to Haiku for a sanity check.
+  // Lower bar than Phase 2d — we're asking "does this image plausibly match?"
+  // rather than "is this the exact album release?". Haiku gets the full original
+  // clip title plus all DDG metadata (page title, source URL, image filename)
+  // to make the best possible determination.
+
+  console.log(`── Phase 3b: Image candidate selection (${needsImageSelect.length} clips) ──`);
+
+  let p3bFound = 0, p3bRejected = 0, p3bErrors = 0;
+
+  const p3bBatches = [];
+  for (let i = 0; i < needsImageSelect.length; i += BATCH_SIZE) {
+    p3bBatches.push(needsImageSelect.slice(i, i + BATCH_SIZE));
+  }
+
+  for (let i = 0; i < p3bBatches.length; i++) {
+    console.log(`\nBatch ${i + 1}/${p3bBatches.length}:`);
+    const selections = await selectImageCandidate(client, p3bBatches[i]);
+
+    for (const s of selections) {
+      const clip    = needsImageSelect.find(c => c.audioID === s.audioID);
+      const label   = `  [${s.audioID}] ${(clip?.title || '').slice(0, 50)}`;
+      const outPath = path.join(COVER_DIR, `${s.audioID}.${COVER_EXT}`);
+
+      if (s.error) {
+        console.log(`${label} — selection error: ${s.error}`);
+        if (!DRY_RUN) await setCoverImage(s.audioID, null, INTERNAL_TAGS.imageNotFound);
+        p3bErrors++;
+        continue;
+      }
+
+      if (s.matchIndex === null) {
+        console.log(`${label} — rejected (${s.reason})`);
+        if (!DRY_RUN) await setCoverImage(s.audioID, null, INTERNAL_TAGS.imageNotFound);
+        p3bRejected++;
+        continue;
+      }
+
+      const match = clip.candidates[s.matchIndex];
+      console.log(`${label} — matched: ${match.title}`);
+      console.log(`    url: ${match.image}`);
+
+      if (DRY_RUN) { p3bFound++; continue; }
+
+      const fetched = await fetchAndNormalize(match.image, outPath);
+      if (fetched) {
+        console.log(`    saved`);
+        await setCoverImage(s.audioID, String(s.audioID), INTERNAL_TAGS.imageFromGoogle);
+        p3bFound++;
+      } else {
+        console.log(`    fetch/normalize failed`);
+        await setCoverImage(s.audioID, null, INTERNAL_TAGS.imageNotFound);
+        p3bErrors++;
+      }
+    }
+
+    if (i < p3bBatches.length - 1) await sleep(BATCH_DELAY);
+  }
+
+  console.log(`\nPhase 3b complete: ${p3bFound} saved, ${p3bRejected} rejected, ${p3bErrors} errors.`);
   console.log('\nDone.');
   await db.end();
   process.exit(0);
 }
 
-// ─── Phase 2: Haiku query generation ─────────────────────────────────────────
+// ─── Phase 2a: Query generation (Haiku) ──────────────────────────────────────
 
-// Ask Haiku to identify the source and construct an optimized iTunes search query.
+// Ask Haiku to identify the source and construct an optimized search query.
 // Returns an array of { audioID, source, searchQuery, confidence } objects.
 // On parse failure, returns error objects so the main loop can handle them gracefully.
 async function buildSearchQueries(client, batch) {
@@ -415,7 +533,7 @@ async function buildSearchQueries(client, batch) {
   }
 }
 
-// ─── Phase 3: iTunes lookup ───────────────────────────────────────────────────
+// ─── Phase 2b: iTunes lookup ──────────────────────────────────────────────────
 
 // Query iTunes Search API for up to ITUNES_LIMIT album candidates.
 // Returns an array of { artistName, collectionName, artworkUrl } objects.
@@ -434,9 +552,109 @@ async function itunesCandidates(query) {
     .filter(r => r.artworkUrl);  // drop any results with no artwork
 }
 
-// ─── Phase 4: Haiku verification ─────────────────────────────────────────────
+// ─── Phase 3a: DDG image search ──────────────────────────────────────────────
 
-// Ask Haiku to compare each original clip title to its iTunes candidates.
+// Search DuckDuckGo Images for the full original clip title.
+// DDG requires a two-step dance: first fetch the page to get a session token
+// (vqd), then use that token to hit the image results endpoint.
+// Returns an array of { title, url, image, width, height } objects —
+// all metadata Haiku can use to judge relevance in Phase 3b.
+async function ddgCandidates(query) {
+  const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
+
+  // Step 1: get the vqd session token DDG embeds in the search page
+  const initRes = await fetch(
+    `https://duckduckgo.com/?q=${encodeURIComponent(query)}&iax=images&ia=images`,
+    { headers: { 'User-Agent': UA }, signal: AbortSignal.timeout(10000) }
+  );
+  const initHtml = await initRes.text();
+  const vqd = initHtml.match(/vqd=['"]([^'"]+)['"]/)?.[1];
+  if (!vqd) throw new Error('Could not extract DDG vqd token');
+
+  // Step 2: fetch image results using the token
+  const imgRes = await fetch(
+    `https://duckduckgo.com/i.js?q=${encodeURIComponent(query)}&vqd=${vqd}&o=json&p=1&s=0&u=bing&f=,,,,,`,
+    { headers: { 'User-Agent': UA, 'Referer': 'https://duckduckgo.com/' },
+      signal: AbortSignal.timeout(10000) }
+  );
+  if (!imgRes.ok) throw new Error(`DDG image API error ${imgRes.status}`);
+  const data = await imgRes.json();
+
+  return (data.results || [])
+    .slice(0, DDG_LIMIT)
+    .map(r => ({
+      title:  r.title,   // page title — often artist/album name
+      url:    r.url,     // source page URL — domain is a useful signal
+      image:  r.image,   // direct image URL
+      width:  r.width,
+      height: r.height,
+    }));
+}
+
+// ─── Phase 3b: Image candidate selection (Haiku) ──────────────────────────────
+
+// Ask Haiku whether any DDG image candidate plausibly matches the clip.
+// Lower bar than Phase 2d: "does this image plausibly represent this audio?"
+// rather than "is this the exact commercial release?".
+// Haiku receives the full original clip title plus all DDG metadata
+// (page title, source URL, image filename) to make the best determination.
+// Returns an array of { audioID, matchIndex, reason } objects.
+async function selectImageCandidate(client, batch) {
+  const clipLines = batch.map((clip, idx) => {
+    const candidateList = clip.candidates.map((c, ci) => {
+      const filename = c.image.split('/').pop().split('?')[0];
+      return `    ${ci}. Title: "${c.title}"\n       Source: ${c.url}\n       File: ${filename}\n       Size: ${c.width}x${c.height}`;
+    }).join('\n');
+    return `${idx + 1}. audioID=${clip.audioID}\n   Original clip title: "${clip.title}"\n   Image candidates:\n${candidateList}`;
+  }).join('\n\n');
+
+  const prompt = `You are helping find cover art for audio clips in a generative streaming radio station. These clips were sourced from the web — Free Music Archive, archive.org, artist websites, and similar sources. They may not have commercial releases.
+
+For each clip, look at the image candidates returned from a web image search and select the one most likely to be meaningful cover art for this audio. Use all available metadata: the page title, source website domain, and image filename often reveal the content.
+
+The bar here is lower than a strict album match — accept an image if it plausibly represents the audio (e.g. an artist photo from the right artist's site, artwork from the release page, album art from a streaming site). Reject only if the candidates are clearly unrelated (wrong artist, generic stock photo, unrelated content).
+
+Return ONLY a valid JSON array — no explanation, no markdown:
+[
+  {
+    "audioID": 123,
+    "matchIndex": 0,
+    "reason": "brief reason for selection or rejection"
+  }
+]
+
+Use null for matchIndex when no candidate is plausibly related.
+
+Clips:
+${clipLines}`;
+
+  try {
+    const message = await client.messages.create({
+      model:      MODEL,
+      max_tokens: 1024,
+      messages:   [{ role: 'user', content: prompt }],
+    });
+
+    const text   = message.content[0].text.trim()
+      .replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
+    const parsed = JSON.parse(text);
+
+    return batch.map(clip => {
+      const r = parsed.find(p => p.audioID === clip.audioID);
+      return {
+        audioID:    clip.audioID,
+        matchIndex: r?.matchIndex ?? null,
+        reason:     r?.reason    ?? 'no response',
+      };
+    });
+  } catch (err) {
+    return batch.map(clip => ({ audioID: clip.audioID, matchIndex: null, error: err.message }));
+  }
+}
+
+// ─── Phase 2d: Candidate selection (Haiku) ───────────────────────────────────
+
+// Ask Haiku to compare each original clip title to its album candidates.
 // Returns an array of { audioID, matchIndex, reason } objects.
 // matchIndex is the 0-based index into clip.candidates, or null if no match.
 async function verifyMatches(client, batch) {

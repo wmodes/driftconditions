@@ -91,8 +91,9 @@ const config = {
       analysisQueue:  'needs-audio-analysis', // set on upload to trigger analysis
       analyzed:       'audio-analyzed',        // set after analysis completes
       imageFromEmbed: 'image-from-embed',      // cover image extracted from MP3 APIC tag
-      imageFromHaiku: 'image-from-haiku',      // cover image sourced via Claude Haiku lookup
-      imageFromUser:  'image-from-user',       // cover image uploaded or URL-supplied by user
+      imageFromHaiku:  'image-from-haiku',      // cover image sourced via Claude Haiku lookup
+      imageFromGoogle: 'image-from-google',    // cover image sourced via DDG/Google image search
+      imageFromUser:   'image-from-user',      // cover image uploaded or URL-supplied by user
       imageNotFound:  'image-not-found',       // no cover image found after all attempts
     },
     clipLength: {   // in seconds
