@@ -30,10 +30,10 @@ const Homepage = () => {
   const contactEmail = brand.email.contact;
   const location = getLocation();
 
-  // Pull cover image from the currently playing mix — [1] not [0] because
-  // [0] is the prefetched-but-not-yet-on-air mix (same offset the Playlist component uses)
-  const queuePlaylist = useSelector(state => state.queue.playlist);
-  const recentCoverImage = resolveCoverImageURL(queuePlaylist?.[1]?.coverImage);
+  // currentMix is set by queueSlice when the playlist is fetched.
+  // It's playlist[1] — skipping playlist[0] which is the Liquidsoap prefetch (not yet on air).
+  const currentMix = useSelector(state => state.queue.currentMix);
+  const recentCoverImage = resolveCoverImageURL(currentMix?.coverImage);
   const heroImageURL = recentCoverImage || getHeroImageURL();
 
   const { togglePlayer, isPlaying } = useOutletContext();
