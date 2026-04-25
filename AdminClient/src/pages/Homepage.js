@@ -9,6 +9,7 @@ import {
   generateRandomTexts, getHeroImageURL, getLocation
 } from '../utils/randomUtils';
 import brand from '../brand/brand';
+import config from '../config/config';
 
 // Resolve a coverImage path (e.g. "img/audio/152.jpg" or "img/alt/tintype-tower.jpg") to a URL.
 const resolveCoverImageURL = (coverImage) => {
@@ -16,8 +17,11 @@ const resolveCoverImageURL = (coverImage) => {
   return `/${coverImage}`;
 };
 
+const adminServerBaseURL = config.adminServer.baseURL;
+
 const Homepage = () => {
   const [generatedText, setGeneratedText] = useState([]);
+  const [altImages, setAltImages] = useState([]);
 
   const projectName = brand.name;
   const contactEmail = brand.email.contact;
@@ -26,10 +30,18 @@ const Homepage = () => {
   // playlist[0] is the Liquidsoap prefetch (not yet on air); playlist[1] is currently playing
   const playlist = useSelector(state => state.queue.playlist);
   const recentCoverImage = resolveCoverImageURL(playlist[1]?.coverImage);
-  const heroImageURL = recentCoverImage || getHeroImageURL();
+  const heroImageURL = recentCoverImage || getHeroImageURL(altImages);
 
   const { togglePlayer, isPlaying } = useOutletContext();
   const user = useSelector(state => state.auth.user);
+
+  // Fetch alt image list once on mount for fallback hero image
+  useEffect(() => {
+    fetch(`${adminServerBaseURL}/api/audio/altimages`)
+      .then(r => r.json())
+      .then(setAltImages)
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     // Assuming generateRandomTexts is a function that accepts projectName and returns an array of text strings

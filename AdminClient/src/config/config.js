@@ -339,25 +339,8 @@ const config = {
     scoreThreshold: 0.5,
   },
   app: {
-    homepageImageURLBase: '/img/homepage',
-    coverImageURLBase:    '/img/covers',  // per-clip cover images (e.g. /img/covers/152.jpg)
-    altImageURLBase:      '/img/alt',     // fallback alt images  (e.g. /img/alt/coveralt-02.jpg)
-    homepageImages: [
-      "8-bit-radio-tower.png",
-      "fucked-up-vcr.png",
-      "hatch-show-style-triptych.png",
-      "heavily-distorted.png",
-      "mexican-radio-tower.png",
-      "mountain-road-with-distortions.png",
-      "night-drive-woodcut.png",
-      "night-highway.png",
-      "silkscreen-cosmic-car.png",
-      "sunset-logo.png",
-      "sunset-logo-blue.png",
-      "tintype-tower.png",
-      "washed-out-80s-road.png",
-      "washed-out-industrial-area.png",
-    ]
+    coverImageURLBase: '/img/covers',  // per-clip cover images (e.g. /img/covers/152.jpg)
+    altImageURLBase:   '/img/alt',     // fallback alt images  (e.g. /img/alt/coveralt-02.jpg)
   }
 
 };
