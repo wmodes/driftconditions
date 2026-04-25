@@ -13,8 +13,8 @@ const fs     = require('fs');
 const path   = require('path');
 const { config } = require('config');
 
-const { dir: COVER_DIR,
-        altDir: ALT_DIR } = config.content.coverImage;
+const { dir: COVER_DIR, urlPath: COVER_URL,
+        altDir: ALT_DIR, altUrlPath: ALT_URL } = config.content.coverImage;
 
 // Read alt images once at startup so any filename works — no count needed in config
 const ALT_FILES = fs.readdirSync(ALT_DIR)
@@ -39,7 +39,7 @@ class CoverSelector {
       for (const clip of track.clips) {
         if (clip.coverImage) {
           const coverImagePath = path.join(COVER_DIR, `${clip.coverImage}.jpg`);
-          return { coverImage: `img/audio/${clip.coverImage}.jpg`, coverImagePath, isAlt: false };
+          return { coverImage: `${COVER_URL}/${clip.coverImage}.jpg`, coverImagePath, isAlt: false };
         }
       }
     }
@@ -47,7 +47,7 @@ class CoverSelector {
     // Fallback: pick a random alt image from the directory list loaded at startup
     const altFile = ALT_FILES[Math.floor(Math.random() * ALT_FILES.length)];
     const coverImagePath = path.join(ALT_DIR, altFile);
-    return { coverImage: `img/alt/${altFile}`, coverImagePath, isAlt: true };
+    return { coverImage: `${ALT_URL}/${altFile}`, coverImagePath, isAlt: true };
   }
 }
 

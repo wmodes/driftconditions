@@ -35,9 +35,9 @@ https://driftconditions.org {
     }
 
     # Serve per-clip cover images
-    handle /img/audio/* {
-        root * /home/debian/driftconditions/content/images/audio
-        uri strip_prefix /img/audio
+    handle /img/covers/* {
+        root * /home/debian/driftconditions/content/images/covers
+        uri strip_prefix /img/covers
         file_server
     }
 
