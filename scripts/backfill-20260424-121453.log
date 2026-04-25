@@ -1,0 +1,684 @@
+◇ injected env (21) from AdminServer/.env // tip: ⌘ override existing { override: true }
+Connecting to PRODUCTION database.
+Found 1359 clip(s) to process.
+
+── Phase 2: Haiku query generation (1359 clips, threshold 0.5) ──
+
+Batch 1/272:
+  [18] Digital (Analog?) rhythmic beeps — low confidence (0.20), skipping
+  [20] Anna Zevellos Paging Announcement — low confidence (0.10), skipping
+  [22] Safety Announcement - Market Animals — low confidence (0.10), skipping
+  [23] Continuous Static — low confidence (0.10), skipping
+  [24] Low level am static — low confidence (0.10), skipping
+
+Batch 2/272:
+  [69] Alien Static — low confidence (0.30), skipping
+  [70] Horn Honk — low confidence (0.20), skipping
+  [71] Distorted Energy Sound — low confidence (0.20), skipping
+  [72] "Bedtime Story" music bed (Adobe) — low confidence (0.40), skipping
+  [74] Radio Band Tuning — low confidence (0.20), skipping
+
+Batch 3/272:
+  [75] Wes - music was important — low confidence (0.30), skipping
+  [76] Wes - we had safety equipment — low confidence (0.30), skipping
+  [77] Wes - We ate pretty well — low confidence (0.30), skipping
+  [78] Pat Nunnally - on the mayflies — low confidence (0.40), skipping
+  [79] Small waves lapping — low confidence (0.20), skipping
+
+Batch 4/272:
+  [81] Gentle rowing — low confidence (0.30), skipping
+  [82] Rusty Click — low confidence (0.20), skipping
+  [83] Rusty Click 2 — low confidence (0.20), skipping
+  [84] Constant Radio Static — low confidence (0.20), skipping
+  [85] Fringer cat AM Static — low confidence (0.20), skipping
+
+Batch 5/272:
+  [86] Dirty radio static w buzzes and beeps — low confidence (0.00), skipping
+  [87] 1888 fast train approaching announcement — low confidence (0.00), skipping
+  [88] Dirty electrical static — low confidence (0.00), skipping
+  [89] Radio static burst — low confidence (0.00), skipping
+  [90] Radioqualia Free Radio Linux — query: "Radioqualia Free Radio Linux" (0.55)
+
+Batch 6/272:
+  [91] Glitch Transition — low confidence (0.20), skipping
+  [92] Glitch Transition 2 — low confidence (0.20), skipping
+  [93] CCTV announcement — low confidence (0.10), skipping
+  [94] Quick Static Noise — low confidence (0.10), skipping
+  [96] WHAS George Walsh Louisville Colonels Game — low confidence (0.30), skipping
+
+Batch 7/272:
+  [97] Record Scratch — low confidence (0.20), skipping
+  [98] Needle Drop — low confidence (0.20), skipping
+  [99] Electric Hiss Static — low confidence (0.10), skipping
+  [100] 1938 Gov A Harry Moore - National Defense Week — low confidence (0.30), skipping
+  [101] 1982 Safety Announcement — low confidence (0.20), skipping
+
+Batch 8/272:
+  [102] Glitch Transition 2 — low confidence (0.30), skipping
+  [103] Sharkbait at DNA Lounge — low confidence (0.40), skipping
+  [104] 2110 City of San Francisco Announcement — low confidence (0.20), skipping
+  [105] Electric Static — low confidence (0.25), skipping
+  [106] Crash aluminum and metal dropping on concrete — low confidence (0.15), skipping
+
+Batch 9/272:
+  [107] River with Birds Loop — low confidence (0.20), skipping
+  [108] Distant explosion — low confidence (0.10), skipping
+  [110] Radio Garble — low confidence (0.10), skipping
+  [111] 2014 News 92 FM Houston Aircheck — low confidence (0.15), skipping
+  [112] Metal Dark Matter — low confidence (0.30), skipping
+
+Batch 10/272:
+  [113] Crackle — low confidence (0.20), skipping
+  [114] The Templations - Silent Night - slowed and warped — low confidence (0.30), skipping
+  [115] FM Radio Sweep — low confidence (0.10), skipping
+  [116] Survivor Radio Transmission 3 — low confidence (0.20), skipping
+  [117] Martian Chronicles - Night Meeting - Excerpt — low confidence (0.30), skipping
+
+Batch 11/272:
+  [119] Santa Fe diesel freight train passes — low confidence (0.00), skipping
+  [121] Caltrain diesel stops — low confidence (0.00), skipping
+  [123] Steam freight train passes — low confidence (0.00), skipping
+  [124] 1979 WCBSS FM Don K Reed Aircheck — low confidence (0.00), skipping
+  [125] 1979 WCBS FM Bob Dayton Aircheck — low confidence (0.00), skipping
+
+Batch 12/272:
+  [126] KFAT 94.5FM Gilroy, CA (1982) (courtesy of archive — low confidence (0.00), skipping
+  [127] 1984 WDAS FM Harvey Holiday — low confidence (0.00), skipping
+  [129] H1Z1 Survivor Radio Broadcast — low confidence (0.00), skipping
+  [130] Korea weather forecast — low confidence (0.00), skipping
+  [131] TV Channel change static — low confidence (0.00), skipping
+
+Batch 13/272:
+  [133] Radio Playing Quietly1959 — low confidence (0.20), skipping
+  [134] Dust storm warning Nevada — low confidence (0.10), skipping
+  [135] Andreas Weber - Aliveness and Interdependence — query: "Andreas Weber Aliveness and Interdependence" (0.60)
+  [137] 60 cycle hum — low confidence (0.10), skipping
+  [138] Radio Creak — low confidence (0.10), skipping
+
+Batch 14/272:
+  [139] End Radio Transmission — low confidence (0.20), skipping
+  [140] Sound Interference — low confidence (0.20), skipping
+  [141] Radio Static — low confidence (0.20), skipping
+  [142] Weird beep — low confidence (0.10), skipping
+  [143] Cheap TV Static — low confidence (0.20), skipping
+
+Batch 15/272:
+  [144] Wes Reads Huckleberry Finn Chapter 19 — low confidence (0.20), skipping
+  [145] Bio Unit   Ambient 1 — low confidence (0.30), skipping
+  [146] Bio Unit   Ambient 2 — low confidence (0.30), skipping
+  [147] Bio Unit   Ambient 3 — low confidence (0.30), skipping
+  [148] Keir Neuringer   Keirneuringer — query: "Keir Neuringer Keirneuringer" (0.55)
+
+Batch 16/272:
+  [149] Teeth Mountain   Harsh Tanz — low confidence (0.30), skipping
+  [151] Hot Lips (He's Got Hot Lips When He Plays Jazz) by — query: "Paul Whiteman Hot Lips" (0.80)
+  [154] My Buddy   Henry Burr   Gus Kahn   Walter Donaldso — query: "Henry Burr My Buddy" (0.75)
+  [165] The Moon Shines On The Moonshine by Bert Williams — query: "Bert Williams The Moon Shines On The Moonshine" (0.80)
+  [169] Jingles from the Marsh Birds - No. 1 by Charles Ke — query: "Charles Kellogg Jingles from the Marsh Birds" (0.70)
+
+Batch 17/272:
+  [170] A Cat Astrophe - Columbia Orchestra - Daniel And K — low confidence (0.30), skipping
+  [187] 17yr Cicadas - freesound.org — low confidence (0.20), skipping
+  [190] Little Bosnia At Night - freesound.org — low confidence (0.20), skipping
+  [191] 10am Calm Village Bokhoven 150405 0586 - freesound — low confidence (0.10), skipping
+  [192] Environmental Sounds From Priboj Serbia With An Is — low confidence (0.10), skipping
+
+Batch 18/272:
+  [193] Courter In N Out Burgers Burbank California - free — low confidence (0.00), skipping
+  [194] Benchesneau Scotsmen Talking Singing Outdoor Bar B — low confidence (0.00), skipping
+  [195] Klankbeeld City Dawn Chorus - freesound.org — low confidence (0.00), skipping
+  [196] Black Forest Field Recording Spring Rain - freesou — low confidence (0.00), skipping
+  [197] Field Recording Chatting About Springtime On Ham R — low confidence (0.00), skipping
+
+Batch 19/272:
+  [198] Backyard Environmental Gettysburg Pa - freesound.o — low confidence (0.10), skipping
+  [199] 'Let's Sell' 1950s Socony Vacuum Oil Company Sales — low confidence (0.05), skipping
+  [200] 80s Burger Rap — low confidence (0.20), skipping
+  [201] 1952 Day In The Life Of A 1950's Small Town — low confidence (0.10), skipping
+  [202] Blockbuster Video Training Video — low confidence (0.05), skipping
+
+Batch 20/272:
+  [203] British Palestine 1940s Educational Film Jersualem — low confidence (0.20), skipping
+  [204] Manners For Missionaries 4   'Visual Poise For Sis — low confidence (0.10), skipping
+  [205] Office Etiquette (1950) — low confidence (0.10), skipping
+  [206] Pizza Hut Training Video 1988 — low confidence (0.10), skipping
+  [207] Red Nightmare (1962) — low confidence (0.30), skipping
+
+Batch 21/272:
+  [208] Shy Guy (1947) — query: "Shy Guy 1947" (0.60)
+  [209] What To Do On A Date (1950) — query: "What To Do On A Date 1950" (0.55)
+  [211] Universfield   Nebula Soundscape — low confidence (0.30), skipping
+  [212] Circus Marcus - L Épisode Cévenol — query: "Circus Marcus L Épisode Cévenol" (0.65)
+  [213] Circus Marcus - L Épisode Cévenol — query: "Circus Marcus L Épisode Cévenol" (0.65)
+
+Batch 22/272:
+  [214] Circus Marcus - L Épisode Cévenol — low confidence (0.45), skipping
+  [215] Fabio Keiner - Blossoms — low confidence (0.48), skipping
+  [217] Sulcus - B5 White Noise Vector + Outpost W31 — low confidence (0.35), skipping
+  [228] Holiznacc0 - Strange Enough — low confidence (0.40), skipping
+  [229] Holiznacc0 - Death — low confidence (0.42), skipping
+
+Batch 23/272:
+  [232] Gregor Quendel - Timescape Subdued 01 Mp3 — low confidence (0.30), skipping
+  [233] Gregor Quendel - Cyberpunk Interference 02 Mp3 — low confidence (0.30), skipping
+  [234] Gregor Quendel - Cyberpunk Distressed Mp3 — low confidence (0.30), skipping
+  [235] Marc Ferry - Sand In Hands — low confidence (0.40), skipping
+  [236] Gregor Quendel - Harmonic - Vii — low confidence (0.30), skipping
+
+Batch 24/272:
+  [237] Gregor Quendel - Harmonic - Vi - Ii — query: "Gregor Quendel Harmonic" (0.65)
+  [238] Gregor Quendel - Harmonic - Vi - I — query: "Gregor Quendel Harmonic" (0.65)
+  [239] Gregor Quendel - Harmonic - V — query: "Gregor Quendel Harmonic" (0.65)
+  [240] Gregor Quendel - Harmonic - Iv — query: "Gregor Quendel Harmonic" (0.65)
+  [241] Gregor Quendel - Harmonic - Iii Mp3 — query: "Gregor Quendel Harmonic" (0.65)
+
+Batch 25/272:
+  [242] Gregor Quendel - Harmonic - Ii — query: "Gregor Quendel Harmonic" (0.60)
+  [243] Gregor Quendel - Harmonic - I — query: "Gregor Quendel Harmonic" (0.60)
+  [251] Good Guy - Give Up, Man! (Pre Mix, Version 2  — low confidence (0.40), skipping
+  [253] Nul Tiel Curates - Audio Collage Part 3 — low confidence (0.30), skipping
+  [254] Vme - Beautiful Bells — low confidence (0.50), skipping
+
+Batch 26/272:
+  [255] JFK Space Race Speech - freesound.org — low confidence (0.20), skipping
+  [256] NASA Quindar End 2475hz - freesound.org — low confidence (0.20), skipping
+  [257] Apollo 13 - Capcom and crew communications — low confidence (0.20), skipping
+  [258] Sound Bite Space Shuttle Launch Comm 212 15 Minute — low confidence (0.20), skipping
+  [259] Sound Bite Space Shuttle Launch Comm 212 Activate  — low confidence (0.20), skipping
+
+Batch 27/272:
+  [260] Sound Bite Space Shuttle Launch Comm 212 Autoseque — low confidence (0.00), skipping
+  [261] Sound Bite Space Shuttle Launch Comm 212 Clock Res — low confidence (0.00), skipping
+  [262] Sound Bite Space Shuttle Launch Comm 212 Go No Go — low confidence (0.00), skipping
+  [263] Sound Bite Space Shuttle Launch Comm 212 Go No Go — low confidence (0.00), skipping
+  [264] Sound Bite Space Shuttle Launch Comm 212 Mmt Go No — low confidence (0.00), skipping
+
+Batch 28/272:
+  [265] Sound Bite Space Shuttle Launch Comm 212 Ntd To En — low confidence (0.00), skipping
+  [266] Sound Bite Space Shuttle Launch Comm 212 Perform P — low confidence (0.00), skipping
+  [275] 573225 Elaineaeris 4 Year Old Counting To 10 - fre — low confidence (0.00), skipping
+  [276] 203066 Enjoypa Counting From 1 To 20 - freesound.o — low confidence (0.00), skipping
+  [277] 504675 Selcukartut School Kids Counting Numbers -  — low confidence (0.00), skipping
+
+Batch 29/272:
+  [278] 134045 Udopohlmann A Vocoder Voice Encoder Analyze — low confidence (0.10), skipping
+  [279] 318842 Robotic Voice Im Sorry Babe But I Can Not G — low confidence (0.10), skipping
+  [280] 341780 Kb7clx Lg 328bg Menus - freesound.org — low confidence (0.10), skipping
+  [281] 435778 Devern Vocoder - freesound.org — low confidence (0.10), skipping
+  [282] 497926 Timkahn Social Security Administration Offi — low confidence (0.10), skipping
+
+Batch 30/272:
+  [283] 498349 Timkahn Intentional Fraud Vocoded - freesou — low confidence (0.30), skipping
+  [284] 498350 Timkahn American Express Vocoded - freesoun — low confidence (0.30), skipping
+  [285] 556012 Timkahn We Regret To Inform You - freesound — low confidence (0.30), skipping
+  [286] 7020630 School Bell - freesound.org — low confidence (0.20), skipping
+  [287] 732260 Josefpres Piano Loops 150 Octave Up Long Lo — low confidence (0.20), skipping
+
+Batch 31/272:
+  [288] 733204 Josefpres Piano Loops 153 Octave Down Long  — low confidence (0.10), skipping
+  [289] 733411 Josefpres Piano Loops 139 Octave Up Long Lo — low confidence (0.10), skipping
+  [290] 733180 Garuda1982 Rain Atmosphere On An Old Indust — low confidence (0.10), skipping
+  [294] The Peerless Quartet - Sailor Song — query: "The Peerless Quartet Sailor Song" (0.70)
+  [295] Frances White - M I S S I S S I P P I — query: "Frances White M I S S I S S I P P I" (0.60)
+
+Batch 32/272:
+  [296] Antique Phonograph Music Program - Home Again Blue — low confidence (0.30), skipping
+  [297] Byron G Hall - For Sale A Baby — low confidence (0.20), skipping
+  [298] New York Military Band - Una Noche De Garufa — low confidence (0.30), skipping
+  [299] Ukulele Bailey - Ukulele Bailey - Ukulele Baby — low confidence (0.40), skipping
+  [300] Johnny Nobles Hawaiians - Johnny Nobles Hawaiians  — low confidence (0.40), skipping
+
+Batch 33/272:
+  [301] Felix Arndt - Marionette — query: "Felix Arndt Marionette" (0.65)
+  [302] Billy Murray - When You Drop Me Off At Cairo, Illi — query: "Billy Murray When You Drop Me Off At Cairo Illinois" (0.70)
+  [303] New York Military Band And The American Quartet -  — query: "New York Military Band American Quartet Patriotic Songs of America" (0.55)
+  [304] Nul Tiel Curates - Audio Collage — low confidence (0.35), skipping
+  [305] Rain＂ - Spinozar (Solo Piano, Soft, Minimal) [8mfv — low confidence (0.25), skipping
+
+Batch 34/272:
+  [306] 78 Rpm - Menasha Skulnik ‎– Siz Kalie Gevoren - Yi — query: "Menasha Skulnik Siz Kalie Gevoren" (0.60)
+  [307] 78 Rpm - Menasha Skulnik ‎– Siz Kalie Gevoren - Yi — query: "Menasha Skulnik Siz Kalie Gevoren" (0.60)
+  [308] 78 Rpm Leo Fuchs ‎– Yiddisha Cowboy Banner Records — query: "Leo Fuchs Yiddisha Cowboy" (0.55)
+  [309] Joseph Cherniavsky & Yiddish American Jazz Band 19 — low confidence (0.40), skipping
+  [310] Max Leibowitz Emerson 1342x Yiddish Hora 78 Rpm Kl — low confidence (0.45), skipping
+
+Batch 35/272:
+  [311] Mc Abdul - Shouting At The Wall (Official Video) — low confidence (0.30), skipping
+  [312] Minna Bleichmann Lemberg 1908 Zugeklebt (Tsigekley — low confidence (0.20), skipping
+  [313] Night Forest Sounds — low confidence (0.10), skipping
+  [314] Raphaël Novarina - Minimalism No 2 — low confidence (0.45), skipping
+  [315] Rippple Marks - Circus Marcus — low confidence (0.40), skipping
+
+Batch 36/272:
+  [316] Sounds Of Night Crickets — low confidence (0.30), skipping
+  [317] Tawny Owl By Night - Relaxing Nature Sounds — low confidence (0.20), skipping
+  [318] The Barton Brothers - Arriba - Part 1 (Yiddish Ame — query: "The Barton Brothers Arriba" (0.65)
+  [319] The Most Beautiful Interstellar Cover Ever Played  — low confidence (0.15), skipping
+  [320] Travel Record ： Sounds From Bruxelles (Field Recor — low confidence (0.25), skipping
+
+Batch 37/272:
+  [321] Die Elektrischen - Cocaine Lovin' Orange County Ki — low confidence (0.30), skipping
+  [322] Soundset - Sad Emotional Piano Loop — low confidence (0.20), skipping
+  [334] Kids Playing In Florence Italy — low confidence (0.10), skipping
+  [340] Tom Waits - Children's Story - Orphans (Bastards) — query: "Tom Waits Children's Story Orphans" (0.85)
+  [341] We're All Mad Here - A Conversation With Tom Waits — low confidence (0.15), skipping
+
+Batch 38/272:
+  [355] Abale - Baka Forest People, Cameroon -From Heart O — low confidence (0.30), skipping
+  [360] The Terrible Secret Of Space — low confidence (0.20), skipping
+  [362] Negro Prison Songs ⧸ Early In The Mornin' & Pretti — query: "Negro Prison Songs Early In The Mornin' Prettiest Train" (0.65)
+  [363] I Ll Be So Glad When The Sun Goes Down (Remastered — query: "I'll Be So Glad When The Sun Goes Down" (0.50)
+  [364] I'm Going Home (Remastered) — low confidence (0.40), skipping
+
+Batch 39/272:
+  [365] Black Woman - Prison Song — low confidence (0.30), skipping
+  [366] Joe Savage： Texas Is My Home (1978) — query: "Joe Savage Texas Is My Home" (0.60)
+  [367] Bessie Jones： Diamond Joe (1961) — query: "Bessie Jones Diamond Joe" (0.70)
+  [368] Jumpin' Judy - Alan Lomax Recording [Jy9 Pnragxu  — low confidence (0.20), skipping
+  [369] Prettiest Train - Prison Song — low confidence (0.30), skipping
+
+Batch 40/272:
+  [370] Prison Songs -  Early In The Mornin  — low confidence (0.30), skipping
+  [371] Go Down Old Hannah - Texas Prison Camp — low confidence (0.30), skipping
+  [372] I Be So Glad, When The Sun Goes Down — low confidence (0.30), skipping
+  [373] I Don't Do Nobody Nothin — low confidence (0.30), skipping
+  [374] Negro Prison Songs ⧸Rosie 1947 [Rare] — query: "Negro Prison Songs Rosie 1947" (0.55)
+
+Batch 41/272:
+  [375] Negro Prison Songs ⧸ No More, My Lawd 1947 [Rare] — query: "Negro Prison Songs 1947" (0.65)
+  [377] Oh Mary Don't You Weep — query: "Oh Mary Don't You Weep" (0.55)
+  [378] Old Dollar Mamie — low confidence (0.45), skipping
+  [379] Original 1934 John Lomax Recording Of 'Rock Island — query: "Kelly Pace Rock Island Line" (0.60)
+  [380] Parchman Farm Prison - Berta — query: "Parchman Farm Prison Berta" (0.50)
+
+Batch 42/272:
+  [381] Poor Boy - Lomax Prison Recording — low confidence (0.30), skipping
+  [383] Lightning Washington And Prisoner: Good God Almigh — low confidence (0.20), skipping
+  [384] Lightning- Long John (Old Song By A Chain Gang) — low confidence (0.20), skipping
+  [385] 1989 Grateful Dead Parking Lot The Brendan Byrne A — low confidence (0.25), skipping
+  [386] Shortwave Radio Oddity Roundup - Buzzarchive — low confidence (0.35), skipping
+
+Batch 43/272:
+  [387] German Numbers Station - On Shortwave — low confidence (0.20), skipping
+  [388] Russian Radar Aka Woody Woodpecker Hf Shortwave Ha — low confidence (0.15), skipping
+  [389] 1950s Magnetic Reel To Reel Tape Recorder Instruct — low confidence (0.10), skipping
+  [390] Aggressive Child 1960s Psychiatric Case Study - Ps — low confidence (0.15), skipping
+  [391] 1950s Young Tearaways Gang Hoodlums Educational Fi — low confidence (0.10), skipping
+
+Batch 44/272:
+  [392] 1950s Cabbie Reveals What Real Men Did & Didn't Do — low confidence (0.20), skipping
+  [393] Wnbc Traffic Helicopter Crash - Legend813a — low confidence (0.10), skipping
+  [394] Machines Taught Me To Read In The 1950s - David Ho — low confidence (0.20), skipping
+  [395] 107069 Jovica Layers 019 Alchemic Dream Drone 75 - — low confidence (0.10), skipping
+  [396] 174784 Trebblofang Drone0007 - freesound.org — low confidence (0.10), skipping
+
+Batch 45/272:
+  [397] 421104 Erokia Rumble Drone 2 - freesound.org — low confidence (0.20), skipping
+  [398] 422545 Strathamer D Drone Musical - freesound.org — low confidence (0.20), skipping
+  [399] 511438 Nielsvdb Growling Analog Drone - freesound. — low confidence (0.20), skipping
+  [400] 518538 Tomschuetz Rhythmic Bass Drone - freesound. — low confidence (0.20), skipping
+  [401] 610768 Deadrobotmusic Sampled Upright Piano Loop G — low confidence (0.10), skipping
+
+Batch 46/272:
+  [402] 555874 Doctor Dreamchip Circuit 18 Drum 1 — low confidence (0.20), skipping
+  [403] 316681 Manuke Tokyo Drum Loop 2 — low confidence (0.20), skipping
+  [404] 674328 Whoopsadaisy Endurance Piece - freesound.or — low confidence (0.15), skipping
+  [406] 442020 Gis Sweden Electronic Minute No 165 This Is — low confidence (0.20), skipping
+  [407] 241327 Trebblofang 1408160 Khz Usb Rtty - freesoun — low confidence (0.10), skipping
+
+Batch 47/272:
+  [408] 573647 Trp Radio Short Wave Static Beeps Denver Co — low confidence (0.10), skipping
+  [409] 476694 Robertmthomas Am Radio Static — low confidence (0.10), skipping
+  [410] 464327 W1zy Massive Eu Pile Up 032219 - freesound. — low confidence (0.10), skipping
+  [411] 81082 Allencote Static - freesound.org — low confidence (0.10), skipping
+  [412] Alan Watts - Myth Of Myself Full Lecture Part 1 -  — query: "Alan Watts Myth Of Myself" (0.65)
+
+Batch 48/272:
+  [413] Alan Watts - We As Organism — low confidence (0.30), skipping
+  [414] Alan Watts - What Is Reality? — low confidence (0.30), skipping
+  [415] Alan Watts - You Can't Do It! From A Conversation  — query: "Alan Watts You Can't Do It Conversation With Myself 1971" (0.60)
+  [416] Alan Watts Human Consciousness Education For Non E — low confidence (0.20), skipping
+  [417] Klankbeeld Animals Village Night - freesound.org — low confidence (0.10), skipping
+
+Batch 49/272:
+  [418] Jonnytheponny Flocks Of Dogs In Priboj Serbia - fr — low confidence (0.10), skipping
+  [419] Klankbeeld Farmland At River Dike Nl - freesound.o — low confidence (0.10), skipping
+  [420] Julujanus 2023 06 27 512 Daily Sound Note Field Re — low confidence (0.10), skipping
+  [421] Randomrecord19 Rainy Day In Our Village Dog Barksw — low confidence (0.10), skipping
+  [422] Huckleberry Finn Chapter 19 by Mark Twain read by  — query: "Mark Twain Huckleberry Finn Chapter 19" (0.55)
+
+Batch 50/272:
+  [423] Three Men In A Boat By Jerome K Jerome Read By Gee — low confidence (0.00), skipping
+  [424] News From Nowhere by William Morris read by Elizab — low confidence (0.00), skipping
+  [425] News From Nowhere Chapter  by William Morris read  — low confidence (0.00), skipping
+  [426] The Lone Ranger - Homesteader Jeb Martin, 1938 — query: "The Lone Ranger Homesteader Jeb Martin" (0.55)
+  [428] The Reverend Lester Knox Of Tifton Georgia Put You — low confidence (0.00), skipping
+
+Batch 51/272:
+  [429] Dangers In The Way - The Enemy You Don't See Comin — low confidence (0.30), skipping
+  [430] Rare Old Time Hellfire Preaching - Classic Audio - — low confidence (0.20), skipping
+  [431] The Truth About Demons - Jimmy Swaggart - Revival  — low confidence (0.30), skipping
+  [432] Preaching Against Rock And Roll 1950 S - Pedrogold — low confidence (0.20), skipping
+  [433] 1950 S Preacher Speaks About The Evils Of Rock And — low confidence (0.20), skipping
+
+Batch 52/272:
+  [434] Newsweekonair 94-05-08 Complete — low confidence (0.00), skipping
+  [435] April 27 2011 Weather Coverage - Cbs 42 — low confidence (0.00), skipping
+  [436] Original 1947 Abc News Radio Report Of Roswell Ufo — low confidence (0.00), skipping
+  [437] August 2005 Computer Worm Zotob Infects Cnn TV — low confidence (0.00), skipping
+  [438] Katu Mount St Helens Eruption 5 18 1980 — low confidence (0.00), skipping
+
+Batch 53/272:
+  [439] President Nixon Resigns Watergate Scandal Archives — low confidence (0.10), skipping
+  [440] Bob Ross Campfire Season 3 Episode 10 — low confidence (0.20), skipping
+  [441] Mr Rodgers Episode1521 Talk About Conflict — low confidence (0.20), skipping
+  [442] Listening Post - Mark Hansen And Ben Rubin — query: "Listening Post Mark Hansen Ben Rubin" (0.60)
+  [443] Bluebird By Charles Bukowski — low confidence (0.30), skipping
+
+Batch 54/272:
+  [444] Bukowski Reads His Poem The Crunch - Love Is A Dog — query: "Charles Bukowski Love Is a Dog from Hell" (0.72)
+  [445] Charles Bukowski - Ignus Fatuus — low confidence (0.45), skipping
+  [446] Charles Bukowski - The Genius Of The Crowd — low confidence (0.45), skipping
+  [447] Charles Bukowski On Dying And How To Write - Lee W — low confidence (0.30), skipping
+  [448] Charles Bukowski S Crappy Life - Blank On Blank — low confidence (0.25), skipping
+
+Batch 55/272:
+  [449] Pablo Neruda Reading Arte Poetica — low confidence (0.30), skipping
+  [450] People Aren't Good / The Crunch By Charles Bukowsk — low confidence (0.30), skipping
+  [451] Tom Waits Reads Nirvana By Charles Bukowski - Aner — low confidence (0.20), skipping
+  [452] Your Life Is Your Life Go All The Way - Charles Bu — low confidence (0.30), skipping
+  [453] Malcolm X - Any Means Necessary — query: "Malcolm X Any Means Necessary" (0.60)
+
+Batch 56/272:
+  [454] Malcolm X - Police Brutality - Smithsonian — low confidence (0.30), skipping
+  [455] Balinese Beleganjur Composition By Dan Bales - Gam — query: "Dan Bales Gamelan X" (0.60)
+  [456] Gamelan Beleganjur Contest Performance Bali Indone — low confidence (0.20), skipping
+  [457] Gamelan X Negara Gede Oka Artha Negara - Switchboa — query: "Gamelan X Negara Gede Oka Artha Negara" (0.55)
+  [458] Mom Puts Acidhead Son In A Mental Hospital — low confidence (0.25), skipping
+
+Batch 57/272:
+  [459] The Story Of The Ramayana Diy Wayang Kulit W Prepa — low confidence (0.30), skipping
+  [460] Wayang Kulit Dewa Ruci By Ki Manteb 2 10 — low confidence (0.20), skipping
+  [461] Don Delillo Reads From Mao II — query: "Don DeLillo Mao II" (0.55)
+  [462] Arundhati Roy Reads From Her The Ministry Of Utmos — query: "Arundhati Roy The Ministry of Utmost Happiness" (0.60)
+  [467] Utah Phillips - Anybody Who Doesnt Need A Cop To T — query: "Utah Phillips Anybody Who Doesnt Need A Cop To Tell Him What To Do" (0.65)
+
+Batch 58/272:
+  [468] Utah Phillips - The Rich Will Not Permit You To Vo — low confidence (0.30), skipping
+  [469] Howard Zinn - A Message To The Police And The F B  — low confidence (0.20), skipping
+  [470] Howard Zinn - Professionalism And Morality — low confidence (0.20), skipping
+  [471] Howard Zinn - Speaking Out — low confidence (0.20), skipping
+  [472] Howard Zinn - The Historian And Society — low confidence (0.20), skipping
+
+Batch 59/272:
+  [473] Howard Zinn - The Purpose Of Civil Disobedience — low confidence (0.00), skipping
+  [475] short and sweet by sl benz — low confidence (0.30), skipping
+  [476] happy birthday from dad — low confidence (0.00), skipping
+  [477] John Holowach Phone Call — low confidence (0.00), skipping
+  [478] Urgent Prayer — low confidence (0.20), skipping
+
+Batch 60/272:
+  [479] Dream Sequence by SL Benzy — low confidence (0.40), skipping
+  [481] Norman McLaren - Synchromy (1971) — query: "Norman McLaren Synchromy" (0.70)
+  [482] Hammond instructional intro — low confidence (0.30), skipping
+  [483] We've only just begun - Music Instruction — low confidence (0.20), skipping
+  [484] Close to you - Music Instruction — low confidence (0.20), skipping
+
+Batch 61/272:
+  [485] debt collect — low confidence (0.20), skipping
+  [486] Flat Stomach Day 1 - Richard Simmons — query: "Richard Simmons Flat Stomach Day 1" (0.65)
+  [487] Jane Fonda S Total Body Stretch - Mh Brilianti — query: "Jane Fonda Total Body Stretch" (0.70)
+  [488] Rhythmic Exercises 1950 - A V Geeks 16mm Films — low confidence (0.30), skipping
+  [489] High School Fitness 1962 - British Pathe — low confidence (0.25), skipping
+
+Batch 62/272:
+  [490] Soviet Aerobics. Morning Exercises (1989  — low confidence (0.20), skipping
+  [491] Buns Of Steel 2000 - Vhs Ark — low confidence (0.15), skipping
+  [492] Heat Exchange And Thermal Stress Of Internal Combu — low confidence (0.10), skipping
+  [493] Low Temperatures, Centrnauchfilm, 1980 — low confidence (0.15), skipping
+  [494] Direct Current In Russian Resampled — low confidence (0.20), skipping
+
+Batch 63/272:
+  [495] 1958 Educational Film Russian Life Today Inside Th — low confidence (0.00), skipping
+  [496] Duck And Cover 1951 Bert The Turtle - Nuclear Vaul — low confidence (0.00), skipping
+  [497] Four Damage Factors Of Nuclear Weapons 1968 Soviet — low confidence (0.00), skipping
+  [498] The Weaker Sex 1933 - British Pathe — low confidence (0.00), skipping
+  [499] 451212 Kyles Skyline Distant Highway Far Haze From — low confidence (0.00), skipping
+
+Batch 64/272:
+  [500] 547950 Greysound Distant Train 2 Rx — low confidence (0.30), skipping
+  [501] 583604 Richwise York Train Station Uk — low confidence (0.20), skipping
+  [502] 646593 Felixblume Soft Wind A Train Horn Far Away  — low confidence (0.15), skipping
+  [503] City Hum At A Distance With The Horn Of A Train Pa — low confidence (0.10), skipping
+  [504] 697892 Lakewoodsound Midsummer Appalachian Morning — low confidence (0.25), skipping
+
+Batch 65/272:
+  [505] Rod Of Iron Ministries Pastor Sean Moon Speaks Wit — low confidence (0.00), skipping
+  [506] Behind The Scenes Look At Gun Toting Church S Grai — low confidence (0.00), skipping
+  [507] Rod Of Iron Ministries Pastor Sean Moon Speaks Wit — low confidence (0.00), skipping
+  [510] AM Radio Static — low confidence (0.00), skipping
+  [511] Cheap TV Static — low confidence (0.00), skipping
+
+Batch 66/272:
+  [512] Short Wave Static (Long) — low confidence (0.30), skipping
+  [513] Secret History Shantyboat Talk — low confidence (0.20), skipping
+  [514] Fannie Brice guest appearance on The Fleischmann's — query: "Fannie Brice Fleischmann's Yeast Hour 1933" (0.60)
+  [515] WINS - New York - Alan Freed 1955 — low confidence (0.15), skipping
+  [516] KLIF George Singer Elliot Field 1956 Unscoped — low confidence (0.10), skipping
+
+Batch 67/272:
+  [518] Art Bell Interviews Time Traveler From The Year 20 — low confidence (0.30), skipping
+  [519] Former Area 51 Employee Calls Art Bell — low confidence (0.20), skipping
+  [520] Children's Dentist Educational Film Dentistry Oral — low confidence (0.10), skipping
+  [521] Tcp D1 01 The Swedish Rhapsody Irdial — query: "The Swedish Rhapsody Irdial" (0.70)
+  [522] Tcp D1 02 Counting Cia Irdial — query: "Counting CIA Irdial" (0.65)
+
+Batch 68/272:
+  [523] Tcp D1 03 Counting Control Irdial — query: "Irdial TCP D1" (0.65)
+  [524] Tcp D1 04 Phonetic Alphabet Nato Irdial — query: "Irdial TCP D1" (0.65)
+  [525] Tcp D1 05 5 Dashes Irdial — query: "Irdial TCP D1" (0.65)
+  [526] Tcp D1 06 The Lincolnshire Poacher Mi5 Irdial — query: "Irdial TCP D1" (0.65)
+  [527] Tcp D1 07 Gong Station Chimes Irdial — query: "Irdial TCP D1" (0.65)
+
+Batch 69/272:
+  [528] Tcp D1 08 Dfd 21 Irdial — low confidence (0.30), skipping
+  [529] Tcp D1 09 Ready Ready 15728 Irdial — low confidence (0.30), skipping
+  [530] Tcp D1 10 Bugle Irdial — low confidence (0.30), skipping
+  [531] Tcp D1 11 5 Note Version Czech Lady Irdial — low confidence (0.30), skipping
+  [532] Tcp D1 12 Three Note Odditiy Irdial — low confidence (0.30), skipping
+
+Batch 70/272:
+  [533] Tcp D1 12 Three Note Odditiy Irdial — query: "Irdial Three Note Oddity" (0.60)
+  [534] Tcp D1 13 New Star Broadcasting Irdial — query: "Irdial New Star Broadcasting" (0.60)
+  [535] Tcp D1 13 New Star Broadcasting Irdial — query: "Irdial New Star Broadcasting" (0.60)
+  [536] Tcp D1 14 Counting Station Spanish Irdial — query: "Irdial Counting Station Spanish" (0.60)
+  [537] Tcp D1 15 English Lady 00000 Ending Irdial — query: "Irdial English Lady" (0.60)
+
+Batch 71/272:
+  [538] Tcp D1 16 Attencion 3 Finals Irdial — low confidence (0.30), skipping
+  [539] Tcp D1 17 4 Note Rising Scale Irdial — low confidence (0.30), skipping
+  [540] Tcp D1 18 Ciocirlia Irdial — low confidence (0.40), skipping
+  [541] Tcp D1 19 Czech Lady Irdial — low confidence (0.40), skipping
+  [542] Tcp D1 20 2 Letter Ys Irdial — low confidence (0.20), skipping
+
+Batch 72/272:
+  [543] Tcp D1 21 2 Letter El Irdial — low confidence (0.30), skipping
+  [544] Tcp D1 22 5 Dashes Irdial — low confidence (0.20), skipping
+  [545] Tcp D1 23 2 Letter Rk Irdial — low confidence (0.20), skipping
+  [546] Tcp D2 01 Nnn French Irdial — low confidence (0.20), skipping
+  [547] Tcp D2 02 Strich Irdial — low confidence (0.20), skipping
+
+Batch 73/272:
+  [548] Tcp D2 03 Dfd21 Dfc37 Irdial — low confidence (0.30), skipping
+  [549] Tcp D2 04 Drums And Trumpets Irdial — query: "The Conet Project Drums And Trumpets" (0.65)
+  [550] Tcp D2 05 Nnn English Irdial — low confidence (0.30), skipping
+  [551] Tcp D2 06 English Lady 00000 Ending Irdial — query: "The Conet Project English Lady" (0.65)
+  [552] Tcp D2 07 Nnn German Irdial — low confidence (0.30), skipping
+
+Batch 74/272:
+  [553] Tcp D2 08 The Russian Man D Va Northern Russian Vo — low confidence (0.30), skipping
+  [554] Tcp D2 09 Phonetic Alphabet Nato Irdial — low confidence (0.30), skipping
+  [555] Tcp D2 09 Phonetic Alphabet Nato Irdial — low confidence (0.30), skipping
+  [556] Tcp D2 10 Spanish Lady Irdial  — low confidence (0.30), skipping
+  [557] Tcp D2 11 Strich English Irdial — low confidence (0.30), skipping
+
+Batch 75/272:
+  [558] Tcp D2 12 2 Letter Nu Irdial — low confidence (0.30), skipping
+  [559] Tcp D2 13 G3 Strich Irdial — low confidence (0.30), skipping
+  [560] Tcp D2 14 Yt Irdial — low confidence (0.30), skipping
+  [561] Tcp D2 15 5 Dashes Irdial — low confidence (0.30), skipping
+  [562] Tcp D2 16 German Man Irdial — low confidence (0.30), skipping
+
+Batch 76/272:
+  [563] Tcp D2 17 English Man Irdial — query: "Irdial The Conet Project" (0.72)
+  [564] Tcp D2 18 English Man German And German Lady Irdia — query: "Irdial The Conet Project" (0.72)
+  [565] Tcp D2 19 German Lady Irdial — query: "Irdial The Conet Project" (0.72)
+  [566] Tcp D2 20 Chinese Numbers Irdial — query: "Irdial The Conet Project" (0.72)
+  [567] Tcp D2 20 Chinese Numbers Irdial — query: "Irdial The Conet Project" (0.72)
+
+Batch 77/272:
+  [568] Tcp D2 20 Chinese Numbers Irdial — query: "Irdial Chinese Numbers" (0.60)
+  [569] Tcp D2 21 Spanish Lady Complete Sequence Irdial — query: "Irdial Spanish Lady" (0.60)
+  [570] Tcp D2 22 2 Letter Md Irdial — query: "Irdial 2 Letter MD" (0.55)
+  [571] Tcp D2 23 English Man Irdial — query: "Irdial English Man" (0.60)
+  [572] Tcp D2 24 German Lady Irdial — query: "Irdial German Lady" (0.60)
+
+Batch 78/272:
+  [573] Tcp D2 25 Phonetic Alphabet Nato Irdial — low confidence (0.30), skipping
+  [574] Tcp D2 26 Phonetic Alphabet Nato Irdial — low confidence (0.30), skipping
+  [575] Tcp D2 27 Nancy Adam Susan Irdial — low confidence (0.30), skipping
+  [576] Tcp D2 28 Counting Control Irdial — low confidence (0.30), skipping
+  [577] Tcp D2 29 Nancy Adam Susan Male Irdial — low confidence (0.30), skipping
+
+Batch 79/272:
+  [578] Tcp D2 30 Cherry Ripe Irdial — query: "Irdial Cherry Ripe" (0.60)
+  [579] Tcp D2 31 Russian Lady Irdial — query: "Irdial Russian Lady" (0.60)
+  [580] Tcp D2 32 Russian Man Irdial — query: "Irdial Russian Man" (0.60)
+  [581] Obey Your Air Raid Warden 1942 — low confidence (0.30), skipping
+  [582] Gamelan Nyai Saraswati - Ladrang Sri Rejeki, Pelog — query: "Gamelan Nyai Saraswati Ladrang Sri Rejeki Pelog Nem" (0.65)
+
+Batch 80/272:
+  [583] Peliatan Gamelan - Kapi Radja (Ape King) — low confidence (0.30), skipping
+  [584] Gregor Quendel - Optical Paranoid Mp3 — low confidence (0.20), skipping
+  [589] William Frederick Davidson - Where Are You Mp3 — low confidence (0.25), skipping
+  [590] Universfield - Mysterious Music Box — low confidence (0.20), skipping
+  [591] Cxr Atk - Concurrent — low confidence (0.15), skipping
+
+Batch 81/272:
+  [594] Denys Kyshchuk - Electronic Melancholic — low confidence (0.30), skipping
+  [599] Audiocoffee - Piano Dream — low confidence (0.30), skipping
+  [600] Audiocoffee - Piano Dream — low confidence (0.30), skipping
+  [601] James Baldwin speech at Cambridge University durin — low confidence (0.10), skipping
+  [602] James Baldwin Discusses Racism on The Dick Cavett  — low confidence (0.10), skipping
+
+Batch 82/272:
+  [603] Audre Lorde There Is No Hierarchy Of Oppressions — low confidence (0.30), skipping
+  [604] Audre Lorde Reads A Litany For Survival — query: "Audre Lorde A Litany for Survival" (0.70)
+  [605] Ursula K Le Guin's Passionate Defense Of Art Over  — low confidence (0.20), skipping
+  [606] Ray Bradbury - The Intellect Is A Great Danger To  — low confidence (0.20), skipping
+  [607] Ray Bradbury On Censorship And Book Burnings — low confidence (0.20), skipping
+
+Batch 83/272:
+  [608] Alexander Nakarada - Soft Interlude — low confidence (0.45), skipping
+  [609] Alex Productions Desolation — low confidence (0.40), skipping
+  [611] Alexander Nakarada - Melodic Interlude Two — low confidence (0.45), skipping
+  [612] Scott Buckley - The Things That Keep Us Here — query: "Scott Buckley The Things That Keep Us Here" (0.68)
+  [613] Pratzapp Aadhithya - Ambush — low confidence (0.40), skipping
+
+Batch 84/272:
+  [614] Rexlambo - Broken — low confidence (0.30), skipping
+  [615] Hayden Folker - The Way Out Longing — low confidence (0.35), skipping
+  [618] Pensamentos Rodados - 17 T — low confidence (0.25), skipping
+  [619] Pensamentos Rodados - 18 T — low confidence (0.25), skipping
+  [626] Mississippi Sawyer With Musical Saw - Jazzbo43 — low confidence (0.20), skipping
+
+Batch 85/272:
+  [627] The Swan On Musical Saw - Sawlady — low confidence (0.30), skipping
+  [628] Theremin Musical Saw Duet Passacaglia J Halvorsen  — query: "Johan Halvorsen Passacaglia" (0.60)
+  [629] Musical Saw Chopin Nocturne - Sawlady — low confidence (0.20), skipping
+  [630] Misty Ella Fitzgerald Musical Saw Serrucho Musical — low confidence (0.20), skipping
+  [631] Batzorig Vaanchig - Mongolian Throat Singing — query: "Batzorig Vaanchig" (0.50)
+
+Batch 86/272:
+  [632] Tuvan Throat Singing — low confidence (0.30), skipping
+  [633] Tuvan Throat Singing — low confidence (0.30), skipping
+  [634] Tuvan Throat Singing Masters - Alash Ensemble — query: "Alash Ensemble Tuvan Throat Singing Masters" (0.60)
+  [635] Chicago Bucket Boys In Detroit - 2014 — low confidence (0.20), skipping
+  [636] Scotland | Glasgow | Clanadonia — low confidence (0.25), skipping
+
+Batch 87/272:
+  [638] I Want My Money By A Random New Orleans Street Ban — low confidence (0.30), skipping
+  [639] Les Batoukailleurs A La Fete De La Musique 2013 — low confidence (0.20), skipping
+  [640] The Sinking Of The Gambier Bay Escort Carrier -  — low confidence (0.25), skipping
+  [641] Reflections On Coming Out As An African American G — low confidence (0.15), skipping
+  [642] Turned To Crime For Survival — low confidence (0.20), skipping
+
+Batch 88/272:
+  [643] Madeleine Talks Of Her Grandparents, Her Happy Chi — low confidence (0.00), skipping
+  [644] Joan Hill I Have Not Lived A Dull Life — low confidence (0.00), skipping
+  [645] Let Me Tell You About Your Grandma June Mcpherson  — low confidence (0.00), skipping
+  [646] Nyla Foster Living In Her Truth — low confidence (0.00), skipping
+  [647] What Can You Tell Me About The War? — low confidence (0.00), skipping
+
+Batch 89/272:
+  [648] Myra And Salvador Talk About His Experience As An  — low confidence (0.00), skipping
+  [649] Judith Marshal Growing Up African American In Post — low confidence (0.00), skipping
+  [650] James Barnes Talks About Life In Boot Camp In The  — low confidence (0.00), skipping
+  [651] Sisterly Love Best Friends — low confidence (0.00), skipping
+  [652] What Was It Like To Be In The Middle East How A Si — low confidence (0.00), skipping
+
+Batch 90/272:
+  [653] An Immigrant S Story 1 — low confidence (0.20), skipping
+  [654] Language And Culture Story — low confidence (0.20), skipping
+  [655] Arwen And Ana Canino Fluit Talk About Childhood Pa — low confidence (0.20), skipping
+  [656] Immigartion To The United States from Palestine — low confidence (0.20), skipping
+  [657] Ayah Aburashed Interviews Zarifa Alsadi About Her  — low confidence (0.20), skipping
+
+Batch 91/272:
+  [658] Cicadas South Pittsburgh Tn (60 Min) Trimmed — low confidence (0.00), skipping
+  [659] Frogs Tennessee River (60 Min) Trimmed — low confidence (0.00), skipping
+  [660] Thunderstorm On Shantyboat Roof - St Paul — low confidence (0.00), skipping
+  [661] 113976 Benboncan Fan Oven Welcome To The Machine - — query: "Welcome to the Machine Pink Floyd" (0.72)
+  [662] 395107 Diannetriplerune Cabled Mess Deep 06 Low Ma — low confidence (0.00), skipping
+
+Batch 92/272:
+  [663] 412228 Nathan45100 Ship Interior - freesound.org — low confidence (0.00), skipping
+  [665] 59006 Inchadney Storm And Thunderstorm - freesound — low confidence (0.00), skipping
+  [666] 98856 The Toilet Guy Storm 08 20 2009 - freesound. — low confidence (0.00), skipping
+  [667] 98860 Inchadney Rain And Thunder - freesound.org — low confidence (0.00), skipping
+  [668] 201846 Inchadney Thunderstorm - freesound.org — low confidence (0.00), skipping
+
+Batch 93/272:
+  [669] 431352 Alienxxx Thurderstorm 26 May 2018 Approx 10 — low confidence (0.00), skipping
+  [670] 669594 Josefpres Piano Loops 063 Octave Down Long  — low confidence (0.00), skipping
+  [671] 670169 Josefpres Piano Loops 064 Octave Down Long  — low confidence (0.00), skipping
+  [672] 731991 Josefpres Piano Loops 145 Octave Down Long  — low confidence (0.00), skipping
+  [673] 732898 Josefpres Piano Loops 149 Octave Down Long  — low confidence (0.00), skipping
+
+Batch 94/272:
+  [674] 733204 Josefpres Piano Loops 153 Octave Down Long  — low confidence (0.20), skipping
+  [675] 733372 Josefpres Piano Loops 140 Octave Down Long  — low confidence (0.20), skipping
+  [676] 733992 Josefpres Piano Loops 134 Octave Down Long  — low confidence (0.20), skipping
+  [677] 734199 Josefpres Piano Loops 141 Octave Down Long  — low confidence (0.20), skipping
+  [678] 734320 Josefpres Piano Loops 139 Octave Down Long  — low confidence (0.20), skipping
+
+Batch 95/272:
+  [679] 734518 Josefpres Piano Loops 124 Octave Down Long  — low confidence (0.00), skipping
+  [680] 734523 Josefpres Piano Loops 127 Octave Up Long Lo — low confidence (0.00), skipping
+  [681] 736740 Josefpres Piano Loops 155 Octave Up Long Lo — low confidence (0.00), skipping
+  [682] 737213 Josefpres Piano Loops 155 Octave Down Long  — low confidence (0.00), skipping
+  [683] 739497 Josefpres Piano Loops 157 Octave Down Long  — low confidence (0.00), skipping
+
+Batch 96/272:
+  [684] 740839 Josefpres Piano Loops 159 Octave Down Long  — low confidence (0.20), skipping
+  [685] 741108 Josefpres Piano Loops 157 Octave Up Long Lo — low confidence (0.20), skipping
+  [686] 741233 Josefpres Piano Loops 160 Octave Down Long  — low confidence (0.20), skipping
+  [700] Alexandrovska-russia-morrow78collection-couple-int — low confidence (0.30), skipping
+  [702] Almaafaalatt-hungary-olahkalmancsardasokbudapestre — low confidence (0.30), skipping
+
+Batch 97/272:
+  [740] 02 - General Of The Army Douglas Macarthur' - Doug — low confidence (0.30), skipping
+  [743] What Is A Girl - Arthur Godfrey - A  Beck — low confidence (0.40), skipping
+  [746] Ajmojajomydearajo-romania-morrow78collection — low confidence (0.20), skipping
+  [790] Holiznacc0 - Oldage — low confidence (0.25), skipping
+  [791] Holiznacc0 - Midlife — low confidence (0.25), skipping
