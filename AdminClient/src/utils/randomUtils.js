@@ -155,13 +155,11 @@ export const getProjectName = () => {
 // Choosing a hero image
 //
 
-export const getHeroImageURL = () => {
-  const { homepageImages, homepageImageURLBase } = config.app;
-
-  // Calculate the index for the current image
-  const imageIndex = generateHash() % homepageImages.length;
-  const imageUrl = `${homepageImageURLBase}/${homepageImages[imageIndex]}`;
-  return imageUrl;
+export const getHeroImageURL = (altImages) => {
+  const { altImageURLBase } = config.app;
+  if (!altImages || !altImages.length) return null;
+  const imageIndex = generateHash() % altImages.length;
+  return `${altImageURLBase}/${altImages[imageIndex]}`;
 }
 
 //

@@ -9,6 +9,13 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-04-25] (52)
+
+### Changed
+- **Homepage fallback hero image now fetched dynamically** — `Homepage` fetches `/api/audio/altimages` on mount and passes the list to `getHeroImageURL()`. Removed hardcoded `homepageImages` array and `homepageImageURLBase` from `AdminClient/src/config/config.js`. `getHeroImageURL()` updated to accept the list and use `altImageURLBase` from config.
+
+---
+
 ## [2026-04-25] (50)
 
 ### Added
