@@ -9,6 +9,14 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-04-25] (48)
+
+### Changed
+- **Audio clips moved to `content/clips/`** — renamed `contentFileDir` → `clipsDir` in config; updated all references in `audioRoutes.js`, `MixEngine.js`, `audioAnalysisRunner.js`, and `backfill-checksums.js`. Files moved on disk; DB filenames unchanged (still relative `YYYY/MM/file.mp3`).
+- **MixEngine reads alt image dir at startup** — `CoverSelector` now uses `fs.readdirSync(ALT_DIR)` at startup instead of a hardcoded count; removed `altNum` from config. Any filename works; adding images requires only a MixEngine restart.
+
+---
+
 ## [2026-04-25] (47)
 
 ### Fixed

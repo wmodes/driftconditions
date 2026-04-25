@@ -9,12 +9,16 @@
 
 'use strict';
 
+const fs     = require('fs');
 const path   = require('path');
 const { config } = require('config');
 
 const { dir: COVER_DIR,
-        altDir: ALT_DIR,
-        altNum: ALT_NUM } = config.content.coverImage;
+        altDir: ALT_DIR } = config.content.coverImage;
+
+// Read alt images once at startup so any filename works — no count needed in config
+const ALT_FILES = fs.readdirSync(ALT_DIR)
+  .filter(f => /\.(jpg|jpeg|png|webp)$/i.test(f));
 
 class CoverSelector {
 
@@ -40,11 +44,10 @@ class CoverSelector {
       }
     }
 
-    // Fallback: pick a random alt image
-    const altIndex = String(Math.floor(Math.random() * ALT_NUM)).padStart(2, '0');
-    const altName  = `coveralt-${altIndex}`;
-    const coverImagePath = path.join(ALT_DIR, `${altName}.jpg`);
-    return { coverImage: `img/alt/${altName}.jpg`, coverImagePath, isAlt: true };
+    // Fallback: pick a random alt image from the directory list loaded at startup
+    const altFile = ALT_FILES[Math.floor(Math.random() * ALT_FILES.length)];
+    const coverImagePath = path.join(ALT_DIR, altFile);
+    return { coverImage: `img/alt/${altFile}`, coverImagePath, isAlt: true };
   }
 }
 
