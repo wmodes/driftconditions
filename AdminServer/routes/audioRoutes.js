@@ -485,7 +485,7 @@ router.post('/cover/:audioID', verifyToken, uploadCover.single('coverImage'), as
   const tmpPath  = req.file.path;
   const outPath  = path.join(coverImageDir, `${audioID}.jpg`);
   const [w, h]   = coverImageSize;
-  const vf       = `scale=${w}:${h}:force_original_aspect_ratio=decrease`;
+  const vf       = `scale=${w}:${h}:force_original_aspect_ratio=increase,crop=${w}:${h}`;
 
   try {
     // Resize and convert to JPEG via ffmpeg
