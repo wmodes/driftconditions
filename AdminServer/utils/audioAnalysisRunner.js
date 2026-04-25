@@ -21,7 +21,7 @@ const { database: db } = require('config');
 const { config }  = require('config');
 const logger      = require('config/logger').custom('AdminServer', 'info');
 
-const contentFileDir   = config.content.contentFileDir;
+const clipsDir   = config.content.clipsDir;
 const { analysisQueue, analyzed } = config.audio.internalTags;
 const analyzeScript    = path.resolve(__dirname, '../../experiments/essentia/analyze.js');
 
@@ -51,7 +51,7 @@ async function runAudioAnalysis() {
 
 async function analyzeClip(row) {
   const { audioID, filename } = row;
-  const fullPath = path.join(contentFileDir, filename);
+  const fullPath = path.join(clipsDir, filename);
   logger.info(`audioAnalysisRunner: analyzing audioID ${audioID} — ${filename}`);
 
   let newTags;

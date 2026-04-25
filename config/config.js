@@ -205,7 +205,7 @@ const config = {
     cookieExpires: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
   },
   content: {
-    contentFileDir: BASEDIR + '/content',
+    clipsDir:       BASEDIR + '/content/clips',  // audio clip files (YYYY/MM/filename.mp3)
     tmpFileDir:     BASEDIR + '/content/tmp',
     mixFileDir:     BASEDIR + '/content/mixes',
     soundsFileDir:  BASEDIR + '/content/sounds',
@@ -214,7 +214,6 @@ const config = {
       ext:    'jpg',
       size:   [500, 500],
       altDir: BASEDIR + '/content/images/alt',   // fallback alt images
-      altNum: 38,                                 // count of available alt images
     },
   },
   ffmpeg: {
