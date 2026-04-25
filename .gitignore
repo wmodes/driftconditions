@@ -1,7 +1,12 @@
 node_modules/
 .env
 package-lock.json
-content
+content/clips
+content/tmp
+content/samples
+content/sounds
+content/mixes
+content/images/covers
 logs
 .vscode
 Attic
