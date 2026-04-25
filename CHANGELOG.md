@@ -9,6 +9,19 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-04-25] (45)
+
+### Fixed
+- **Profile meta stats left-align on mobile** — wrapped the "Member since / Last contributed / total plays / role / status" block in a `profile-card-meta` div; added a CSS rule to left-align those items when the two-column layout stacks below 700px.
+- **Batch upload button re-enables on error** — `isSubmitReady` now checks for `hasRetryableFiles` (any file in `Error` state), so the Upload button stays active after a partial failure and the user can retry without reloading. Error messages updated to hint at retry.
+- **Batch upload button reflects in-progress state** — `isLoading` was declared but never set to `true`. Now set at start of submit, cleared on completion. Button label changes to "Uploading…" and is disabled during the in-flight request.
+- **`coveralt-11.jpg` reconverted with cover mode** — the sunset logo was previously converted with `contain` (letterboxed); reconverted locally and on prod using `scale+crop` (fill) so it fills the full 500×500 frame.
+
+### Changed
+- **Backfill script cleanup** — major housekeeping pass on `scripts/backfill-cover-images.js`: replaced inconsistent `--phase1/2/3` flags with parallel `--start-phase N` / `--stop-phase N`; added `--untagged-only` flag for new audio records; lifted all tunables into a Constants block (`BATCH_DELAY_MS`, `FETCH_TIMEOUT_MS`, `HAIKU_MAX_TOKENS`, `ITUNES_ART_SIZE`, `USER_AGENT`); extracted `makeBatches()` and `done()` helpers; reordered helper functions to match phase order (2a → 2b → 2d → 3a → 3b); replaced `99999` LIMIT hack with MySQL's max BIGINT; fixed Phase 3a header comment (was "Google", now "DDG"); added `config.js` entry for `imageFromGoogle` internal tag.
+
+---
+
 ## [2026-04-24] (44)
 
 ### Fixed

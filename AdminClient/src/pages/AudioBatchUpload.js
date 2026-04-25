@@ -130,7 +130,7 @@ function AudioBatchUpload() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(false);
+    setIsLoading(true);
 
     const batchFiles = prepareBatchFiles();
     const uploadResults = [];
@@ -198,14 +198,15 @@ function AudioBatchUpload() {
     const totalFailure = uploadResults.filter(result => !result.success).length;
 
     // Upload attempt is complete — nothing left to save regardless of outcome
+    setIsLoading(false);
     dispatch(setUnsavedChanges(false));
     setIsSubmitted(true);
 
     if (totalSuccess > 0 && totalFailure > 0) {
-      setError('Some upload errors');
+      setError('Some files failed to upload — click Upload to retry.');
       setSuccessMessage('');
     } else if (totalFailure > 0) {
-      setError('Upload error');
+      setError('Upload failed — click Upload to retry.');
       setSuccessMessage('');
     } else {
       setError('');
@@ -213,7 +214,8 @@ function AudioBatchUpload() {
     }
   };
 
-  const isSubmitReady = files.length > 0 && record.copyrightCert && record.classification && record.tags && Object.values(record.classification).includes(true) && !isSubmitted;
+  const hasRetryableFiles = uploadStatus.some(s => s.status === 'Error');
+  const isSubmitReady = files.length > 0 && record.copyrightCert && record.classification && record.tags && Object.values(record.classification).includes(true) && (!isSubmitted || hasRetryableFiles);
 
   /**
    * Render the progress of each file upload.
@@ -385,7 +387,7 @@ function AudioBatchUpload() {
             
             <div className='button-box'>
               <button className='button cancel' type="button" onClick={() => navigate(`/audio/upload`)}>Cancel</button>
-              <button className='button submit' type="submit" disabled={!isSubmitReady}>Upload</button>
+              <button className='button submit' type="submit" disabled={!isSubmitReady || isLoading}>{isLoading ? 'Uploading…' : 'Upload'}</button>
             </div>
             <div className='message-box'>
               {successMessage && <p className="success">{successMessage}</p>}
