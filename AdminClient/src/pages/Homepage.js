@@ -63,7 +63,10 @@ const Homepage = () => {
 
             <div className="image-wrapper mb-8">
               <div className="hero-image-container">
-                <img src={heroImageURL} alt="Hero" onError={(e) => { e.target.src = getHeroImageURL(); }} />
+                {heroImageURL && <img src={heroImageURL} alt="Hero" onError={(e) => {
+                  const fallback = getHeroImageURL(altImages);
+                  if (fallback) e.target.src = fallback;
+                }} />}
               </div>
             </div>
 
