@@ -1,0 +1,8 @@
+{
+  "name": "image-search-experiment",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "g-i-s": "^2.1.7"
+  }
+}
