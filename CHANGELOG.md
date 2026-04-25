@@ -9,6 +9,13 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-04-25] (53)
+
+### Changed
+- **Removed static homepage image assets** — deleted `AdminClient/public/img/homepage/` (15 PNG files). Hero image fallback now served entirely from `content/images/alt/` via the API. Alt images unified — one pool, one source.
+
+---
+
 ## [2026-04-25] (52)
 
 ### Changed
