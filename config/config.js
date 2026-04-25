@@ -214,7 +214,7 @@ const config = {
       ext:    'jpg',
       size:   [500, 500],
       altDir: BASEDIR + '/content/images/alt',   // fallback alt images
-      altNum: 15,                                 // count of available alt images
+      altNum: 38,                                 // count of available alt images
     },
   },
   ffmpeg: {
