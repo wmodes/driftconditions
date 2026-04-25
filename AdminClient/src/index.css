@@ -601,6 +601,9 @@ figcaption {
   .profile-stats {
     width: 100%;
   }
+  .profile-card-meta .text-center {
+    text-align: left;
+  }
 }
 
 .signin-wrapper .display-box {

@@ -240,34 +240,36 @@ function Profile() {
                   </a>
                 </p>
               )}
-              {profile.addedOn && (
-                <div className="mt-5 text-center">
-                  Member since {formatDate(profile.addedOn)}
-                </div>
-              )}
-              {generalStats.lastContributed && (
-                <div className="my-0 text-center">
-                  Last contributed {formatDate(generalStats.lastContributed)}
-                </div>
-              )}
-              {audioStats.totalPlays > 0 && (
-                <>
-                  <div className="my-0 text-center">
-                    {audioStats.totalPlays} total plays
+              <div className="profile-card-meta">
+                {profile.addedOn && (
+                  <div className="mt-5 text-center">
+                    Member since {formatDate(profile.addedOn)}
                   </div>
-                  <hr className="my-2" />
-                </>
-              )}
-              {(profile.roleNameShow || profile.roleName) && (
-                <div className="my-0 text-center">
-                  Current role: <span className="italic capitalize">{profile.roleNameShow || profile.roleName}</span>
-                </div>
-              )}
-              {(profile.statusShow || profile.status) && (
-                <div className="mt-0 mb-5 text-center">
-                  Status: <span className="italic capitalize">{profile.statusShow || profile.status}</span>
-                </div>
-              )}
+                )}
+                {generalStats.lastContributed && (
+                  <div className="my-0 text-center">
+                    Last contributed {formatDate(generalStats.lastContributed)}
+                  </div>
+                )}
+                {audioStats.totalPlays > 0 && (
+                  <>
+                    <div className="my-0 text-center">
+                      {audioStats.totalPlays} total plays
+                    </div>
+                    <hr className="my-2" />
+                  </>
+                )}
+                {(profile.roleNameShow || profile.roleName) && (
+                  <div className="my-0 text-center">
+                    Current role: <span className="italic capitalize">{profile.roleNameShow || profile.roleName}</span>
+                  </div>
+                )}
+                {(profile.statusShow || profile.status) && (
+                  <div className="mt-0 mb-5 text-center">
+                    Status: <span className="italic capitalize">{profile.statusShow || profile.status}</span>
+                  </div>
+                )}
+              </div>
               {canSeeNotes && profile.notes && (
                 <div className="admin-notes">
                   <strong>Notes:</strong>
