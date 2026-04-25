@@ -210,10 +210,12 @@ const config = {
     mixFileDir:     BASEDIR + '/content/mixes',
     soundsFileDir:  BASEDIR + '/content/sounds',
     coverImage: {
-      dir:    BASEDIR + '/content/images/audio', // per-clip cover images
-      ext:    'jpg',
-      size:   [500, 500],
-      altDir: BASEDIR + '/content/images/alt',   // fallback alt images
+      dir:     BASEDIR + '/content/images/covers', // per-clip cover images
+      urlPath: 'img/covers',                        // URL path served by Caddy
+      ext:     'jpg',
+      size:    [500, 500],
+      altDir:     BASEDIR + '/content/images/alt', // fallback alt images
+      altUrlPath: 'img/alt',                        // URL path served by Caddy
     },
   },
   ffmpeg: {

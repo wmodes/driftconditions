@@ -9,6 +9,14 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-04-25] (49)
+
+### Changed
+- **Cover image URL paths pulled from config** — removed hardcoded `img/audio/` and `img/alt/` strings from `CoverSelector.js`; added `urlPath` and `altUrlPath` to `config.content.coverImage` so Caddy serve paths are defined in one place.
+- **Cover images moved to `content/images/covers/`** — renamed dir and updated all references: `config/config.js`, `AdminClient/src/config/config.js`, `Caddyfile.server`. Files moved on disk locally and on prod.
+
+---
+
 ## [2026-04-25] (48)
 
 ### Changed
