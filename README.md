@@ -1,6 +1,6 @@
 # DriftConditions
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19688234.svg)](https://doi.org/10.5281/zenodo.19688234)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19774081.svg)](https://doi.org/10.5281/zenodo.19774081)
 
 *DriftConditions* is an online audio source that captures the chaos and serendipity of late-night radio tuning — an uncanny audio stream generated entirely on the fly by code. Overlapping fragmented stories, ambient sounds, and mysterious crosstalk weave a vivid sonic tapestry, drawing listeners into an immersive and unpredictable listening experience.
 
@@ -357,8 +357,8 @@ If you use or reference *DriftConditions* in academic work, please cite it as:
   title     = {{DriftConditions}: A Generative Audio Streaming Platform},
   year      = {2026},
   publisher = {Zenodo},
-  doi       = {10.5281/zenodo.19688234},
-  url       = {https://doi.org/10.5281/zenodo.19688234},
+  doi       = {10.5281/zenodo.19774081},
+  url       = {https://doi.org/10.5281/zenodo.19774081},
   orcid     = {0009-0000-1191-8245}
 }
 ```
