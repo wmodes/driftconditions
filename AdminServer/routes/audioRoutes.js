@@ -37,6 +37,7 @@ const clipsDir = config.content.clipsDir;
 const tmpFileDir = config.content.tmpFileDir;
 const coverImageDir = config.content.coverImage.dir;
 const coverImageSize = config.content.coverImage.size;
+const altImageDir = config.content.coverImage.altDir;
 const musicAnalysisClassifications = config.audio.musicAnalysisClassifications;
 const audioInternalTags = config.audio.internalTags;
 
@@ -470,6 +471,18 @@ router.post('/trash', verifyToken, async (req, res) => {
 });
 
 //
+// ALT IMAGE LIST
+//
+
+// GET /api/audio/altimages
+// Returns the list of available alt image filenames. No auth required.
+router.get('/altimages', async (req, res) => {
+  const files = (await fs.readdir(altImageDir))
+    .filter(f => /\.(jpg|jpeg|png|webp)$/i.test(f))
+    .sort();
+  res.json(files);
+});
+
 // COVER IMAGE UPLOAD
 //
 
