@@ -8,7 +8,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 
-const contentFileDir = config.content.contentFileDir;
+const clipsDir = config.content.clipsDir;
 
 async function main() {
   console.log('Connected to database.');
@@ -21,7 +21,7 @@ async function main() {
   let skipped = 0;
 
   for (const row of rows) {
-    const fullPath = path.join(contentFileDir, row.filename);
+    const fullPath = path.join(clipsDir, row.filename);
     if (!fs.existsSync(fullPath)) {
       console.warn(`  SKIP  [${row.audioID}] File not found: ${row.filename}`);
       skipped++;

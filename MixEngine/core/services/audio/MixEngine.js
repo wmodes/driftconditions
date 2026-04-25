@@ -11,7 +11,7 @@ const path = require('path');
 // clear the require cache to get the latest config
 delete require.cache[require.resolve('config')];
 const { config } = require('config');
-const contentFileDir = config.content.contentFileDir;
+const clipsDir = config.content.clipsDir;
 const mixFileDir = config.content.mixFileDir;
 const ffmpegOutput = config.ffmpeg.output;
 const filterConfig = config.filters;
@@ -131,7 +131,7 @@ class MixEngine {
     recipeObj.tracks.forEach(track => {
       track.clips.forEach(clip => {
         if (!clip.classification.includes('silence')) {
-          const filePath = path.join(contentFileDir, clip.filename);
+          const filePath = path.join(clipsDir, clip.filename);
           ffmpegCmd.input(filePath);
           logger.debug(`Input file added: ${filePath}`);
         }

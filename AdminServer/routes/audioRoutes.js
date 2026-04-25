@@ -33,7 +33,7 @@ const { config } = require('config');
 
 // pull these out of the config object
 const jwtSecretKey = config.authToken.jwtSecretKey;
-const contentFileDir = config.content.contentFileDir;
+const clipsDir = config.content.clipsDir;
 const tmpFileDir = config.content.tmpFileDir;
 const coverImageDir = config.content.coverImage.dir;
 const coverImageSize = config.content.coverImage.size;
@@ -204,7 +204,7 @@ router.get('/sample/:year/:month/:filename', verifyToken, async (req, res) => {
 
   // Construct the file path
   // Adjust the path according to your actual files location
-  const filePath = path.join(contentFileDir, year, month, filename);
+  const filePath = path.join(clipsDir, year, month, filename);
   logger.debug(`audioRoutes:renameAndStore: filePath: ${filePath}`);
 
   try {
@@ -263,7 +263,7 @@ router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
 
     // Rename file and move into place (async)
     const filePathForDB = await renameAndStore(req.file.path, req.file.originalname, record.title);
-    const fullFilePath = path.join(contentFileDir, filePathForDB);
+    const fullFilePath = path.join(clipsDir, filePathForDB);
     logger.debug(`audioRoutes:/upload: fullFilePath: ${fullFilePath}, filePathForDB: ${filePathForDB}`);
     // Get audio duration (async)
     const duration = await getAudioDuration(fullFilePath);
@@ -535,7 +535,7 @@ async function renameAndStore(tempPath, origFilename, title) {
   const month = (now.getMonth() + 1).toString().padStart(2, '0');
 
   // create the directory if it doesn't exist
-  const uploadDir = path.join(contentFileDir, year, month);
+  const uploadDir = path.join(clipsDir, year, month);
   logger.debug(`audioRoutes:renameAndStore: uploadDir: ${uploadDir}`);
   await mkdirp(uploadDir);
 
@@ -568,7 +568,7 @@ async function renameAndStore(tempPath, origFilename, title) {
   logger.debug(`audioRoutes:renameAndStore: fullFilepath: ${fullFilepath}`);
   
   // Calculate the relative path without hardcoding
-  const relativePath = path.relative(path.join(contentFileDir), fullFilepath);
+  const relativePath = path.relative(path.join(clipsDir), fullFilepath);
   logger.debug(`audioRoutes:renameAndStore: relativePath: ${relativePath}`);
 
   return relativePath;
