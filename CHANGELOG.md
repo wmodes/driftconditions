@@ -9,6 +9,14 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-04-25] (46)
+
+### Changed
+- **Cover image identifiers now carry their full path** — `CoverSelector` now returns `img/audio/{id}.jpg` or `img/alt/{name}.jpg` instead of bare IDs or `coveralt-XX` strings. The client's `resolveCoverImageURL` is now a one-liner (`/${coverImage}`) with no string-prefix logic needed to distinguish clip covers from alt images.
+- **Expanded alt image pool** — added 23 new 500×500 JPEG alt images (`coveralt-15` through `coveralt-37`) to `content/images/alt/`; updated `altNum` in config from 15 → 38.
+
+---
+
 ## [2026-04-25] (45)
 
 ### Fixed

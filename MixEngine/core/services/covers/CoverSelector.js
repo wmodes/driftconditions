@@ -35,7 +35,7 @@ class CoverSelector {
       for (const clip of track.clips) {
         if (clip.coverImage) {
           const coverImagePath = path.join(COVER_DIR, `${clip.coverImage}.jpg`);
-          return { coverImage: clip.coverImage, coverImagePath, isAlt: false };
+          return { coverImage: `img/audio/${clip.coverImage}.jpg`, coverImagePath, isAlt: false };
         }
       }
     }
@@ -44,7 +44,7 @@ class CoverSelector {
     const altIndex = String(Math.floor(Math.random() * ALT_NUM)).padStart(2, '0');
     const altName  = `coveralt-${altIndex}`;
     const coverImagePath = path.join(ALT_DIR, `${altName}.jpg`);
-    return { coverImage: altName, coverImagePath, isAlt: true };
+    return { coverImage: `img/alt/${altName}.jpg`, coverImagePath, isAlt: true };
   }
 }
 

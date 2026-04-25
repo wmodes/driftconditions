@@ -9,18 +9,11 @@ import {
   generateRandomTexts, getHeroImageURL, getLocation
 } from '../utils/randomUtils';
 import brand from '../brand/brand';
-import config from '../config/config';
 
-const { coverImageURLBase, altImageURLBase } = config.app;
-
-// Resolve a coverImage identifier (e.g. "152" or "coveralt-02") to a URL.
-// Alt images live under altImageURLBase; clip images live under coverImageURLBase.
+// Resolve a coverImage path (e.g. "img/audio/152.jpg" or "img/alt/tintype-tower.jpg") to a URL.
 const resolveCoverImageURL = (coverImage) => {
   if (!coverImage) return null;
-  if (coverImage.startsWith('coveralt-')) {
-    return `${altImageURLBase}/${coverImage}.jpg`;
-  }
-  return `${coverImageURLBase}/${coverImage}.jpg`;
+  return `/${coverImage}`;
 };
 
 const Homepage = () => {
