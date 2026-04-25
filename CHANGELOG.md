@@ -9,6 +9,14 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-04-25] (47)
+
+### Fixed
+- **Hero image now displays as square** — added `aspect-ratio: 1/1` and `object-fit: cover` to `.hero-image-container img` so the hero crops to a square regardless of source dimensions.
+- **Cover image uploads now crop to 500×500** — changed ffmpeg filter from contain (`force_original_aspect_ratio=decrease`) to cover (`force_original_aspect_ratio=increase,crop=500:500`) so all saved cover images are exactly 500×500.
+
+---
+
 ## [2026-04-25] (46)
 
 ### Changed
