@@ -9,6 +9,13 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-04-25] (50)
+
+### Added
+- **`GET /api/audio/altimages` endpoint** — returns sorted list of image filenames from `content/images/alt/`. No auth required. Groundwork for replacing the hardcoded `homepageImages` array in the AdminClient.
+
+---
+
 ## [2026-04-25] (49)
 
 ### Changed
