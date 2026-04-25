@@ -340,7 +340,7 @@ const config = {
   },
   app: {
     homepageImageURLBase: '/img/homepage',
-    coverImageURLBase:    '/img/audio',   // per-clip cover images (e.g. /img/audio/152.jpg)
+    coverImageURLBase:    '/img/covers',  // per-clip cover images (e.g. /img/covers/152.jpg)
     altImageURLBase:      '/img/alt',     // fallback alt images  (e.g. /img/alt/coveralt-02.jpg)
     homepageImages: [
       "8-bit-radio-tower.png",
