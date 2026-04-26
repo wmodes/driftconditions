@@ -9,6 +9,13 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-04-26] (59)
+
+### Fixed
+- **Search term preserved correctly across page changes** — `parseQuery` in `queryUtils.js` was using `decodeURIComponent` which does not decode `+` as a space. `URLSearchParams.toString()` encodes spaces as `+`, so paginating with a search term caused literal `+` signs to appear in the input and be sent to the backend. Fixed by replacing the manual parser with `new URLSearchParams()`, which handles both `+` and `%20` correctly. Affects `AudioList`, `UserList`, and `RecipeList`.
+
+---
+
 ## [2026-04-26] (58)
 
 ### Fixed
