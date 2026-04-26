@@ -9,6 +9,28 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-04-26] (58)
+
+### Fixed
+- **Batch upload duplicate messaging** — distinguished duplicate submissions from retryable upload errors in `AudioBatchUpload.js`. Previously any failure (including permanent duplicates) showed "click Upload to retry." Now: duplicates show a plain informational message; retryable errors show the retry prompt; mixed outcomes report each category separately.
+- **Hero image onError infinite loop** — added `e.target.onerror = null` before setting the fallback src so a broken fallback URL doesn't re-trigger the handler indefinitely.
+
+---
+
+## [2026-04-26] (57)
+
+### Changed
+- **Updated Zenodo DOI** — updated badge, doi, and url fields in `README.md` to the 2026.04.02 release DOI (`10.5281/zenodo.19774081`).
+
+---
+
+## [2026-04-25] (56)
+
+### Fixed
+- **Hero image `src="null"` rendering** — hero image is now conditionally rendered only when a URL is available. `onError` fallback now correctly passes the loaded alt image list to `getHeroImageURL()`.
+
+---
+
 ## [2026-04-25] (53)
 
 ### Changed
