@@ -179,7 +179,7 @@ function AudioBatchUpload() {
         console.error("Upload error:", error);
         // Distinguish checksum duplicate (409) from other errors
         const isDuplicate = typeof error === 'string' && error.includes('already been submitted');
-        uploadResults.push({ success: false });
+        uploadResults.push({ success: false, isDuplicate });
         setUploadStatus(prevStatus => {
           const newStatus = [...prevStatus];
           newStatus[index] = {
@@ -194,19 +194,27 @@ function AudioBatchUpload() {
     }
 
     // Determine final success or error message
-    const totalSuccess = uploadResults.filter(result => result.success).length;
-    const totalFailure = uploadResults.filter(result => !result.success).length;
+    const totalSuccess  = uploadResults.filter(r => r.success).length;
+    const totalDuplicate = uploadResults.filter(r => !r.success && r.isDuplicate).length;
+    const totalError    = uploadResults.filter(r => !r.success && !r.isDuplicate).length;
 
     // Upload attempt is complete — nothing left to save regardless of outcome
     setIsLoading(false);
     dispatch(setUnsavedChanges(false));
     setIsSubmitted(true);
 
-    if (totalSuccess > 0 && totalFailure > 0) {
-      setError('Some files failed to upload — click Upload to retry.');
+    if (totalError > 0) {
+      // At least one real (retryable) failure
+      const dupeNote = totalDuplicate > 0 ? ` ${totalDuplicate} duplicate${totalDuplicate !== 1 ? 's' : ''} skipped.` : '';
+      setError(`${totalSuccess > 0 ? 'Some' : 'All'} files failed to upload — click Upload to retry.${dupeNote}`);
       setSuccessMessage('');
-    } else if (totalFailure > 0) {
-      setError('Upload failed — click Upload to retry.');
+    } else if (totalDuplicate > 0 && totalSuccess > 0) {
+      // Partial success — some dupes, no retryable errors
+      setError('');
+      setSuccessMessage(`${totalSuccess} file${totalSuccess !== 1 ? 's' : ''} uploaded. ${totalDuplicate} duplicate${totalDuplicate !== 1 ? 's' : ''} skipped.`);
+    } else if (totalDuplicate > 0) {
+      // Everything was a duplicate
+      setError(totalDuplicate === 1 ? 'This file has already been submitted.' : 'All files have already been submitted.');
       setSuccessMessage('');
     } else {
       setError('');
