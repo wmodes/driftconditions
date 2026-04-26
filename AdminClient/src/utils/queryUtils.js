@@ -84,12 +84,7 @@ export function stringifyQuery(queryParams) {
  */
 export function parseQuery(queryString) {
   const params = {};
-  // Remove the leading '?' if it exists
-  const queries = queryString[0] === '?' ? queryString.substring(1) : queryString;
-  const pairs = queries.split('&');
-  pairs.forEach((pair) => {
-    const [key, value] = pair.split('=');
-    if (key) params[decodeURIComponent(key)] = decodeURIComponent(value || '');
-  });
+  const searchParams = new URLSearchParams(queryString);
+  searchParams.forEach((value, key) => { params[key] = value; });
   return params;
 }
