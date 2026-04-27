@@ -11,7 +11,7 @@ import {
 import brand from '../brand/brand';
 import config from '../config/config';
 
-// Resolve a coverImage path (e.g. "img/audio/152.jpg" or "img/alt/tintype-tower.jpg") to a URL.
+// Resolve a coverImage path (e.g. "img/covers/152.jpg" or "img/alt/tintype-tower.jpg") to a URL.
 const resolveCoverImageURL = (coverImage) => {
   if (!coverImage) return null;
   return `/${coverImage}`;

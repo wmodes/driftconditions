@@ -1,0 +1,19 @@
+# Cover backfill timer — fires weekly on Sunday at 09:30 UTC (5:30 AM Eastern).
+# Processes only new clips with no image tags (--untagged-only).
+# Scheduled well before the monthly retry (21:00 UTC) so the two never overlap.
+# Persistent=true catches up on any runs missed while the server was down.
+#
+# Link into place with cover-backfill.service (see cover-backfill.service for full instructions).
+#
+# Check next/last run:
+# % systemctl list-timers cover-backfill.timer
+
+[Unit]
+Description=Run DriftConditions cover backfill weekly on Sunday at 09:30 UTC
+
+[Timer]
+OnCalendar=Sun *-*-* 09:30:00 UTC
+Persistent=true
+
+[Install]
+WantedBy=timers.target

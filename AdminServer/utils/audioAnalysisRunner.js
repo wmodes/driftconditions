@@ -10,7 +10,7 @@
  * On analysis failure the clip gets `analysis-error` instead of `audio-analyzed`
  * so failures are visible and retryable (re-add `needs-audio-analysis` to requeue).
  *
- * Called by scripts/run-audio-analysis.js. Can also be invoked manually for testing.
+ * Called by AdminServer/jobs/run-audio-analysis.js. Can also be invoked manually for testing.
  */
 
 'use strict';

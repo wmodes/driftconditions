@@ -1,0 +1,34 @@
+# Cover backfill systemd service file
+# Invoked by cover-backfill.timer (weekly) and cover-backfill-retry.timer (monthly).
+# Do not start directly.
+#
+# Link into place with:
+# % sudo ln -sf /home/debian/driftconditions/setupfiles/cover-backfill.service /etc/systemd/system/cover-backfill.service
+# % sudo ln -sf /home/debian/driftconditions/setupfiles/cover-backfill.timer /etc/systemd/system/cover-backfill.timer
+# % sudo ln -sf /home/debian/driftconditions/setupfiles/cover-backfill-retry.service /etc/systemd/system/cover-backfill-retry.service
+# % sudo ln -sf /home/debian/driftconditions/setupfiles/cover-backfill-retry.timer /etc/systemd/system/cover-backfill-retry.timer
+# % systemctl daemon-reload
+# % sudo systemctl enable --now cover-backfill.timer
+# % sudo systemctl enable --now cover-backfill-retry.timer
+#
+# Check timer status:
+# % systemctl status cover-backfill.timer
+# % systemctl status cover-backfill-retry.timer
+#
+# View logs:
+# % journalctl -u cover-backfill.service --no-pager | less
+# % journalctl -u cover-backfill-retry.service --no-pager | less
+
+[Unit]
+Description=DriftConditions cover backfill — new clips (weekly)
+After=network.target
+
+[Service]
+Type=oneshot
+User=debian
+WorkingDirectory=/home/debian/driftconditions/AdminServer
+Environment=NODE_PATH=/home/debian/driftconditions/AdminServer/node_modules
+ExecStart=/usr/bin/node /home/debian/driftconditions/AdminServer/jobs/run-cover-backfill.js --untagged-only --prod
+
+[Install]
+WantedBy=multi-user.target

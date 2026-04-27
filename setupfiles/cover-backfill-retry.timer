@@ -1,0 +1,20 @@
+# Cover backfill retry timer — fires monthly on the 1st at 21:00 UTC (5 PM Eastern).
+# Re-attempts clips previously marked image-not-found (--retry-not-found).
+# Scheduled at 21:00 UTC so it never overlaps with the weekly run (09:30 UTC),
+# even when the 1st of the month falls on a Sunday.
+# Persistent=true catches up on any runs missed while the server was down.
+#
+# Link into place with cover-backfill-retry.service (see cover-backfill.service for full instructions).
+#
+# Check next/last run:
+# % systemctl list-timers cover-backfill-retry.timer
+
+[Unit]
+Description=Run DriftConditions cover backfill retry monthly on the 1st at 21:00 UTC
+
+[Timer]
+OnCalendar=*-*-1 21:00:00 UTC
+Persistent=true
+
+[Install]
+WantedBy=timers.target
