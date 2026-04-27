@@ -2,7 +2,7 @@
 // run-audio-analysis.js - Entry point for the nightly audio analysis cron job
 //
 // Must be run with cwd set to AdminServer/ so the config symlink resolves:
-//   cd /path/to/driftconditions/AdminServer && node ../scripts/run-audio-analysis.js
+//   cd /path/to/driftconditions/AdminServer && node jobs/run-audio-analysis.js
 //
 // Processes all audio clips tagged with `needs-audio-analysis`, runs Essentia
 // BPM/key/danceability analysis on each, and writes the resulting tags back.
@@ -11,7 +11,7 @@ const path = require('path');
 
 require('dotenv').config(); // loads AdminServer/.env when cwd is AdminServer/
 
-const { runAudioAnalysis } = require(path.join(__dirname, '../AdminServer/utils/audioAnalysisRunner'));
+const { runAudioAnalysis } = require(path.join(__dirname, '../utils/audioAnalysisRunner'));
 
 runAudioAnalysis()
   .then(() => {
