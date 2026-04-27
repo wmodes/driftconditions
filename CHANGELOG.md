@@ -9,6 +9,16 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-04-27] (577)
+
+### Fixed
+- **Telephone effect crashing mix generation** — `acompressor` filter in `_telephoneEffect()` was passing `makeup: 0.8`, which is below the valid minimum of 1 (dB). ffmpeg rejected the filter args, failing the mix and falling back to the next recipe several times per day. Removed `makeup` entirely; the telephone character comes from the bandpass + heavy compression, not from makeup gain.
+
+### Changed
+- **Effect classification description updated** — removed "short" requirement; broadened examples to include radio signals and noise, reflecting actual usage (e.g. Irdial numbers stations recordings). Updated in `AdminClient/src/config/config.js` (InfoButton tooltip) and `AdminClient/public/recipe-reference.html`.
+
+---
+
 ## [2026-04-26] (574)
 
 ### Added
