@@ -9,6 +9,16 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-04-26] (61)
+
+### Fixed
+- **Backfill script using wrong clips path** — `backfill-cover-images.js` was still constructing audio paths as `content/YYYY/MM/file.mp3` instead of using `clipsDir` from config (`content/clips/YYYY/MM/file.mp3`). Caused all clips to appear "file missing" during Phase 1.
+
+### Added
+- **`--count` and `--list` flags for backfill script** — `--count` prints the number of eligible clips and exits; `--list` prints audioID and title for each. Both respect all other flags (`--prod`, `--untagged-only`, `--limit`, `--offset`, etc.).
+
+---
+
 ## [2026-04-26] (59)
 
 ### Fixed
