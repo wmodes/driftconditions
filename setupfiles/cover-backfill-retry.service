@@ -13,7 +13,7 @@ Type=oneshot
 User=debian
 WorkingDirectory=/home/debian/driftconditions/AdminServer
 Environment=NODE_PATH=/home/debian/driftconditions/AdminServer/node_modules
-ExecStart=/usr/bin/node /home/debian/driftconditions/AdminServer/jobs/run-cover-backfill.js --retry-not-found --prod
+ExecStart=/usr/bin/node /home/debian/driftconditions/AdminServer/jobs/run-cover-backfill.js --retry-not-found
 
 [Install]
 WantedBy=multi-user.target
