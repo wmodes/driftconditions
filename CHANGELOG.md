@@ -9,6 +9,24 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-04-26] (574)
+
+### Added
+- **`AdminServer/jobs/` directory** — new home for load-bearing scheduled jobs that were previously living in `scripts/`. Distinction: `scripts/` is for one-time tools; `jobs/` is for recurring infrastructure.
+- **`run-cover-backfill.js` scheduled job** — all backfill logic extracted from `scripts/backfill-cover-images.js` into `AdminServer/jobs/run-cover-backfill.js`. Exports `run(argv)` using the library/executable split pattern (`require.main === module` guard), so it can be invoked directly or required by other scripts. `fetchAndNormalize` now logs the specific failure reason (HTTP status, ffmpeg error, or network error) instead of a bare "failed" message.
+- **`cover-backfill.service` / `cover-backfill.timer`** — systemd oneshot service running `--untagged-only --prod` weekly on Sundays at 09:30 UTC (new clips only).
+- **`cover-backfill-retry.service` / `cover-backfill-retry.timer`** — systemd oneshot service running `--retry-not-found --prod` monthly on the 1st at 21:00 UTC (re-attempt previously failed clips). Scheduled 11.5 hours after the weekly run to prevent overlap even when the 1st falls on a Sunday.
+
+### Changed
+- **`run-digest.js` and `run-audio-analysis.js` moved to `AdminServer/jobs/`** — updated require paths and comments; `setupfiles/digest.service` and `setupfiles/audio-analysis.service` ExecStart paths updated accordingly.
+- **`scripts/backfill-cover-images.js` gutted to shim** — now a thin wrapper that requires `AdminServer/jobs/run-cover-backfill.js` and forwards all CLI flags. Any fixes to the job apply to both automatically.
+
+### Fixed
+- **`Caddyfile.local` stale cover image path** — `handle /img/audio/` block updated to `/img/covers/` with matching `content/images/covers` root, matching the production Caddyfile and config. Local dev cover images were being served from the wrong path.
+- **`Homepage.js` stale comment** — updated inline comment referencing old `img/audio/152.jpg` path to `img/covers/152.jpg`.
+
+---
+
 ## [2026-04-26] (61)
 
 ### Fixed

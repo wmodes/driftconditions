@@ -26,9 +26,9 @@ https://localhost:3000 {
     }
 
     # Serve per-clip cover images
-    handle /img/audio/* {
-        root * /Users/wmodes/dev/driftconditions/content/images/audio
-        uri strip_prefix /img/audio
+    handle /img/covers/* {
+        root * /Users/wmodes/dev/driftconditions/content/images/covers
+        uri strip_prefix /img/covers
         file_server
     }
 

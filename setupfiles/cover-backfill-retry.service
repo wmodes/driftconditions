@@ -1,0 +1,19 @@
+# Cover backfill retry systemd service file
+# Invoked by cover-backfill-retry.timer (monthly). Do not start directly.
+# Re-runs Phases 2–3 on clips previously marked image-not-found.
+#
+# See cover-backfill.service for setup instructions.
+
+[Unit]
+Description=DriftConditions cover backfill — retry not-found (monthly)
+After=network.target
+
+[Service]
+Type=oneshot
+User=debian
+WorkingDirectory=/home/debian/driftconditions/AdminServer
+Environment=NODE_PATH=/home/debian/driftconditions/AdminServer/node_modules
+ExecStart=/usr/bin/node /home/debian/driftconditions/AdminServer/jobs/run-cover-backfill.js --retry-not-found --prod
+
+[Install]
+WantedBy=multi-user.target

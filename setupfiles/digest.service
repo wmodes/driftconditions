@@ -22,7 +22,7 @@ Type=oneshot
 User=debian
 WorkingDirectory=/home/debian/driftconditions/AdminServer
 Environment=NODE_PATH=/home/debian/driftconditions/AdminServer/node_modules
-ExecStart=/usr/bin/node /home/debian/driftconditions/scripts/run-digest.js
+ExecStart=/usr/bin/node /home/debian/driftconditions/AdminServer/jobs/run-digest.js
 
 [Install]
 WantedBy=multi-user.target

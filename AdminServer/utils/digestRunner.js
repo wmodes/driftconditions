@@ -27,7 +27,7 @@
  *   yearly   — users (role='user'); fires on signup anniversary ± anniversaryWindowDays
  *              (TODO: user-reminder template not yet created; schedule entry commented out)
  *
- * Called by scripts/run-digest.js. Can also be invoked manually for testing.
+ * Called by AdminServer/jobs/run-digest.js. Can also be invoked manually for testing.
  */
 
 const { database: db } = require('config');
