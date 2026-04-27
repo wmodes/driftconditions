@@ -41,6 +41,8 @@
  *   --dry-run            Report what would happen without writing files or updating DB
  *   --retry-not-found    Re-run Phases 2–3 on clips previously marked image-not-found
  *   --untagged-only      Only process clips with no image tags at all (new audio records)
+ *   --count              Print the number of eligible clips and exit
+ *   --list               Print audioID and title for each eligible clip and exit
  */
 
 'use strict';
@@ -80,6 +82,8 @@ const USE_PROD        = args.includes('--prod');
 const DRY_RUN         = args.includes('--dry-run');
 const RETRY_NOT_FOUND = args.includes('--retry-not-found');
 const UNTAGGED_ONLY   = args.includes('--untagged-only');
+const COUNT_ONLY      = args.includes('--count');
+const LIST_ONLY       = args.includes('--list');
 
 const startPhaseIdx = args.indexOf('--start-phase');
 const START_PHASE   = startPhaseIdx !== -1 ? parseInt(args[startPhaseIdx + 1], 10) : 1;
@@ -158,6 +162,14 @@ async function main() {
     ORDER BY audioID
     ${limitClause}
   `);
+
+  if (COUNT_ONLY) { console.log(`${clips.length} eligible clip(s).`); await done(); return; }
+
+  if (LIST_ONLY) {
+    console.log(`${clips.length} eligible clip(s):\n`);
+    for (const clip of clips) console.log(`  [${clip.audioID}] ${clip.title}`);
+    await done(); return;
+  }
 
   console.log(`Found ${clips.length} clip(s) to process.\n`);
   if (clips.length === 0) { await done(); return; }
