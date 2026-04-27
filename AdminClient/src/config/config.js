@@ -209,7 +209,7 @@ const config = {
       {
         label: 'Effect',
         value: 'effect',
-        moreInfo: "Short recordings that can be layered over other audio, e.g., sound effects, audio stingers, transition sounds"
+        moreInfo: "Recordings that layer well over other audio, e.g., sound effects, stingers, radio signals, noise, transition sounds"
       },
       {
         label: 'Other',
