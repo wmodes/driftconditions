@@ -118,6 +118,7 @@ if (USE_PROD) {
 }
 
 const { config }           = require('config');
+const CLIPS_DIR            = config.content.clipsDir;
 const { dir: COVER_DIR,
         ext: COVER_EXT,
         size: COVER_SIZE } = config.content.coverImage;
@@ -186,7 +187,7 @@ async function main() {
     let extracted = 0;
 
     for (const clip of clips) {
-      const audioPath = path.join(BASEDIR, 'content', clip.filename);
+      const audioPath = path.join(CLIPS_DIR, clip.filename);
       const outPath   = path.join(COVER_DIR, `${clip.audioID}.${COVER_EXT}`);
       const label     = `[${clip.audioID}] ${clip.title.slice(0, 55)}`;
 
