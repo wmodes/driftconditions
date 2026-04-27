@@ -901,7 +901,6 @@ class MixEngine {
         release: 250,
         threshold: 0.1,   // linear value; -20dB = 0.1 (acompressor requires 0–1, not dB)
         ratio: 10,
-        makeup: 0.8, // replaces invalid level_out:0.8 (level_out belongs to agate, not acompressor)
         knee: 5
       },
       outputs: distortionLabel
