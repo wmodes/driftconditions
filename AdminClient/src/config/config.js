@@ -1,6 +1,7 @@
 // config.js - admin client configuration
 
 const clientServerURL = process.env.REACT_APP_SERVER_URL;
+const staticBaseURL = process.env.REACT_APP_STATIC_URL || '';
 
 const config = {
   adminServer: {
@@ -339,8 +340,8 @@ const config = {
     scoreThreshold: 0.5,
   },
   app: {
-    coverImageURLBase: '/img/covers',  // per-clip cover images (e.g. /img/covers/152.jpg)
-    altImageURLBase:   '/img/alt',     // fallback alt images  (e.g. /img/alt/coveralt-02.jpg)
+    coverImageURLBase: staticBaseURL + '/img/covers',  // per-clip cover images (e.g. /img/covers/152.jpg)
+    altImageURLBase:   staticBaseURL + '/img/alt',     // fallback alt images  (e.g. /img/alt/coveralt-02.jpg)
   }
 
 };

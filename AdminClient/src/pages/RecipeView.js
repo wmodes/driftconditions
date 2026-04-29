@@ -90,7 +90,7 @@ function RecipeView() {
 
             <div className="form-row">
               <span className="form-label">Description:</span>
-              <span className="form-value">{recipeRecord.description}</span>
+              <span className="form-value multiline">{recipeRecord.description}</span>
             </div>
 
             <div className="form-row">
@@ -161,7 +161,7 @@ function RecipeView() {
             </div>
             <div className="form-col">
               <div className="form-label">Comments:</div>
-              <div className="form-value">{recipeRecord.comments}</div>
+              <div className="form-value multiline">{recipeRecord.comments}</div>
             </div>
           </div>
 

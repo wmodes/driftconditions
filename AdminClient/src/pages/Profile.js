@@ -227,7 +227,7 @@ function Profile() {
                 </div>
               </div>
               {profile.bio && (
-                <p className='my-2'>
+                <p className='my-2 multiline'>
                   {profile.bio}
                 </p>
               )}
@@ -285,7 +285,7 @@ function Profile() {
               {canSeeNotes && profile.notes && (
                 <div className="admin-notes">
                   <strong>Notes:</strong>
-                  <p>{profile.notes}</p>
+                  <p className="multiline">{profile.notes}</p>
                 </div>
               )}
               {profile.edit && (

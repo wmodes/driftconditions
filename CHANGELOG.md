@@ -11,6 +11,12 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [2026-04-29]
 
+### Fixed
+- **Multiline text fields losing line breaks in view pages** — added `.multiline { white-space: pre-wrap }` CSS class to `index.css` and applied it to `comments` and `description` in `AudioView`/`RecipeView`, and `bio`/`notes` in `Profile`. Also defined `.form-value` as a proper CSS class (previously unstyled).
+- **Audio file 404 crashing AudioView and AudioEdit** — `initWaveSurfer` promise rejection was unhandled, causing a full-page runtime error. Added `.catch()` in both pages; missing audio now shows a muted inline message (`.media-unavailable`) instead of crashing. Backend `/sample` route 404 log level downgraded from `error` to `warn`.
+- **Broken cover images showing as broken `<img>` in AudioView and AudioEdit** — added `onError` handler on cover `<img>` elements; failed loads now fall back to the existing `cover-image-placeholder` style showing "Image not found".
+- **Hero image and cover images broken in local dev** — relative image paths (`/img/covers`, `/img/alt`) weren't served by the React dev server. Added `REACT_APP_STATIC_URL` env var; dev `.env` sets it to `https://localhost:3000` (Caddy), prod leaves it unset so paths remain relative. Wired into `config.js` as `staticBaseURL`.
+
 ### Added
 - **Moderation queue count on profile** — users with `audioEdit` permission now see "Waiting for moderation: n" at the bottom of the stats column on their profile page. Backend adds a system-wide `pendingAll` count to `getProfileStats` gated on the `audioEdit` permission; frontend checks `canAudioEdit` and renders the stat row conditionally.
 - **Moderation queue count in digest emails** — contributors with `audioEdit` permission (editor/mod/admin) now receive a pending clip count with a link to `/audio/list` at the bottom of their digest email. Permission checked via two-query roles lookup in `buildDigestVars`; `hasPendingAll`/`pendingAll` vars added to both HTML and plain-text templates.
