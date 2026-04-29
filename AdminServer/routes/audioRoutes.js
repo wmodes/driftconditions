@@ -222,7 +222,7 @@ router.get('/sample/:year/:month/:filename', verifyToken, async (req, res) => {
       }
     });
   } catch (err) {
-    logger.error(`audioRoutes:/sample: File does not exist: ${filePath}`);
+    logger.warn(`audioRoutes:/sample: File does not exist: ${filePath}`);
     if (!res.headersSent) {
       res.status(404).send('File not found');
     } else {

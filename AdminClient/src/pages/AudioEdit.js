@@ -56,10 +56,12 @@ function AudioEdit() {
   const [isLoading, setIsLoading] = useState(true);
   const [successMessage, setSuccessMessage] = useState('');
   const [error, setError] = useState('');
+  const [audioError, setAudioError] = useState('');
 
   // Cover image upload state
   const [coverImageFile, setCoverImageFile] = useState(null);
   const [coverImagePreview, setCoverImagePreview] = useState(null);
+  const [coverImgError, setCoverImgError] = useState(false);
 
   // State for managing form inputs
   const [record, setRecord] = useState({
@@ -188,6 +190,8 @@ function AudioEdit() {
         // console.log('WaveSurfer is ready:', wavesurfer);
       }).then(wavesurfer => {
         waveSurferRef.current = wavesurfer;
+      }).catch(err => {
+        setAudioError('Audio file not available.');
       });
     }
     // Cleanup function to destroy WaveSurfer instance on component unmount
@@ -282,10 +286,11 @@ function AudioEdit() {
                 <div className="cover-image-panel">
                   {coverImagePreview ? (
                     <img className="cover-image" src={coverImagePreview} alt="Cover preview" />
-                  ) : record.coverImage ? (
-                    <img className="cover-image" src={`${coverImageURLBase}/${record.coverImage}.jpg`} alt="Cover" />
+                  ) : record.coverImage && !coverImgError ? (
+                    <img className="cover-image" src={`${coverImageURLBase}/${record.coverImage}.jpg`} alt="Cover"
+                      onError={() => setCoverImgError(true)} />
                   ) : (
-                    <div className="cover-image-placeholder">No cover image</div>
+                    <div className="cover-image-placeholder">{coverImgError ? 'Image not found' : 'No cover image'}</div>
                   )}
                   <div className="cover-image-upload">
                     <input
@@ -319,7 +324,10 @@ function AudioEdit() {
             </div>
 
             <div className="form-group pb-2">
-              <div id="waveform"></div>
+              {audioError
+                ? <p className="media-unavailable">{audioError}</p>
+                : <div id="waveform"></div>
+              }
               <div className="text-sm mt-1">Duration: {formatDuration(record.duration)}</div>
             </div>
 

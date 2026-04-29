@@ -1143,6 +1143,14 @@ tr.row-even.quick-edit textarea {
   margin-bottom: 0.25rem;
 }
 
+.form-value {
+  /* display-mode value; counterpart to .form-label */
+}
+
+.multiline {
+  white-space: pre-wrap;
+}
+
 .form-checkbox {    
   columns: 12em;
   column-gap: 1em;
@@ -1180,6 +1188,13 @@ tr.row-even.quick-edit textarea {
   object-fit: cover;
   border-radius: 0.25rem;
   border: 1px solid var(--content-box-border-color);
+}
+
+.media-unavailable {
+  font-size: 0.85rem;
+  color: var(--muted-text-color, #999);
+  padding: 0.5rem 0;
+  text-align: center;
 }
 
 .cover-image-panel .cover-image-placeholder {
