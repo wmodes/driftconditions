@@ -82,7 +82,10 @@
 {{/if}}
 
 {{#if hasPendingAll}}
-<p><strong>{{pendingAll}}</strong> clip(s) waiting for moderation: <a href="{{siteUrl}}/audio/list">{{siteUrl}}/audio/list</a>.</p>
+<strong style="font-size: 0.9em; color: #555;">Moderation</strong>
+<table style="border-collapse: collapse; margin: 0.25em 0 1em;">
+  <tr><td style="padding: 0.15em 1.5em 0.15em 0; color: #888;">Waiting for approval</td><td><a href="{{siteUrl}}/audio/list">{{pendingAll}}</a></td></tr>
+</table>
 {{/if}}
 
 <p>You can see your full profile and contribution history at <a href="{{siteUrl}}/profile/{{username}}">{{siteUrl}}/profile/{{username}}</a>.</p>

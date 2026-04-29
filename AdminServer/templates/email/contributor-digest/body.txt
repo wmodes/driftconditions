@@ -67,7 +67,8 @@ Waiting for Approval
 
 {{/if}}
 {{#if hasPendingAll}}
-Audio waiting for moderation: {{pendingAll}}
+Moderation
+  Waiting for approval: {{pendingAll}}
   {{siteUrl}}/audio/list
 
 {{/if}}Your full profile: {{siteUrl}}/profile/{{username}}
