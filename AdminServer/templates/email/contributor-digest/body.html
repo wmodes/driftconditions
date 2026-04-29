@@ -81,6 +81,10 @@
 </table>
 {{/if}}
 
+{{#if hasPendingAll}}
+<p><strong>{{pendingAll}}</strong> clip(s) waiting for moderation: <a href="{{siteUrl}}/audio/list">{{siteUrl}}/audio/list</a>.</p>
+{{/if}}
+
 <p>You can see your full profile and contribution history at <a href="{{siteUrl}}/profile/{{username}}">{{siteUrl}}/profile/{{username}}</a>.</p>
 
 <p>If you have any questions, don't hesitate to reach out.</p>

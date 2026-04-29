@@ -66,7 +66,11 @@ Waiting for Approval
 {{/each}}
 
 {{/if}}
-Your full profile: {{siteUrl}}/profile/{{username}}
+{{#if hasPendingAll}}
+Audio waiting for moderation: {{pendingAll}}
+  {{siteUrl}}/audio/list
+
+{{/if}}Your full profile: {{siteUrl}}/profile/{{username}}
 
 If you have any questions, don't hesitate to reach out.
 

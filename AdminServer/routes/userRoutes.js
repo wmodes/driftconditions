@@ -173,9 +173,10 @@ router.post('/profile', async (req, res) => {
     // Determine if the requesting user can see pending/approval content
     const isSelf = requestingUsername === targetUsername;
     const canViewExtras = isSelf || permissions.includes('viewProfileExtras');
+    const canAudioEdit = permissions.includes('audioEdit');
 
     // Fetch profile stats for the target user
-    const stats = await getProfileStats(userInfo.userID, canViewExtras);
+    const stats = await getProfileStats(userInfo.userID, canViewExtras, canAudioEdit);
     logger.debug(`userRoutes:/profile: stats: ${JSON.stringify(stats, null, 2)}`);
 
     // Respond with the user's information, stats, and the edit flag
@@ -467,7 +468,7 @@ router.post('/disable', verifyToken, async (req, res) => {
  * @param {boolean} canViewExtras - Whether to include pending/approval data.
  * @returns {Object} - Stats object with counts, totals, top clips, and optionally pending clips.
  */
-async function getProfileStats(userID, canViewExtras) {
+async function getProfileStats(userID, canViewExtras, canAudioEdit = false) {
   // Audio counts + totals
   const [[audioRow]] = await db.query(
     `SELECT COUNT(*) AS total,
@@ -506,6 +507,15 @@ async function getProfileStats(userID, canViewExtras) {
     recentPending = rows;
   }
 
+  // System-wide pending count — visible to users with audioEdit permission
+  let pendingAll = null;
+  if (canAudioEdit) {
+    const [[pendingRow]] = await db.query(
+      `SELECT COUNT(*) AS pendingAll FROM audio WHERE status = 'Review'`
+    );
+    pendingAll = pendingRow.pendingAll || 0;
+  }
+
   // Recently played audio (most recent 3 by lastUsed)
   const [recentPlayed] = await db.query(
     `SELECT audioID, title, lastUsed
@@ -522,6 +532,7 @@ async function getProfileStats(userID, canViewExtras) {
       contributed: audioRow.total || 0,
       totalPlays: parseInt(audioRow.totalPlays, 10) || 0,
       ...(canViewExtras && { pending: audioRow.pending || 0 }),
+      ...(canAudioEdit && { pendingAll }),
       topPlays,
       recentPlayed,
       ...(canViewExtras && { recentPending }),

@@ -22,6 +22,7 @@ function Profile() {
   const { user: userAuth } = useSelector((state) => state.auth);
   const canSeeDetails = userAuth?.permissions?.includes('audioView');
   const canSeeNotes = userAuth?.permissions?.includes('userList');
+  const canAudioEdit = userAuth?.permissions?.includes('audioEdit');
 
   const notFoundUser = {
     username: '$&**$%@!',
@@ -180,6 +181,16 @@ function Profile() {
                 </li>
               ))}
             </ul>
+          </>
+        )}
+
+        {canAudioEdit && audioStats.pendingAll > 0 && (
+          <>
+            <hr />
+            <div className="stat-row">
+              <span className="stat-label">Waiting for moderation</span>
+              <span className="stat-value">{audioStats.pendingAll}</span>
+            </div>
           </>
         )}
 
