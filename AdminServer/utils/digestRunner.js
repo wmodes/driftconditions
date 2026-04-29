@@ -456,10 +456,10 @@ const schedules = [
     template:         'contributor-digest',
     commType:         'digest_sent',
     freqDays:         1,    // fallback if digestFrequency unrecognised; normally overridden by useUserFreq
-    fallbackDays:     27,   // monthly minimum contact
+    fallbackDays:     7,    // weekly minimum contact — falls back to weekly cadence when no new activity
     useUserFreq:      true, // derive send window from user.digestFrequency via FREQ_DAYS
     scheduledReason:  'new activity',
-    fallbackReason:   'inactive so fell back to monthly',
+    fallbackReason:   'inactive so fell back to weekly',
     isScheduledToday: async (user) => await hasNewEvents(user.userID),
     getRecipients:    () => getContributorsWithSubmissions('daily'),
     buildVars:        buildDigestVars,
