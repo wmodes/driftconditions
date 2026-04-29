@@ -187,6 +187,7 @@ function Profile() {
         {canAudioEdit && audioStats.pendingAll > 0 && (
           <>
             <hr />
+            <h3>Moderation</h3>
             <div className="stat-row">
               <span className="stat-label">Waiting for moderation</span>
               <span className="stat-value">{audioStats.pendingAll}</span>
