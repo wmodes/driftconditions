@@ -1,5 +1,4 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import FeatherIcon from 'feather-icons-react';
 
 const HowItWorks = () => {
@@ -19,58 +18,81 @@ const HowItWorks = () => {
                 </p>
               </section>
 
+              <figure>
+                <img src="/img/figures/sutulo-old-radio-3810392.jpg" alt="Close-up of a vintage shortwave radio dial showing station names including BBC, Normandy, and N. America, with a red tuning needle against a dark background" />
+                <figcaption>Shortwave radio by <a href="https://pixabay.com/users/sutulo-3073859/?utm_source=link-attribution&utm_medium=referral&utm_campaign=image&utm_content=3810392">sutulo</a> from Pixabay</figcaption>
+              </figure>
+
               <section className='minor-section keep-together'>
                 <h3 className='title'>Organized Chaos</h3>
                 <p>
-                  DriftConditions is built around one idea: that a system given the right materials and rules can generate something that feels discovered rather than made. Every session is assembled fresh — different clips, different combinations, different collisions. The content is contributed by people, but the experience is conjured by the machine. The boundary between intention and accident is exactly where we want to be.
+                  DriftConditions is built around one idea: that a system given the right materials and rules can generate something that feels discovered rather than made. The content is contributed by people, but the experience is conjured by the machine. Every session is assembled fresh — different clips, different combinations, different collisions. But who made it? The contributors who uploaded the clips? The recipe writer who laid out the structure? The MixEngine that selected and assembled them? The listener who happened to be there at that moment? The question doesn't resolve cleanly — and that's not a failure of the system. That indeterminacy is the point. The boundary between intention and accident is exactly where we want to be.
                 </p>
               </section>
-
-              <figure>
-                <img src="/img/figures/sample-audio.png" alt="A sample audio clip" />
-                <figcaption>A sample audio clip submitted by a user.</figcaption>
-              </figure>
 
               <section className='minor-section keep-together'>
-                <h3 className='title'>The Blueprints</h3>
+                <h3 className='title'>The Lineage</h3>
                 <p>
-                  Contributors write recipes: blueprints in JSON5 format that describe the structure of a mix. Each recipe contains multiple tracks; each track specifies one or more clips along with attributes like type, tags, length, and effects. The system draws from thousands of user-contributed clips — ranging from a few seconds to over an hour — pulling matches from the library and assembling them into something coherent. No two sessions are alike, but they hang together — the way a late-night radio show does, even when it's strange.
+                  The idea has ancestors. The Dadaists were the first to show that cutting and recombining could reveal something truer than intention — that randomness, given the right materials, produces meaning. Burroughs took the cut-up into language: fold the newspaper, cut the sentence, find what was already there. Bowie used a randomizer. Cobain cut up his own lyrics. Cage found music in found sound and silence. DriftConditions works in that tradition, with one difference: where they made objects — songs, poems, collages you could hold — this makes a process. Not a thing but a machine for generating things, running continuously, producing sessions that exist once and dissolve.
                 </p>
               </section>
 
               <figure>
-                <img src="/img/figures/sample-recipe.png" alt="A sample recipe" />
-                <figcaption>A sample recipe written in JSON5 format specifies the details of each track and clip including type, tags, length, and effects.</figcaption>
-              </figure>
-
-              <section className='minor-section keep-together'>
-                <h3 className='title'>Under the Hood</h3>
-                <p>
-                  The MixEngine is the heart of the system. It reads a recipe, selects clips from the database, applies effects, and renders a mix. A streaming component takes those mixes and assembles them into the continuous feed you're hearing. A separate admin interface — the one you're in right now — lets contributors upload audio, manage clips, and write and edit recipes. Somewhere between these moving parts, the station finds its sound.
-                </p>
-              </section>
-
-              <figure>
-                <img src="/img/figures/mixing-console.webp" alt="Mixing console" />
-                <figcaption>MixEngine dynamically combines user-contributed audio clips, recipes, and effects to create a seamless and ever-evolving audio stream.</figcaption>
+                <img src="/img/figures/john-cage-1.jpg" alt="John Cage crouched over electronic equipment, surrounded by a web of wires, in a black and white photograph" />
+                <figcaption>John Cage at the inauguration of the National Foundation for the Arts, Washington DC, 1966. Photo: Rowland Scherman / Getty Images</figcaption>
               </figure>
 
               <section className='minor-section keep-together'>
                 <h3 className='title'>The Drift</h3>
                 <p>
-                  That sense of something new emerging from unlikely combinations — a voice you don't recognize over a sound you almost do — that's the heart of it. The system pulls clips from across the library, matches them against the recipe's loose constraints, and layers them into something none of the contributors could have predicted. And layered over all of it, coherent noise — borrowed from computer graphics — breathes life into the mix, modulating volume, triggering and releasing effects, shaping the texture of each track over time. The result feels less like playback and more like something happening right now, for the first time — the way a signal sounds when it's drifting just at the edge of reception.
+                  That sense of something new emerging from unlikely combinations — a voice you don't recognize over a sound you almost do — has to do with more than which clips are chosen. Layered over everything, coherent noise breathes. The technique is borrowed from computer graphics: instead of random values that jump unpredictably, it generates smooth, continuous, non-repeating curves — values that drift through their range the way weather does. Each track carries its own noise field running at its own frequency and phase, modulating volume, triggering and releasing effects, shaping the texture over time. The curves never repeat. They wander. This is the dérive at the system level — not a planned path through the material, but a drift through possibility space, drawn by the shape of the terrain. The noise doesn't know where it's going. Neither does the mix. There is no recording of what you're hearing. This exact combination of clips, timing, and noise will never be assembled again — the result feels less like playback and more like something happening right now, for the first time, the way a signal sounds when it's drifting just at the edge of reception.
                 </p>
               </section>
 
               <figure>
-                <img src="/img/figures/noise-graphs.png" alt="Graph of harmonic cascade" />
+                <img src="/img/figures/harmonic-cascade.png" alt="Mathematical visualization of harmonic cascade coherent noise functions, showing multiple colored waveform curves against a dark background" />
                 <figcaption>Harmonic cascade simulating coherent noise to control the amplitude of a clip or track.</figcaption>
               </figure>
 
               <section className='minor-section keep-together'>
-                <h3 className='title'>Join In</h3>
+                <h3 className='title'>The Contributors</h3>
                 <p>
-                  The station runs on what people bring to it. If you have audio that might fit — field recordings, spoken word, found sound, ambient texture — we'd love to hear from you. <Link className="link" to="/signup">Sign up for an account</Link> and reach out to let us know you'd like to contribute. Once we've set you up, you can upload clips and start contributing to the library. We ask that everything be free of copyright you don't hold — public domain, Creative Commons, or your own original work. The station lives in that space where interesting things happen, and we'd like to keep it there.
+                  The station runs on what people bring to it — field recordings from lonely roadsides, archival fragments, shortwave ghosts, church sermons from thrift-store cassettes, rainstorms, room tones, overheard voices, beautiful wreckage of every kind. Once a clip enters the library, it slips its maker's hands. It drifts into combinations its creator didn't choose, plays alongside sounds they've never heard, settles into mixes that belong to no one in particular. What returns is stranger than what was given — a fragment of cassette hiss carried into a stranger's late night, a voice from 1962 surfacing under rain, the contributor's small offering remade into something they couldn't have built alone. What is it then — a station, a séance, a chorus? Not a thing made but a thing happening. Not yours, not mine, not anyone's, and stronger for it.
+                </p>
+              </section>
+
+              <figure>
+                <img src="/img/figures/driftconditions-clip.png" alt="DriftConditions admin interface showing audio clip details including waveform, classification tags, and metadata for a shortwave numbers station recording" />
+                <figcaption>A sample audio clip submitted by a user.</figcaption>
+              </figure>
+
+              <section className='minor-section keep-together'>
+                <h3 className='title'>The Recipes</h3>
+                <p>
+                  Contributors also write recipes: blueprints in JSON5 format that describe the structure of a mix. Each recipe contains multiple tracks; each track specifies one or more clips along with attributes — type, tags, length, and effects. The system draws from the library, matching clips against the recipe's loose constraints and assembling them into something coherent. No two sessions are alike, but they hang together — the way a late-night radio show does, even when it's strange.
+                </p>
+              </section>
+
+              <figure>
+                <img src="/img/figures/driftconditions-recipe-detail.png" alt="DriftConditions recipe editor showing JSON5 code defining multiple tracks including a sermon, a newscast, and a bridge static interference track" />
+                <figcaption>A sample recipe written in JSON5 format specifies the details of each track and clip including type, tags, length, and effects.</figcaption>
+              </figure>
+
+              <section className='minor-section keep-together'>
+                <h3 className='title'>The MixEngine</h3>
+                <p>
+                  A server runs quietly in the background. A separate admin interface lets contributors upload audio, manage clips, and write recipes. But the MixEngine is the heart of the system. It reads a recipe, selects clips from the database, applies effects, and renders a mix. A streaming component takes those mixes and assembles them into the continuous feed you're hearing. The whole thing is a small conspiracy of parts that have never met — the contributor uploading at noon, the recipe written months ago, the clip recorded on a porch in 2014, the listener tuning in tonight. Somewhere in their brief overlap, the station happens.
+                </p>
+              </section>
+
+              <figure>
+                <img src="/img/figures/mixing-console.webp" alt="Professional mixing console with illuminated faders, knobs, and channel strips" />
+                <figcaption>Somewhere between these moving parts, the station finds its sound.</figcaption>
+              </figure>
+
+              <section className='minor-section keep-together'>
+                <p>
+                  DriftConditions is an attempt to make a beautiful accident on purpose — and to leave enough space for more beautiful accidents.
                 </p>
               </section>
 
