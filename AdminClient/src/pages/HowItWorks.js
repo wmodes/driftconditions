@@ -14,7 +14,7 @@ const HowItWorks = () => {
               <section className='minor-section keep-together'>
                 <h3 className='title'>The Accident</h3>
                 <p>
-                  Late one night in the early oughts, I was driving home from my radio show — a late-night aural collage of music, story, and found sound — when I stumbled across something strange on the dial. Someone was layering a sermon with BBC news, lacing it with static, the whole thing drifting in and out. I pulled over on a dark mountain highway to listen. Eventually I lost the signal. When I tuned back in, I realized I'd been parked between two stations the whole time, and the gorgeous mess had been an accident. That's when I asked: if something this beautiful can happen by accident, can you make it happen on purpose?
+                  Late one night in the early oughts, I was driving home from my radio show — a late-night collage of music, story, and found sound, something like <i>This American Life</i> on a late drive with a good friend — when I stumbled across something strange on the dial. Someone was layering a sermon with BBC news, lacing it with static, the whole thing drifting in and out. I pulled over on a dark mountain highway to listen. Eventually I lost the signal. When I tuned back in, I realized I'd been parked between two stations the whole time, and the gorgeous mess had been an accident. That's when I asked: if something this beautiful can happen by accident, can you make it happen on purpose?
                 </p>
               </section>
 
