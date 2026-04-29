@@ -42,6 +42,8 @@ function AudioView() {
   // Success and error handling
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [audioError, setAudioError] = useState('');
+  const [coverImgError, setCoverImgError] = useState(false);
 
   const [record, setRecord] = useState({
     copyrightCert: 0,
@@ -90,6 +92,8 @@ function AudioView() {
         // console.log('WaveSurfer is ready:', wavesurfer);
       }).then(wavesurfer => {
         waveSurferRef.current = wavesurfer;
+      }).catch(err => {
+        setAudioError('Audio file not available.');
       });
     }
     // Cleanup function to destroy WaveSurfer instance on component unmount
@@ -169,21 +173,25 @@ function AudioView() {
               </div>
 
               <div className="cover-image-panel">
-                {record.coverImage ? (
+                {record.coverImage && !coverImgError ? (
                   <img
                     className="cover-image"
                     src={`${coverImageURLBase}/${record.coverImage}.jpg`}
                     alt="Cover"
+                    onError={() => setCoverImgError(true)}
                   />
                 ) : (
-                  <div className="cover-image-placeholder">No cover image</div>
+                  <div className="cover-image-placeholder">{coverImgError ? 'Image not found' : 'No cover image'}</div>
                 )}
               </div>
             </div>
           </div>
 
           <div className="form-group pb-2">
-            <div id="waveform"></div>
+            {audioError
+              ? <p className="media-unavailable">{audioError}</p>
+              : <div id="waveform"></div>
+            }
             <div className="text-sm mt-1">Duration: {formatDuration(record.duration)}</div>
           </div>
   
@@ -206,7 +214,7 @@ function AudioView() {
             )}
             <div className="form-col">
               <div className="form-label">Comments:</div>
-              <div className="form-value">{record.comments}</div>
+              <div className="form-value multiline">{record.comments}</div>
             </div>
           </div>
 
