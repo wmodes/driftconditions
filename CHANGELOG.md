@@ -11,6 +11,10 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [2026-04-29]
 
+### Added
+- **Moderation queue count on profile** — users with `audioEdit` permission now see "Waiting for moderation: n" at the bottom of the stats column on their profile page. Backend adds a system-wide `pendingAll` count to `getProfileStats` gated on the `audioEdit` permission; frontend checks `canAudioEdit` and renders the stat row conditionally.
+- **Moderation queue count in digest emails** — contributors with `audioEdit` permission (editor/mod/admin) now receive a pending clip count with a link to `/audio/list` at the bottom of their digest email. Permission checked via two-query roles lookup in `buildDigestVars`; `hasPendingAll`/`pendingAll` vars added to both HTML and plain-text templates.
+
 ### Changed
 - **`HowItWorks.js` fully rewritten** — restructured, expanded, and rewritten for an audience of writers and academics interested in net art, procedural generation, and experimental audio. New section order: The Accident → Organized Chaos → The Lineage → The Drift → The Contributors → The Recipes → The MixEngine → closing. New sections: The Lineage (Dada, cut-up tradition, Cage) and a closing coda. All sections revised for stronger lyrical takeaways and conceptual depth. Authorship indeterminacy, the dérive, ephemerality, and the participatory framework made explicit. Removed the contributor call-to-action (now on the homepage).
 - **`HowItWorks.js` image updates** — new and repositioned figures throughout; images now appear after the section they illustrate. Added: vintage shortwave radio dial (The Accident), John Cage at the National Foundation for the Arts 1966 (The Lineage). Improved alt text on all images.
