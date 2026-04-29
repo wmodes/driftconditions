@@ -181,7 +181,7 @@ class ClipAdjustor {
     // Pre-check: if even minimum silences exceed the budget, fixed content is too long.
     // Scale all silence minimums down proportionally to fit and return early.
     if (totalMins > budget) {
-      logger.warn(`ClipAdjustor._adjustFlexibleClips: Min silences (${totalMins}s) exceed budget (${budget}s) — scaling down proportionally`);
+      logger.info(`ClipAdjustor._adjustFlexibleClips: Min silences (${totalMins}s) exceed budget (${budget}s) — scaling down proportionally`);
       const scale = budget > 0 ? budget / totalMins : 0;
       flexibleClips.forEach(clip => {
         clip.duration = parseFloat(clip.minLength) * scale;
