@@ -9,6 +9,18 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-04-29]
+
+### Changed
+- **`HowItWorks.js` fully rewritten** — restructured, expanded, and rewritten for an audience of writers and academics interested in net art, procedural generation, and experimental audio. New section order: The Accident → Organized Chaos → The Lineage → The Drift → The Contributors → The Recipes → The MixEngine → closing. New sections: The Lineage (Dada, cut-up tradition, Cage) and a closing coda. All sections revised for stronger lyrical takeaways and conceptual depth. Authorship indeterminacy, the dérive, ephemerality, and the participatory framework made explicit. Removed the contributor call-to-action (now on the homepage).
+- **`HowItWorks.js` image updates** — new and repositioned figures throughout; images now appear after the section they illustrate. Added: vintage shortwave radio dial (The Accident), John Cage at the National Foundation for the Arts 1966 (The Lineage). Improved alt text on all images.
+- **ClipAdjustor silence budget log level** — downgraded "Min silences exceed budget" from `warn` to `info`; this is expected graceful degradation, not an error condition.
+
+### Added
+- **Player Upgrade Plan section 3.4** — "Stale Buffer on Resume" added to `design/DriftConditions Spring 2026 Player Upgrade Plan.md`. Covers the stale `<audio>` buffer problem on long pauses, implementation via `stoppedAt` timestamp and src reload threshold, BroadcastChannel interaction, and mobile behavior.
+
+---
+
 ## [2026-04-27] (577)
 
 ### Fixed

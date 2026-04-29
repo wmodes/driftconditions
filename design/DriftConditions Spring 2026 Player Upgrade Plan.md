@@ -118,6 +118,31 @@ The [Media Session API](https://developer.mozilla.org/en-US/docs/Web/API/Media_S
 
 This is a small addition with high perceived quality on mobile.
 
+### 3.4 Stale Buffer on Resume
+
+When a listener stops the player and returns hours later, the `<audio>` element retains its buffered stream data from the previous session. On resume, playback picks up from the stale buffer rather than the live stream — the listener hears old audio for some seconds before the element reconnects and catches up.
+
+**The problem:** The `<audio>` element's `src` points to the Icecast stream URL. Stopping playback calls `.pause()` but does not clear the buffer. If significant time passes before the listener resumes, the buffer is stale — the stream has moved on but the element starts replaying cached bytes before eventually re-syncing.
+
+**Implementation approach:**
+- Record the timestamp when the player stops: `stoppedAt = Date.now()`, stored in component state.
+- On resume (before calling `.play()`), check elapsed time: `Date.now() - stoppedAt`.
+- If elapsed time exceeds a threshold (suggested: 30 minutes), flush the buffer by resetting the `src`:
+  ```js
+  audioRef.current.src = '';
+  audioRef.current.load();
+  audioRef.current.src = config.stream.url;
+  ```
+  Then call `.play()`.
+- If elapsed time is under the threshold, resume normally — the buffer is recent enough to be live stream data.
+- Reset `stoppedAt` to `null` on each resume so the check doesn't fire mid-session.
+
+**Interaction with 2.2 (BroadcastChannel):** The `stoppedAt` timestamp should be included in the stop broadcast so all tabs share the same elapsed-time reference. When any tab receives a "playing" intent after 30+ minutes of inactivity, it treats the resume as a cold start and reloads its own `src` before calling `.play()`.
+
+**Mobile behavior:** Setting `src = ''` followed by `src = url` has the same effect on iOS as on desktop — it fully drops the buffer and triggers a fresh load. The subsequent `.play()` call is already inside a user gesture handler (the listener tapped Play), so autoplay restrictions do not apply.
+
+> **Open decision:** Should the threshold be configurable via `config.stream.staleBufferThreshold`, or is 30 minutes a reasonable fixed constant? A shorter threshold (e.g., 5 minutes) is more conservative but may cause unnecessary reloads during brief pauses.
+
 ---
 
 ## 4. Implementation: Engagement and Sharing
