@@ -159,7 +159,7 @@ async function logSent(userID, commType, payload = {}) {
  * @param {number} userID
  * @returns {Promise<{audioRow, recipeRow, topPlays, recentPendingRows}>}
  */
-async function getProfileStats(userID) {
+async function getProfileStats(userID, canAudioEdit = false) {
   const [[audioRow]] = await db.query(
     `SELECT COUNT(*) AS total,
             SUM(status = 'Review') AS pending,
@@ -186,7 +186,14 @@ async function getProfileStats(userID) {
      ORDER BY createDate DESC LIMIT 24`,
     [userID]
   );
-  return { audioRow, recipeRow, topPlays, recentPendingRows };
+
+  let pendingAll = null;
+  if (canAudioEdit) {
+    const [[pendingRow]] = await db.query(`SELECT COUNT(*) AS pendingAll FROM audio WHERE status = 'Review'`);
+    pendingAll = pendingRow.pendingAll || 0;
+  }
+
+  return { audioRow, recipeRow, topPlays, recentPendingRows, pendingAll };
 }
 
 /**
@@ -311,7 +318,13 @@ async function buildDigestVars(user) {
     else if (event.commType === 'audio_disapproved') disapproved.push(entry);
   }
 
-  const { audioRow, recipeRow, topPlays, recentPendingRows } = await getProfileStats(userID);
+  // Check if this user has audioEdit permission (editor/mod/admin) for the moderation queue count
+  const [[userRow]] = await db.query(`SELECT roleName FROM users WHERE userID = ?`, [userID]);
+  const [[roleRow]] = await db.query(`SELECT permissions FROM roles WHERE roleName = ?`, [userRow.roleName]);
+  const rolePerms = Array.isArray(roleRow?.permissions) ? roleRow.permissions : JSON.parse(roleRow?.permissions || '[]');
+  const canAudioEdit = rolePerms.includes('audioEdit');
+
+  const { audioRow, recipeRow, topPlays, recentPendingRows, pendingAll } = await getProfileStats(userID, canAudioEdit);
   const adminNewsRows = await getAdminNews();
 
   const recentPending = recentPendingRows.map(r => ({
@@ -341,6 +354,8 @@ async function buildDigestVars(user) {
     hasApproved:        approved.length > 0,
     disapproved,
     hasDisapproved:     disapproved.length > 0,
+    pendingAll,
+    hasPendingAll:      pendingAll !== null && pendingAll > 0,
     adminNews,
     hasAdminNews:       adminNews.length > 0,
     digestFrequency,
