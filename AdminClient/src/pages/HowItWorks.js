@@ -14,7 +14,7 @@ const HowItWorks = () => {
               <section className='minor-section keep-together'>
                 <h3 className='title'>The Accident</h3>
                 <p>
-                  Late one night in the early oughts, I was driving home from my radio show — a late-night collage of music, story, and found sound, something like <i>This American Life</i> on a late drive with a good friend — when I stumbled across something strange on the dial. Someone was layering a sermon with BBC news, lacing it with static, the whole thing drifting in and out. I pulled over on a dark mountain highway to listen. Eventually I lost the signal. When I tuned back in, I realized I'd been parked between two stations the whole time, and the gorgeous mess had been an accident. That's when I asked: if something this beautiful can happen by accident, can you make it happen on purpose?
+                  Late one night in the early oughts, I was driving home from my radio show in my old truck — a late-night collage of music, story, and found sound, something like <i>This American Life</i> on a late drive with a good friend — when I stumbled across something strange on the dial. Someone was layering a sermon with BBC news, lacing it with static, the whole thing drifting in and out. I pulled over on a dark mountain highway to listen. When I lost the signal, I tried to tune back in, and discovered I'd been parked between two stations the whole time, and the gorgeous mix had been an accident. That's when I asked: if something this beautiful can happen by accident, can I make it happen on purpose?
                 </p>
               </section>
 
@@ -26,7 +26,7 @@ const HowItWorks = () => {
               <section className='minor-section keep-together'>
                 <h3 className='title'>Organized Chaos</h3>
                 <p>
-                  DriftConditions is built around one idea: that a system given the right materials and rules can generate something that feels discovered rather than made. The content is contributed by people, but the experience is conjured by the machine. Every session is assembled fresh — different clips, different combinations, different collisions. But who made it? The contributors who uploaded the clips? The recipe writer who laid out the structure? The MixEngine that selected and assembled them? The listener who happened to be there at that moment? The question doesn't resolve cleanly — and that's not a failure of the system. That indeterminacy is the point. The boundary between intention and accident is exactly where we want to be.
+                  DriftConditions is built around one idea: that a system given the right materials and rules can generate something that feels discovered rather than made. The content is contributed by people, but the experience is conjured by the machine. Every session is assembled fresh — different clips, different combinations, different collisions. And then it's gone. Nothing is recorded. The mix you're hearing will never be heard again — not by you, not by anyone, not even by the system that just made it. That's not a limitation. It's the point. Like the radio it grew out of, the work happens in the moment of its tuning.
                 </p>
               </section>
 
