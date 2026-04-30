@@ -1143,6 +1143,12 @@ tr.row-even.quick-edit textarea {
   margin-bottom: 0.25rem;
 }
 
+.icon-callout {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+}
+
 .form-value {
   /* display-mode value; counterpart to .form-label */
 }

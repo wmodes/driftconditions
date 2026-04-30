@@ -1,18 +1,18 @@
 #!/usr/bin/env node
 /**
- * audio-audit-apply.js — Phase 2: apply approved tag suggestions to the DB
+ * llm-tag-apply.js — Phase 2: apply approved tag suggestions to the DB
  *
- * Reads scripts/audio-audit-results.json and merges suggested tags into each
+ * Reads scripts/llm-tag-results.json and merges suggested tags into each
  * audio record where approved: true. Appends a note to comments recording the
  * AI assistance. Logs each change to the audit table.
  *
  * Classification flags are printed for manual review but NOT auto-applied.
  *
  * Usage (run from project root):
- *   node scripts/audio-audit-apply.js            # apply to local DB
- *   node scripts/audio-audit-apply.js --dry-run  # preview only, no writes
- *   node scripts/audio-audit-apply.js --prod     # apply to production DB
- *   node scripts/audio-audit-apply.js --prod --dry-run
+ *   node scripts/llm-tag-apply.js            # apply to local DB
+ *   node scripts/llm-tag-apply.js --dry-run  # preview only, no writes
+ *   node scripts/llm-tag-apply.js --prod     # apply to production DB
+ *   node scripts/llm-tag-apply.js --prod --dry-run
  */
 
 'use strict';
@@ -27,7 +27,7 @@ require('module').Module._initPaths();
 
 const { logAudit } = require(path.join(__dirname, '../AdminServer/utils/audit'));
 
-const INPUT_FILE = path.join(__dirname, 'audio-audit-results.json');
+const INPUT_FILE = path.join(__dirname, 'llm-tag-results.json');
 const DRY_RUN    = process.argv.includes('--dry-run');
 const USE_PROD   = process.argv.includes('--prod');
 
