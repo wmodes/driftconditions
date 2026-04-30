@@ -23,7 +23,7 @@ const logger      = require('config/logger').custom('AdminServer', 'info');
 
 const clipsDir   = config.content.clipsDir;
 const { analysisQueue, analyzed } = config.audio.internalTags;
-const analyzeScript    = path.resolve(__dirname, '../../experiments/essentia/analyze.js');
+const analyzeScript    = path.resolve(__dirname, '../utils/audioAnalyze.js');
 
 // ─── Main entry point ────────────────────────────────────────────────────────
 

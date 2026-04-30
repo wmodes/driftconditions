@@ -100,7 +100,13 @@ const Homepage = () => {
                   { projectName } is a procedurally-generated audio stream mixed on-the-fly 24/7 from { location }.
                 </p>
                 <p>
-                <Link className="link" to="/howitworks">Curious how it works?</Link> You're our kinda people. 
+                <span className="icon-callout">
+                  <FeatherIcon icon="settings" />
+                  <span>
+                    <Link className="link" to="/howitworks">Curious how it works?</Link><br />
+                    You're our kinda people.
+                  </span>
+                </span>
                 </p>
                 <p>
                   You have audio you think would fit {projectName}? <Link  className="link" to="/signup">Signup for an account,</Link> and then{' '}
