@@ -1,16 +1,16 @@
 #!/usr/bin/env node
 /**
- * audio-audit.js — LLM-assisted audio clip audit
+ * llm-tag-suggest.js — LLM-assisted audio clip tag suggestions
  *
  * Sends all approved audio clips to Claude Haiku in batches. For each clip,
  * the model suggests additional tags AND flags potential misclassification.
- * Results are written to scripts/audio-audit-results.json for review.
+ * Results are written to scripts/llm-tag-results.json for review.
  *
  * Usage (run from project root):
- *   node scripts/audio-audit.js
+ *   node scripts/llm-tag-suggest.js
  *
  * Requires ANTHROPIC_API_KEY in AdminServer/.env
- * After reviewing results, run audio-audit-apply.js to write changes to the DB.
+ * After reviewing results, run llm-tag-apply.js to write changes to the DB.
  */
 
 'use strict';
@@ -48,7 +48,7 @@ if (USE_PROD) {
 const BATCH_SIZE     = 5;
 const BATCH_DELAY_MS = 500;
 const MODEL          = 'claude-haiku-4-5-20251001';
-const OUTPUT_FILE    = path.join(__dirname, 'audio-audit-results.json');
+const OUTPUT_FILE    = path.join(__dirname, 'llm-tag-results.json');
 
 // Valid classification values the model should choose from
 const VALID_CLASSIFICATIONS = [

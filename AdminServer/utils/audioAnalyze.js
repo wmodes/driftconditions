@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 /**
- * analyze.js — Essentia.js audio analysis experiment
+ * audioAnalyze.js — Essentia.js audio analysis
  *
  * Analyzes an audio file and outputs suggested tags based on confidence thresholds.
  *
  * Usage:
- *   node analyze.js <audio-file>
+ *   node utils/audioAnalyze.js <audio-file>
  */
 
 'use strict';

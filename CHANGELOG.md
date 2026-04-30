@@ -9,6 +9,26 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-04-30]
+
+### Added
+- **Expanded key tagging in audio analysis** — Essentia key detection now produces three tags instead of one: `{note}-{scale}-tonic` (specific, e.g. `a-minor-tonic`), `{note}-{scale}-key` (key family, e.g. `a-minor-key`), and the relative major/minor cross-tag (e.g. `c-major-key` on an A minor clip). A full 24-key relative lookup table covers all major/minor pairs. This allows clipSelector to naturally prefer same-key matches while still occasionally pairing relative-key clips — harmonic affinity baked into tag overlap math. Root-key tag was prototyped and dropped: it caused harmonic mismatches by grouping parallel keys (e.g. A-flat major and A minor) that sound a half step off.
+- **647 prod clips requeued for re-analysis** — all clips previously tagged `audio-analyzed` swapped back to `needs-audio-analysis` so the nightly runner backfills the new tonic and relative key tags.
+
+### Changed
+- **`audioAnalyze.js` moved from `experiments/essentia/` to `AdminServer/utils/`** — the Essentia analysis subprocess is now load-bearing infrastructure, not an experiment. `experiments/essentia/analyze.js` kept in sync but is no longer the authoritative copy.
+- **`essentia.js` and `audio-decode` added to AdminServer dependencies** — previously only installed under `experiments/essentia/node_modules/`; now properly installed in `AdminServer` so the production job can run without depending on the experiments directory.
+- **`audioAnalysisRunner.js` spawn path updated** — now references `../utils/audioAnalyze.js` instead of the experiments directory.
+- **`audio-audit.js` / `audio-audit-apply.js` renamed** — to `scripts/llm-tag-suggest.js` / `scripts/llm-tag-apply.js` to distinguish LLM-assisted semantic tagging from Essentia acoustic analysis. Output file renamed from `audio-audit-results.json` to `llm-tag-results.json`.
+
+### Fixed
+- **Homepage "Curious how it works?" layout** — gear icon now sits left of two stacked lines ("Curious how it works?" / "You're our kinda people.") using a `.icon-callout` flexbox wrapper with `align-items: center`. Previously the icon and text were inline on a single line.
+
+### Content
+- **Junto 0747 clips approved** — all 30 Disquiet Junto 0747 clips set to `Approved` status, making them available for mix selection.
+
+---
+
 ## [2026-04-29]
 
 ### Fixed
