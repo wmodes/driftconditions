@@ -112,7 +112,7 @@ const Homepage = () => {
                 <p>
                 <span className="icon-callout">
                   <CreativeCommonsIcon size={24} />
-                  <span>Audio licensed under Creative Commons BY-NC-SA 4.0.<br />Share, remix, credit, keep it free.</span>
+                  <span>Audio licensed under Creative Commons BY-NC-SA 4.0.<wbr /> Share, remix, credit, keep it free.</span>
                 </span>
                 </p>
                 <p>
