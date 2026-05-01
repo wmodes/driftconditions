@@ -20,12 +20,16 @@ const RootLayout = () => {
   const user = useSelector(state => state.auth.user);
   const currentPath = location.pathname;
 
-  const [isPlayerVisible, setIsPlayerVisible] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const audioPlayerRef = useRef(null); // Create a ref for AudioPlayer
-  
+
   // Get the page context based on the current path
   const pageContext = getPageContext(currentPath);
+  const isHomepage = pageContext.toLowerCase() === 'homepage';
+
+  // show bar on all non-homepage pages; on homepage only when scrolled past the faux player
+  const showBar = !isHomepage || isScrolled;
 
   // check user authentication and authorization
   useAuthCheckAndNavigate(pageContext);
@@ -47,7 +51,6 @@ const RootLayout = () => {
   if (!isPublicPage && !user?.userID) return <Waiting />;
 
   const togglePlayer = () => {
-    setIsPlayerVisible(true);
     if (audioPlayerRef.current) {
       if (isPlaying) {
         audioPlayerRef.current.pause(); // Trigger pause method on the AudioPlayer
@@ -74,8 +77,8 @@ const RootLayout = () => {
         <meta name="twitter:image" content={brand.ogImage} />
       </Helmet>
       <Navigation />
-      <Outlet context={{ togglePlayer, isPlaying, setIsPlaying }} />
-      <AudioPlayer ref={audioPlayerRef} isVisible={isPlayerVisible} setIsPlaying={setIsPlaying} />
+      <Outlet context={{ togglePlayer, isPlaying, setIsPlaying, setIsScrolled }} />
+      <AudioPlayer ref={audioPlayerRef} showBar={showBar} isPlaying={isPlaying} setIsPlaying={setIsPlaying} togglePlayer={togglePlayer} />
     </div>
   );
 }
