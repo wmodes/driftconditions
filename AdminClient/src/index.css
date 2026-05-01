@@ -412,7 +412,6 @@ figcaption {
 /* player */
 
 .player {
-  /* display: none; */
   position: fixed;
   bottom: 0;
   left: 0;
@@ -421,19 +420,30 @@ figcaption {
   padding: 5px;
   text-align: center;
   z-index: 1000;
+  transition: opacity 0.5s, visibility 0.5s;
 }
 
 .player.hidden {
-  display: none;
+  display: block;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .player.visible {
-  display: block;
+  opacity: 1;
+  visibility: visible;
 }
 
 .player audio {
   width: 60%;
   height: 25px;
+}
+
+/* bar player: override inherited text-align: center so the play-line dot
+   starts from the left edge, matching the homepage player */
+.player .faux-player .play-line {
+  text-align: left;
 }
 
 /*

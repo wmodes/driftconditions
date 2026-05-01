@@ -1,6 +1,6 @@
 // client/src/pages/Homepage.js
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useOutletContext, Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import FeatherIcon from 'feather-icons-react';
@@ -33,7 +33,8 @@ const Homepage = () => {
   const recentCoverImage = resolveCoverImageURL(playlist[1]?.coverImage);
   const heroImageURL = recentCoverImage || getHeroImageURL(altImages);
 
-  const { togglePlayer, isPlaying } = useOutletContext();
+  const { togglePlayer, isPlaying, setIsScrolled } = useOutletContext();
+  const fauxPlayerRef = useRef(null);
   const user = useSelector(state => state.auth.user);
 
   // Fetch alt image list once on mount for fallback hero image
@@ -45,10 +46,19 @@ const Homepage = () => {
   }, []);
 
   useEffect(() => {
-    // Assuming generateRandomTexts is a function that accepts projectName and returns an array of text strings
     const generatedText = generateRandomTexts(projectName);
     setGeneratedText(generatedText);
   }, [projectName]);
+
+  // show bar player when the faux player scrolls off screen
+  useEffect(() => {
+    if (!fauxPlayerRef.current) return;
+    const observer = new IntersectionObserver(([entry]) => {
+      setIsScrolled(!entry.isIntersecting);
+    }, { threshold: 0 });
+    observer.observe(fauxPlayerRef.current);
+    return () => observer.disconnect();
+  }, [setIsScrolled]);
 
   // Function to safely set inner HTML
   const createMarkup = (htmlString) => {
@@ -76,7 +86,7 @@ const Homepage = () => {
               <h2 className='title'>
               <FeatherIcon icon="volume-2" />&nbsp;listen</h2>
               <p>Listen to { projectName }. The broadcast is assembled live, on-the-fly, and will never be heard exactly the same again.</p>
-                <div className={`faux-player ${isPlaying ? 'playing' : ''}`}>
+                <div ref={fauxPlayerRef} className={`faux-player ${isPlaying ? 'playing' : ''}`}>
                   <div className="audio-overlay" onClick={togglePlayer}>
                     <div className="play-button"><FeatherIcon icon="play" /></div>
                     <div className="pause-button"><FeatherIcon icon="pause" /></div>
