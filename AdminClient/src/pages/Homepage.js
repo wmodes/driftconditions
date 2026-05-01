@@ -5,6 +5,7 @@ import { useOutletContext, Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import FeatherIcon from 'feather-icons-react';
 import Playlist from '../components/Playlist';
+import CreativeCommonsIcon from '../components/CreativeCommonsIcon';
 import {
   generateRandomTexts, getHeroImageURL, getLocation
 } from '../utils/randomUtils';
@@ -106,6 +107,12 @@ const Homepage = () => {
                     <Link className="link" to="/howitworks">Curious how it works?</Link><br />
                     You're our kinda people.
                   </span>
+                </span>
+                </p>
+                <p>
+                <span className="icon-callout">
+                  <CreativeCommonsIcon size={24} />
+                  <span>Audio licensed under Creative Commons BY-NC-SA 4.0.<br />Share, remix, credit, keep it free.</span>
                 </span>
                 </p>
                 <p>
