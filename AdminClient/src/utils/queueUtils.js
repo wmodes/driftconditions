@@ -6,6 +6,15 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
+/**
+ * Resolve a coverImage path (e.g. "img/covers/152.jpg") to a root-relative URL.
+ * Returns null if no coverImage is provided.
+ */
+export const resolveCoverImageURL = (coverImage) => {
+  if (!coverImage) return null;
+  return `/${coverImage}`;
+};
+
 // playlist is a complex object with nested objects
 //   playlist = [
 //     {
