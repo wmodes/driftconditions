@@ -3,9 +3,12 @@
  */
 
 import React, { useState, useImperativeHandle, forwardRef, useRef, useEffect } from 'react';
+import { useSelector } from 'react-redux';
 import FeatherIcon from 'feather-icons-react';
 import { useUniqueId } from '../utils/appUtils';
+import { resolveCoverImageURL } from '../utils/queueUtils';
 import config from '../config/config';
+import brand from '../brand/brand';
 
 // pull variables from the config object
 const restartTime = config.stream.restartTime;
@@ -153,6 +156,54 @@ const AudioPlayer = forwardRef(({ showBar, isPlaying, setIsPlaying, togglePlayer
   useEffect(() => {
     channelRef.current?.postMessage({ type: 'query', id: uniqueId });
   }, [uniqueId]);
+
+  // Media Session: update OS lock screen / notification with current mix info
+  const currentMix = useSelector(state => state.queue.currentMix);
+  useEffect(() => {
+    if (!('mediaSession' in navigator)) return;
+    if (!isPlaying || !currentMix) {
+      navigator.mediaSession.playbackState = isPlaying ? 'playing' : 'paused';
+      return;
+    }
+    const coverImageURL = resolveCoverImageURL(currentMix.coverImage);
+    const firstClipTitle = currentMix.playlist?.[0]?.title ?? brand.name;
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: firstClipTitle,
+      artist: brand.name,
+      artwork: coverImageURL
+        ? [{ src: `${brand.siteUrl}${coverImageURL}`, type: 'image/jpeg' }]
+        : [],
+    });
+    navigator.mediaSession.playbackState = 'playing';
+  }, [isPlaying, currentMix]);
+
+  // Media Session action handlers — wire to the same imperative interface used by RootLayout
+  useEffect(() => {
+    if (!('mediaSession' in navigator)) return;
+    const handlers = {
+      play: () => audioRef.current?.play(),
+      pause: () => {
+        isActivePlayerRef.current = false;
+        setIsPlaying(false);
+        channelRef.current?.postMessage({ type: 'stop', id: uniqueId });
+        silenceLocal();
+      },
+      stop: () => {
+        isActivePlayerRef.current = false;
+        setIsPlaying(false);
+        channelRef.current?.postMessage({ type: 'stop', id: uniqueId });
+        silenceLocal();
+      },
+    };
+    Object.entries(handlers).forEach(([action, handler]) => {
+      navigator.mediaSession.setActionHandler(action, handler);
+    });
+    return () => {
+      ['play', 'pause', 'stop'].forEach(action => {
+        navigator.mediaSession.setActionHandler(action, null);
+      });
+    };
+  }, [uniqueId, setIsPlaying]);
 
   // expose play and pause to parent (RootLayout via togglePlayer)
   useImperativeHandle(ref, () => ({
