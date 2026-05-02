@@ -1163,6 +1163,24 @@ tr.row-even.quick-edit textarea {
   flex-shrink: 0;
 }
 
+.icon-callout > a {
+  color: inherit !important;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.keep-together {
+  display: block;
+  page-break-inside: avoid; 
+}
+
+/* if scren is less than 1200px, make keep-together join lines instead */
+@media (max-width: 1200px) {
+  .keep-together {
+    display: inline;
+  }
+}
+
 .form-value {
   /* display-mode value; counterpart to .form-label */
 }
