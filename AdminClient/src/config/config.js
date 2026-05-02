@@ -77,6 +77,7 @@ const config = {
     // url: 'https://driftconditions.org:8000/stream',
     url: 'https://usa14.fastcast4u.com/proxy/wmodes?mp=/1',
     restartTime: 5000,
+    staleThreshold: 5000,  // ms since stop after which buffer is considered stale
   },
   list: {
     recordsPerPage: 15,
