@@ -12,6 +12,7 @@ import brand from '../brand/brand';
 
 // pull variables from the config object
 const restartTime = config.stream.restartTime;
+const staleThreshold = config.stream.staleThreshold;
 const streamURL = config.stream.url;
 
 // shared channel name for cross-tab coordination
@@ -37,10 +38,11 @@ const AudioPlayer = forwardRef(({ showBar, isPlaying, setIsPlaying, togglePlayer
   const isActivePlayerRef = useRef(false); // true only in the tab actually playing audio
   const suppressRef = useRef(false);       // suppress handlePause when pausing programmatically
   const transferTimeoutRef = useRef(null); // cancellable timer for tab handoff jitter
+  const stoppedAtRef = useRef(null);       // timestamp of last stop, shared across tabs
 
   // restart the audio element after a delay (used on error or stream end)
   const audioRestart = () => {
-    console.log('Attempting to restart audio stream...');
+    // console.log('Attempting to restart audio stream...');
     setTimeout(() => {
       setPlayerKey(prevKey => prevKey + 1);
     }, restartTime);
@@ -59,7 +61,6 @@ const AudioPlayer = forwardRef(({ showBar, isPlaying, setIsPlaying, togglePlayer
 
   // fired by the audio element when playback starts
   const handleStart = () => {
-    console.log('Playback has started');
     isActivePlayerRef.current = true;
     setIsPlaying(true);
     channelRef.current?.postMessage({ type: 'play', id: uniqueId });
@@ -74,10 +75,11 @@ const AudioPlayer = forwardRef(({ showBar, isPlaying, setIsPlaying, togglePlayer
     }
     // only the active player should broadcast stop
     if (!isActivePlayerRef.current) return;
-    console.log('Playback has paused');
+    // console.log('Playback has paused');
     isActivePlayerRef.current = false;
     setIsPlaying(false);
-    channelRef.current?.postMessage({ type: 'stop', id: uniqueId });
+    stoppedAtRef.current = Date.now();
+    channelRef.current?.postMessage({ type: 'stop', id: uniqueId, stoppedAt: stoppedAtRef.current });
   };
 
   const handleEnded = () => {
@@ -95,12 +97,25 @@ const AudioPlayer = forwardRef(({ showBar, isPlaying, setIsPlaying, togglePlayer
     }
   };
 
+  // play the stream, flushing the buffer first if it's been stopped long enough to go stale
+  const playStream = () => {
+    if (!audioRef.current) return;
+    const isStale = stoppedAtRef.current !== null &&
+      (Date.now() - stoppedAtRef.current) > staleThreshold;
+    if (isStale) {
+      audioRef.current.src = '';
+      audioRef.current.load();
+      audioRef.current.src = streamURL;
+    }
+    audioRef.current.play();
+  };
+
   // BroadcastChannel: setup and cross-tab message handling
   useEffect(() => {
     const channel = new BroadcastChannel(CHANNEL_NAME);
     channelRef.current = channel;
 
-    channel.onmessage = ({ data: { type, id } }) => {
+    channel.onmessage = ({ data: { type, id, stoppedAt } }) => {
       if (id === uniqueId) return;
 
       if (type === 'play') {
@@ -118,6 +133,7 @@ const AudioPlayer = forwardRef(({ showBar, isPlaying, setIsPlaying, togglePlayer
           clearTimeout(transferTimeoutRef.current);
           transferTimeoutRef.current = null;
         }
+        stoppedAtRef.current = stoppedAt ?? Date.now();
         silenceLocal();
         setIsPlaying(false);
 
@@ -126,7 +142,7 @@ const AudioPlayer = forwardRef(({ showBar, isPlaying, setIsPlaying, togglePlayer
         // first tab to start broadcasts 'play', causing all others to cancel
         transferTimeoutRef.current = setTimeout(() => {
           transferTimeoutRef.current = null;
-          audioRef.current?.play();
+          playStream();
         }, Math.random() * 150);
 
       } else if (type === 'query') {
@@ -181,17 +197,19 @@ const AudioPlayer = forwardRef(({ showBar, isPlaying, setIsPlaying, togglePlayer
   useEffect(() => {
     if (!('mediaSession' in navigator)) return;
     const handlers = {
-      play: () => audioRef.current?.play(),
+      play: () => playStream(),
       pause: () => {
         isActivePlayerRef.current = false;
         setIsPlaying(false);
-        channelRef.current?.postMessage({ type: 'stop', id: uniqueId });
+        stoppedAtRef.current = Date.now();
+        channelRef.current?.postMessage({ type: 'stop', id: uniqueId, stoppedAt: stoppedAtRef.current });
         silenceLocal();
       },
       stop: () => {
         isActivePlayerRef.current = false;
         setIsPlaying(false);
-        channelRef.current?.postMessage({ type: 'stop', id: uniqueId });
+        stoppedAtRef.current = Date.now();
+        channelRef.current?.postMessage({ type: 'stop', id: uniqueId, stoppedAt: stoppedAtRef.current });
         silenceLocal();
       },
     };
@@ -207,15 +225,13 @@ const AudioPlayer = forwardRef(({ showBar, isPlaying, setIsPlaying, togglePlayer
 
   // expose play and pause to parent (RootLayout via togglePlayer)
   useImperativeHandle(ref, () => ({
-    play: () => {
-      if (audioRef.current) audioRef.current.play();
-      // handleStart fires on play and broadcasts intent
-    },
+    play: () => playStream(),
     pause: () => {
       // broadcast stop intent first, then silence local audio
       isActivePlayerRef.current = false;
       setIsPlaying(false);
-      channelRef.current?.postMessage({ type: 'stop', id: uniqueId });
+      stoppedAtRef.current = Date.now();
+      channelRef.current?.postMessage({ type: 'stop', id: uniqueId, stoppedAt: stoppedAtRef.current });
       silenceLocal();
     },
   }));
