@@ -107,17 +107,20 @@ const Homepage = () => {
                 </p>
                 <p>
                 <span className="icon-callout">
-                  <FeatherIcon icon="settings" />
+                  <Link to="/howitworks"><FeatherIcon icon="settings" /></Link>
                   <span>
-                    <Link className="link" to="/howitworks">Curious how it works?</Link><br />
-                    You're our kinda people.
+                    <span class="keep-together"><Link className="link" to="/howitworks">Curious how it works?</Link></span>
+                    <span class="keep-together">You're our kinda people.</span>
                   </span>
                 </span>
                 </p>
                 <p>
                 <span className="icon-callout">
-                  <CreativeCommonsIcon size={24} />
-                  <span>Audio licensed under Creative Commons BY-NC-SA 4.0.<wbr /> Share, remix, credit, keep it free.</span>
+                  <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en" target="_blank" rel="noopener noreferrer"><CreativeCommonsIcon size={24} /></a>
+                  <span>
+                    <span class="keep-together">Creative Commons <a className="link" href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en" target="_blank" rel="noopener noreferrer">BY-NC-SA 4.0</a>.</span>
+                    <span class="keep-together">Share, remix, credit, keep it free.</span>
+                  </span>
                 </span>
                 </p>
                 <p>
