@@ -416,7 +416,7 @@ figcaption {
   bottom: 0;
   left: 0;
   width: 100vw;
-  background-color: rgba(51, 102, 153, 0.75);
+  background-color: rgba(51, 102, 153, 0.9);
   padding: 5px;
   text-align: center;
   z-index: 1000;
@@ -440,10 +440,337 @@ figcaption {
   height: 25px;
 }
 
-/* bar player: override inherited text-align: center so the play-line dot
-   starts from the left edge, matching the homepage player */
-.player .faux-player .play-line {
+/* bar player: centered 75%-wide container holding bar + icons */
+.player-bar {
+  display: flex;
+  align-items: center;
+  width: 75%;
+  min-width: 200px;
+  margin: 0 auto;
+  gap: 0.5rem;
+}
+
+.player-bar .faux-player {
+  flex: 1;
+}
+
+/* audio-overlay fills the faux-player (player-bar controls total width) */
+.player-bar .faux-player .audio-overlay {
+  width: 100%;
+}
+
+/* play-line dot starts from left edge */
+.player-bar .faux-player .play-line {
   text-align: left;
+}
+
+/* bar player action icons (fullscreen, sleep) */
+
+.player-actions {
+  flex-shrink: 0;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.player-actions a,
+.player-actions .sleep-btn {
+  color: white;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+}
+
+/* shared icon behavior: player bar + fullscreen pill bar */
+.player-actions a:hover svg,
+.player-actions .sleep-btn:hover svg,
+.fullscreen .controls button:hover svg,
+.fullscreen .controls .sleep-btn:hover svg {
+  stroke-width: 3px;
+}
+
+.player-actions svg,
+.fullscreen .controls svg {
+  width: 1.4rem;
+  height: 1.4rem;
+}
+
+/* Sleep timer button + dropdown */
+
+.sleep-timer-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.sleep-timer-wrapper .sleep-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: rgba(255, 255, 255, 0.8);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem;
+}
+
+.sleep-timer-wrapper.active .sleep-btn svg {
+  stroke: #f59e0b;
+}
+
+.sleep-remaining {
+  font-size: 0.7rem;
+  color: #f59e0b;
+  font-variant-numeric: tabular-nums;
+  min-width: 2.5rem;
+}
+
+.sleep-dropdown {
+  position: absolute;
+  bottom: calc(100% + 0.5rem);
+  right: 0;
+  background: #222;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 0.5rem;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-width: 7rem;
+  z-index: 1200;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+}
+
+.sleep-dropdown button {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.85);
+  padding: 0.6rem 1rem;
+  cursor: pointer;
+  text-align: left;
+  font-size: 0.9rem;
+}
+
+.sleep-dropdown button:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.sleep-dropdown button.cancel {
+  color: #f87171;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Fullscreen Player */
+
+.fullscreen {
+  position: fixed;
+  inset: 0;
+  background-color: #333;
+  color: #f5f5f5;
+  display: grid;
+  grid-template-columns: 2fr 2fr;
+  padding: 0 10%;
+  z-index: 1100;
+  overflow: hidden;
+}
+
+.fullscreen .exit {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  color: #f5f5f5;
+  cursor: pointer;
+  padding: 0.5rem;
+  z-index: 10;
+  opacity: 0.7;
+}
+
+.fullscreen .exit:hover {
+  opacity: 1;
+}
+
+.fullscreen .exit svg {
+  width: 1.5rem;
+  height: 1.5rem;
+  stroke-width: 2px;
+}
+
+.fullscreen .cover {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+}
+
+.fullscreen .cover img {
+  width: 100%;
+  max-width: 500px;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 0.5rem;
+}
+
+.fullscreen .cover .placeholder {
+  width: 100%;
+  max-width: 500px;
+  aspect-ratio: 1;
+  background-color: #2a2a2a;
+  border-radius: 0.5rem;
+}
+
+.fullscreen .info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 3rem 3rem 3rem 1.5rem;
+  gap: 1.25rem;
+}
+
+.fullscreen .info h2 {
+  font-family: "Rubik Distressed", sans-serif;
+  font-size: 1.95rem;
+  font-weight: normal;
+  letter-spacing: 3px;
+  color: #f5f5f5;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.fullscreen ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.fullscreen li {
+  font-size: 1.35rem;
+  color: #ddd;
+}
+
+.fullscreen .info > p {
+  color: #888;
+}
+
+/* faux player bar — transparent background, white line */
+.fullscreen .faux-player {
+  width: 100%;
+}
+
+.fullscreen .faux-player .audio-overlay {
+  background: transparent;
+  border-radius: 0;
+  height: auto;
+  padding: 8px 0;
+  width: 100%;
+  cursor: default;
+  box-shadow: none;
+}
+
+.fullscreen .faux-player .play-line {
+  background-color: rgba(255, 255, 255, 0.6);
+  margin-top: 0;
+  text-align: left;
+}
+
+.fullscreen .faux-player .play-line svg {
+  fill: white;
+}
+
+.fullscreen .faux-player.playing .play-line {
+  background-color: rgba(255, 255, 255, 1.0);
+}
+
+/* large centered play/pause button */
+.fullscreen .play-control {
+  display: flex;
+  justify-content: center;
+}
+
+.fullscreen .play-control button {
+  background: white;
+  border: none;
+  border-radius: 50%;
+  width: 4.5rem;
+  height: 4.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #333;
+}
+
+.fullscreen .play-control button:hover {
+  background: #e8e8e8;
+}
+
+.fullscreen .play-control button svg {
+  width: 2rem;
+  height: 2rem;
+  fill: #333;
+  stroke: #333;
+  stroke-width: 0.5px;
+}
+
+/* minimize + sleep: single pill bar */
+.fullscreen .controls {
+  display: flex;
+  align-self: center;
+  width: 60%;
+  justify-content: center;
+  gap: 30px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2rem;
+  overflow: visible;
+  position: relative;
+}
+
+.fullscreen .controls button {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.8);
+  padding: 0.6rem 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .fullscreen {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+    overflow-y: auto;
+  }
+
+  .fullscreen .cover {
+    padding: 3.5rem 1.5rem 1rem;
+    justify-content: flex-start;
+  }
+
+  .fullscreen .cover img,
+  .fullscreen .cover .placeholder {
+    max-width: 100%;
+  }
+
+  .fullscreen .info {
+    padding: 1rem 1.5rem 2rem;
+  }
+
+  .fullscreen .info h2 {
+    font-size: 1.5rem;
+    letter-spacing: 2px;
+  }
+
+  .fullscreen li {
+    font-size: 1rem;
+  }
 }
 
 /*
