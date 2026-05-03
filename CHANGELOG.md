@@ -9,6 +9,13 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-05-04]
+
+### Changed
+- **Sleep timer values moved to config** — `fadeSeconds` (30) and `options` ([15, 30, 60] min) now live in `config.sleepTimer` rather than hardcoded in `AudioPlayer` and `SleepTimerButton`.
+
+---
+
 ## [2026-05-03]
 
 ### Added
