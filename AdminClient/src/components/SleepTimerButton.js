@@ -4,7 +4,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import FeatherIcon from 'feather-icons-react';
 
 const OPTIONS = [
-  { label: '1 min (test)', minutes: 1 },
   { label: '15 min', minutes: 15 },
   { label: '30 min', minutes: 30 },
   { label: '60 min', minutes: 60 },
