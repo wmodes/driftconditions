@@ -2,12 +2,9 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import FeatherIcon from 'feather-icons-react';
+import config from '../config/config';
 
-const OPTIONS = [
-  { label: '15 min', minutes: 15 },
-  { label: '30 min', minutes: 30 },
-  { label: '60 min', minutes: 60 },
-];
+const OPTIONS = config.sleepTimer.options.map(m => ({ label: `${m} min`, minutes: m }));
 
 const SleepTimerButton = ({ sleepTimerEnd, setSleepTimerEnd, isPlaying, onPlay }) => {
   const [open, setOpen] = useState(false);

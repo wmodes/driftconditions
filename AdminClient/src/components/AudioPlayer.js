@@ -16,6 +16,7 @@ import brand from '../brand/brand';
 const restartTime = config.stream.restartTime;
 const staleThreshold = config.stream.staleThreshold;
 const streamURL = config.stream.url;
+const fadeSeconds = config.sleepTimer.fadeSeconds;
 
 // shared channel name for cross-tab coordination
 const CHANNEL_NAME = 'driftconditions-player';
@@ -242,8 +243,8 @@ const AudioPlayer = forwardRef(({ showBar, isPlaying, setIsPlaying, togglePlayer
         stoppedAtRef.current = Date.now();
         channelRef.current?.postMessage({ type: 'stop', id: uniqueId, stoppedAt: stoppedAtRef.current });
         silenceLocal();
-      } else if (secsLeft <= 30) {
-        if (audioRef.current) audioRef.current.volume = secsLeft / 30;
+      } else if (secsLeft <= fadeSeconds) {
+        if (audioRef.current) audioRef.current.volume = secsLeft / fadeSeconds;
       }
     }, 1000);
     return () => clearInterval(id);

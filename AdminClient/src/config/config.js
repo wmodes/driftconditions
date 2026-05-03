@@ -79,6 +79,10 @@ const config = {
     restartTime: 5000,
     staleThreshold: 5000,  // ms since stop after which buffer is considered stale
   },
+  sleepTimer: {
+    fadeSeconds: 30,           // seconds over which audio fades out before stopping
+    options: [15, 30, 60],     // available countdown durations in minutes
+  },
   list: {
     recordsPerPage: 15,
   },
