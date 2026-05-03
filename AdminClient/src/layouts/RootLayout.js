@@ -22,6 +22,7 @@ const RootLayout = () => {
 
   const [isScrolled, setIsScrolled] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [sleepTimerEnd, setSleepTimerEnd] = useState(null);
   const audioPlayerRef = useRef(null); // Create a ref for AudioPlayer
 
   // Get the page context based on the current path
@@ -77,8 +78,8 @@ const RootLayout = () => {
         <meta name="twitter:image" content={brand.ogImage} />
       </Helmet>
       <Navigation />
-      <Outlet context={{ togglePlayer, isPlaying, setIsPlaying, setIsScrolled }} />
-      <AudioPlayer ref={audioPlayerRef} showBar={showBar} isPlaying={isPlaying} setIsPlaying={setIsPlaying} togglePlayer={togglePlayer} />
+      <Outlet context={{ togglePlayer, isPlaying, setIsPlaying, setIsScrolled, sleepTimerEnd, setSleepTimerEnd }} />
+      <AudioPlayer ref={audioPlayerRef} showBar={showBar} isPlaying={isPlaying} setIsPlaying={setIsPlaying} togglePlayer={togglePlayer} sleepTimerEnd={sleepTimerEnd} setSleepTimerEnd={setSleepTimerEnd} />
     </div>
   );
 }

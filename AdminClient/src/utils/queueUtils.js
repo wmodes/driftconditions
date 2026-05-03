@@ -2,13 +2,18 @@
  * @file Utility functions for queue and playlist data.
  */
 
+import config from '../config/config';
+
+const { staticBaseURL } = config.app;
+
 /**
- * Resolve a coverImage path (e.g. "img/covers/152.jpg") to a root-relative URL.
+ * Resolve a coverImage path (e.g. "img/covers/152.jpg") to a full URL.
+ * The coverImage field already contains the relative path and extension.
  * Returns null if no coverImage is provided.
  */
 export const resolveCoverImageURL = (coverImage) => {
   if (!coverImage) return null;
-  return `/${coverImage}`;
+  return `${staticBaseURL}/${coverImage}`;
 };
 
 /**

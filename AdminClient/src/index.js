@@ -36,6 +36,7 @@
   import RecipeView from './pages/RecipeView';
   import RecipeEdit from './pages/RecipeEdit';
   import HowItWorks from './pages/HowItWorks';
+  import FullscreenPlayer from './pages/FullscreenPlayer';
   import NotAuth from './pages/NotAuth';
   import Error from './pages/Error';
   import RootLayout from './layouts/RootLayout';
@@ -83,6 +84,7 @@
         <Route path='/recipe/view/:recipeID' element={<RecipeView />} />
         <Route path='/recipe/edit/:recipeID' element={<RecipeEdit />} />
         <Route path='/howitworks' element={<HowItWorks />} />
+        <Route path='/fullscreen' element={<FullscreenPlayer />} />
         <Route path='/notauth' element={<NotAuth />} />
         <Route path='*' element={<Error />} /> 
       </Route>
