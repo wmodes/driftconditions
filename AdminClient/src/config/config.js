@@ -341,7 +341,9 @@ const config = {
     scoreThreshold: 0.5,
   },
   app: {
+    staticBaseURL,                                       // base URL for all static assets
     coverImageURLBase: staticBaseURL + '/img/covers',  // per-clip cover images (e.g. /img/covers/152.jpg)
+    coverImageExt:     'jpg',
     altImageURLBase:   staticBaseURL + '/img/alt',     // fallback alt images  (e.g. /img/alt/coveralt-02.jpg)
   }
 

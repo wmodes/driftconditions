@@ -9,6 +9,19 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-05-03]
+
+### Added
+- **Fullscreen player** — new `/fullscreen` route renders a full-viewport dark overlay with cover art, clip list, play/pause button, and a minimize+sleep pill bar. On mobile, layout collapses to single column with the cover above the track list. Cover image falls back to a random alt image (same as homepage hero) if the mix cover is missing or broken.
+- **Sleep timer** — moon icon in both the bar player and fullscreen opens a dropdown (1 min test / 15 / 30 / 60 min). Active timer shows an amber countdown next to the moon. Audio fades out over the last 30 seconds, then stops and broadcasts the stop intent to all tabs. Setting the timer auto-starts playback if nothing is playing.
+- **Bar player actions** — fullscreen (maximize) and sleep (moon) icons added to the right of the faux player bar, grouped in a `.player-actions` flex row at 75% page width. Icons share the same hover/color rules as the fullscreen pill bar.
+
+### Fixed
+- **Cover image URL resolution** — `resolveCoverImageURL` now prepends `staticBaseURL` only; the `coverImage` DB field already contains the full relative path and extension (e.g. `img/covers/1674.jpg`). Previous code was double-pathing and omitting the extension.
+- **Static assets in local dev** — `REACT_APP_STATIC_URL` in dev `.env` updated to `https://driftconditions.org` so cover images and alt images load from production during local development.
+
+---
+
 ## [2026-04-30]
 
 ### Added

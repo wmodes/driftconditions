@@ -4,9 +4,11 @@
 
 import React, { useState, useImperativeHandle, forwardRef, useRef, useEffect } from 'react';
 import { useSelector } from 'react-redux';
+import { Link } from 'react-router-dom';
 import FeatherIcon from 'feather-icons-react';
 import { useUniqueId } from '../utils/appUtils';
 import { resolveCoverImageURL } from '../utils/queueUtils';
+import SleepTimerButton from './SleepTimerButton';
 import config from '../config/config';
 import brand from '../brand/brand';
 
@@ -28,7 +30,7 @@ const CHANNEL_NAME = 'driftconditions-player';
  * @param {Object} ref - The ref object for controlling play/pause from parent.
  * @returns {JSX.Element} - The AudioPlayer component.
  */
-const AudioPlayer = forwardRef(({ showBar, isPlaying, setIsPlaying, togglePlayer }, ref) => {
+const AudioPlayer = forwardRef(({ showBar, isPlaying, setIsPlaying, togglePlayer, sleepTimerEnd, setSleepTimerEnd }, ref) => {
   const [playerKey, setPlayerKey] = useState(0);
   const audioRef = useRef(null);
   const uniqueId = useUniqueId();
@@ -187,7 +189,7 @@ const AudioPlayer = forwardRef(({ showBar, isPlaying, setIsPlaying, togglePlayer
       title: firstClipTitle,
       artist: brand.name,
       artwork: coverImageURL
-        ? [{ src: `${brand.siteUrl}${coverImageURL}`, type: 'image/jpeg' }]
+        ? [{ src: coverImageURL.startsWith('http') ? coverImageURL : `${brand.siteUrl}${coverImageURL}`, type: 'image/jpeg' }]
         : [],
     });
     navigator.mediaSession.playbackState = 'playing';
@@ -223,6 +225,30 @@ const AudioPlayer = forwardRef(({ showBar, isPlaying, setIsPlaying, togglePlayer
     };
   }, [uniqueId, setIsPlaying]);
 
+  // sleep timer: fade out over the last 60s, then stop
+  useEffect(() => {
+    if (!sleepTimerEnd) {
+      if (audioRef.current) audioRef.current.volume = 1.0;
+      return;
+    }
+    const id = setInterval(() => {
+      const secsLeft = (sleepTimerEnd - Date.now()) / 1000;
+      if (secsLeft <= 0) {
+        clearInterval(id);
+        setSleepTimerEnd(null);
+        if (audioRef.current) audioRef.current.volume = 1.0;
+        isActivePlayerRef.current = false;
+        setIsPlaying(false);
+        stoppedAtRef.current = Date.now();
+        channelRef.current?.postMessage({ type: 'stop', id: uniqueId, stoppedAt: stoppedAtRef.current });
+        silenceLocal();
+      } else if (secsLeft <= 30) {
+        if (audioRef.current) audioRef.current.volume = secsLeft / 30;
+      }
+    }, 1000);
+    return () => clearInterval(id);
+  }, [sleepTimerEnd, uniqueId, setIsPlaying, setSleepTimerEnd]);
+
   // expose play and pause to parent (RootLayout via togglePlayer)
   useImperativeHandle(ref, () => ({
     play: () => playStream(),
@@ -238,13 +264,19 @@ const AudioPlayer = forwardRef(({ showBar, isPlaying, setIsPlaying, togglePlayer
 
   return (
     <div className={`player text-center ${showBar || isPlaying ? 'visible' : 'hidden'}`}>
-      <div className={`faux-player ${isPlaying ? 'playing' : ''}`}>
-        <div className="audio-overlay" onClick={togglePlayer}>
-          <div className="play-button"><FeatherIcon icon="play" /></div>
-          <div className="pause-button"><FeatherIcon icon="pause" /></div>
-          <div className="text">Listen live</div>
-          <div className="play-line"><FeatherIcon icon="circle" /></div>
-          <div className="volume"><FeatherIcon icon="volume-2" /></div>
+      <div className="player-bar">
+        <div className={`faux-player ${isPlaying ? 'playing' : ''}`}>
+          <div className="audio-overlay" onClick={togglePlayer}>
+            <div className="play-button"><FeatherIcon icon="play" /></div>
+            <div className="pause-button"><FeatherIcon icon="pause" /></div>
+            <div className="text">Listen live</div>
+            <div className="play-line"><FeatherIcon icon="circle" /></div>
+            <div className="volume"><FeatherIcon icon="volume-2" /></div>
+          </div>
+        </div>
+        <div className="player-actions">
+          <Link to="/fullscreen"><FeatherIcon icon="maximize" /></Link>
+          <SleepTimerButton sleepTimerEnd={sleepTimerEnd} setSleepTimerEnd={setSleepTimerEnd} isPlaying={isPlaying} onPlay={togglePlayer} />
         </div>
       </div>
       <audio
