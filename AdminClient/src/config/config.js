@@ -71,7 +71,12 @@ const config = {
     routes: {
       // queue
       queuePlaylist: '/api/queue/getplaylist',
+      heartMix:      '/api/queue/heart',
     }
+  },
+  heart: {
+    maxAgeHours:       48,  // localStorage TTL before hearted mix entry is pruned
+    minFavoritesToKeep: 2,  // favorites count that exempts a mix from queue pruning
   },
   stream: {
     // url: 'https://driftconditions.org:8000/stream',

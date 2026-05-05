@@ -11,6 +11,14 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [2026-05-04]
 
+### Added
+- **Heart a mix** — listeners can heart/unheart the currently playing mix without authentication. Heart state persists in localStorage (`dc_hearts`) with a 48-hour TTL, pruned on each heart action. Mixes with 2+ favorites are exempt from the regular queue pruning job. Heart icon appears in the playlist (between time and title) and in the fullscreen pillbar (before minimize). IP-based rate limiting on the endpoint (1 action per mix per minute).
+- **`favorites` column on `mixQueue`** — new `INT NOT NULL DEFAULT 0` field; incremented/decremented by the heart endpoint; used as a pruning guard in `MixQueue.pruneMixes()`.
+
+---
+
+## [2026-05-04]
+
 ### Changed
 - **Sleep timer values moved to config** — `fadeSeconds` (30) and `options` ([15, 30, 60] min) now live in `config.sleepTimer` rather than hardcoded in `AudioPlayer` and `SleepTimerButton`.
 

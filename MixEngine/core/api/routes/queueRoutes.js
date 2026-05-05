@@ -16,6 +16,18 @@ const { config } = require('config');
 const mixFileDir = config.content.mixFileDir;
 const playlistPeriod = config.mixes.playlistPeriod; // in ms
 
+// simple in-memory rate limiter: one heart action per IP per mixID per window
+const heartRateWindow = 60 * 1000; // 1 minute
+const heartRateCache = new Map(); // key: `${ip}:${mixID}` → timestamp
+const heartRateLimitHit = (ip, mixID) => {
+  const key = `${ip}:${mixID}`;
+  const last = heartRateCache.get(key);
+  const now = Date.now();
+  if (last && now - last < heartRateWindow) return true;
+  heartRateCache.set(key, now);
+  return false;
+};
+
 // Route to get the next mix from the queue
 router.get('/nextmix', async (req, res) => {
   try {
@@ -40,6 +52,32 @@ router.post('/markplayed', async (req, res) => {
     await markMixAsPlayed(mixID);
     res.json({ message: 'Mix marked as played' });
   } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Route to heart or unheart a mix (no auth required)
+router.post('/heart', async (req, res) => {
+  const { mixID, hearted } = req.body;
+  if (!mixID || typeof hearted !== 'boolean') {
+    return res.status(400).json({ message: 'mixID and hearted (boolean) required' });
+  }
+  const ip = req.ip;
+  if (heartRateLimitHit(ip, mixID)) {
+    return res.status(429).json({ message: 'Too many requests' });
+  }
+  try {
+    const delta = hearted ? 1 : -1;
+    const queryStr = `
+      UPDATE mixQueue
+      SET favorites = GREATEST(0, favorites + ?)
+      WHERE mixID = ?
+    `;
+    await db.execute(queryStr, [delta, mixID]);
+    const [[row]] = await db.execute('SELECT favorites FROM mixQueue WHERE mixID = ?', [mixID]);
+    res.json({ favorites: row?.favorites ?? 0 });
+  } catch (error) {
+    logger.error('queueRoutes:/heart: Error updating favorites', error);
     res.status(500).json({ message: error.message });
   }
 });

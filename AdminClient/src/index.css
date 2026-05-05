@@ -314,6 +314,49 @@ figcaption {
   text-align: right;
 }
 
+/* Heart button — playlist + fullscreen */
+
+.heart-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  padding-top: 0.2rem;
+  display: flex;
+  align-items: flex-start;
+  flex-shrink: 0;
+  color: var(--link-color);
+}
+
+.heart-btn svg {
+  width: 0.9rem;
+  height: 0.9rem;
+}
+
+.heart-btn:hover svg {
+  fill: var(--link-color);
+}
+
+.heart-btn.hearted svg {
+  fill: var(--link-color);
+}
+
+/* fullscreen pill bar heart */
+.fullscreen .controls .heart-btn {
+  color: rgba(255, 255, 255, 0.8);
+  padding: 0.6rem 0.75rem;
+}
+
+.fullscreen .controls .heart-btn svg {
+  width: 1.4rem;
+  height: 1.4rem;
+}
+
+.fullscreen .controls .heart-btn:hover svg,
+.fullscreen .controls .heart-btn.hearted svg {
+  fill: rgba(255, 255, 255, 0.8);
+}
+
 .playlist .clip-creator {
   font-size: 0.75rem;
   font-weight: 300;
@@ -1829,7 +1872,7 @@ tr.row-even.quick-edit textarea {
   padding-bottom: 4px;
 }
 
-button:not(.link,.icon,.search-clear) {
+button:not(.link,.icon,.search-clear,.heart-btn,.sleep-btn) {
   border-radius: 0.25rem; /* 2px */
   background-color: var(--button-submit-background-color);
   border: 1px solid var(--table-border-color);

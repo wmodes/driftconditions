@@ -7,6 +7,7 @@ import FeatherIcon from 'feather-icons-react';
 import { resolveCoverImageURL } from '../utils/queueUtils';
 import { fetchQueuePlaylist } from '../store/queueSlice';
 import { getHeroImageURL } from '../utils/randomUtils';
+import { isHearted, toggleHeart } from '../utils/heartUtils';
 import SleepTimerButton from '../components/SleepTimerButton';
 import brand from '../brand/brand';
 import config from '../config/config';
@@ -18,6 +19,7 @@ const FullscreenPlayer = () => {
   const dispatch = useDispatch();
   const { togglePlayer, isPlaying, sleepTimerEnd, setSleepTimerEnd } = useOutletContext();
   const [altImages, setAltImages] = useState([]);
+  const [hearted, setHearted] = useState(false);
 
   // fetch playlist on mount so reloading directly on /fullscreen works
   useEffect(() => {
@@ -36,6 +38,17 @@ const FullscreenPlayer = () => {
   const playlist = useSelector(state => state.queue.playlist);
   const currentMix = playlist[1];
   const coverImageURL = resolveCoverImageURL(currentMix?.coverImage);
+
+  // sync heart state when currentMix changes
+  useEffect(() => {
+    setHearted(currentMix ? isHearted(currentMix.mixID) : false);
+  }, [currentMix?.mixID]);
+
+  const handleHeart = async () => {
+    if (!currentMix) return;
+    const nowHearted = await toggleHeart(currentMix.mixID);
+    setHearted(nowHearted);
+  };
 
   let mixPlaylist = currentMix?.playlist || [];
   if (!Array.isArray(mixPlaylist)) {
@@ -84,6 +97,13 @@ const FullscreenPlayer = () => {
         </div>
 
         <div className="controls">
+          <button
+            className={`heart-btn ${hearted ? 'hearted' : ''}`}
+            onClick={handleHeart}
+            title={hearted ? 'Remove heart' : 'Heart this mix'}
+          >
+            <FeatherIcon icon="heart" />
+          </button>
           <button onClick={() => navigate(-1)}>
             <FeatherIcon icon="minimize-2" />
           </button>
