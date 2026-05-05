@@ -6,7 +6,9 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
+import FeatherIcon from 'feather-icons-react';
 import { fetchQueuePlaylist } from '../store/queueSlice';
+import { isHearted, toggleHeart, pruneHearts } from '../utils/heartUtils';
 
 /**
  * Render a playlist of mixes with their respective clips.
@@ -17,6 +19,7 @@ const Playlist = () => {
   const [fullPlaylist, setFullPlaylist] = useState([]);
   const [seeMore, setSeeMore] = useState(false);
   const [error, setError] = useState(false);
+  const [hearts, setHearts] = useState({});
   const dispatch = useDispatch();
   const { user: userAuth } = useSelector((state) => state.auth);
 
@@ -29,8 +32,10 @@ const Playlist = () => {
     const loadFullPlaylist = async () => {
       try {
         const result = await dispatch(fetchQueuePlaylist()).unwrap();
+        pruneHearts();
         setFullPlaylist(result);
-        setError(false); // Clear error if data is successfully fetched
+        setHearts({ ...JSON.parse(localStorage.getItem('dc_hearts') || '{}') });
+        setError(false);
       } catch (error) {
         console.error('Failed to fetch playlist:', error);
         setError(true);
@@ -88,11 +93,23 @@ const Playlist = () => {
     );
   }  
 
+  const handleHeart = async (mixID) => {
+    await toggleHeart(mixID);
+    setHearts({ ...JSON.parse(localStorage.getItem('dc_hearts') || '{}') });
+  };
+
   return (
     <div className="playlist text-center">
       {fullPlaylist.slice(1).map((mix, index) => (
         <div key={mix.mixID} className="playlist-item">
           <div className="time">{formatTime(fullPlaylist[index].dateUsed)}</div>
+          <button
+            className={`heart-btn ${hearts[String(mix.mixID)] ? 'hearted' : ''}`}
+            onClick={() => handleHeart(mix.mixID)}
+            title={hearts[String(mix.mixID)] ? 'Remove heart' : 'Heart this mix'}
+          >
+            <FeatherIcon icon="heart" />
+          </button>
           {renderMix(mix)}
         </div>
       ))}

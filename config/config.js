@@ -160,6 +160,7 @@ const config = {
     checkTime: 1000 * 60 * 2, // 2 minutes
     playlistPeriod: 1000 * 60 * 60 * 4, // 4 hours
     mixKeepPeriod: 1000 * 60 * 60 * 6, // 6 hours
+    minFavoritesToKeep: 2,              // favorites threshold that exempts a mix from pruning
   },
   bcrypt: {
     saltRounds: 10,

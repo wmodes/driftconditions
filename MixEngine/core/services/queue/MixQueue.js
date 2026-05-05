@@ -10,6 +10,7 @@ const fs = require('fs').promises;
 const { config } = require('config');
 const mixFileDir = config.content.mixFileDir;
 const mixKeepPeriod = config.mixes.mixKeepPeriod;
+const minFavoritesToKeep = config.mixes.minFavoritesToKeep;
 
 /**
  * Class representing the mix queue.
@@ -117,15 +118,16 @@ class MixQueue {
     try {
       const thresholdDate = new Date(Date.now() - mixKeepPeriod);
       const queryStr = `
-        SELECT 
-          mixID, filename 
-        FROM 
-          mixQueue 
-        WHERE 
-          status = 'Played' 
+        SELECT
+          mixID, filename
+        FROM
+          mixQueue
+        WHERE
+          status = 'Played'
         AND dateUsed < ?
+        AND favorites < ?
       `;
-      const queryValues = [thresholdDate];
+      const queryValues = [thresholdDate, minFavoritesToKeep];
       const [rows] = await db.execute(queryStr, queryValues);
       const mixesToDelete = rows.map(row => ({
         mixID: row.mixID,
