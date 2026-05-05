@@ -51,7 +51,7 @@ Recipes
 
 {{/if}}
 {{#if hasTopPlays}}
-Top Played Audio
+Top Played Audio (Since Apr 2026)
 {{#each topPlays}}
   {{title}} — {{timesUsed}} plays
   {{../siteUrl}}/audio/view/{{audioID}}
