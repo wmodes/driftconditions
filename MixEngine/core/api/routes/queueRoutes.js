@@ -63,7 +63,7 @@ router.post('/heart', async (req, res) => {
     return res.status(400).json({ message: 'mixID and hearted (boolean) required' });
   }
   const ip = req.ip;
-  if (heartRateLimitHit(ip, mixID)) {
+  if (hearted && heartRateLimitHit(ip, mixID)) {
     return res.status(429).json({ message: 'Too many requests' });
   }
   try {
