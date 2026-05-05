@@ -6,9 +6,10 @@
  * a cadence, a recipient query, and a var builder. For each recipient the
  * runner checks two conditions:
  *
- *   0. withinSendWindow(lastSent, addedOn, freqDays) — universal pre-filter;
- *      skips if the later of lastSent and addedOn falls within the user's
- *      frequency window. Treats new users identically to recently-sent users.
+ *   0. withinSendWindow(lastSent, freqDays) — universal pre-filter;
+ *      skips if lastSent falls within the user's frequency window.
+ *      New users (no prior send) are always eligible — skipping them would
+ *      mean waiting a full extra cycle just for joining mid-month.
  *   1. isScheduledToday(user) — happy path; is today the right send day?
  *   2. needsFallbackDigest — has enough time passed without a send to trigger
  *      the monthly floor? Catches missed sends when the server was down.
@@ -122,16 +123,16 @@ const FREQ_DAYS = { daily: 1, weekly: 7, monthly: 27 };
 
 /**
  * True if this user is within their send window and should be skipped.
- * Uses the later of lastSent and addedOn as the reference — so a brand-new
- * user is treated identically to one who just received a send.
+ * Uses lastSent only — new users (lastSent = null) are always eligible.
+ * Skipping new users based on addedOn would make anyone who joins mid-month
+ * wait a full extra cycle before receiving their first digest.
  * @param {Date|null} lastSent
- * @param {Date|string} addedOn
  * @param {number} freqDays
  * @returns {boolean}
  */
-function withinSendWindow(lastSent, addedOn, freqDays) {
-  const reference = lastSent && lastSent > new Date(addedOn) ? lastSent : new Date(addedOn);
-  return daysSince(reference) < freqDays;
+function withinSendWindow(lastSent, freqDays) {
+  if (!lastSent) return false;
+  return daysSince(lastSent) < freqDays * 0.71; // allows some flex for fallback (2 days for weekly; a week for monthly)
 }
 
 /** True if enough time has passed without a send to trigger the fallback cadence. */
@@ -557,7 +558,7 @@ async function runDigest() {
         const reasons   = [];
 
         const freqDays = (schedule.useUserFreq && FREQ_DAYS[user.digestFrequency]) || schedule.freqDays;
-        if (withinSendWindow(lastSent, user.addedOn, freqDays)) continue;
+        if (withinSendWindow(lastSent, freqDays)) continue;
         if (await schedule.isScheduledToday(user))                reasons.push(schedule.scheduledReason);
         else if (needsFallbackDigest(lastSent, schedule.fallbackDays)) reasons.push(schedule.fallbackReason);
         if (!reasons.length) continue;
