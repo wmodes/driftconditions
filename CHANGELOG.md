@@ -11,6 +11,13 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [2026-05-06]
 
+### Changed
+- **Silence overrun instead of crush** — when fixed clip content exceeds the mix budget, silence spacers now take their declared minimum length and let the track overrun (getting cut by the final trim filter) rather than scaling silences to near-zero. Preserves recipe spacing intent when long clips are selected. Previous proportional-scaling behavior is preserved in commented code for easy revert.
+
+---
+
+## [2026-05-06]
+
 ### Fixed
 - **Auto-exclude looping tracks from mix-length resolution** — `resolveShortestLongestTrack()` in `RecipeParser` now filters out looping tracks before picking the longest/shortest duration driver. A track with `loop` in its effects (at track level or on any clip) is a bed designed to fill the mix, not define it. Previously, a looping bed with a long source file could "win" as the longest track, causing ClipAdjustor to use the bed's raw file duration as `mixDuration` and crush silences on the structured track to near-zero. Recipes with looping beds and a structured track now work correctly without requiring an explicit `trim` effect on the structured track. If all tracks loop (a degenerate recipe), falls back to the previous behavior and logs a warning.
 
