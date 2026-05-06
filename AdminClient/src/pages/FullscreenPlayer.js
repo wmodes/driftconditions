@@ -44,10 +44,10 @@ const FullscreenPlayer = () => {
     setHearted(currentMix ? isHearted(currentMix.mixID) : false);
   }, [currentMix?.mixID]);
 
-  const handleHeart = async () => {
+  const handleHeart = () => {
     if (!currentMix) return;
-    const nowHearted = await toggleHeart(currentMix.mixID);
-    setHearted(nowHearted);
+    const nowHearted = toggleHeart(currentMix.mixID);
+    setHearted(!hearted);
   };
 
   let mixPlaylist = currentMix?.playlist || [];
