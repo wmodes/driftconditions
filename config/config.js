@@ -64,7 +64,8 @@ const config = {
     selectPoolPercentSize: 10,
     selectPoolMinSize: 25,
     newnessScoreWeight: 0.5,
-    tagScoreWeight: 1,
+    tagScoreWeight: 1,        // weight for mix-session tag coherence (accumulated tags from selected clips + recipe)
+    tagMatchScoreWeight: 1.5, // weight for recipe-slot tag fidelity (tags specified in this clip's recipe slot)
     usageScoreWeight: 0.5,    // weight for clip usage score; less-used clips score higher
     silenceAdjustMaxAttempts: 100, // max rejection-sampling attempts before scaling fallback
     classification: [
@@ -132,10 +133,11 @@ const config = {
   recipes: {
     selectPoolPercentSize: 5,
     selectPoolMinSize: 3,
-    newnessScoreWeight: 1,
-    classificationScoreWeight: 0.5,
-    durationScoreWeight: 1,       // weight for recipe avg-duration score; shorter-avg recipes score higher
-    avgDurationHistoryWeight: 10, // running average weight for recipe avgDuration; higher = slower to adapt
+    newnessScoreWeight: 0.5,        // weight for recipe recency; less recently used recipes score higher
+    classificationScoreWeight: 0.5, // weight for classification variety; less recently heard classifications score higher
+    durationScoreWeight: 1,         // weight for recipe avg-duration score; shorter-avg recipes score higher
+    usageScoreWeight: 1,            // weight for recipe usage count; less-used recipes score higher
+    avgDurationHistoryWeight: 10,   // running average weight for recipe avgDuration; higher = slower to adapt
     classification: [
       'Ambient', 
       'Atmospheric', 
