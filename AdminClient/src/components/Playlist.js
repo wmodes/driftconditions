@@ -93,8 +93,8 @@ const Playlist = () => {
     );
   }  
 
-  const handleHeart = async (mixID) => {
-    await toggleHeart(mixID);
+  const handleHeart = (mixID) => {
+    toggleHeart(mixID);
     setHearts({ ...JSON.parse(localStorage.getItem('dc_hearts') || '{}') });
   };
 
