@@ -11,6 +11,13 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [2026-05-06]
 
+### Fixed
+- **Tab takeover always flushes stale buffer** — when a playing tab closes and transfers to another tab, the receiving tab now always reloads the stream src before playing. Previously `stoppedAtRef` was never set on transfer, so the stale check evaluated false and the tab resumed from a potentially hours-old buffer. Fix: set `stoppedAtRef.current = 0` on transfer receipt, guaranteeing the flush path in `playStream()`.
+
+---
+
+## [2026-05-06]
+
 ### Changed
 - **Silence overrun instead of crush** — when fixed clip content exceeds the mix budget, silence spacers now take their declared minimum length and let the track overrun (getting cut by the final trim filter) rather than scaling silences to near-zero. Preserves recipe spacing intent when long clips are selected. Previous proportional-scaling behavior is preserved in commented code for easy revert.
 
