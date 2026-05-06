@@ -180,19 +180,39 @@ class RecipeParser {
     const pending = recipe.recipeObj._pendingMixLength;
     if (!pending) return; // nothing to resolve — trim/first already handled
 
-    // Sum actual clip durations per track (silences have duration 0)
+    // Sum actual clip durations per track. Note: silence clips have no duration yet at this
+    // point — ClipAdjustor assigns them after this step — so their contribution is 0 here.
+    // That's fine: we're comparing structured content length, not total track length.
     const trackDurations = recipe.recipeObj.tracks.map(track => {
       const total = (track.clips || []).reduce((sum, clip) => sum + (parseFloat(clip.duration) || 0), 0);
       return { track, total };
     });
 
-    // Find the target track
+    // Exclude looping tracks from candidacy as the mix-length driver.
+    //
+    // A track (or any clip within it) with a 'loop' effect becomes duration-infinite in
+    // MixEngine — it is designed to fill whatever length the mix dictates, not define it.
+    // Without this filter, a looping bed with a long source file could "win" as the longest
+    // track, causing ClipAdjustor to use that file's raw duration as mixDuration and crushing
+    // silences on the real structured track to near-zero. Looping tracks are beds, not clocks.
+    //
+    // All-looping edge case: if every track loops (a degenerate recipe with no finite duration
+    // driver), fall back to the full unfiltered set. MixEngine handles infinite durations
+    // downstream via _determineMixDuration(), so we don't need to solve that here — but we
+    // warn loudly so the recipe author knows to add an explicit 'trim' to a duration-driver track.
+    const nonLoopingCandidates = trackDurations.filter(t => !this._isLoopingTrack(t.track));
+    if (nonLoopingCandidates.length === 0) {
+      logger.warn('resolveShortestLongestTrack: all tracks are looping — no finite duration driver. Falling back to full track set. Add "trim" to the intended duration-driver track to fix this.');
+    }
+    const candidates = nonLoopingCandidates.length > 0 ? nonLoopingCandidates : trackDurations;
+
+    // Find the target track among candidates
     let target;
     if (pending === 'shortest') {
-      target = trackDurations.reduce((min, t) => t.total < min.total ? t : min, trackDurations[0]);
+      target = candidates.reduce((min, t) => t.total < min.total ? t : min, candidates[0]);
     } else {
       // 'longest' or default
-      target = trackDurations.reduce((max, t) => t.total > max.total ? t : max, trackDurations[0]);
+      target = candidates.reduce((max, t) => t.total > max.total ? t : max, candidates[0]);
     }
 
     // Clear the placeholder and mark the correct track
@@ -200,7 +220,37 @@ class RecipeParser {
     target.track.mixLength = true;
     delete recipe.recipeObj._pendingMixLength;
 
-    logger.debug(`resolveShortestLongestTrack: resolved '${pending}' to track ${target.track.track} (${target.total.toFixed(1)}s)`);
+    logger.debug(`resolveShortestLongestTrack: resolved '${pending}' to track "${target.track.label}" (${target.total.toFixed(1)}s)`);
+  }
+
+  /**
+   * Returns true if a track is effectively infinite-duration — i.e., if the track itself
+   * or any of its clips carries a 'loop' effect. Used by resolveShortestLongestTrack to
+   * exclude looping tracks from mix-length candidacy: a looping track is a bed that fills
+   * the mix, not a clock that defines it.
+   *
+   * We check both track-level and clip-level effects because either makes the track infinite:
+   *   track.effects: ['loop', ...]       → the entire track loops
+   *   clip.effects:  ['loop', ...]       → that clip loops, making the track run forever
+   *
+   * @param {object} track - A normalized track object from the recipe.
+   * @returns {boolean}
+   */
+  _isLoopingTrack(track) {
+    function hasLoopEffect(effects) {
+      if (!effects) return false;
+      for (let i = 0; i < effects.length; i++) {
+        if (effects[i] === 'loop') return true;
+      }
+      return false;
+    }
+    if (hasLoopEffect(track.effects)) return true;
+    if (track.clips) {
+      for (let i = 0; i < track.clips.length; i++) {
+        if (hasLoopEffect(track.clips[i].effects)) return true;
+      }
+    }
+    return false;
   }
 
   getTagsFromTracks(recipe) {
