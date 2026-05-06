@@ -8,7 +8,7 @@ const logger = require('config/logger').custom('ClipSelector', 'info');
 const { config } = require('config');
 const {
   selectPoolPercentSize, selectPoolMinSize,
-  newnessScoreWeight, tagScoreWeight, usageScoreWeight
+  newnessScoreWeight, tagScoreWeight, tagMatchScoreWeight, usageScoreWeight
 } = config.audio;
 const clipLengthRanges = config.audio.clipLength;
 
@@ -161,10 +161,10 @@ class ClipSelector {
     this._getEarliestAndLatestDates();
     // Set the usage range for usage scoring
     this._getUsageRange();
-    // Add tags from the criteria
+    // Add tags from the criteria to the session tag pool (used by tagScore for mix-wide coherence)
     this.addTags(criteria.tags);
-    // Score the clips
-    this._scoreClips();
+    // Score the clips, passing recipe slot tags separately for tagMatchScore
+    this._scoreClips(criteria.tags || []);
     // Select the next clip
     const selectedClip = this._selectNextClip();
     // Use audioID to select full clip from the database
@@ -341,33 +341,37 @@ class ClipSelector {
     this.recentTags = [];
   }
 
-  // Iterate over the clips and score each one
-  //  check status: confirmed working
-  _scoreClips () {
+  // Iterate over the clips and score each one.
+  // recipeTags: the tags specified in this clip's recipe slot, passed separately
+  // so tagMatchScore can weight them independently of the session tag pool.
+  _scoreClips (recipeTags = []) {
     this.clipPool = this.clipPool.map(clip => {
-      // Calculate the score for the current clip
-      const score = this._calculateScore(clip);
-      // Log the clip's identifiable property (e.g., title) and its score
-      // logger.debug(`Clip scored: ${clip.title}, score: ${score}`);
-      // Return the clip object with the updated score
+      const score = this._calculateScore(clip, recipeTags);
       return { ...clip, score };
     });
   }
 
-  // Score a clip based on newness and classification (and other criteria if we wish)
-  //  check status: confirmed working
-  _calculateScore (clip) {
-    const newnessScore = this._calculateNewnessScore(clip);
-    const tagScore = this._calculateTagScore(clip);
-    const usageScore = this._calculateUsageScore(clip);
-    // combine scores for different criteria as weighted average
-    const totalWeight = newnessScoreWeight + tagScoreWeight + usageScoreWeight;
+  // Score a clip as a weighted average of four dimensions:
+  //   newnessScore   — prefers clips not recently used in the stream
+  //   tagScore       — prefers clips whose tags match the accumulated session tag pool
+  //                    (tags from the recipe slot + tags from all clips selected so far);
+  //                    helps clips cohere on subject, tone, and other tagged features
+  //   tagMatchScore  — prefers clips whose tags match this specific recipe slot's tags;
+  //                    honors the recipe author's intent for this clip position
+  //   usageScore     — prefers clips used less often overall
+  _calculateScore (clip, recipeTags = []) {
+    const newnessScore   = this._calculateNewnessScore(clip);
+    const tagScore       = this._calculateTagScore(clip);
+    const tagMatchScore  = this._calculateTagMatchScore(clip, recipeTags);
+    const usageScore     = this._calculateUsageScore(clip);
+    const totalWeight = newnessScoreWeight + tagScoreWeight + tagMatchScoreWeight + usageScoreWeight;
     const score = (
-      newnessScore * newnessScoreWeight +
-      tagScore * tagScoreWeight +
-      usageScore * usageScoreWeight
+      newnessScore  * newnessScoreWeight  +
+      tagScore      * tagScoreWeight      +
+      tagMatchScore * tagMatchScoreWeight +
+      usageScore    * usageScoreWeight
     ) / totalWeight;
-    logger.debug(`Clip scored: ${clip.title}, newness: ${newnessScore}, tagScore: ${tagScore}, usageScore: ${usageScore}, score: ${score}`);
+    logger.debug(`Clip scored: ${clip.title}, newness: ${newnessScore}, tagScore: ${tagScore}, tagMatchScore: ${tagMatchScore}, usageScore: ${usageScore}, score: ${score}`);
     return score;
   }
 
@@ -390,9 +394,9 @@ class ClipSelector {
     return normalizedNewness;
   }
 
-  // Iterate over the tags in a clip and calculate a score
-  //  matching tags get a higher score, no tags get a score of 0
-  //  check status: confirmed working
+  // Score a clip based on overlap with the accumulated session tag pool (recentTags).
+  // recentTags includes tags from the recipe slot AND from all clips selected so far,
+  // so this score rewards clips that cohere with the mix's emerging character.
   _calculateTagScore (clip) {
     // Ensure the clip has tags
     if (!clip.tags || clip.tags.length === 0) {
@@ -414,6 +418,24 @@ class ClipSelector {
     // Calculate the average subscore (it should already be normalized between 0 and 1)
     const subscore = totalTagCount / numberOfTags;
     logger.debug(`TagScore: Clip "${clip.title}" scored. totalTagCount: ${totalTagCount}, numberOfTags: ${numberOfTags}, subscore: ${subscore}`);
+    return subscore;
+  }
+
+  // Score a clip based on overlap with the recipe slot's own tag list.
+  // This is distinct from tagScore (which uses the accumulated session pool) —
+  // tagMatchScore specifically rewards clips that match what the recipe asked for
+  // in this slot, giving the recipe author's intent extra influence.
+  _calculateTagMatchScore (clip, recipeTags) {
+    if (!clip.tags || clip.tags.length === 0) return 0;
+    if (!recipeTags || recipeTags.length === 0) return 0;
+    let totalTagCount = 0;
+    clip.tags.forEach(tag => {
+      const normalizedTag = this._normalizeTag(tag);
+      const tagCount = recipeTags.filter(rt => this._normalizeTag(rt) === normalizedTag).length;
+      totalTagCount += tagCount;
+    });
+    const subscore = totalTagCount / recipeTags.length;
+    logger.debug(`TagMatchScore: Clip "${clip.title}" scored. totalTagCount: ${totalTagCount}, recipeTags: ${recipeTags.length}, subscore: ${subscore}`);
     return subscore;
   }
 

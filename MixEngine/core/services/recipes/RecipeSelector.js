@@ -7,7 +7,7 @@ const { config } = require('config');
 // Extract values from the config object
 const {
   selectPoolPercentSize, selectPoolMinSize,
-  classificationScoreWeight, newnessScoreWeight, durationScoreWeight
+  classificationScoreWeight, newnessScoreWeight, durationScoreWeight, usageScoreWeight
 } = config.recipes;
 
 class RecipeSelector {
@@ -18,6 +18,8 @@ class RecipeSelector {
     this.dateRange = null;
     this.minDuration = null;
     this.maxDuration = null;
+    this.minUsed = null;
+    this.maxUsed = null;
     this.recipes = [];
     this.recentClassifications = [];
     this.recentTags = [];
@@ -32,6 +34,8 @@ class RecipeSelector {
     this._getEarliestAndLatestDates();
     // Set the duration range for duration scoring
     this._getDurationRange();
+    // Set the usage range for usage scoring
+    this._getUsageRange();
     // Set the recent classifications and tags
     this._setRecentClassificationAndTags();
     // Score the recipes
@@ -51,7 +55,7 @@ class RecipeSelector {
   async _fetchRecipes () {
     try {
       const query = `
-        SELECT recipeID, title, classification, tags, lastUsed, avgDuration
+        SELECT recipeID, title, classification, tags, lastUsed, timesUsed, avgDuration
         FROM recipes
         WHERE editLock = 0 AND status = 'Approved'
       `;
@@ -97,6 +101,39 @@ class RecipeSelector {
 
     logger.debug(`Date range set: earliest: ${this.earliestDate.toISOString()}, latest: ${this.latestDate.toISOString()}, range: ${this.dateRange}`);
     return true;
+  }
+
+  // Calculate min and max timesUsed across all recipes
+  _getUsageRange () {
+    let min = Infinity;
+    let max = 0;
+    this.recipes.forEach(recipe => {
+      const u = parseInt(recipe.timesUsed, 10);
+      if (!isNaN(u)) {
+        if (u < min) min = u;
+        if (u > max) max = u;
+      }
+    });
+    this.minUsed = isFinite(min) ? min : null;
+    this.maxUsed = max >= 0 && this.minUsed !== null ? max : null;
+    logger.debug(`Usage range set: min: ${this.minUsed}, max: ${this.maxUsed}`);
+  }
+
+  // Calculate usage score — less-used recipes score higher
+  // Neutral score (0.5) if no range exists; never-used recipes score 1.0
+  _calculateUsageScore (recipe) {
+    const u = parseInt(recipe.timesUsed, 10);
+    if (isNaN(u) || u === 0) {
+      logger.debug(`Recipe "${recipe.title}" usage score: 1.0 (never used)`);
+      return 1;
+    }
+    if (this.minUsed === null || this.maxUsed === null || this.maxUsed === this.minUsed) {
+      logger.debug(`Recipe "${recipe.title}" usage score: 0.5 (neutral — no range)`);
+      return 0.5;
+    }
+    const score = (this.maxUsed - u) / (this.maxUsed - this.minUsed);
+    logger.debug(`Recipe "${recipe.title}" usage score: ${score} (timesUsed: ${u}, range: ${this.minUsed}–${this.maxUsed})`);
+    return Math.min(Math.max(score, 0), 1);
   }
 
   // Calculate the min and max avgDuration across all recipes with data
@@ -159,20 +196,24 @@ class RecipeSelector {
     });
   }
 
-  // Score a recipe based on newness and classification (and other criteria if we wish)
-  //  check status: confirmed working
+  // Score a recipe as a weighted average of four dimensions:
+  //   newnessScore        — prefers recipes not used recently
+  //   classificationScore — prefers recipe classifications not heard recently in the stream
+  //   durationScore       — prefers shorter-avg recipes (variety in mix length)
+  //   usageScore          — prefers recipes used less often overall
   _calculateScore (recipe) {
-    const newnessScore = this._calculateNewnessScore(recipe);
+    const newnessScore        = this._calculateNewnessScore(recipe);
     const classificationScore = this._calculateClassificationScore(recipe);
-    const durationScore = this._calculateDurationScore(recipe);
-    // combine scores for different criteria as weighted average
-    const totalWeight = newnessScoreWeight + classificationScoreWeight + durationScoreWeight;
+    const durationScore       = this._calculateDurationScore(recipe);
+    const usageScore          = this._calculateUsageScore(recipe);
+    const totalWeight = newnessScoreWeight + classificationScoreWeight + durationScoreWeight + usageScoreWeight;
     const score = (
-      newnessScore * newnessScoreWeight +
+      newnessScore        * newnessScoreWeight        +
       classificationScore * classificationScoreWeight +
-      durationScore * durationScoreWeight
+      durationScore       * durationScoreWeight       +
+      usageScore          * usageScoreWeight
     ) / totalWeight;
-    logger.debug(`Recipe scored: ${recipe.title}, newness: ${newnessScore}, classification: ${classificationScore}, duration: ${durationScore}, score: ${score}`);
+    logger.debug(`Recipe scored: ${recipe.title}, newness: ${newnessScore}, classification: ${classificationScore}, duration: ${durationScore}, usage: ${usageScore}, score: ${score}`);
     return score;
   }
 
