@@ -1,10 +1,12 @@
 
+@import url('https://fonts.googleapis.com/css2?family=Rubik+Distressed&display=swap');
+
 @font-face {
   font-family: 'Rubik Distressed';
   src: url('./fonts/Rubik_Distressed.woff2') format('woff2');
   font-weight: normal;
   font-style: normal;
-  font-display: block;
+  font-display: swap;
 }
 
 /* Brand colors (--nav-background-color, --link-color, etc.) live in brand/brand.css */
