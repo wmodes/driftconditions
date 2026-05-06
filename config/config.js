@@ -134,9 +134,9 @@ const config = {
     selectPoolPercentSize: 5,
     selectPoolMinSize: 3,
     newnessScoreWeight: 0.5,        // weight for recipe recency; less recently used recipes score higher
-    classificationScoreWeight: 0.5, // weight for classification variety; less recently heard classifications score higher
+    classificationScoreWeight: 0.75, // weight for classification variety; less recently heard classifications score higher
     durationScoreWeight: 1,         // weight for recipe avg-duration score; shorter-avg recipes score higher
-    usageScoreWeight: 1,            // weight for recipe usage count; less-used recipes score higher
+    usageScoreWeight: 0.5,          // weight for recipe usage count; less-used recipes score higher
     avgDurationHistoryWeight: 10,   // running average weight for recipe avgDuration; higher = slower to adapt
     classification: [
       'Ambient', 
