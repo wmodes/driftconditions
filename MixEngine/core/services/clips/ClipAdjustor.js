@@ -178,17 +178,33 @@ class ClipAdjustor {
 
     const totalMins = flexibleClips.reduce((sum, clip) => sum + parseFloat(clip.minLength), 0);
 
-    // Pre-check: if even minimum silences exceed the budget, fixed content is too long.
-    // Scale all silence minimums down proportionally to fit and return early.
+    // Pre-check: fixed content is too long to honor minimum silence durations within budget.
+    //
+    // BEHAVIOR CHANGE (2026-05-06): previously we scaled silences down proportionally to fit,
+    // which crushed them to near-zero when budget was deeply negative. This was wrong for recipes
+    // where the intent is "pick a long spoken clip and let it run" — the track should overrun
+    // and get cut by the final trim filter, not have its spacing destroyed to fit.
+    //
+    // New behavior: set each silence to its declared minimum and let the track overrun.
+    // FFmpeg's _buildTrimFilter cuts the mix to mixDuration at output, so the audio is still
+    // the right length — voices just get cut at the end rather than being squashed together.
+    //
+    // TO REVERT: swap the commented/uncommented blocks below.
+    // Watch for: recipes where overrun causes audible cut-off that's worse than crushed silences.
     if (totalMins > budget) {
-      logger.info(`ClipAdjustor._adjustFlexibleClips: Min silences (${totalMins}s) exceed budget (${budget}s) — scaling down proportionally`);
-      const scale = budget > 0 ? budget / totalMins : 0;
+      logger.info(`ClipAdjustor._adjustFlexibleClips: fixed content (${fixedContent.toFixed(1)}s) exceeds budget (${budget.toFixed(1)}s) — setting silences to minimums, track will overrun and be trimmed`);
       flexibleClips.forEach(clip => {
-        clip.duration = parseFloat(clip.minLength) * scale;
-        logger.debug(`ClipAdjustor._adjustFlexibleClips: Clip scaled to ${clip.duration}s`);
+        clip.duration = parseFloat(clip.minLength);
+        logger.debug(`ClipAdjustor._adjustFlexibleClips: Clip set to minimum ${clip.duration}s`);
       });
+      // // PROPORTIONAL SCALING (previous behavior — re-enable to revert):
+      // const scale = budget > 0 ? budget / totalMins : 0;
+      // flexibleClips.forEach(clip => {
+      //   clip.duration = parseFloat(clip.minLength) * scale;
+      //   logger.debug(`ClipAdjustor._adjustFlexibleClips: Clip scaled to ${clip.duration}s`);
+      // });
       track.duration = this._calculateTotalTrackDuration(track);
-      logger.debug(`ClipAdjustor._adjustFlexibleClips: Final track duration after scale-down: ${track.duration}s`);
+      logger.debug(`ClipAdjustor._adjustFlexibleClips: Final track duration after minimum assignment: ${track.duration}s`);
       return;
     }
 
