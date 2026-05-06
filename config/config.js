@@ -173,6 +173,7 @@ const config = {
     monthlyWeek: 1,           // nth occurrence of weeklyDay in the month (1=first, 2=second, ...)
     anniversaryWindowDays: 7, // days after signup anniversary to catch missed yearly sends
     fallbackFrequency: 'monthly', // cadence applied to daily/weekly users with no new activity
+    sendWindowFraction: 0.71, // fraction of freqDays defining the "already sent" window (allows flex for fallback)
   },
   recaptcha: {
     siteKey: '6LeGSaAsAAAAAC5vDSHIXZD291CnNXGTCfyrYF8b',  // public, used by frontend

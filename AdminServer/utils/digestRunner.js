@@ -132,7 +132,7 @@ const FREQ_DAYS = { daily: 1, weekly: 7, monthly: 27 };
  */
 function withinSendWindow(lastSent, freqDays) {
   if (!lastSent) return false;
-  return daysSince(lastSent) < freqDays * 0.71; // allows some flex for fallback (2 days for weekly; a week for monthly)
+  return daysSince(lastSent) < freqDays * dc.sendWindowFraction;
 }
 
 /** True if enough time has passed without a send to trigger the fallback cadence. */
