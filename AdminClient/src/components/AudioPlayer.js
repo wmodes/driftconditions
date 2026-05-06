@@ -142,7 +142,11 @@ const AudioPlayer = forwardRef(({ showBar, isPlaying, setIsPlaying, togglePlayer
 
       } else if (type === 'transfer') {
         // playing tab is closing — schedule a play attempt with random jitter;
-        // first tab to start broadcasts 'play', causing all others to cancel
+        // first tab to start broadcasts 'play', causing all others to cancel.
+        // Force stale by setting stoppedAt to epoch: this tab was silenced (paused)
+        // while another tab played, so its buffer is always stale regardless of
+        // how long ago it last played.
+        stoppedAtRef.current = 0;
         transferTimeoutRef.current = setTimeout(() => {
           transferTimeoutRef.current = null;
           playStream();
