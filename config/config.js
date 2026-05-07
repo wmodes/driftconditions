@@ -66,7 +66,7 @@ const config = {
     newnessScoreWeight: 0.5,
     tagScoreWeight: 1,        // weight for mix-session tag coherence (accumulated tags from selected clips + recipe)
     tagMatchScoreWeight: 1.5, // weight for recipe-slot tag fidelity (tags specified in this clip's recipe slot)
-    usageScoreWeight: 0.5,    // weight for clip usage score; less-used clips score higher
+    usageScoreWeight: 0.25,   // weight for clip usage score; less-used clips score higher
     silenceAdjustMaxAttempts: 100, // max rejection-sampling attempts before scaling fallback
     classification: [
       'Ambient',
@@ -136,7 +136,7 @@ const config = {
     newnessScoreWeight: 0.5,        // weight for recipe recency; less recently used recipes score higher
     classificationScoreWeight: 0.75, // weight for classification variety; less recently heard classifications score higher
     durationScoreWeight: 1,         // weight for recipe avg-duration score; shorter-avg recipes score higher
-    usageScoreWeight: 0.5,          // weight for recipe usage count; less-used recipes score higher
+    usageScoreWeight: 0.25,         // weight for recipe usage count; less-used recipes score higher
     avgDurationHistoryWeight: 10,   // running average weight for recipe avgDuration; higher = slower to adapt
     classification: [
       'Ambient', 
