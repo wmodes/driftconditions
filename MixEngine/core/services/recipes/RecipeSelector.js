@@ -73,8 +73,17 @@ class RecipeSelector {
   // Calculate the earliest and latest dates from the recipes
   //  check status: confirmed working
   _getEarliestAndLatestDates () {
-    // Initialize both earliest and latest to the Unix epoch start
-    let earliest = new Date().getTime();
+    // Intent: find the span of lastUsed timestamps across all recipes so we can
+    // normalize each recipe's recency into a 0–1 newness score.
+    //
+    // Bug fix: earliest was previously initialized to new Date().getTime() (now),
+    // which meant that if all recipes were used recently (within hours/minutes),
+    // none of their timestamps would be earlier than "now", so earliest would
+    // never update from its initial value. This collapsed dateRange to near-zero,
+    // causing _calculateNewnessScore() to assign 1.0 to every recipe, wiping out
+    // all recency distinction. Fix: initialize to Infinity so any real timestamp
+    // is guaranteed to be smaller.
+    let earliest = Infinity;
     let latest = 0;
     // iterate over the recipes
     this.recipes.forEach(recipe => {
@@ -94,10 +103,12 @@ class RecipeSelector {
       // a true range. Later if a recipe has never been used (lastUser == NULL),
       // we can set the newness score to 1
     });
-    this.earliestDate = new Date(earliest);
+    // Guard: if no recipes have ever been used, earliest stays Infinity.
+    // Fall back to 0 (epoch) so dateRange stays 0 and newness scores all return 1.
+    this.earliestDate = new Date(isFinite(earliest) ? earliest : 0);
     this.latestDate = new Date(latest);
     // Ensure dateRange is non-negative. It will be 0 if no valid dates were found.
-    this.dateRange = Math.max(0, latest - earliest);
+    this.dateRange = Math.max(0, latest - (isFinite(earliest) ? earliest : 0));
 
     logger.debug(`Date range set: earliest: ${this.earliestDate.toISOString()}, latest: ${this.latestDate.toISOString()}, range: ${this.dateRange}`);
     return true;
@@ -276,7 +287,17 @@ class RecipeSelector {
       logger.debug(`Classification "${classification}" not found, scored: 1`);
       return 1;
     }
-    // Scale the value based on the index position
+    // Scale the value based on the index position: index 0 (most recent) → 0,
+    // index N-1 (oldest) → 1.0, giving a smooth decay across history.
+    //
+    // Bug fix: if recentClassifications has only one entry, length - 1 = 0 and
+    // we'd divide by zero, producing NaN that silently corrupts the weighted score.
+    // When there's only one classification in history, treat it as fully penalized
+    // (score 0) since it's the most — and only — recent classification heard.
+    if (this.recentClassifications.length === 1) {
+      logger.debug(`Classification "${classification}" only entry in history, scored: 0`);
+      return 0;
+    }
     const subscore = index / (this.recentClassifications.length - 1);
     logger.debug(`Classification "${classification}" index: ${index}, scored: ${subscore}`);
     return subscore;
