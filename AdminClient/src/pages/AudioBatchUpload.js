@@ -104,6 +104,29 @@ function AudioBatchUpload() {
     setError(''); // Clear any previous error message
   };
 
+  const handleFileDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const droppedFiles = Array.from(e.dataTransfer.files).filter(f => allowedFileTypes.includes(f.type));
+    if (!droppedFiles.length) {
+      setError('Invalid file type. Please select a valid audio file.');
+      return;
+    }
+    // Inject dropped files into the native input so it reflects the selection
+    if (fileInputRef.current) {
+      const dt = new DataTransfer();
+      droppedFiles.forEach(f => dt.items.add(f));
+      fileInputRef.current.files = dt.files;
+    }
+    dispatch(setUnsavedChanges(true));
+    setFiles(prevFiles => [...prevFiles, ...droppedFiles]);
+    setUploadStatus(prevStatus => [
+      ...prevStatus,
+      ...droppedFiles.map(() => ({ status: 'Pending', error: null, uploaded: false }))
+    ]);
+    setError('');
+  };
+
   const handleTagChange = (newTags) => {
     dispatch(setUnsavedChanges(true));
     setRecord(prevState => ({ ...prevState, tags: newTags }));
@@ -310,7 +333,12 @@ function AudioBatchUpload() {
               <div className="form-group-with-image">
                 <div className="form-fields">
                   <label className="form-label" htmlFor="file">Audio Files: <Required /></label>
-                  <input className="form-upload" type="file" id="file" onChange={handleFileChange} multiple ref={fileInputRef} />
+                  <div
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={handleFileDrop}
+                  >
+                    <input className="form-upload" type="file" id="file" onChange={handleFileChange} multiple ref={fileInputRef} />
+                  </div>
                   <p className="form-note">{fieldNotes.filetypes}</p>
 
                   <label className="form-label mt-2" htmlFor="status">Status: <Required /></label>
@@ -323,7 +351,18 @@ function AudioBatchUpload() {
                   <p className="form-note mt-1">{fieldNotes.status}</p>
                 </div>
 
-                <div className="cover-image-panel">
+                <div
+                  className="cover-image-panel"
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    const file = e.dataTransfer.files[0] || null;
+                    if (!file) return;
+                    setCoverImageFile(file);
+                    setCoverImagePreview(URL.createObjectURL(file));
+                    setCoverImageMessage('');
+                  }}
+                >
                   {coverImagePreview ? (
                     <img className="cover-image" src={coverImagePreview} alt="Cover preview" />
                   ) : (
@@ -337,19 +376,7 @@ function AudioBatchUpload() {
                       style={{ display: 'none' }}
                       onChange={handleCoverImageChange}
                     />
-                    <label
-                      htmlFor="coverImageInput"
-                      className="cover-image-upload-btn"
-                      onDragOver={(e) => e.preventDefault()}
-                      onDrop={(e) => {
-                        e.preventDefault();
-                        const file = e.dataTransfer.files[0] || null;
-                        if (!file) return;
-                        setCoverImageFile(file);
-                        setCoverImagePreview(URL.createObjectURL(file));
-                        setCoverImageMessage('');
-                      }}
-                    >
+                    <label htmlFor="coverImageInput" className="cover-image-upload-btn">
                       Choose Image
                     </label>
                   </div>

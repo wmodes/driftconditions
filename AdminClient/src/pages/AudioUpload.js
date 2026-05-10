@@ -4,7 +4,7 @@
 
 // AudioUpload.js - A page for uploading audio files
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { audioUpload } from '../store/audioSlice';
@@ -44,6 +44,8 @@ function AudioUpload() {
       setEditPerm(true);
     }
   }, [userAuth.permissions]);
+
+  const fileInputRef = useRef(null);
 
   // Local state for managing form inputs
   const [file, setFile] = useState(null);
@@ -116,6 +118,28 @@ function AudioUpload() {
     } else {
       e.target.value = ''; // Clears the file input
       console.error("Invalid file type:", selectedFile?.type);
+      setError('Invalid file type. Please select a valid audio file.');
+    }
+  };
+
+  const handleFileDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const droppedFile = e.dataTransfer.files[0];
+    if (!droppedFile) return;
+    // Inject dropped file into the native input so it shows the filename
+    if (fileInputRef.current) {
+      const dt = new DataTransfer();
+      dt.items.add(droppedFile);
+      fileInputRef.current.files = dt.files;
+    }
+    dispatch(setUnsavedChanges(true));
+    if (allowedFileTypes.includes(droppedFile.type)) {
+      setFile(droppedFile);
+      generateAndSetTitle(droppedFile);
+      setError('');
+    } else {
+      console.error("Invalid file type:", droppedFile.type);
       setError('Invalid file type. Please select a valid audio file.');
     }
   };
@@ -202,7 +226,12 @@ function AudioUpload() {
               <div className="form-group-with-image">
                 <div className="form-fields">
                   <label className="form-label" htmlFor="file">Audio File: <Required /></label>
-                  <input className="form-upload" type="file" id="file" onChange={handleFileChange} />
+                  <div
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={handleFileDrop}
+                  >
+                    <input className="form-upload" type="file" id="file" ref={fileInputRef} onChange={handleFileChange} />
+                  </div>
                   <p className="form-note">{fieldNotes.filetypes}</p>
 
                   <label className="form-label" htmlFor="title">Title: <Required /></label>
@@ -218,7 +247,17 @@ function AudioUpload() {
                   <p className="form-note mt-1">{fieldNotes.status}</p>
                 </div>
 
-                <div className="cover-image-panel">
+                <div
+                  className="cover-image-panel"
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    const f = e.dataTransfer.files[0] || null;
+                    if (!f) return;
+                    setCoverImageFile(f);
+                    setCoverImagePreview(URL.createObjectURL(f));
+                  }}
+                >
                   {coverImagePreview ? (
                     <img className="cover-image" src={coverImagePreview} alt="Cover preview" />
                   ) : (
@@ -236,18 +275,7 @@ function AudioUpload() {
                         setCoverImagePreview(f ? URL.createObjectURL(f) : null);
                       }}
                     />
-                    <label
-                      htmlFor="coverImageInput"
-                      className="cover-image-upload-btn"
-                      onDragOver={(e) => e.preventDefault()}
-                      onDrop={(e) => {
-                        e.preventDefault();
-                        const f = e.dataTransfer.files[0] || null;
-                        if (!f) return;
-                        setCoverImageFile(f);
-                        setCoverImagePreview(URL.createObjectURL(f));
-                      }}
-                    >
+                    <label htmlFor="coverImageInput" className="cover-image-upload-btn">
                       Choose Image
                     </label>
                   </div>
