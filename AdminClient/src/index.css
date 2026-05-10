@@ -768,6 +768,9 @@ figcaption {
   display: flex;
   align-self: center;
   width: 60%;
+  min-width: fit-content;
+  padding-left: 15px;
+  padding-right: 15px;
   justify-content: center;
   gap: 30px;
   background: rgba(255, 255, 255, 0.1);
