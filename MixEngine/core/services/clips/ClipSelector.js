@@ -262,8 +262,9 @@ class ClipSelector {
   // Calculate the earliest and latest dates from the clips
   //  check status: confirmed working
   _getEarliestAndLatestDates () {
-    // Initialize both earliest and latest to the Unix epoch start
-    let earliest = new Date().getTime();
+    // Use Infinity so any real timestamp beats it — using Date.now() would
+    // collapse the range to 0 whenever all clips were used recently.
+    let earliest = Infinity;
     let latest = 0;
     // iterate over the clips
     this.clipPool.forEach(clip => {
@@ -283,10 +284,10 @@ class ClipSelector {
       // a true range. Later if a clip has never been used (lastUser == NULL),
       // we can set the newness score to 1
     });
-    this.earliestDate = new Date(earliest);
+    this.earliestDate = new Date(isFinite(earliest) ? earliest : 0);
     this.latestDate = new Date(latest);
     // Ensure dateRange is non-negative. It will be 0 if no valid dates were found.
-    this.dateRange = Math.max(0, latest - earliest);
+    this.dateRange = Math.max(0, latest - (isFinite(earliest) ? earliest : 0));
 
     // logger.debug(`Date range set: earliest: ${this.earliestDate.toISOString()}, latest: ${this.latestDate.toISOString()}, range: ${this.dateRange}`);
     return true;
