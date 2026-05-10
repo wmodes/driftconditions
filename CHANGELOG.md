@@ -12,6 +12,9 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [2026-05-10]
 
 ### Fixed
+- **AudioUpload/AudioBatchUpload: file drag-and-drop broken when form fields populated** — browser's native file-input drop handling was intercepted by ReactTags drag listeners when tag pills were present. Added explicit `onDragOver`/`onDrop` wrapper around the audio file input with `DataTransfer` injection so the native input correctly shows the dropped filename. Batch upload handles multiple dropped files. Both pages updated.
+- **AudioUpload/AudioBatchUpload: cover image droppable on full panel** — drop zone extended from "Choose Image" button only to the entire cover image panel (preview image + placeholder + button).
+- **AudioUpload: console spam from `formatUtils.setClassificationFormOptions`** — `console.log` at line 141 fired on every render; commented out.
 - **AudioUpload: file drag-and-drop blocked when tags already present** — `ReactTags` registers drag handlers on tag pills for reordering, which intercepted `dragover`/`drop` events before they could reach the `<input type="file">`. Fixed by adding `allowDragDrop={false}` to the `ReactTags` component.
 - **AudioUpload: tags cleared after server error** — two compounding bugs: (1) `initialRecord` was passed to `TagInput` but the component reads `initialTags`, so it always initialized empty; (2) the `<Waiting>` early-return during loading unmounts `TagInput`, which remounts on error and re-initializes from the (wrong) prop. Fixed by correcting the prop name to `initialTags` so the preserved parent `record.tags` state is correctly restored on remount.
 - **AudioUpload: noisy console.log on every tag addition** — two debug `console.log` calls in `TagInput.handleAddition` fired on every tag add; commented out.
