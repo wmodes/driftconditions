@@ -12,6 +12,8 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [2026-05-10]
 
 ### Fixed
+- **AudioUpload/AudioBatchUpload: dropping image on existing cover preview had no effect** — `<img>` element's native drag behavior intercepted dragover before it could bubble to the panel's drop handler. Added `onDragOver={e.preventDefault()}` directly on the img element.
+- **AudioUpload/AudioBatchUpload: filename-to-title conversion improved** — commas, slashes, and parentheses now preserved (previously stripped); title case applied only when the original filename is all-uppercase (previously always applied). `generateTitle` extracted from both pages into `formatUtils` to eliminate duplication.
 - **AudioUpload/AudioBatchUpload: file drag-and-drop broken when form fields populated** — browser's native file-input drop handling was intercepted by ReactTags drag listeners when tag pills were present. Added explicit `onDragOver`/`onDrop` wrapper around the audio file input with `DataTransfer` injection so the native input correctly shows the dropped filename. Batch upload handles multiple dropped files. Both pages updated.
 - **AudioUpload/AudioBatchUpload: cover image droppable on full panel** — drop zone extended from "Choose Image" button only to the entire cover image panel (preview image + placeholder + button).
 - **AudioUpload: console spam from `formatUtils.setClassificationFormOptions`** — `console.log` at line 141 fired on every render; commented out.
