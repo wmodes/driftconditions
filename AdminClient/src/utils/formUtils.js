@@ -264,8 +264,8 @@ export const TagInput = ({ onTagChange, initialTags }) => {
    */
   const handleAddition = (newTag) => {
     const normalizedTag = NormalizeReactTag(newTag);
-    console.log('TagInput:handleAddition:newTag', newTag, 'normalizedTag:', normalizedTag);
-    console.log('TagInput:handleAddition:existing tags:', tags)
+    // console.log('TagInput:handleAddition:newTag', newTag, 'normalizedTag:', normalizedTag);
+    // console.log('TagInput:handleAddition:existing tags:', tags)
 
     // Check if the normalized tag already exists
     if (!tags.some(tag => tag.text === normalizedTag.text)) {
@@ -285,6 +285,7 @@ export const TagInput = ({ onTagChange, initialTags }) => {
           delimiters={[188, 13]}
           placeholder=""
           autofocus={false}
+          allowDragDrop={false}
           classNames={{
             tags: 'react-tags',
             tagInput: 'react-tags-input',

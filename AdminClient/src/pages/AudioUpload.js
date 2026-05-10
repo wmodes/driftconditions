@@ -265,7 +265,7 @@ function AudioUpload() {
 
               <label className="form-label" htmlFor="tags">Tags: <Required /></label>
               <TagInput
-                initialRecord={record.tags}
+                initialTags={record.tags}
                 onTagChange={handleTagChange}
               />
               <p className="form-note mt-1">{fieldNotes.tags}</p>
