@@ -12,6 +12,8 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [2026-05-10]
 
 ### Fixed
+- **`_getEarliestAndLatestDates()` collapsed dateRange when all recipes used recently** — `earliest` was initialized to `new Date().getTime()` (now), so if all recipes had been used within a short window, none of their timestamps would beat the initial value and `dateRange` would collapse to ~0. This caused `_calculateNewnessScore()` to assign 1.0 to every recipe, erasing all recency distinction. Fixed by initializing `earliest` to `Infinity` so any real timestamp is guaranteed smaller. Added guard for the all-null edge case where `earliest` stays `Infinity`.
+- **`_calculateClassificationSubscore()` division by zero with one classification in history** — when `recentClassifications.length === 1`, the normalization formula `index / (length - 1)` divides by zero, producing `NaN` that silently corrupts the weighted score. Fixed with an explicit guard: a single-entry history means the classification is the most (and only) recent one heard, so it scores 0.
 - **Recipe `usageScoreWeight` miscalibrated** — weight was set to 5 (intended as "5 out of 100") but the scoring system operates on a 0–1 scale, making usage 10× stronger than newness and causing recently-played recipes to remain in the selection pool. Corrected to 0.1, restoring newness and classification scores as the dominant diversity signals.
 
 ---
