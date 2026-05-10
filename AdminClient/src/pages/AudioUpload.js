@@ -10,7 +10,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { audioUpload } from '../store/audioSlice';
 import { Waiting } from '../utils/appUtils';
 
-import { setClassificationFormOptions, formatClassificationForDB } from '../utils/formatUtils';
+import { setClassificationFormOptions, formatClassificationForDB, generateTitle } from '../utils/formatUtils';
 import { ClassificationCheckboxes, TagInput } from '../utils/formUtils';
 
 // unsavedChanges: global state, listeners, and handlers
@@ -259,7 +259,8 @@ function AudioUpload() {
                   }}
                 >
                   {coverImagePreview ? (
-                    <img className="cover-image" src={coverImagePreview} alt="Cover preview" />
+                    <img className="cover-image" src={coverImagePreview} alt="Cover preview"
+                      onDragOver={(e) => e.preventDefault()} />
                   ) : (
                     <div className="cover-image-placeholder">No cover image</div>
                   )}
@@ -338,25 +339,5 @@ function AudioUpload() {
 }
 
 // Helper functions
-
-/**
- * Generate a title based on the file name.
- * @param {File} file - The file object.
- * @returns {string} - The generated title.
- */
-const generateTitle = (file) => {
-  // Generate a title based on the file name
-  const fileName = file.name;
-  let title = fileName.replace(/\.[^/.]+$/, ''); // Remove file extension
-  // Replace underscores with spaces
-  title = title.replace(/_/g, ' ');
-  // Replace punctuation characters with a single space, excluding apostrophes, dashes, and parentheses within words
-  title = title.replace(/[^\w\s'()-]+/g, ' ');
-  // Make Title Case
-  title = title.replace(/\w\S*/g, function(txt) {
-    return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
-  });
-  return title;
-};
 
 export default AudioUpload;

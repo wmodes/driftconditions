@@ -165,3 +165,22 @@ export const setClassificationFormOptions = (options, keysSetToTrue) => {
 export const formatClassificationForDB = (classificationObject) => {
   return Object.keys(classificationObject).filter(key => classificationObject[key]);
 };
+
+/**
+ * Generates a human-readable title from an audio filename.
+ * Preserves commas, dashes, slashes, apostrophes, and parentheses.
+ * Applies title case only if the original filename stem was all uppercase.
+ * @param {File} file - The file object.
+ * @returns {string} - The generated title.
+ */
+export const generateTitle = (file) => {
+  const stem = file.name.replace(/\.[^/.]+$/, '');
+  const isAllUpper = stem === stem.toUpperCase() && /[A-Z]/.test(stem);
+  let title = stem.replace(/_/g, ' ');
+  title = title.replace(/[^\w\s,'/()-]+/g, ' ');
+  title = title.trim().replace(/\s+/g, ' ');
+  if (isAllUpper) {
+    title = title.replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
+  }
+  return title;
+};
