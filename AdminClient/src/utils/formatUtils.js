@@ -138,7 +138,7 @@ export function formatDuration(seconds) {
  * @returns {Object} - The formatted classification form options.
  */
 export const setClassificationFormOptions = (options, keysSetToTrue) => {
-  console.log(`formatUtils.setClassificationFormOptions options: ${JSON.stringify(options)}, responses: ${JSON.stringify(keysSetToTrue)})`);
+  // console.log(`formatUtils.setClassificationFormOptions options: ${JSON.stringify(options)}, responses: ${JSON.stringify(keysSetToTrue)})`)
 
   if (typeof keysSetToTrue === 'boolean') {
     // If responses is a boolean, set all options to that boolean value.
