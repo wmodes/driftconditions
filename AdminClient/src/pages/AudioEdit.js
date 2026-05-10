@@ -283,12 +283,24 @@ function AudioEdit() {
                   </div>
                 </div>
 
-                <div className="cover-image-panel">
+                <div
+                  className="cover-image-panel"
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    const file = e.dataTransfer.files[0] || null;
+                    if (!file) return;
+                    setCoverImageFile(file);
+                    setCoverImagePreview(URL.createObjectURL(file));
+                  }}
+                >
                   {coverImagePreview ? (
-                    <img className="cover-image" src={coverImagePreview} alt="Cover preview" />
+                    <img className="cover-image" src={coverImagePreview} alt="Cover preview"
+                      onDragOver={(e) => e.preventDefault()} />
                   ) : record.coverImage && !coverImgError ? (
                     <img className="cover-image" src={`${coverImageURLBase}/${record.coverImage}.jpg`} alt="Cover"
-                      onError={() => setCoverImgError(true)} />
+                      onError={() => setCoverImgError(true)}
+                      onDragOver={(e) => e.preventDefault()} />
                   ) : (
                     <div className="cover-image-placeholder">{coverImgError ? 'Image not found' : 'No cover image'}</div>
                   )}
@@ -304,18 +316,7 @@ function AudioEdit() {
                         setCoverImagePreview(file ? URL.createObjectURL(file) : null);
                       }}
                     />
-                    <label
-                      htmlFor="coverImageInput"
-                      className="cover-image-upload-btn"
-                      onDragOver={(e) => e.preventDefault()}
-                      onDrop={(e) => {
-                        e.preventDefault();
-                        const file = e.dataTransfer.files[0] || null;
-                        if (!file) return;
-                        setCoverImageFile(file);
-                        setCoverImagePreview(URL.createObjectURL(file));
-                      }}
-                    >
+                    <label htmlFor="coverImageInput" className="cover-image-upload-btn">
                       Choose Image
                     </label>
                   </div>
