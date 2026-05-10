@@ -9,6 +9,13 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-05-10]
+
+### Fixed
+- **Recipe `usageScoreWeight` miscalibrated** — weight was set to 5 (intended as "5 out of 100") but the scoring system operates on a 0–1 scale, making usage 10× stronger than newness and causing recently-played recipes to remain in the selection pool. Corrected to 0.1, restoring newness and classification scores as the dominant diversity signals.
+
+---
+
 ## [2026-05-06]
 
 ### Fixed
