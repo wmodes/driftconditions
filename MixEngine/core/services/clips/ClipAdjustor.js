@@ -235,8 +235,15 @@ class ClipAdjustor {
     if (!accepted) {
       logger.warn(`ClipAdjustor._adjustFlexibleClips: Rejection sampling hit ${silenceAdjustMaxAttempts}-attempt limit — scaling last attempt to fit budget`);
       const lastTotal = lastAttempt.reduce((sum, d) => sum + d, 0);
-      const scale = lastTotal > 0 ? budget / lastTotal : 0;
-      lastAttempt = lastAttempt.map(d => d * scale);
+      if (lastTotal === 0) {
+        // All flexible clips have zero-length range (minLength === maxLength === 0);
+        // scaling would produce all zeros. Fall back to minLength for each.
+        logger.warn(`ClipAdjustor._adjustFlexibleClips: lastTotal is 0 — assigning minLength to each flexible clip`);
+        lastAttempt = flexibleClips.map(clip => clip.minLength ?? 0);
+      } else {
+        const scale = budget / lastTotal;
+        lastAttempt = lastAttempt.map(d => d * scale);
+      }
     }
 
     // Apply final durations to clips
