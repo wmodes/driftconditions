@@ -1,0 +1,19 @@
+# Xcode backfill runner systemd timer file
+# Fires xcode.service nightly at 10 AM UTC (5 AM Eastern), offset from
+# audio-analysis (08:00) and digest (13:00) to avoid overlap.
+# Persistent=true catches up on any runs missed while the server was down.
+#
+# Link into place with xcode.service (see xcode.service for full instructions).
+#
+# Check next/last run:
+# % systemctl list-timers xcode.timer
+
+[Unit]
+Description=Run DriftConditions xcode backfill nightly at 5 AM Eastern (10:00 UTC)
+
+[Timer]
+OnCalendar=*-*-* 10:00:00 UTC
+Persistent=true
+
+[Install]
+WantedBy=timers.target
