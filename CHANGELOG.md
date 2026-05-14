@@ -9,6 +9,19 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-05-13]
+
+### Added
+- **Audio transcode pipeline for large/high-bitrate files** — large files (>10MB and >192kbps) are now transcoded to 192kbps MP3 for efficient transmission to listeners. MixEngine is unaffected — it continues to read full-resolution source files for mixing.
+  - `xcodeUtils.js`: `needsTranscode()` (ffprobe size+bitrate check) and `transcodeFile()` (ffmpeg 192kbps libmp3lame, updates `audio.filename` in DB). Transcoded files written alongside originals as `-xcode.mp3`.
+  - Detection runs at upload time so new files are classified immediately; actual transcoding is deferred to the nightly runner.
+  - `xcodeRunner.js`: two-pass backfill runner — detection pass classifies untagged records, transcode pass processes `xcode-needed` records. Safe to interrupt and re-run; skips already-tagged records.
+  - `run-xcode-backfill.js`: job entry point for the runner.
+  - `setupfiles/xcode.service` + `setupfiles/xcode.timer`: systemd oneshot service + nightly timer (10:00 UTC); symlinked into `/etc/systemd/system/` at deploy time. `Persistent=true` catches up on missed runs.
+  - Tag convention: `xcode-needed`, `xcode-not-needed`, `xcode-completed`, `xcode-error`, `xcode-192` stored in `internalTags`.
+
+---
+
 ## [2026-05-10]
 
 ### Fixed
