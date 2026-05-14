@@ -21,9 +21,11 @@ const FullscreenPlayer = () => {
   const [altImages, setAltImages] = useState([]);
   const [hearted, setHearted] = useState(false);
 
-  // fetch playlist on mount so reloading directly on /fullscreen works
+  // fetch playlist on mount and poll every 60s (Playlist component not mounted here)
   useEffect(() => {
     dispatch(fetchQueuePlaylist());
+    const id = setInterval(() => dispatch(fetchQueuePlaylist()), 60000);
+    return () => clearInterval(id);
   }, [dispatch]);
 
   // fetch alt images for cover fallback
