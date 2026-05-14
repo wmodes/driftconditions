@@ -12,6 +12,7 @@ import { formatJSONForDisplay, formatJSONStrForDB,
   setClassificationFormOptions, formatClassificationForDB } from '../utils/formatUtils';
 // import FeatherIcon from 'feather-icons-react';
 import { Waiting } from '../utils/appUtils';
+import PreviewModal from '../components/PreviewModal';
 
 // Import the config object from the config.js file
 import config from '../config/config';
@@ -31,6 +32,7 @@ function RecipeCreate() {
   const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [error, setError] = useState('');
+  const [showPreview, setShowPreview] = useState(false);
 
   // Instead of re-initializing the form upon error, maintain its current state
   const [record, setRecord] = useState({
@@ -92,12 +94,20 @@ function RecipeCreate() {
       <div className="display-box-wrapper">
         <div className="display-box">
           <h2 className='title'>Create New Recipe</h2>
+          {showPreview && (
+            <PreviewModal
+              recipeData={record.recipeData}
+              title={record.title}
+              onClose={() => setShowPreview(false)}
+            />
+          )}
           <RecipeForm
             action="create"
             initialRecord={record}
             onSave={handleSave}
             onCancel={handleCancel}
             onChange={handleChange}
+            onPreview={() => setShowPreview(true)}
           />
           <div className='message-box'>
             {successMessage && <p className="success">{successMessage}</p>}
