@@ -1,0 +1,28 @@
+# Xcode backfill runner systemd service file
+# Invoked by xcode.timer — do not start directly.
+#
+# Link into place with:
+# % sudo ln -sf /home/debian/driftconditions/setupfiles/xcode.service /etc/systemd/system/xcode.service
+# % sudo ln -sf /home/debian/driftconditions/setupfiles/xcode.timer /etc/systemd/system/xcode.timer
+# % systemctl daemon-reload
+# % sudo systemctl enable --now xcode.timer
+#
+# Check timer status:
+# % systemctl status xcode.timer
+#
+# View logs:
+# % journalctl -u xcode.service --no-pager | less
+
+[Unit]
+Description=DriftConditions audio transcode backfill runner
+After=network.target
+
+[Service]
+Type=oneshot
+User=debian
+WorkingDirectory=/home/debian/driftconditions/AdminServer
+Environment=NODE_PATH=/home/debian/driftconditions/AdminServer/node_modules
+ExecStart=/usr/bin/node /home/debian/driftconditions/AdminServer/jobs/run-xcode-backfill.js
+
+[Install]
+WantedBy=multi-user.target
