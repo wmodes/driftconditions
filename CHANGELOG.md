@@ -9,6 +9,13 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-05-14]
+
+### Fixed
+- **FullscreenPlayer cover image and track list stale after mix change** — `Playlist` component (which polls the queue every 60s) is only mounted on the homepage, so navigating to `/fullscreen` stopped all queue updates. `FullscreenPlayer` now polls `fetchQueuePlaylist` every 60 seconds independently, keeping the cover image and clip list in sync with the current mix.
+
+---
+
 ## [2026-05-13]
 
 ### Added
