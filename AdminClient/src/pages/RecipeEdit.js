@@ -15,6 +15,7 @@ import {
 // import { ClassificationCheckboxes } from '../utils/formUtils';
 // import FeatherIcon from 'feather-icons-react';
 import { Waiting } from '../utils/appUtils';
+import PreviewModal from '../components/PreviewModal';
 
 // Import the config object from the config.js file
 import config from '../config/config';
@@ -36,6 +37,7 @@ function RecipeEdit() {
   const [isLoading, setIsLoading] = useState(true);
   const [successMessage, setSuccessMessage] = useState('');
   const [error, setError] = useState('');
+  const [showPreview, setShowPreview] = useState(false);
 
   // State repository for managing form inputs
   const [record, setRecord] = useState({
@@ -135,12 +137,20 @@ function RecipeEdit() {
         <div className="display-box">
           <h2 className='title'>Edit Recipe</h2>
           {renderBreadcrumbs()}
+          {showPreview && (
+            <PreviewModal
+              recipeData={record.recipeData}
+              title={record.title}
+              onClose={() => setShowPreview(false)}
+            />
+          )}
           <RecipeForm
             action="update"
             initialRecord={record}
             onSave={handleSubmit}
             onCancel={handleCancel}
-            onChange={handleChange} // Ensure RecipeForm calls this function with updated state
+            onChange={handleChange}
+            onPreview={() => setShowPreview(true)}
           />
           <div className='message-box'>
             {successMessage && <p className="success">{successMessage}</p>}

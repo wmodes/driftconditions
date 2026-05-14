@@ -28,6 +28,7 @@ const Conductor = require('@services/Conductor');
 const { config } = require('config');
 const corsOptions = config.corsOptions;
 const mixEngineServer = config.mixEngineServer;
+const mixPreviewDir = config.content.mixPreviewDir;
 
 // Middleware setup
 app.use(express.urlencoded({extended: true}));
@@ -41,13 +42,18 @@ app.use((req, res, next) => {
   next();
 });
 
+// Serve preview mix files
+app.use('/mixpreview', express.static(mixPreviewDir));
+
 // Require route modules
-const authRoutes = require('./core/api/routes/authRoutes');
-const queueRoutes = require('./core/api/routes/queueRoutes');
+const authRoutes    = require('./core/api/routes/authRoutes');
+const queueRoutes   = require('./core/api/routes/queueRoutes');
+const previewRoutes = require('./core/api/routes/previewRoutes');
 
 // Use routes
 app.use('/api/auth', authRoutes);
 app.use('/api/queue', queueRoutes);
+app.use('/api/preview', previewRoutes);
 
 // Error handling middleware
 app.use(notFound);

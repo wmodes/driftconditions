@@ -109,7 +109,7 @@ class MixEngine {
     this._buildComplexFilter(recipeObj);
     //
     // Define output path
-    this._setMixFilepath(mixDetails.mixID, recipe);
+    this._setMixFilepath(mixDetails.mixID, recipe, mixDetails.outputDir);
     mixDetails.filename = this.mixFilename;
     mixDetails.filepath = this.mixFilepath;
     //
@@ -117,7 +117,9 @@ class MixEngine {
     await this._configureAndRun(ffmpegCmd);
     //
     // Embed ID3 metadata and cover art into the finished mix file
-    await this._embedMetadata(mixDetails);
+    if (!mixDetails.skipMetadata) {
+      await this._embedMetadata(mixDetails);
+    }
   }
 
   /**
@@ -151,10 +153,10 @@ class MixEngine {
    * @sideeffect this.mixFilename, this.mixFilepaths
    * @private
    */
-  _setMixFilepath (mixID, recipe) {
+  _setMixFilepath (mixID, recipe, outputDir = mixFileDir) {
     const mixFilename = `${this._sanitizeFilename(`${mixID}_${recipe.title}`)}.mp3`;
     this.mixFilename = mixFilename;
-    const mixFilepath = path.join(mixFileDir, mixFilename);
+    const mixFilepath = path.join(outputDir, mixFilename);
     logger.debug(`MixEngine:makeMix: mixFilepath: ${mixFilepath}`);
     this.mixFilepath = mixFilepath;
   }
