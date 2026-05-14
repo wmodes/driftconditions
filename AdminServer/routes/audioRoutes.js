@@ -20,6 +20,7 @@ const { logAudit } = require('../utils/audit');
 
 // audio and file management imports
 const multer = require('multer');
+const { needsTranscode } = require('../utils/xcodeUtils');
 const { getAudioDurationInSeconds } = require('get-audio-duration');
 const fs = require('fs').promises;
 const fsExtra = require('fs-extra');
@@ -298,6 +299,14 @@ router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
     // Execute the query
     const [result] = await db.query(query, values);
     const audioID = result.insertId;
+
+    // Evaluate transcode need and tag the record immediately
+    const audioRecord = {
+      audioID,
+      internalTags: needsAnalysis ? [audioInternalTags.analysisQueue] : [],
+    };
+    await needsTranscode(audioRecord, fullFilePath);
+
     res.status(200).send({
       message: 'File uploaded successfully',
       filepath: filePathForDB,

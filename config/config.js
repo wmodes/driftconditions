@@ -96,6 +96,16 @@ const config = {
       imageFromGoogle: 'image-from-google',    // cover image sourced via DDG/Google image search
       imageFromUser:   'image-from-user',      // cover image uploaded or URL-supplied by user
       imageNotFound:  'image-not-found',       // no cover image found after all attempts
+      xcodeNeeded:    'xcode-needed',          // file exceeds thresholds; transcode not yet run
+      xcodeNotNeeded: 'xcode-not-needed',      // file is within thresholds; no transcode required
+      xcodeCompleted: 'xcode-completed',       // transcode done; audio.filename updated
+      xcodeError:     'xcode-error',           // transcode or probe failed; needs manual review
+    },
+    // Transcoding thresholds — files exceeding BOTH are transcoded to xcodeTargetBitrate
+    xcode: {
+      fileSizeThresholdMB: 10,   // files smaller than this are never transcoded
+      bitrateThresholdKbps: 192, // files at or below this bitrate are not transcoded
+      targetBitrate: 192,        // output bitrate in kbps (also written as xcode-192 internalTag)
     },
     clipLength: {   // in seconds
       tiny: {
