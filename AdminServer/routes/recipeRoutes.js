@@ -13,6 +13,9 @@ const { logAudit } = require('../utils/audit');
 const { config } = require('config');
 const jwtSecretKey = config.authToken.jwtSecretKey;
 
+const { protocol, host, port } = config.mixEngineServer;
+const MIX_ENGINE_URL = `${protocol}://${host}:${port}`;
+
 //
 // RECIPE FETCHING AND LISTING
 //
@@ -339,5 +342,31 @@ const repairBrokenJSON = (jsonField) => {
   }
   return jsonField;
 };
+
+// ─── Preview ──────────────────────────────────────────────────────────────────
+
+// Proxy to MixEngine's /api/preview — generates an off-the-record mix from the
+// current (possibly unsaved) recipe form state and returns a playable URL.
+router.post('/preview', verifyToken, async (req, res) => {
+  const { recipeData, title } = req.body;
+  if (!recipeData) {
+    return res.status(400).json({ error: { message: 'recipeData is required' } });
+  }
+  try {
+    const response = await fetch(`${MIX_ENGINE_URL}/api/preview`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ recipeData, title }),
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      return res.status(response.status).json({ error: { message: data.error || 'Preview generation failed' } });
+    }
+    res.json(data);
+  } catch (err) {
+    logger.error(`recipeRoutes:/preview: ${err.message}`);
+    res.status(500).json({ error: { message: 'Could not reach mix engine' } });
+  }
+});
 
 module.exports = router;

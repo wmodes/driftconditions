@@ -222,6 +222,7 @@ const config = {
     clipsDir:       BASEDIR + '/content/clips',  // audio clip files (YYYY/MM/filename.mp3)
     tmpFileDir:     BASEDIR + '/content/tmp',
     mixFileDir:     BASEDIR + '/content/mixes',
+    mixPreviewDir:  BASEDIR + '/content/mixpreview',
     soundsFileDir:  BASEDIR + '/content/sounds',
     coverImage: {
       dir:     BASEDIR + '/content/images/covers', // per-clip cover images

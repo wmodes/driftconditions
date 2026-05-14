@@ -27,7 +27,7 @@ const newTrackPattern = config.recipes.newTrack;
 const newClipPattern = config.recipes.newClip;
 const newSilencePattern = config.recipes.newSilence;
 
-function RecipeForm({ action, initialRecord, onSave, onCancel, onChange }) {
+function RecipeForm({ action, initialRecord, onSave, onCancel, onChange, onPreview }) {
   // get auth state from Redux store
   const { user: userAuth } = useSelector((state) => state.auth);
   const [editPerm, setEditPerm] = useState(false);
@@ -315,6 +315,7 @@ function RecipeForm({ action, initialRecord, onSave, onCancel, onChange }) {
             <button className="button right" type="button" onClick={addTrack}>Add Track</button>
             <button className="button right mr-0" type="button" onClick={addClip}>Insert Clip</button>
             <button className="button right mr-0" type="button" onClick={addSilence}>Insert Silence</button>
+            {onPreview && <button className="button right mr-0" type="button" onClick={onPreview}>Preview</button>}
           </div>
           </div><div className='message-box h-5 pt-0'>
             {successMessage && <div className="success">{successMessage}</div>}
