@@ -108,7 +108,8 @@ router.post('/', async (req, res) => {
     const mixDetails = {
       mixID:         previewID,
       outputDir:     mixPreviewDir,
-      skipMetadata:  true,   // avoid ffmpeg title-with-spaces bug in _embedMetadata
+      skipMetadata:  true,  // avoid ffmpeg title-with-spaces bug in _embedMetadata
+      maxDuration:   90,    // cap output at 90s to keep memory usage manageable on server
       playlist,
       duration,
     };
