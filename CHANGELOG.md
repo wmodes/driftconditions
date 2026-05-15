@@ -11,6 +11,9 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [2026-05-15]
 
+### Fixed
+- **RecipeSelector: new/never-used recipes scored too low to be selected** — `_sortRecipesRecentToEarliest` placed recipes with `lastUsed = null` at the top of the list (treating them as most recently used). This list is used to build `recentClassifications`, where index 0 = most recently heard. So never-used recipes' classifications landed at index 0 and received a near-zero classification score, consistently knocking them out of the selection pool. Fix: null `lastUsed` now sorts to the bottom (oldest/never-used), so their classifications score high and new recipes compete fairly.
+
 ### Added
 - **Recipe preview** — editors can generate an off-the-record mix from a recipe without saving. Preview button appears in the RecipeEdit toolbar next to Insert Silence. Clicking it opens a modal (warn → spinner → audio player with scrubbing). The mix is rendered by MixEngine via a stripped pipeline (RecipeParser → ClipSelector → ClipAdjustor → MixEngine) that skips RecordKeeper and MixQueue entirely — no queue entries, no clip usage records. Output goes to `content/mixpreview/`. If a randomly selected clip file is not present locally, the modal shows a clear message and offers to regenerate (which will pick different clips). Regenerate button available after a preview is ready.
 

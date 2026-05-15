@@ -379,9 +379,9 @@ class RecipeSelector {
       if (a.lastUsed === null && b.lastUsed === null) {
         return 0; // Leave them in their current order
       } else if (a.lastUsed === null) {
-        return -1; // Place record with null lastUsed at the top
+        return 1; // null lastUsed = never used = oldest; sort to bottom
       } else if (b.lastUsed === null) {
-        return 1; // Place record with null lastUsed at the top
+        return -1; // null lastUsed = never used = oldest; sort to bottom
       } else {
         return b.lastUsed - a.lastUsed; // Sort based on timestamps
       }
