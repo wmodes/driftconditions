@@ -114,7 +114,7 @@ class MixEngine {
     mixDetails.filepath = this.mixFilepath;
     //
     // Configure output and run the ffmpeg process
-    await this._configureAndRun(ffmpegCmd);
+    await this._configureAndRun(ffmpegCmd, mixDetails.maxDuration);
     //
     // Embed ID3 metadata and cover art into the finished mix file
     if (!mixDetails.skipMetadata) {
@@ -1152,15 +1152,17 @@ class MixEngine {
    * @returns {Promise<void>} A promise that resolves when the ffmpeg command completes.
    * @private
    */
-  _configureAndRun (ffmpegCmd) {
+  _configureAndRun (ffmpegCmd, maxDuration) {
     return new Promise((resolve, reject) => {
+      const outputOpts = [`-map [${this.finalOutputLabel}]`, '-v info'];
+      if (maxDuration) outputOpts.push('-t', String(maxDuration));
       ffmpegCmd
         .complexFilter(this.filterChain)
         .audioCodec(ffmpegOutput.codec) // Set audio codec from config
         .audioBitrate(ffmpegOutput.bitrate) // Set audio bitrate from config
         .audioChannels(ffmpegOutput.channels) // Set audio channels from config
         .audioFrequency(ffmpegOutput.sampleRate) // Set audio sample rate from config
-        .outputOptions([`-map [${this.finalOutputLabel}]`, "-v info"])
+        .outputOptions(outputOpts)
         .output(this.mixFilepath)
         .on('end', function () {
           logger.debug('Transcoding succeeded !');
