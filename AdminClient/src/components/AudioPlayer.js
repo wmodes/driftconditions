@@ -230,16 +230,20 @@ const AudioPlayer = forwardRef(({ showBar, isPlaying, setIsPlaying, togglePlayer
     };
   }, [uniqueId, setIsPlaying]);
 
-  // sleep timer: fade out over the last 60s, then stop
+  // sleep timer: fade out over the last fadeSeconds, then stop.
+  // Uses a Web Worker for the tick so the interval isn't throttled in background tabs
+  // (e.g. screen locked) — workers run at full speed regardless of tab visibility.
   useEffect(() => {
     if (!sleepTimerEnd) {
       if (audioRef.current) audioRef.current.volume = 1.0;
       return;
     }
-    const id = setInterval(() => {
+    const workerCode = `setInterval(() => postMessage('tick'), 1000);`;
+    const worker = new Worker(URL.createObjectURL(new Blob([workerCode], { type: 'application/javascript' })));
+    worker.onmessage = () => {
       const secsLeft = (sleepTimerEnd - Date.now()) / 1000;
       if (secsLeft <= 0) {
-        clearInterval(id);
+        worker.terminate();
         setSleepTimerEnd(null);
         if (audioRef.current) audioRef.current.volume = 1.0;
         isActivePlayerRef.current = false;
@@ -250,8 +254,8 @@ const AudioPlayer = forwardRef(({ showBar, isPlaying, setIsPlaying, togglePlayer
       } else if (secsLeft <= fadeSeconds) {
         if (audioRef.current) audioRef.current.volume = secsLeft / fadeSeconds;
       }
-    }, 1000);
-    return () => clearInterval(id);
+    };
+    return () => worker.terminate();
   }, [sleepTimerEnd, uniqueId, setIsPlaying, setSleepTimerEnd]);
 
   // expose play and pause to parent (RootLayout via togglePlayer)
