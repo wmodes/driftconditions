@@ -12,6 +12,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [2026-05-15]
 
 ### Fixed
+- **Sleep timer fade broken in background tabs** — the 1-second `setInterval` driving the volume fade was throttled by the browser when the screen was locked or the tab backgrounded, causing an abrupt cutoff instead of a smooth fade. Replaced with a Web Worker tick (workers are not subject to timer throttling), so the fade runs at full resolution even with the screen off.
 - **RecipeSelector: new/never-used recipes scored too low to be selected** — `_sortRecipesRecentToEarliest` placed recipes with `lastUsed = null` at the top of the list (treating them as most recently used). This list is used to build `recentClassifications`, where index 0 = most recently heard. So never-used recipes' classifications landed at index 0 and received a near-zero classification score, consistently knocking them out of the selection pool. Fix: null `lastUsed` now sorts to the bottom (oldest/never-used), so their classifications score high and new recipes compete fairly.
 
 ### Added
