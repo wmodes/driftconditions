@@ -297,7 +297,7 @@ class MixEngine {
           );
         }
         // loop effect
-        else if (/^(loop|repeat)/i.test(effect)) {
+        else if (/^loop/i.test(effect)) {
           logger.debug(`MixEngine:_buildTrackFilters(): Applying loop effect to track ${effect}`);
           // if we have a loop effect, we need to adjust the duration of the clip
           track.duration = Infinity;
@@ -507,7 +507,7 @@ class MixEngine {
           );
         }
         // loop effect
-        else if (/^(loop|repeat)/i.test(effect)) {
+        else if (/^loop/i.test(effect)) {
           logger.debug(`MixEngine:_buildClipFilters(): Applying loop effect to clip ${effect}`);
           // if we have a loop effect, we need to adjust the duration of the clip
           clip.duration = Infinity;
