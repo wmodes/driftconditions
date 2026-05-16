@@ -1434,7 +1434,7 @@ tr.row-even.quick-edit textarea {
 }
 
 .code-editor-wrapper {
-  height: 300px;
+  height: 600px;
   min-height: 150px;
   resize: vertical;
   overflow: hidden;
