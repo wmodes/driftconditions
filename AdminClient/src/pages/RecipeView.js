@@ -46,7 +46,7 @@ function RecipeView() {
       .unwrap()
       .then(response => {
         setRecipeRecord(prevState => ({
-          ...recipeRecord,
+          ...prevState,
           ...response,
           recipeData: formatJSONForDisplay(response.recipeData),
           classification: formatListAsString(response.classification),
@@ -61,7 +61,7 @@ function RecipeView() {
         setError(err || 'Failed to fetch recipe details.');
         setIsLoading(false); // Stop loading on error
       });
-  }, [recipeRecord, recipeID, dispatch]);
+  }, [recipeID, dispatch]);
 
   // Function to render breadcrumbs with navigation controls
   const renderBreadcrumbs = () => {

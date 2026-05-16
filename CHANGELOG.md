@@ -9,6 +9,13 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-05-16]
+
+### Fixed
+- **RecipeView "Loading…" never clears** — `recipeRecord` in the `useEffect` dependency array caused an infinite refetch loop: each fetch updated the record, which re-triggered the effect and reset `isLoading` to `true`. Removed `recipeRecord` from deps and switched the state setter to use `prevState` instead of the closed-over value.
+
+---
+
 ## [2026-05-15]
 
 ### Fixed
