@@ -248,6 +248,11 @@
   <code>loop(n)</code>      <span>Loop exactly <em>n</em> times</span>
 </div>
 
+<h3>Cloning</h3>
+<div class="effect-grid">
+  <code>clone(n)</code>     <span>Reuse the audio file selected for the <em>n</em>th clip in this track (1-indexed). Ignores this clip's classification and tags; applies this clip's own effects. If the target is a silence clip, this clip becomes a silence with the same length range. Falls back to normal selection if <em>n</em> is out of range. Alias: <code>repeat(n)</code></span>
+</div>
+
 <h3>Fade</h3>
 <div class="effect-grid">
   <code>fadeout</code>      <span>Fade this clip out at its end (default 3s)</span>
