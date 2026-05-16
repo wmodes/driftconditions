@@ -9,6 +9,16 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-05-16] (2)
+
+### Added
+- **`clone(n)` clip effect** — reuses the audio file selected for the nth clip in the same track (1-indexed). Ignores classification/tags on the clone; applies its own effects normally. If the target is a silence clip, the clone becomes a silence with the same length range. Falls back to normal selection with a log warning if n is out of range. Alias: `repeat(n)`.
+
+### Changed
+- **`repeat` no longer aliases `loop`** — `repeat(n)` is now reserved for `clone(n)` behavior; bare `loop` is the only loop keyword.
+
+---
+
 ## [2026-05-16]
 
 ### Fixed

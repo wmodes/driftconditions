@@ -38,19 +38,27 @@ class ClipSelector {
         //check for classification includes "silence"
         if (clip.classification.includes('silence')) {
           this._setSilenceBasics(clip);
-          selectedClips.push(null); // keep index aligned
-          // go to next iteration of loop
+          selectedClips.push(clip); // store clip so clone(n) can reference its length props
           continue;
         }
 
-        // repeat(n) — reuse the nth already-selected clip in this track instead of
-        // querying the DB. n is 0-based. Falls through to normal selection if n is
-        // out of range or the target slot was a silence.
-        const repeatEffect = (clip.effects || []).find(e => /^repeat\(\d+\)/i.test(e));
-        if (repeatEffect) {
-          const n = parseInt(repeatEffect.match(/\((\d+)\)/)[1]);
-          const source = selectedClips[n];
+        // clone(n) / repeat(n) — reuse the nth already-selected clip in this track
+        // (1-indexed). If the target is a silence, the clone adopts its length
+        // properties and becomes a silence too. Falls through to normal selection
+        // with a warning if n is out of range.
+        const cloneEffect = (clip.effects || []).find(e => /^(clone|repeat)\(\d+\)/i.test(e));
+        if (cloneEffect) {
+          const n = parseInt(cloneEffect.match(/\((\d+)\)/)[1]);
+          const source = selectedClips[n - 1]; // 1-indexed
           if (source) {
+            if (source.classification.includes('silence')) {
+              clip.classification = ['silence'];
+              clip.clipLength = [...source.clipLength];
+              this._setSilenceBasics(clip);
+              selectedClips.push(clip);
+              logger.debug(`ClipSelector: clone(${n}) cloning silence`);
+              continue;
+            }
             clip.audioID = source.audioID;
             clip.title = source.title;
             clip.filename = source.filename;
@@ -58,11 +66,11 @@ class ClipSelector {
             clip.creatorID = source.creatorID;
             clip.creatorUsername = source.creatorUsername;
             clip.coverImage = source.coverImage;
-            logger.debug(`ClipSelector: repeat(${n}) reusing clip "${source.title}"`);
+            logger.debug(`ClipSelector: clone(${n}) reusing clip "${source.title}"`);
             selectedClips.push(clip);
             continue;
           }
-          logger.warn(`ClipSelector: repeat(${n}) out of range or targets a silence — falling through to normal selection`);
+          logger.warn(`ClipSelector: clone(${n}) out of range — falling through to normal selection`);
         }
 
         // we treat the clip as the search criteria
