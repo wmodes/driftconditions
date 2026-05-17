@@ -9,6 +9,13 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-05-16] (3)
+
+### Fixed
+- **AudioEdit cover image reverts after save** — browser cached the old image (same URL, same filename) so replacing a cover appeared to do nothing. Added a `?t=` timestamp query param after a successful upload to force a cache miss, while leaving the initial page load URL clean.
+
+---
+
 ## [2026-05-16] (2)
 
 ### Added
