@@ -62,6 +62,7 @@ function AudioEdit() {
   const [coverImageFile, setCoverImageFile] = useState(null);
   const [coverImagePreview, setCoverImagePreview] = useState(null);
   const [coverImgError, setCoverImgError] = useState(false);
+  const [coverImageTs, setCoverImageTs] = useState(null); // cache-buster after upload
 
   // State for managing form inputs
   const [record, setRecord] = useState({
@@ -141,6 +142,7 @@ function AudioEdit() {
       const data = await res.json();
       // Update coverImage in local record so the preview refreshes
       setRecord(prev => ({ ...prev, coverImage: data.coverImage }));
+      setCoverImageTs(Date.now());
       setCoverImageFile(null);
       setCoverImagePreview(null);
     } catch (err) {
@@ -298,7 +300,7 @@ function AudioEdit() {
                     <img className="cover-image" src={coverImagePreview} alt="Cover preview"
                       onDragOver={(e) => e.preventDefault()} />
                   ) : record.coverImage && !coverImgError ? (
-                    <img className="cover-image" src={`${coverImageURLBase}/${record.coverImage}.jpg`} alt="Cover"
+                    <img className="cover-image" src={`${coverImageURLBase}/${record.coverImage}.jpg${coverImageTs ? `?t=${coverImageTs}` : ''}`} alt="Cover"
                       onError={() => setCoverImgError(true)}
                       onDragOver={(e) => e.preventDefault()} />
                   ) : (
