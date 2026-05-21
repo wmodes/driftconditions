@@ -185,7 +185,7 @@ svg {
   display: flex;
   flex-wrap: wrap;
   max-width: 80%;
-  min-width: min-content;
+  min-width: 0;
   min-height: calc(100vh - 10rem);
   padding: 1rem 3rem; 
   margin-left: auto;
@@ -299,12 +299,16 @@ figcaption {
   flex-direction: row;
   gap: 0.5rem;
   text-align:left;
+  overflow-wrap: break-word;
+  min-width: 0;
 }
 
 .playlist-item .mix {
   margin-bottom: 0.25rem;
   padding-bottom: 0.25rem;
   border-bottom: solid 0.25px #888;
+  min-width: 0;
+  overflow-wrap: break-word;
 }
 
 .playlist-item .time {
