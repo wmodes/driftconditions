@@ -9,7 +9,20 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
-## [2026-05-21]
+## [2026-05-21] (3)
+
+### Added
+- **Mobile app — initial commit** — React Native app at `MobileApp/`. Covers Phase 1 (iOS stream playback, background audio, lock screen controls) and Phase 2 (PlayerScreen, PlaylistScreen, MiniPlayerBar, ControlBar with Favorite/Sleep/Playlist/More, sleep timer modal, share, persistent favorites via AsyncStorage).
+- **Mobile app — ··· More menu** — Pocket Casts-style bottom sheet (`MoreModal.js`) with Share and Profile/Sign In items; replaces inline Share and Profile icons in ControlBar, reducing it to 4 items.
+- **Mobile app — auth** — Sign in with DriftConditions username/password. Token stored in iOS Keychain (`react-native-keychain`). `AuthContext` exposes `user`, `isAuthenticated`, `signIn`, `signOut` app-wide. `LoginScreen` shown via Profile item in ··· menu when not signed in; username and Sign Out shown when authenticated. Heart API calls attach `Authorization: Bearer` when a token is present.
+
+### Changed
+- **Mobile app — splash screen** — label changed from "MobileApp" to "DriftConditions"; "Powered by React Native" credit removed; font changed to Rubik Distressed (embedded in iOS bundle).
+- **Mobile app — admin server URL** — corrected `config.js` to use port 8080 (Caddy HTTPS proxy) instead of 8081 (internal-only direct port).
+
+---
+
+## [2026-05-21] (2)
 
 ### Added
 - **Mobile auth token support** — `POST /api/auth/signin` now includes the JWT in the response body when the `X-Mobile: true` request header is present, so React Native clients can store it in Keychain without needing httpOnly cookie access. `POST /api/auth/check` now also accepts an `Authorization: Bearer <token>` header as an alternative to the cookie. Web app behaviour is unchanged.
