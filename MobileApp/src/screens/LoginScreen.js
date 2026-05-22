@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity,
-  StyleSheet, ActivityIndicator, KeyboardAvoidingView, Platform, Linking,
+  StyleSheet, ActivityIndicator, KeyboardAvoidingView, Platform,
 } from 'react-native';
 import { useAuth } from '../context/AuthContext';
-import config from '../config';
 
 const OAUTH_PROVIDERS = [
   { key: 'google',  label: 'Continue with Google',  color: '#fff', textColor: '#333', borderColor: '#ddd' },
@@ -13,14 +12,20 @@ const OAUTH_PROVIDERS = [
 ];
 
 export default function LoginScreen({ onBack, onForgotPassword }) {
-  const { signIn } = useAuth();
+  const { signIn, oauthSignIn } = useAuth();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const handleOAuth = (provider) => {
-    Linking.openURL(`${config.api.adminServer}/api/auth/${provider}?mobile=true`);
+  const handleOAuth = async (provider) => {
+    setError(null);
+    try {
+      await oauthSignIn(provider);
+      // oauthSignIn sets user in context; App.tsx useEffect navigates to player
+    } catch (err) {
+      setError(err.message || 'OAuth sign in failed');
+    }
   };
 
   const handleSignIn = async () => {

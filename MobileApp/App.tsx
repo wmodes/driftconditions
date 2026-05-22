@@ -4,7 +4,7 @@ import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-cont
 import TrackPlayer from 'react-native-track-player';
 
 import { PlayerProvider } from './src/context/PlayerContext';
-import { AuthProvider } from './src/context/AuthContext';
+import { AuthProvider, useAuth } from './src/context/AuthContext';
 import PlayerScreen from './src/screens/PlayerScreen';
 import PlaylistScreen from './src/screens/PlaylistScreen';
 import LoginScreen from './src/screens/LoginScreen';
@@ -87,6 +87,15 @@ function AppContent() {
     setSleepEndTime(null);
     TrackPlayer.setVolume(1);
   };
+
+  const { isAuthenticated } = useAuth();
+
+  // Navigate to player after OAuth or any async sign-in completes
+  useEffect(() => {
+    if (isAuthenticated && (screen === 'login' || screen === 'forgotpassword')) {
+      setScreen('player');
+    }
+  }, [isAuthenticated, screen]);
 
   const showMiniPlayer = screen !== 'player' && screen !== 'login' && screen !== 'forgotpassword';
 
