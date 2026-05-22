@@ -9,6 +9,14 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-05-22]
+
+### Changed
+- **Mobile app — OAuth sign-in via ASWebAuthenticationSession** — replaced `Linking.openURL` + deep link callback with `react-native-inappbrowser-reborn`'s `openAuth()`, which uses iOS ASWebAuthenticationSession. The in-app browser sheet handles the redirect internally; no "This site is trying to open another application" system dialog, no `Linking` event race conditions. `oauthSignIn(provider)` added to `AuthContext`; post-OAuth user info resolved via `checkAuth()` rather than local JWT parsing (avoids Hermes `atob` unreliability). `App.tsx` watches `isAuthenticated` to auto-navigate from login → player on sign-in.
+- **Mobile app — app name in system dialogs** — `CFBundleName` in `Info.plist` set to `DriftConditions` explicitly (was `$(PRODUCT_NAME)` → "MobileApp"), fixing the wrong name shown in ASWebAuthenticationSession and other iOS permission prompts.
+
+---
+
 ## [2026-05-21] (4)
 
 ### Added

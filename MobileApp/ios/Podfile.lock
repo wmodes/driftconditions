@@ -1120,6 +1120,8 @@ PODS:
     - React-jsi (= 0.73.6)
     - React-logger (= 0.73.6)
     - React-perflogger (= 0.73.6)
+  - RNInAppBrowser (3.7.1):
+    - React-Core
   - RNKeychain (10.0.0):
     - glog
     - RCT-Folly (= 2022.05.16.00)
@@ -1208,6 +1210,7 @@ DEPENDENCIES:
   - React-runtimescheduler (from `../node_modules/react-native/ReactCommon/react/renderer/runtimescheduler`)
   - React-utils (from `../node_modules/react-native/ReactCommon/react/utils`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
+  - RNInAppBrowser (from `../node_modules/react-native-inappbrowser-reborn`)
   - RNKeychain (from `../node_modules/react-native-keychain`)
   - RNScreens (from `../node_modules/react-native-screens`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
@@ -1331,6 +1334,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/react/utils"
   ReactCommon:
     :path: "../node_modules/react-native/ReactCommon"
+  RNInAppBrowser:
+    :path: "../node_modules/react-native-inappbrowser-reborn"
   RNKeychain:
     :path: "../node_modules/react-native-keychain"
   RNScreens:
@@ -1401,6 +1406,7 @@ SPEC CHECKSUMS:
   React-runtimescheduler: a01dfb7ca980edebcc7d2d289ca900dea5d7e28b
   React-utils: 288c9cb9a73bb150c273c84df7c2f8546f28e23f
   ReactCommon: 2e5492a3e3a8e72d635c266405e49d12627e5bf0
+  RNInAppBrowser: 904d24dc75e8e6c6c98a3160329192608946f9df
   RNKeychain: 1fe24953a2c0b762e73925946667ec37122197c8
   RNScreens: 59f615aa0782077560c8eea46c2daec3a716dba9
   SocketRocket: f32cd54efbe0f095c4d7594881e52619cfe80b17

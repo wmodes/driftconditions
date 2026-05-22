@@ -1,16 +1,8 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { Linking } from 'react-native';
-import { signIn as authSignIn, signOut as authSignOut, checkAuth, saveToken } from '../utils/authUtils';
+import InAppBrowser from 'react-native-inappbrowser-reborn';
+import { signIn as authSignIn, signOut as authSignOut, checkAuth, saveToken, clearToken } from '../utils/authUtils';
+import config from '../config';
 // checkAuth is used on mount to restore session from Keychain
-
-function parseJwtPayload(token) {
-  try {
-    const b64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-    return JSON.parse(atob(b64));
-  } catch {
-    return null;
-  }
-}
 
 const AuthContext = createContext(null);
 
@@ -26,31 +18,46 @@ export function AuthProvider({ children }) {
       .finally(() => setAuthReady(true));
   }, []);
 
-  // Handle OAuth deep link — driftconditions://auth?token=<jwt>
-  useEffect(() => {
-    const handleUrl = async ({ url }) => {
-      if (!url?.startsWith('driftconditions://auth')) return;
-      const params = new URL(url).searchParams;
-      const token = params.get('token');
-      const error = params.get('error');
-      if (token) {
-        await saveToken(token);
-        const payload = parseJwtPayload(token);
-        setUser({ username: payload?.username || 'User' });
-      } else if (error) {
-        console.warn('AuthContext: OAuth error:', error);
-      }
-    };
-    const sub = Linking.addEventListener('url', handleUrl);
-    // Handle case where app was cold-launched via deep link
-    Linking.getInitialURL().then(url => { if (url) handleUrl({ url }); });
-    return () => sub.remove();
-  }, []);
-
   const signIn = async (username, password) => {
     const result = await authSignIn(username, password);
     setUser({ username: result.username });
     return result;
+  };
+
+  const oauthSignIn = async (provider) => {
+    const url = `${config.api.adminServer}/api/auth/${provider}?mobile=true`;
+    const redirectUrl = 'driftconditions://auth';
+    try {
+      if (await InAppBrowser.isAvailable()) {
+        const result = await InAppBrowser.openAuth(url, redirectUrl, {
+          ephemeralWebSession: false, // share cookies so provider stays logged in
+          showTitle: false,
+          enableUrlBarHiding: true,
+          enableDefaultShare: false,
+        });
+        if (result.type === 'success' && result.url) {
+          const token = result.url.match(/[?&]token=([^&]+)/)?.[1];
+          const error = result.url.match(/[?&]error=([^&]+)/)?.[1];
+          if (token) {
+            await saveToken(token);
+            // Use checkAuth to get verified user info rather than parsing JWT locally
+            const data = await checkAuth();
+            if (data?.user) {
+              setUser(data.user);
+            } else {
+              await clearToken();
+              throw new Error('Sign in succeeded but could not verify session');
+            }
+          } else if (error) {
+            throw new Error(decodeURIComponent(error));
+          }
+        }
+        // result.type === 'cancel' means user dismissed — no-op
+      }
+    } catch (err) {
+      console.warn('AuthContext: oauthSignIn error:', err);
+      throw err;
+    }
   };
 
   const signOut = async () => {
@@ -59,7 +66,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, authReady, isAuthenticated: !!user, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, authReady, isAuthenticated: !!user, signIn, oauthSignIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );
