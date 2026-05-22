@@ -9,6 +9,14 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-05-21] (4)
+
+### Added
+- **Mobile app — forgot password** — new `ForgotPasswordScreen` with email input and confirmation state; "Forgot password?" link on `LoginScreen`; `POST /api/auth/forgot-password` with 10s timeout; server returns identical response whether or not the email exists.
+- **Mobile app — OAuth (Google, GitHub, Discord)** — OAuth buttons on `LoginScreen` open the system browser via `Linking.openURL`. Server `GET /api/auth/:provider` accepts `?mobile=true`, embeds a `:mobile` suffix in the CSRF state. Callback detects the flag and redirects to `driftconditions://auth?token=<jwt>` deep link instead of the web client. `AuthContext` listens for the deep link, stores the token in Keychain, and decodes the username from the JWT payload. `Info.plist` registers the `driftconditions://` URL scheme.
+
+---
+
 ## [2026-05-21] (3)
 
 ### Added

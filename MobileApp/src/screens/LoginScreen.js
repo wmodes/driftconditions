@@ -1,16 +1,27 @@
 import React, { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity,
-  StyleSheet, ActivityIndicator, KeyboardAvoidingView, Platform,
+  StyleSheet, ActivityIndicator, KeyboardAvoidingView, Platform, Linking,
 } from 'react-native';
 import { useAuth } from '../context/AuthContext';
+import config from '../config';
 
-export default function LoginScreen({ onBack }) {
+const OAUTH_PROVIDERS = [
+  { key: 'google',  label: 'Continue with Google',  color: '#fff', textColor: '#333', borderColor: '#ddd' },
+  { key: 'github',  label: 'Continue with GitHub',  color: '#24292e', textColor: '#fff', borderColor: '#24292e' },
+  { key: 'discord', label: 'Continue with Discord', color: '#5865F2', textColor: '#fff', borderColor: '#5865F2' },
+];
+
+export default function LoginScreen({ onBack, onForgotPassword }) {
   const { signIn } = useAuth();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  const handleOAuth = (provider) => {
+    Linking.openURL(`${config.api.adminServer}/api/auth/${provider}?mobile=true`);
+  };
 
   const handleSignIn = async () => {
     if (!username.trim() || !password) return;
@@ -36,7 +47,22 @@ export default function LoginScreen({ onBack }) {
         </TouchableOpacity>
 
         <Text style={styles.heading}>Sign In</Text>
-        <Text style={styles.sub}>Use your DriftConditions account</Text>
+
+        {OAUTH_PROVIDERS.map(p => (
+          <TouchableOpacity
+            key={p.key}
+            style={[styles.oauthBtn, { backgroundColor: p.color, borderColor: p.borderColor }]}
+            onPress={() => handleOAuth(p.key)}
+            activeOpacity={0.8}>
+            <Text style={[styles.oauthBtnText, { color: p.textColor }]}>{p.label}</Text>
+          </TouchableOpacity>
+        ))}
+
+        <View style={styles.divider}>
+          <View style={styles.dividerLine} />
+          <Text style={styles.dividerText}>or</Text>
+          <View style={styles.dividerLine} />
+        </View>
 
         <TextInput
           style={styles.input}
@@ -68,6 +94,10 @@ export default function LoginScreen({ onBack }) {
           {loading
             ? <ActivityIndicator color="#fff" />
             : <Text style={styles.btnText}>Sign In</Text>}
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.forgotBtn} onPress={onForgotPassword} activeOpacity={0.7}>
+          <Text style={styles.forgotText}>Forgot password?</Text>
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
@@ -102,4 +132,17 @@ const styles = StyleSheet.create({
   },
   btnDisabled: { opacity: 0.5 },
   btnText: { color: '#fff', fontSize: 16, fontWeight: '600' },
+  forgotBtn: { alignItems: 'center', marginTop: 20 },
+  forgotText: { color: '#336699', fontSize: 14 },
+  oauthBtn: {
+    borderRadius: 10,
+    paddingVertical: 14,
+    alignItems: 'center',
+    marginBottom: 10,
+    borderWidth: 1,
+  },
+  oauthBtnText: { fontSize: 15, fontWeight: '600' },
+  divider: { flexDirection: 'row', alignItems: 'center', marginVertical: 20 },
+  dividerLine: { flex: 1, height: StyleSheet.hairlineWidth, backgroundColor: '#333' },
+  dividerText: { color: '#555', fontSize: 13, marginHorizontal: 12 },
 });
