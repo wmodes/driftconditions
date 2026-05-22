@@ -580,7 +580,6 @@ router.get('/callback/:provider', async (req, res) => {
     user.permissions = roleRows[0]?.permissions || '';
 
     // 6. Issue JWT cookie (and capture token for mobile deep-link)
-    const isMobileCallback = state.endsWith(':mobile');
     const token = issueNewToken(res, user);
 
     // 7. Redirect — mobile gets a deep link with the token; web gets the client URL
