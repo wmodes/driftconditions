@@ -9,6 +9,13 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-05-21]
+
+### Added
+- **Mobile auth token support** — `POST /api/auth/signin` now includes the JWT in the response body when the `X-Mobile: true` request header is present, so React Native clients can store it in Keychain without needing httpOnly cookie access. `POST /api/auth/check` now also accepts an `Authorization: Bearer <token>` header as an alternative to the cookie. Web app behaviour is unchanged.
+
+---
+
 ## [2026-05-16] (3)
 
 ### Fixed
