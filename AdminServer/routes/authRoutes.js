@@ -407,9 +407,14 @@ router.get('/callback/:provider', async (req, res) => {
     // 1. Validate CSRF state
     const returnedState = req.query.state;
     const storedState = req.cookies.oauth_state;
+    const isMobileCallback = storedState?.endsWith(':mobile');
+    const errorRedirect = (msg) => isMobileCallback
+      ? res.redirect(`driftconditions://auth?error=${msg}`)
+      : res.redirect(`${clientOrigin}/signin?error=${msg}`);
+
     if (!returnedState || !storedState || returnedState !== storedState) {
       logger.error('authRoutes:/callback: CSRF state mismatch');
-      return res.redirect(`${clientOrigin}/signin?error=INVALID_STATE`);
+      return errorRedirect('INVALID_STATE');
     }
     res.clearCookie('oauth_state', { path: '/', sameSite: 'Lax', secure: true });
 
@@ -459,7 +464,7 @@ router.get('/callback/:provider', async (req, res) => {
         const primary = emails.find(e => e.primary && e.verified);
         if (!primary) {
           logger.error('authRoutes:/callback: GitHub user has no verified email');
-          return res.redirect(`${clientUrl}/signin?error=NO_EMAIL`);
+          return errorRedirect('NO_EMAIL');
         }
         email = primary.email;
       }
@@ -488,7 +493,7 @@ router.get('/callback/:provider', async (req, res) => {
       const discordUser = await userRes.json();
       if (!discordUser.email) {
         logger.error('authRoutes:/callback: Discord user has no email (email scope missing or unverified)');
-        return res.redirect(`${clientUrl}/signin?error=NO_EMAIL`);
+        return errorRedirect('NO_EMAIL');
       }
       oauthId = String(discordUser.id);
       // global_name is the display name, username is the handle
@@ -574,10 +579,14 @@ router.get('/callback/:provider', async (req, res) => {
     );
     user.permissions = roleRows[0]?.permissions || '';
 
-    // 6. Issue JWT cookie
-    issueNewToken(res, user);
+    // 6. Issue JWT cookie (and capture token for mobile deep-link)
+    const isMobileCallback = state.endsWith(':mobile');
+    const token = issueNewToken(res, user);
 
-    // 7. Redirect — new users or incomplete profiles go to profile edit
+    // 7. Redirect — mobile gets a deep link with the token; web gets the client URL
+    if (isMobileCallback) {
+      return res.redirect(`driftconditions://auth?token=${token}`);
+    }
     if (isNewUser || !isProfileComplete(redirectUser)) {
       res.redirect(`${clientOrigin}/profile/edit`);
     } else {
@@ -586,7 +595,7 @@ router.get('/callback/:provider', async (req, res) => {
 
   } catch (err) {
     logger.error(`authRoutes:/callback: OAuth callback error: ${err}`);
-    res.redirect(`${clientOrigin}/signin?error=OAUTH_EXCHANGE_FAILED`);
+    errorRedirect('OAUTH_EXCHANGE_FAILED');
   }
 });
 
@@ -710,8 +719,10 @@ router.get('/:provider', async (req, res) => {
     return res.status(400).json({ error: 'Unknown provider' });
   }
 
-  // Generate CSRF state and store in short-lived cookie
-  const state = crypto.randomBytes(16).toString('hex');
+  // Generate CSRF state — embed :mobile suffix so callback knows to deep-link instead of redirect
+  const isMobile = req.query.mobile === 'true';
+  const nonce = crypto.randomBytes(16).toString('hex');
+  const state = isMobile ? `${nonce}:mobile` : nonce;
   res.cookie('oauth_state', state, {
     httpOnly: true,
     maxAge: 10 * 60 * 1000, // 10 minutes

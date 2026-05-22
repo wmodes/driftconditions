@@ -49,6 +49,17 @@
 	<array>
 		<string>audio</string>
 	</array>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>org.driftconditions.app</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>driftconditions</string>
+			</array>
+		</dict>
+	</array>
 	<key>UIAppFonts</key>
 	<array>
 		<string>RubikDistressed-Regular.ttf</string>
