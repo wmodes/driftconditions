@@ -179,8 +179,11 @@ router.post('/signin', async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.hashedPassword);
     if (isMatch) {
       // If the passwords match, generate a JWT token for the user.
-      issueNewToken(res, user);
-      res.status(200).send({ message: "Authentication successful", username: user.username, profileComplete: isProfileComplete(user) });
+      const token = issueNewToken(res, user);
+      const payload = { message: "Authentication successful", username: user.username, profileComplete: isProfileComplete(user) };
+      // Mobile clients can't use httpOnly cookies — include token in body when requested
+      if (req.headers['x-mobile'] === 'true') payload.token = token;
+      res.status(200).send(payload);
     } else {
       // If the passwords do not match, respond with an error.
       res.status(418).json({ error: { message: "Username or password doesn't match." } });
@@ -234,9 +237,14 @@ router.post('/logout', async (req, res) => {
 router.post('/check', async (req, res) => {
   let tokenData = null;
   try {
-    // check if the user is authenticated 
+    // check if the user is authenticated — cookie (web) or Bearer header (mobile)
+    const bearerToken = req.headers['authorization']?.startsWith('Bearer ')
+      ? req.headers['authorization'].slice(7)
+      : null;
     if (req.cookies.token) {
       tokenData = await decodeToken(req.cookies.token);
+    } else if (bearerToken) {
+      tokenData = await decodeToken(bearerToken);
     } else {
       logger.debug("authRoutes:/check: no token found");
     }
