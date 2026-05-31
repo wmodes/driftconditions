@@ -46,6 +46,11 @@ export default function MoreModal({ visible, onClose, onNavigate }) {
     await signOut();
   };
 
+  const handleUpload = () => {
+    onClose();
+    onNavigate('upload');
+  };
+
   const ITEMS = [
     {
       key: 'share',
@@ -53,6 +58,12 @@ export default function MoreModal({ visible, onClose, onNavigate }) {
       renderIcon: () => <ShareIcon color={ICON_COLOR} />,
       onPress: handleShare,
     },
+    ...(isAuthenticated ? [{
+      key: 'upload',
+      label: 'Upload Audio',
+      renderIcon: () => <Text style={[styles.textIcon, { color: ICON_COLOR }]}>↑</Text>,
+      onPress: handleUpload,
+    }] : []),
     {
       key: 'profile',
       label: isAuthenticated ? (user?.username || 'Profile') : 'Sign In',

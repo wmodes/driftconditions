@@ -9,6 +9,19 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-05-22] (3)
+
+### Added
+- **Mobile app — Upload screen** — new `UploadScreen` for submitting audio. Includes audio file picker (`react-native-document-picker`), title (auto-generated from filename), classification chip multi-select, tag pill input (comma/return to commit, tap to remove, normalized client-side), optional cover image (`react-native-image-picker`), comments, and copyright certification checkbox. Discard guard prompts before leaving with unsaved work. Accessible via "Upload Audio" in the ··· More menu when signed in.
+- **Mobile app — iOS share target** — app registered as an audio document handler (`CFBundleDocumentTypes` with `public.audio` and related UTIs). Audio shared from Voice Memos or Files via "Copy to DriftConditions" opens the upload screen with file and title pre-filled.
+- **Server — Bearer token support in `verifyToken` middleware** — `authMiddleware.js` now accepts `Authorization: Bearer <token>` as a fallback to the session cookie, enabling authenticated mobile API calls (upload, cover image) without cookie access. Cookie auth for web unchanged.
+
+### Changed
+- **`generateTitle` — collapse multiple spaces** — final `replace(/\s{2,}/g, ' ').trim()` pass added to both `AdminClient/src/utils/formatUtils.js` and mobile `UploadScreen.js`, ensuring double-underscore filenames (e.g. Freesound) produce clean single-spaced titles. Both implementations kept in sync.
+- **Server — upload route uses `req.user`** — `/api/audio/upload` now reads `creatorID` from `req.user.userID` (set by `verifyToken`) instead of re-decoding the cookie token directly.
+
+---
+
 ## [2026-05-22] (2)
 
 ### Added

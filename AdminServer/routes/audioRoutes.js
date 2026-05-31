@@ -246,9 +246,8 @@ router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
   }
   try {
     logger.debug(`audioRoutes:/upload: origfilename: ${req.file.originalname}`);
-    // Verify token and get userID (sync)
-    const decoded = jwt.verify(req.cookies.token, jwtSecretKey);
-    const creatorID = decoded.userID;
+    // userID already decoded by verifyToken middleware
+    const creatorID = req.user.userID;
     logger.debug(`audioRoutes:/upload: creatorID: ${creatorID}`);
 
     // Compute MD5 checksum from temp file before moving
