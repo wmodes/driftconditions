@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import InAppBrowser from 'react-native-inappbrowser-reborn';
-import { signIn as authSignIn, signOut as authSignOut, checkAuth, saveToken, clearToken } from '../utils/authUtils';
+import { signIn as authSignIn, signOut as authSignOut, checkAuth, saveToken } from '../utils/authUtils';
 import config from '../config';
 // checkAuth is used on mount to restore session from Keychain
 
@@ -36,27 +36,12 @@ export function AuthProvider({ children }) {
           enableDefaultShare: false,
         });
         if (result.type === 'success' && result.url) {
-          const token = decodeURIComponent(result.url.match(/[?&]token=([^&]+)/)?.[1] || '')  || null;
+          const token = result.url.match(/[?&]token=([^&]+)/)?.[1] || null;
+          const username = result.url.match(/[?&]username=([^&]+)/)?.[1] || null;
           const error = result.url.match(/[?&]error=([^&]+)/)?.[1];
-          if (token) {
+          if (token && username) {
             await saveToken(token);
-            // Use the token in-hand rather than re-reading from Keychain (avoids
-            // timing issues on real devices where Keychain writes aren't instant)
-            const res = await fetch(`${config.api.adminServer}/api/auth/check`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
-              },
-              body: JSON.stringify({ context: 'profile' }),
-            });
-            const data = res.ok ? await res.json() : null;
-            if (data?.user) {
-              setUser(data.user);
-            } else {
-              await clearToken();
-              throw new Error('Sign in succeeded but could not verify session');
-            }
+            setUser({ username: decodeURIComponent(username) });
           } else if (error) {
             throw new Error(decodeURIComponent(error));
           }
