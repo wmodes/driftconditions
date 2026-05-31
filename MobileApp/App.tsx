@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, StatusBar, StyleSheet } from 'react-native';
+import { View, StatusBar, StyleSheet, Linking } from 'react-native';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import TrackPlayer from 'react-native-track-player';
 
@@ -10,15 +10,17 @@ import PlaylistScreen from './src/screens/PlaylistScreen';
 import LoginScreen from './src/screens/LoginScreen';
 import ForgotPasswordScreen from './src/screens/ForgotPasswordScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
+import UploadScreen from './src/screens/UploadScreen';
 import ControlBar from './src/components/ControlBar';
 import MiniPlayerBar from './src/components/MiniPlayerBar';
 import SleepTimerModal from './src/modals/SleepTimerModal';
 
-type Screen = 'player' | 'playlist' | 'login' | 'forgotpassword' | 'profile';
+type Screen = 'player' | 'playlist' | 'login' | 'forgotpassword' | 'profile' | 'upload';
 
 function AppContent() {
   const insets = useSafeAreaInsets();
   const [screen, setScreen] = useState<Screen>('player');
+  const [incomingFile, setIncomingFile] = useState<any>(null);
   const [sleepModalVisible, setSleepModalVisible] = useState(false);
   const [sleepEndTime, setSleepEndTime] = useState<number | null>(null);
   // Tick forces re-render so the minutes countdown updates
@@ -98,7 +100,26 @@ function AppContent() {
     }
   }, [isAuthenticated, screen]);
 
-  const showMiniPlayer = screen !== 'player' && screen !== 'login' && screen !== 'forgotpassword' && screen !== 'profile';
+  // Handle audio files shared from Voice Memos / Files / other apps
+  useEffect(() => {
+    const AUDIO_EXTS = /\.(mp3|m4a|wav|ogg|flac|aiff|aif)$/i;
+    const MIME_MAP: Record<string, string> = {
+      mp3: 'audio/mpeg', m4a: 'audio/x-m4a', wav: 'audio/wav',
+      ogg: 'audio/ogg', flac: 'audio/flac', aiff: 'audio/aiff', aif: 'audio/aiff',
+    };
+    const handleIncomingUrl = (url: string) => {
+      if (!url?.startsWith('file://') || !AUDIO_EXTS.test(url)) return;
+      const name = decodeURIComponent(url.split('/').pop() || 'audio');
+      const ext = name.split('.').pop()?.toLowerCase() || '';
+      setIncomingFile({ uri: url, fileCopyUri: url, name, type: MIME_MAP[ext] || 'audio/mpeg' });
+      setScreen('upload');
+    };
+    const sub = Linking.addEventListener('url', ({ url }) => handleIncomingUrl(url));
+    Linking.getInitialURL().then(url => { if (url) handleIncomingUrl(url); });
+    return () => sub.remove();
+  }, []);
+
+  const showMiniPlayer = !['player', 'login', 'forgotpassword', 'profile', 'upload'].includes(screen);
 
   return (
     <View style={[styles.root, { paddingTop: insets.top }]}>
@@ -114,8 +135,13 @@ function AppContent() {
           />
         ) : screen === 'forgotpassword' ? (
           <ForgotPasswordScreen onBack={() => setScreen('login')} />
-        ) : (
+        ) : screen === 'profile' ? (
           <ProfileScreen onBack={() => setScreen('player')} />
+        ) : (
+          <UploadScreen
+            onBack={() => { setIncomingFile(null); setScreen('player'); }}
+            incomingFile={incomingFile}
+          />
         )}
       </View>
 

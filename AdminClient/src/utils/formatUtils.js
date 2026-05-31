@@ -182,5 +182,5 @@ export const generateTitle = (file) => {
   if (isAllUpper) {
     title = title.replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
   }
-  return title;
+  return title.replace(/\s{2,}/g, ' ').trim();
 };
