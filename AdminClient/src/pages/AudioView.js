@@ -142,7 +142,7 @@ function AudioView() {
                 <div className="form-row">
                   <span className="form-label">Created:</span>
                   <span className="form-value">
-                    <Link to={`/recipe/list?filter=user&targetID=${record.creatorUsername}`}>
+                    <Link to={`/profile/${record.creatorUsername}`}>
                       {record.creatorUsername}
                     </Link>
                     {" on " + record.createDate}
@@ -153,7 +153,7 @@ function AudioView() {
                   <div className="form-row">
                     <span className="form-label">Edited:</span>
                     <span className="form-value">
-                      <Link to={`/recipe/list?filter=user&targetID=${record.editorUsername}`}>
+                      <Link to={`/profile/${record.editorUsername}`}>
                         {record.editorUsername}
                       </Link>
                       {" on " + record.editDate}
