@@ -36,12 +36,21 @@ export function AuthProvider({ children }) {
           enableDefaultShare: false,
         });
         if (result.type === 'success' && result.url) {
-          const token = result.url.match(/[?&]token=([^&]+)/)?.[1];
+          const token = decodeURIComponent(result.url.match(/[?&]token=([^&]+)/)?.[1] || '')  || null;
           const error = result.url.match(/[?&]error=([^&]+)/)?.[1];
           if (token) {
             await saveToken(token);
-            // Use checkAuth to get verified user info rather than parsing JWT locally
-            const data = await checkAuth();
+            // Use the token in-hand rather than re-reading from Keychain (avoids
+            // timing issues on real devices where Keychain writes aren't instant)
+            const res = await fetch(`${config.api.adminServer}/api/auth/check`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+              },
+              body: JSON.stringify({ context: 'profile' }),
+            });
+            const data = res.ok ? await res.json() : null;
             if (data?.user) {
               setUser(data.user);
             } else {

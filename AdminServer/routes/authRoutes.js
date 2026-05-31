@@ -296,8 +296,7 @@ router.post('/check', async (req, res) => {
     });
   } catch (error) {
     if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
-      return res.status(403).json({ 
-        user: user,
+      return res.status(403).json({
         error: {
           code: 403,
           reason: "not_authenticated",
