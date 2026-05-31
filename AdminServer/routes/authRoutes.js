@@ -244,7 +244,7 @@ router.post('/check', async (req, res) => {
     if (req.cookies.token) {
       tokenData = await decodeToken(req.cookies.token);
     } else if (bearerToken) {
-      logger.debug(`authRoutes:/check: bearer token length=${bearerToken.length} parts=${bearerToken.split('.').length} first30=${bearerToken.slice(0,30)}`);
+      logger.info(`authRoutes:/check: bearer token length=${bearerToken.length} parts=${bearerToken.split('.').length} first30=${bearerToken.slice(0,30)}`);
       tokenData = await decodeToken(bearerToken);
     } else {
       logger.debug("authRoutes:/check: no token found");
