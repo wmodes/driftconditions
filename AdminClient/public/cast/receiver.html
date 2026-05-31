@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>DriftConditions</title>
+  <link rel="stylesheet" href="receiver.css">
+</head>
+<body>
+
+  <div class="bg-layer" id="bg-a"></div>
+  <div class="bg-layer" id="bg-b"></div>
+
+  <!-- Left column: cover art -->
+  <div id="cover-col">
+    <div id="cover-placeholder"></div>
+    <img id="cover" src="" alt="Mix cover">
+  </div>
+
+  <!-- Right column: app name + track list -->
+  <div id="info-col">
+    <div id="app-name">DriftConditions</div>
+    <ul id="track-list" class="empty">
+      <li>Live Stream</li>
+    </ul>
+  </div>
+
+  <div id="status">Live</div>
+
+  <script src="//www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js"></script>
+  <script src="receiver.js"></script>
+
+</body>
+</html>

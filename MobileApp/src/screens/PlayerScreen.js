@@ -13,8 +13,12 @@ import { usePlayer } from '../context/PlayerContext';
 const { width } = Dimensions.get('window');
 const COVER_SIZE = width * 0.78;
 
-export default function PlayerScreen() {
+export default function PlayerScreen({ isCasting, castIsPlaying, onCastToggle }) {
   const { isPlaying, isLoading, currentMix, toggle } = usePlayer();
+
+  const playing = isCasting ? castIsPlaying : isPlaying;
+  const loading = isCasting ? false : isLoading;
+  const handleToggle = isCasting ? onCastToggle : toggle;
 
   const coverUri = currentMix?.coverImage
     ? `https://driftconditions.org/${currentMix.coverImage}`
@@ -41,16 +45,20 @@ export default function PlayerScreen() {
               {clip.title || clip.filename || 'Untitled'}
             </Text>
           )) : (
-            <Text style={styles.clipTitle}>DriftConditions</Text>
+            <Text style={styles.logotype}>DriftConditions</Text>
           )}
         </View>
 
-        {isLoading ? (
+        {isCasting && (
+          <Text style={styles.castingLabel}>Casting ⬡</Text>
+        )}
+
+        {loading ? (
           <ActivityIndicator size="large" color="#336699" style={styles.loader} />
         ) : (
-          <TouchableOpacity onPress={toggle} activeOpacity={0.8}>
+          <TouchableOpacity onPress={handleToggle} activeOpacity={0.8}>
             <View style={styles.playCircle}>
-              {isPlaying ? (
+              {playing ? (
                 <View style={styles.pauseBars}>
                   <View style={styles.pauseBar} />
                   <View style={styles.pauseBar} />
@@ -97,7 +105,14 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 26,
   },
+  logotype: {
+    color: '#fff',
+    fontSize: 28,
+    fontFamily: 'RubikDistressed-Regular',
+    textAlign: 'center',
+  },
   loader: { height: 72 },
+  castingLabel: { color: '#336699', fontSize: 13, textAlign: 'center', marginBottom: 8 },
   pauseBars: { flexDirection: 'row', gap: 5 },
   pauseBar: { width: 4, height: 22, backgroundColor: '#fff', borderRadius: 2 },
   playCircle: {
