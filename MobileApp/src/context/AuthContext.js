@@ -36,9 +36,9 @@ export function AuthProvider({ children }) {
           enableDefaultShare: false,
         });
         if (result.type === 'success' && result.url) {
-          const token = result.url.match(/[?&]token=([^&]+)/)?.[1] || null;
-          const username = result.url.match(/[?&]username=([^&]+)/)?.[1] || null;
-          const error = result.url.match(/[?&]error=([^&]+)/)?.[1];
+          const token = result.url.match(/[?&]token=([^&#]+)/)?.[1] || null;
+          const username = result.url.match(/[?&]username=([^&#]+)/)?.[1] || null;
+          const error = result.url.match(/[?&]error=([^&#]+)/)?.[1];
           if (token && username) {
             await saveToken(token);
             setUser({ username: decodeURIComponent(username) });
