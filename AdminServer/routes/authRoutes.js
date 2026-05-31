@@ -244,7 +244,7 @@ router.post('/check', async (req, res) => {
     if (req.cookies.token) {
       tokenData = await decodeToken(req.cookies.token);
     } else if (bearerToken) {
-      logger.info(`authRoutes:/check: bearer token length=${bearerToken.length} parts=${bearerToken.split('.').length} first30=${bearerToken.slice(0,30)}`);
+      logger.info(`authRoutes:/check: bearer token length=${bearerToken.length} parts=${bearerToken.split('.').length} first30=${bearerToken.slice(0,30)} last30=${bearerToken.slice(-30)}`);
       tokenData = await decodeToken(bearerToken);
     } else {
       logger.debug("authRoutes:/check: no token found");
@@ -584,6 +584,7 @@ router.get('/callback/:provider', async (req, res) => {
 
     // 7. Redirect — mobile gets a deep link with the token; web gets the client URL
     if (isMobileCallback) {
+      logger.info(`authRoutes:/callback: issuing mobile token length=${token.length} parts=${token.split('.').length} last30=${token.slice(-30)}`);
       return res.redirect(`driftconditions://auth?token=${token}`);
     }
     if (isNewUser || !isProfileComplete(redirectUser)) {
