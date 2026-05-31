@@ -38,11 +38,7 @@ export default function MoreModal({ visible, onClose, onNavigate }) {
 
   const handleProfile = () => {
     onClose();
-    if (isAuthenticated) {
-      // Profile screen coming in Phase 3 — for now show nothing
-    } else {
-      onNavigate('login');
-    }
+    onNavigate(isAuthenticated ? 'profile' : 'login');
   };
 
   const handleSignOut = async () => {

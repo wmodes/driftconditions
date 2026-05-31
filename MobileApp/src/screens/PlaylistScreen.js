@@ -41,11 +41,14 @@ export default function PlaylistScreen({ onBack }) {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={onBack} style={styles.headerBtn}>
-          <Text style={styles.backIcon}>◀</Text>
+        <TouchableOpacity onPress={onBack} style={styles.navSide}>
+          <Text style={styles.backText}>‹ Back</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>playlist</Text>
-        <View style={styles.headerBtn} />
+        <View style={styles.headingCenter}>
+          <Text style={styles.headingIcon}>≡</Text>
+          <Text style={styles.heading}>Playlist</Text>
+        </View>
+        <View style={styles.navSide} />
       </View>
 
       <ScrollView
@@ -118,22 +121,17 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingTop: 20,
-    paddingBottom: 12,
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 14,
     borderBottomWidth: 1,
     borderBottomColor: '#222',
   },
-  headerBtn: { width: 40 },
-  backIcon: { color: '#336699', fontSize: 18 },
-  headerTitle: {
-    flex: 1,
-    color: '#bbb',
-    fontSize: 18,
-    fontWeight: '300',
-    letterSpacing: 1,
-    textAlign: 'center',
-  },
+  navSide: { minWidth: 70 },
+  backText: { color: '#336699', fontSize: 17 },
+  headingCenter: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
+  headingIcon: { color: '#fff', fontSize: 24, fontWeight: '300' },
+  heading: { color: '#fff', fontSize: 24, fontWeight: '700' },
 
   mixRow: {
     flexDirection: 'row',
@@ -146,7 +144,7 @@ const styles = StyleSheet.create({
 
   metaCol: {
     alignItems: 'center',
-    width: 46,
+    width: 54,
     marginRight: 6,
     paddingTop: 2,
   },

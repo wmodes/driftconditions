@@ -9,11 +9,12 @@ import PlayerScreen from './src/screens/PlayerScreen';
 import PlaylistScreen from './src/screens/PlaylistScreen';
 import LoginScreen from './src/screens/LoginScreen';
 import ForgotPasswordScreen from './src/screens/ForgotPasswordScreen';
+import ProfileScreen from './src/screens/ProfileScreen';
 import ControlBar from './src/components/ControlBar';
 import MiniPlayerBar from './src/components/MiniPlayerBar';
 import SleepTimerModal from './src/modals/SleepTimerModal';
 
-type Screen = 'player' | 'playlist' | 'login' | 'forgotpassword';
+type Screen = 'player' | 'playlist' | 'login' | 'forgotpassword' | 'profile';
 
 function AppContent() {
   const insets = useSafeAreaInsets();
@@ -97,7 +98,7 @@ function AppContent() {
     }
   }, [isAuthenticated, screen]);
 
-  const showMiniPlayer = screen !== 'player' && screen !== 'login' && screen !== 'forgotpassword';
+  const showMiniPlayer = screen !== 'player' && screen !== 'login' && screen !== 'forgotpassword' && screen !== 'profile';
 
   return (
     <View style={[styles.root, { paddingTop: insets.top }]}>
@@ -111,8 +112,10 @@ function AppContent() {
             onBack={() => setScreen('player')}
             onForgotPassword={() => setScreen('forgotpassword')}
           />
-        ) : (
+        ) : screen === 'forgotpassword' ? (
           <ForgotPasswordScreen onBack={() => setScreen('login')} />
+        ) : (
+          <ProfileScreen onBack={() => setScreen('player')} />
         )}
       </View>
 
