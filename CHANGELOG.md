@@ -9,6 +9,17 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-05-22] (2)
+
+### Added
+- **Mobile app — Profile screen** — new `ProfileScreen` showing avatar (with initial fallback), full name, username, bio, location, email, URL, member-since date, total plays, role, audio/recipe contribution stats, top played audio, and recently played audio. Fetches `POST /api/user/profile` with `Authorization: Bearer`. Accessible via the profile row in the ··· More menu when signed in.
+
+### Changed
+- **Mobile app — nav bar polish** — `PlaylistScreen` and `LoginScreen` now use a unified nav bar row: `‹ Back` left-aligned, icon + title centered, matching spacer on right. `PlaylistScreen` heading uses `≡` prefix; `LoginScreen` heading uses a person-silhouette icon. Both headings at `fontSize: 24, fontWeight: 700`.
+- **Mobile app — playlist timestamp fix** — `metaCol` widened from 46→54px so times like "12:03 PM" no longer wrap to two lines.
+
+---
+
 ## [2026-05-22]
 
 ### Changed

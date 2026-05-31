@@ -46,13 +46,21 @@ export default function LoginScreen({ onBack, onForgotPassword }) {
     <KeyboardAvoidingView
       style={styles.root}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <View style={styles.inner}>
-        <TouchableOpacity style={styles.backBtn} onPress={onBack}>
+      <View style={styles.navBar}>
+        <TouchableOpacity onPress={onBack} style={styles.navSide}>
           <Text style={styles.backText}>‹ Back</Text>
         </TouchableOpacity>
+        <View style={styles.headingCenter}>
+          <View style={styles.headingIcon}>
+            <View style={styles.profileHead} />
+            <View style={styles.profileBody} />
+          </View>
+          <Text style={styles.heading}>Sign In</Text>
+        </View>
+        <View style={styles.navSide} />
+      </View>
 
-        <Text style={styles.heading}>Sign In</Text>
-
+      <View style={styles.inner}>
         {OAUTH_PROVIDERS.map(p => (
           <TouchableOpacity
             key={p.key}
@@ -111,11 +119,31 @@ export default function LoginScreen({ onBack, onForgotPassword }) {
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#111' },
-  inner: { flex: 1, padding: 28, justifyContent: 'center' },
-  backBtn: { position: 'absolute', top: 16, left: 20 },
+  navBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: '#222',
+  },
+  navSide: { minWidth: 70 },
   backText: { color: '#336699', fontSize: 17 },
-  heading: { color: '#fff', fontSize: 28, fontWeight: '700', marginBottom: 6 },
-  sub: { color: '#666', fontSize: 14, marginBottom: 32 },
+  headingCenter: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
+  headingIcon: { alignItems: 'center', justifyContent: 'flex-end', width: 22, height: 26 },
+  profileHead: {
+    width: 12, height: 12, borderRadius: 6,
+    borderWidth: 2, borderColor: '#fff', marginBottom: 2,
+  },
+  profileBody: {
+    width: 20, height: 10,
+    borderTopLeftRadius: 10, borderTopRightRadius: 10,
+    borderLeftWidth: 2, borderRightWidth: 2, borderTopWidth: 2,
+    borderColor: '#fff',
+  },
+  heading: { color: '#fff', fontSize: 24, fontWeight: '700' },
+  inner: { flex: 1, padding: 28, justifyContent: 'center' },
   input: {
     backgroundColor: '#1e1e1e',
     color: '#fff',
