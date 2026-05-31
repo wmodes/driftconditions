@@ -9,6 +9,23 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-05-31]
+
+### Added
+- **Mobile app — Google Cast** — Cast and AirPlay items added to ··· More menu. Tapping Cast shows the device picker; selecting a device pauses local playback and streams directly to the Cast device. Play/pause on the app controls the Cast session. When Cast disconnects, local player resumes control. Cast state tracked in `App.tsx`; `PlayerScreen` switches between local and Cast controls based on `isCasting` prop.
+- **Mobile app — AirPlay** — custom native module (`RNAirplayRouter`) wraps `AVRoutePickerView` to show the iOS system audio output picker from the More menu. Replaces `react-airplay` (incompatible with RN 0.73 old architecture).
+- **Cast custom receiver** — `AdminClient/public/cast/receiver.html` — a Google Cast Application Framework (CAF) receiver hosted at `https://driftconditions.org/cast/receiver.html`. Plays the Icecast live stream, listens on a custom namespace (`urn:x-cast:org.driftconditions.app`) for metadata pushes from the iOS sender (cover art, track list), and updates the TV display without interrupting the stream. Layout matches the desktop fullscreen player: cover art left, Rubik Distressed title + track list right, blurred cover background at 30% opacity.
+- **Cast custom receiver — App ID `2BC05BE5`** — registered as a Custom Receiver in the Google Cast SDK Developer Console pointing to `https://driftconditions.org/cast/receiver.html`. Supports both TV and audio-only devices.
+- **Cast dynamic metadata** — when the current mix changes while casting, the iOS app pushes updated cover art and track list to the receiver via the custom channel with no stream reload or playback interruption.
+
+### Changed
+- **Mobile app — profile button** — profile icon/avatar moved from ··· More menu to a persistent button in the top-right corner of the player, playlist, and upload screens. Tapping when not logged in goes to login; tapping when logged in shows a Profile/Sign Out bottom sheet.
+- **Mobile app — More menu** — removed Profile and Sign Out items (now in profile button). Cast and AirPlay added at top.
+- **Server — `authMiddleware` Bearer support** — `verifyToken` now accepts `Authorization: Bearer` header as fallback to cookie, enabling mobile audio uploads.
+- **AudioView — creator/editor links** — username links now point to `/profile/:username` instead of `/recipe/list`.
+
+---
+
 ## [2026-05-22] (3)
 
 ### Added

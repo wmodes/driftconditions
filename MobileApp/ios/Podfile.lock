@@ -72,11 +72,18 @@ PODS:
     - FlipperKit/FlipperKitNetworkPlugin
   - fmt (6.2.1)
   - glog (0.3.5)
+  - google-cast-sdk (4.8.0):
+    - google-cast-sdk/Core (= 4.8.0)
+    - Protobuf (~> 3.13)
+  - google-cast-sdk/Core (4.8.0):
+    - Protobuf (~> 3.13)
   - hermes-engine (0.73.6):
     - hermes-engine/Pre-built (= 0.73.6)
   - hermes-engine/Pre-built (0.73.6)
   - libevent (2.1.12)
   - OpenSSL-Universal (1.1.1100)
+  - PromisesObjC (2.4.0)
+  - Protobuf (3.29.6)
   - RCT-Folly (2022.05.16.00):
     - boost
     - DoubleConversion
@@ -952,6 +959,10 @@ PODS:
     - glog
     - RCT-Folly (= 2022.05.16.00)
     - React-Core
+  - react-native-google-cast (4.9.1):
+    - google-cast-sdk
+    - PromisesObjC
+    - React
   - react-native-image-picker (8.2.1):
     - glog
     - RCT-Folly (= 2022.05.16.00)
@@ -1197,6 +1208,7 @@ DEPENDENCIES:
   - React-logger (from `../node_modules/react-native/ReactCommon/logger`)
   - React-Mapbuffer (from `../node_modules/react-native/ReactCommon`)
   - react-native-document-picker (from `../node_modules/react-native-document-picker`)
+  - react-native-google-cast (from `../node_modules/react-native-google-cast`)
   - react-native-image-picker (from `../node_modules/react-native-image-picker`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
   - react-native-track-player (from `../node_modules/react-native-track-player`)
@@ -1237,8 +1249,11 @@ SPEC REPOS:
     - Flipper-PeerTalk
     - FlipperKit
     - fmt
+    - google-cast-sdk
     - libevent
     - OpenSSL-Universal
+    - PromisesObjC
+    - Protobuf
     - SocketRocket
     - SwiftAudioEx
 
@@ -1302,6 +1317,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon"
   react-native-document-picker:
     :path: "../node_modules/react-native-document-picker"
+  react-native-google-cast:
+    :path: "../node_modules/react-native-google-cast"
   react-native-image-picker:
     :path: "../node_modules/react-native-image-picker"
   react-native-safe-area-context:
@@ -1374,9 +1391,12 @@ SPEC CHECKSUMS:
   FlipperKit: 37525a5d056ef9b93d1578e04bc3ea1de940094f
   fmt: ff9d55029c625d3757ed641535fd4a75fedc7ce9
   glog: c5d68082e772fa1c511173d6b30a9de2c05a69a2
+  google-cast-sdk: afeb1aac0744b1bc4f70bc3db8468e33fabbff38
   hermes-engine: 9cecf9953a681df7556b8cc9c74905de8f3293c0
   libevent: 4049cae6c81cdb3654a443be001fb9bdceff7913
   OpenSSL-Universal: ebc357f1e6bc71fa463ccb2fe676756aff50e88c
+  PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
+  Protobuf: 8d5596f7468be5400861a6bbfb2dfe9d0d1cde34
   RCT-Folly: cd21f1661364f975ae76b3308167ad66b09f53f5
   RCTRequired: ca1d7414aba0b27efcfa2ccd37637edb1ab77d96
   RCTTypeSafety: 678e344fb976ff98343ca61dc62e151f3a042292
@@ -1399,6 +1419,7 @@ SPEC CHECKSUMS:
   React-logger: 55764cd993880c6f887505854581c9faf68feff2
   React-Mapbuffer: 15dfcfeb4428d8799cce75e7fe85b18b706029e0
   react-native-document-picker: 4425fea5360a9e3ec5f268681194bf88ae67ec65
+  react-native-google-cast: 7be68a5d0b7eeb95a5924c3ecef8d319ef6c0a44
   react-native-image-picker: bb3a66064010886b9472200945841e2cf79e1b52
   react-native-safe-area-context: 758e894ca5a9bd1868d2a9cfbca7326a2b6bf9dc
   react-native-track-player: dd56f9948e03756a217c75e0a61aa04aab65b5a1

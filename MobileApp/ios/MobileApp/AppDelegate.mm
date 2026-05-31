@@ -1,15 +1,21 @@
 #import "AppDelegate.h"
 
 #import <React/RCTBundleURLProvider.h>
+#import <GoogleCast/GoogleCast.h>
 
 @implementation AppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
   self.moduleName = @"MobileApp";
-  // You can add your custom initial props in the dictionary below.
-  // They will be passed down to the ViewController used by React Native.
   self.initialProps = @{};
+
+  // Initialize Google Cast SDK
+  GCKDiscoveryCriteria *criteria = [[GCKDiscoveryCriteria alloc] initWithApplicationID:@"2BC05BE5"];
+  GCKCastOptions *options = [[GCKCastOptions alloc] initWithDiscoveryCriteria:criteria];
+  options.physicalVolumeButtonsWillControlDeviceVolume = YES;
+  [GCKCastContext setSharedInstanceWithOptions:options];
+  [[GCKCastContext sharedInstance].discoveryManager startDiscovery];
 
   return [super application:application didFinishLaunchingWithOptions:launchOptions];
 }

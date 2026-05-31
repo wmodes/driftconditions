@@ -2,15 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, Modal, Share, StyleSheet } from 'react-native';
 import { usePlayer } from '../context/PlayerContext';
 import { useAuth } from '../context/AuthContext';
-
-function ProfileIcon({ color }) {
-  return (
-    <View style={styles.customIcon}>
-      <View style={[styles.profileHead, { borderColor: color }]} />
-      <View style={[styles.profileBody, { borderColor: color }]} />
-    </View>
-  );
-}
+import { NativeModules } from 'react-native';
 
 function ShareIcon({ color }) {
   return (
@@ -25,7 +17,27 @@ const ICON_COLOR = '#aaa';
 
 export default function MoreModal({ visible, onClose, onNavigate }) {
   const { displayTitle } = usePlayer();
-  const { user, isAuthenticated, signOut } = useAuth();
+  const { isAuthenticated } = useAuth();
+  const handleCast = () => {
+    onClose();
+    setTimeout(() => {
+      try {
+        const { CastContext } = require('react-native-google-cast');
+        CastContext.showCastDialog();
+      } catch (e) {
+        console.warn('Cast unavailable:', e.message);
+      }
+    }, 350);
+  };
+
+  const handleAirPlay = () => {
+    onClose();
+    try {
+      NativeModules.RNAirplayRouter.showRoutePicker();
+    } catch (e) {
+      console.warn('AirPlay unavailable:', e.message);
+    }
+  };
 
   const handleShare = () => {
     onClose();
@@ -36,22 +48,24 @@ export default function MoreModal({ visible, onClose, onNavigate }) {
     });
   };
 
-  const handleProfile = () => {
-    onClose();
-    onNavigate(isAuthenticated ? 'profile' : 'login');
-  };
-
-  const handleSignOut = async () => {
-    onClose();
-    await signOut();
-  };
-
   const handleUpload = () => {
     onClose();
     onNavigate('upload');
   };
 
   const ITEMS = [
+    {
+      key: 'cast',
+      label: 'Cast',
+      renderIcon: () => <Text style={[styles.textIcon, { color: ICON_COLOR }]}>⬡</Text>,
+      onPress: handleCast,
+    },
+    {
+      key: 'airplay',
+      label: 'AirPlay',
+      renderIcon: () => <Text style={[styles.textIcon, { color: ICON_COLOR }]}>▲</Text>,
+      onPress: handleAirPlay,
+    },
     {
       key: 'share',
       label: 'Share',
@@ -63,18 +77,6 @@ export default function MoreModal({ visible, onClose, onNavigate }) {
       label: 'Upload Audio',
       renderIcon: () => <Text style={[styles.textIcon, { color: ICON_COLOR }]}>↑</Text>,
       onPress: handleUpload,
-    }] : []),
-    {
-      key: 'profile',
-      label: isAuthenticated ? (user?.username || 'Profile') : 'Sign In',
-      renderIcon: () => <ProfileIcon color={ICON_COLOR} />,
-      onPress: handleProfile,
-    },
-    ...(isAuthenticated ? [{
-      key: 'signout',
-      label: 'Sign Out',
-      renderIcon: () => <Text style={[styles.textIcon, { color: ICON_COLOR }]}>→</Text>,
-      onPress: handleSignOut,
     }] : []),
   ];
 
