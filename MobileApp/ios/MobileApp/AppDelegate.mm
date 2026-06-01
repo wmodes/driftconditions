@@ -10,7 +10,7 @@
   self.moduleName = @"MobileApp";
   self.initialProps = @{};
 
-  GCKDiscoveryCriteria *criteria = [[GCKDiscoveryCriteria alloc] initWithApplicationID:kGCKDefaultMediaReceiverApplicationID]; // TEST
+  GCKDiscoveryCriteria *criteria = [[GCKDiscoveryCriteria alloc] initWithApplicationID:@"2BC05BE5"];
   GCKCastOptions *options = [[GCKCastOptions alloc] initWithDiscoveryCriteria:criteria];
   [GCKCastContext setSharedInstanceWithOptions:options];
 
@@ -25,7 +25,7 @@
 - (NSURL *)getBundleURL
 {
 #if DEBUG
-  [[RCTBundleURLProvider sharedSettings] setJsLocation:@"localhost:8084"];
+  [[RCTBundleURLProvider sharedSettings] setJsLocation:@"169.254.6.201:8081"];
   return [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"index"];
 #else
   return [[NSBundle mainBundle] URLForResource:@"main" withExtension:@"jsbundle"];

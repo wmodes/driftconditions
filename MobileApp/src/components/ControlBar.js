@@ -8,8 +8,9 @@ const ITEMS = [
   { key: 'favorite', label: 'Favorite', icon: '♡' },
   { key: 'sleep',    label: 'Sleep',    icon: '☽' },
   { key: 'playlist', label: 'Playlist', icon: '≡' },
-  { key: 'more',     label: 'More',     icon: '…' },
 ];
+
+const MORE_ITEM = { key: 'more', label: 'More', icon: '…' };
 
 export default function ControlBar({ currentScreen, navigate, onSleepPress, sleepMinutesLeft, bottomInset }) {
   const { currentMix, heartedIds, toggleHeart } = usePlayer();
@@ -44,7 +45,7 @@ export default function ControlBar({ currentScreen, navigate, onSleepPress, slee
         const isSleepActive = item.key === 'sleep' && sleepMinutesLeft != null;
         const isFavActive = item.key === 'favorite' && isFavorited;
         const active = isPlaylistActive || isSleepActive || isFavActive;
-        const color = active ? '#336699' : '#777';
+        const color = active ? '#336699' : '#aaa';
 
         const icon = isSleepActive ? String(sleepMinutesLeft)
           : isFavActive ? '♥'
@@ -65,9 +66,18 @@ export default function ControlBar({ currentScreen, navigate, onSleepPress, slee
 
       {/* Native CastButton — SDK handles discovery, state, and device picker */}
       <View style={styles.item}>
-        <CastButton style={styles.castIcon} tintColor="#777" />
+        <CastButton style={styles.castIcon} tintColor="#aaa" />
         <Text style={styles.label}>Cast</Text>
       </View>
+
+      {/* More — rendered last so Cast appears before it */}
+      <TouchableOpacity
+        style={styles.item}
+        onPress={() => handlePress('more')}
+        activeOpacity={0.6}>
+        <Text style={[styles.icon, { color: '#aaa' }]}>{MORE_ITEM.icon}</Text>
+        <Text style={styles.label}>{MORE_ITEM.label}</Text>
+      </TouchableOpacity>
     </View>
     </>
   );
@@ -87,7 +97,7 @@ const styles = StyleSheet.create({
     paddingBottom: 4,
   },
   icon: { fontSize: 20, marginBottom: 3 },
-  label: { color: '#555', fontSize: 10 },
+  label: { color: '#aaa', fontSize: 10 },
   labelActive: { color: '#336699' },
   castIcon: {
     width: 20,

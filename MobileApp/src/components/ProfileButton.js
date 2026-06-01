@@ -72,7 +72,7 @@ export default function ProfileButton({ onNavigate, size = 40 }) {
         ) : (
           <PersonIcon
             size={size * 0.65}
-            color={isAuthenticated ? '#fff' : '#666'}
+            color={isAuthenticated ? '#fff' : '#aaa'}
           />
         )}
       </TouchableOpacity>
