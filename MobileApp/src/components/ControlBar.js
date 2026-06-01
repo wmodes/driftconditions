@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { usePlayer } from '../context/PlayerContext';
+import { CastButton } from 'react-native-google-cast';
 import MoreModal from '../modals/MoreModal';
 
 const ITEMS = [
@@ -61,6 +62,12 @@ export default function ControlBar({ currentScreen, navigate, onSleepPress, slee
           </TouchableOpacity>
         );
       })}
+
+      {/* Native CastButton — SDK handles discovery, state, and device picker */}
+      <View style={styles.item}>
+        <CastButton style={styles.castIcon} tintColor="#777" />
+        <Text style={styles.label}>Cast</Text>
+      </View>
     </View>
     </>
   );
@@ -82,4 +89,9 @@ const styles = StyleSheet.create({
   icon: { fontSize: 20, marginBottom: 3 },
   label: { color: '#555', fontSize: 10 },
   labelActive: { color: '#336699' },
+  castIcon: {
+    width: 20,
+    height: 20,
+    marginBottom: 3,
+  },
 });

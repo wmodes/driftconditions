@@ -18,17 +18,6 @@ const ICON_COLOR = '#aaa';
 export default function MoreModal({ visible, onClose, onNavigate }) {
   const { displayTitle } = usePlayer();
   const { isAuthenticated } = useAuth();
-  const handleCast = () => {
-    onClose();
-    setTimeout(() => {
-      try {
-        const { CastContext } = require('react-native-google-cast');
-        CastContext.showCastDialog();
-      } catch (e) {
-        console.warn('Cast unavailable:', e.message);
-      }
-    }, 350);
-  };
 
   const handleAirPlay = () => {
     onClose();
@@ -54,12 +43,6 @@ export default function MoreModal({ visible, onClose, onNavigate }) {
   };
 
   const ITEMS = [
-    {
-      key: 'cast',
-      label: 'Cast',
-      renderIcon: () => <Text style={[styles.textIcon, { color: ICON_COLOR }]}>⬡</Text>,
-      onPress: handleCast,
-    },
     {
       key: 'airplay',
       label: 'AirPlay',
@@ -155,27 +138,9 @@ const styles = StyleSheet.create({
 
   textIcon: { fontSize: 18, fontWeight: '600' },
 
-  // Profile icon: circle head + open arc shoulders
   customIcon: {
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  profileHead: {
-    width: 9,
-    height: 9,
-    borderRadius: 5,
-    borderWidth: 1.5,
-    marginBottom: 2,
-  },
-  profileBody: {
-    width: 17,
-    height: 9,
-    borderTopLeftRadius: 9,
-    borderTopRightRadius: 9,
-    borderLeftWidth: 1.5,
-    borderRightWidth: 1.5,
-    borderTopWidth: 1.5,
-    borderBottomWidth: 0,
   },
 
   // Share icon: up arrow + open-top box
