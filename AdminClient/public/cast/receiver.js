@@ -15,9 +15,6 @@
 /** @const {string} Custom Cast namespace shared with the iOS sender. */
 const NAMESPACE = 'urn:x-cast:org.driftconditions.app';
 
-/** @const {string} Live Icecast stream URL. */
-const STREAM_URL = 'https://usa14.fastcast4u.com/proxy/wmodes?mp=/1';
-
 const context     = cast.framework.CastReceiverContext.getInstance();
 const playerManager = context.getPlayerManager();
 
@@ -78,9 +75,10 @@ context.addCustomMessageListener(NAMESPACE, (event) => {
 playerManager.setMessageInterceptor(
   cast.framework.messages.MessageType.LOAD,
   (request) => {
-    request.media.contentUrl  = STREAM_URL;
+    // contentUrl comes from the sender (config.stream.url) — don't override it
     request.media.contentType = 'audio/mpeg';
     request.media.streamType  = cast.framework.messages.StreamType.LIVE;
+    request.media.duration    = -1; // required for live streams per Cast SDK docs
     if (request.media.metadata) {
       updateUI({
         coverImage: request.media.metadata.images?.[0]?.url,
@@ -90,5 +88,8 @@ playerManager.setMessageInterceptor(
     return request;
   }
 );
+
+// Live streams don't support seeking — required per Cast SDK live stream docs
+playerManager.removeSupportedMediaCommands(cast.framework.messages.Command.SEEK, true);
 
 context.start({ touchScreenOptimizedApp: false });

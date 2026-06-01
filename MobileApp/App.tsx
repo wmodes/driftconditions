@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useRemoteMediaClient, useCastState, CastState, useMediaStatus, MediaPlayerState } from 'react-native-google-cast';
 import { View, StatusBar, StyleSheet, Linking } from 'react-native';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import TrackPlayer from 'react-native-track-player';
@@ -23,9 +24,15 @@ function AppContent() {
   const insets = useSafeAreaInsets();
   const [screen, setScreen] = useState<Screen>('player');
   const [incomingFile, setIncomingFile] = useState<any>(null);
-  const [isCasting, setIsCasting] = useState(false);
-  const [castIsPlaying, setCastIsPlaying] = useState(false);
   const castClientRef = useRef<any>(null);
+  const castMediaRequestRef = useRef<any>(null);
+  const castClient = useRemoteMediaClient();
+  const castState = useCastState();
+  const mediaStatus = useMediaStatus();
+  // Derive cast state from SDK hooks — single source of truth
+  const isCasting = castState === CastState.CONNECTED;
+  const castIsPlaying = mediaStatus?.playerState === MediaPlayerState.PLAYING
+    || mediaStatus?.playerState === MediaPlayerState.BUFFERING;
   const [sleepModalVisible, setSleepModalVisible] = useState(false);
   const [sleepEndTime, setSleepEndTime] = useState<number | null>(null);
   // Tick forces re-render so the minutes countdown updates
@@ -99,7 +106,6 @@ function AppContent() {
   const { isAuthenticated } = useAuth();
   const { currentMix, displayTitle } = usePlayer();
   const currentMixRef = useRef<any>(null);
-  const isCastingRef = useRef(false);
   useEffect(() => { currentMixRef.current = currentMix; }, [currentMix]);
 
   const CAST_NAMESPACE = 'urn:x-cast:org.driftconditions.app';
@@ -118,75 +124,63 @@ function AppContent() {
     } catch (e) {}
   };
 
-  // Cast: discovery + integrate with local player
+  // Cast: react to connection state changes using hooks (road more traveled in 4.6.1)
   useEffect(() => {
-    try {
-      const { CastContext, CastState } = require('react-native-google-cast');
-      // AppDelegate starts discovery immediately (startDiscoveryAfterFirstTapOnCastButton=NO).
-      // Call startDiscovery() from JS as well in case it's needed after bridge init.
-      if (CastContext.discoveryManager) {
-        CastContext.discoveryManager.startDiscovery();
+    const handleCastStateChange = async () => {
+      console.log('Cast state changed:', castState, 'client:', !!castClient);
+      if (castState === CastState.CONNECTED && castClient) {
+        const { State } = require('react-native-track-player');
+        const playbackState = await TrackPlayer.getPlaybackState();
+        const wasPlaying = playbackState.state === State.Playing;
+        console.log('Cast connected — wasPlaying:', wasPlaying);
+        await TrackPlayer.pause();
+        castClientRef.current = castClient;
+        const mediaRequest = {
+          mediaInfo: {
+            contentUrl: config.stream.url,
+            contentType: 'audio/mpeg',
+            streamType: 'live',
+            duration: -1,
+            metadata: {
+              type: 'generic',
+              title: 'DriftConditions',
+              subtitle: 'Live Stream',
+              images: currentMixRef.current?.coverImage
+                ? [{ url: `https://driftconditions.org/${currentMixRef.current.coverImage}` }]
+                : [],
+            },
+          },
+        };
+        castMediaRequestRef.current = mediaRequest;
+        console.log('Cast loadMedia starting...');
+        castClient
+          .loadMedia({ ...mediaRequest, autoplay: wasPlaying })
+          .then(() => {
+            console.log('Cast loadMedia success — autoplay:', wasPlaying);
+            sendCastMetadata(currentMixRef.current);
+          })
+          .catch((e: any) => console.warn('Cast loadMedia error:', e));
+      } else if (castState === CastState.NOT_CONNECTED) {
+        castClientRef.current = null;
       }
-
-      const unsubscribe = CastContext.onCastStateChanged(async (state: any) => {
-        if (state === CastState.CONNECTED) {
-          // Capture playing state before pausing
-          const { State } = require('react-native-track-player');
-          const playbackState = await TrackPlayer.getPlaybackState();
-          const wasPlaying = playbackState.state === State.Playing;
-          await TrackPlayer.pause();
-          try {
-            const session = await CastContext.sessionManager.getCurrentCastSession();
-            if (session?.client) {
-              castClientRef.current = session.client;
-              await session.client.loadMedia({
-                mediaInfo: {
-                  contentUrl: config.stream.url,
-                  contentType: 'audio/mpeg',
-                  streamType: 'LIVE',
-                  metadata: {
-                    type: 'generic',
-                    title: 'DriftConditions',
-                    subtitle: 'Live Stream',
-                    images: currentMixRef.current?.coverImage
-                      ? [{ url: `https://driftconditions.org/${currentMixRef.current.coverImage}` }]
-                      : [],
-                  },
-                },
-                autoplay: wasPlaying,
-              });
-              setIsCasting(true);
-              isCastingRef.current = true;
-              setCastIsPlaying(wasPlaying);
-              // Send initial metadata via custom channel
-              await sendCastMetadata(currentMixRef.current);
-            }
-          } catch (e) {
-            console.warn('Cast loadMedia error:', e);
-          }
-        } else {
-          // Cast disconnected — hand control back to local player
-          castClientRef.current = null;
-          isCastingRef.current = false;
-          setIsCasting(false);
-          setCastIsPlaying(false);
-        }
-      });
-      return () => unsubscribe();
-    } catch (e) {
-      // Cast SDK not available or not yet initialized — non-fatal
-    }
-  }, []);
+    };
+    handleCastStateChange();
+  }, [castState, castClient]);
 
   const castToggle = async () => {
-    if (!castClientRef.current) return;
+    if (!castClient) return;
+    console.log('Cast toggle — castIsPlaying:', castIsPlaying, 'playerState:', mediaStatus?.playerState);
     try {
       if (castIsPlaying) {
-        await castClientRef.current.pause();
-        setCastIsPlaying(false);
+        await castClient.stop();
       } else {
-        await castClientRef.current.play();
-        setCastIsPlaying(true);
+        // Live streams must reload to start — play() only works from PAUSED, not IDLE
+        console.log('Cast toggle — calling loadMedia, request:', !!castMediaRequestRef.current);
+        await castClient.loadMedia({
+          ...castMediaRequestRef.current,
+          autoplay: true,
+        });
+        console.log('Cast toggle — loadMedia resolved');
       }
     } catch (e) {
       console.warn('Cast toggle error:', e);
@@ -195,7 +189,7 @@ function AppContent() {
 
   // Push metadata to Cast receiver when mix changes — no stream reload
   useEffect(() => {
-    if (isCastingRef.current) sendCastMetadata(currentMix);
+    if (castClientRef.current) sendCastMetadata(currentMix);
   }, [currentMix?.mixID]);
 
   // Navigate to player after OAuth or any async sign-in completes
