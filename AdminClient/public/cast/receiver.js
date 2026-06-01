@@ -67,7 +67,8 @@ function updateUI({ coverImage, tracks }) {
 // Receive metadata updates from the iOS sender without reloading the stream.
 // Expected shape: { coverImage, tracks }
 context.addCustomMessageListener(NAMESPACE, (event) => {
-  updateUI(event.data || {});
+  const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+  updateUI(data || {});
 });
 
 // Intercept LOAD requests — always redirect to our stream URL and apply
