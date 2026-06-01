@@ -26,8 +26,8 @@
 
   <div id="status">Live</div>
 
-  <!-- Required by Cast Web Receiver SDK — provides the media element playerManager uses -->
-  <cast-media-player></cast-media-player>
+  <!-- Hidden audio element — SDK binds to this instead of <cast-media-player> so our custom UI shows through -->
+  <audio id="cast-audio-engine" style="display:none;"></audio>
 
   <script src="//www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js"></script>
   <script src="receiver.js"></script>

@@ -92,4 +92,8 @@ playerManager.setMessageInterceptor(
 // Live streams don't support seeking — required per Cast SDK live stream docs
 playerManager.removeSupportedMediaCommands(cast.framework.messages.Command.SEEK, true);
 
-context.start({ touchScreenOptimizedApp: false });
+// Bind SDK to our hidden <audio> element so custom UI is not covered by cast-media-player
+const options = new cast.framework.CastReceiverOptions();
+options.mediaElement = document.getElementById('cast-audio-engine');
+
+context.start(options);
