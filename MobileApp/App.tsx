@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useRemoteMediaClient, useCastState, CastState, useMediaStatus, MediaPlayerState } from 'react-native-google-cast';
+import { useRemoteMediaClient, useCastState, CastState, useMediaStatus, MediaPlayerState, useDevices, useCastChannel } from 'react-native-google-cast';
 import { View, StatusBar, StyleSheet, Linking } from 'react-native';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import TrackPlayer from 'react-native-track-player';
@@ -20,6 +20,8 @@ import SleepTimerModal from './src/modals/SleepTimerModal';
 
 type Screen = 'player' | 'playlist' | 'login' | 'forgotpassword' | 'profile' | 'upload';
 
+const CAST_NAMESPACE = 'urn:x-cast:org.driftconditions.app';
+
 function AppContent() {
   const insets = useSafeAreaInsets();
   const [screen, setScreen] = useState<Screen>('player');
@@ -29,6 +31,8 @@ function AppContent() {
   const castClient = useRemoteMediaClient();
   const castState = useCastState();
   const mediaStatus = useMediaStatus();
+  const devices = useDevices();
+  const castChannel = useCastChannel(CAST_NAMESPACE);
   // Derive cast state from SDK hooks — single source of truth
   const isCasting = castState === CastState.CONNECTED;
   const castIsPlaying = mediaStatus?.playerState === MediaPlayerState.PLAYING
@@ -108,21 +112,26 @@ function AppContent() {
   const currentMixRef = useRef<any>(null);
   useEffect(() => { currentMixRef.current = currentMix; }, [currentMix]);
 
-  const CAST_NAMESPACE = 'urn:x-cast:org.driftconditions.app';
-
-  const sendCastMetadata = async (mix: any) => {
-    try {
-      const { CastContext } = require('react-native-google-cast');
-      const session = await CastContext.sessionManager.getCurrentCastSession();
-      if (session) {
-        const clips = Array.isArray(mix?.playlist) ? mix.playlist : (mix?.playlist?.playlist || []);
-        await session.sendMessage(CAST_NAMESPACE, {
-          coverImage: mix?.coverImage ? `https://driftconditions.org/${mix.coverImage}` : null,
-          tracks: clips.map((c: any) => c.title).filter(Boolean),
-        });
-      }
-    } catch (e) {}
+  const sendCastMetadata = (mix: any) => {
+    if (!castChannel) { console.log('sendCastMetadata — no channel'); return; }
+    const clips = Array.isArray(mix?.playlist) ? mix.playlist : (mix?.playlist?.playlist || []);
+    const tracks = clips.map((c: any) => c.title || c.filename).filter(Boolean);
+    console.log('sendCastMetadata — coverImage:', !!mix?.coverImage, 'tracks:', tracks);
+    castChannel.sendMessage(JSON.stringify({
+      coverImage: mix?.coverImage ? `https://driftconditions.org/${mix.coverImage}` : null,
+      tracks,
+    }));
   };
+
+  // Diagnostic: track discovery cycles via device list changes
+  const ts = () => new Date().toISOString().slice(11, 23); // HH:MM:SS.mmm
+  useEffect(() => {
+    console.log(`[${ts()}] Cast devices changed: ${devices.length} device(s) —`, devices.map(d => d.friendlyName));
+  }, [devices]);
+
+  useEffect(() => {
+    console.log(`[${ts()}] Cast state: ${castState}`);
+  }, [castState]);
 
   // Cast: react to connection state changes using hooks (road more traveled in 4.6.1)
   useEffect(() => {
@@ -169,7 +178,7 @@ function AppContent() {
 
   const castToggle = async () => {
     if (!castClient) return;
-    console.log('Cast toggle — castIsPlaying:', castIsPlaying, 'playerState:', mediaStatus?.playerState);
+    console.log(`[${ts()}] Cast toggle — castIsPlaying:`, castIsPlaying, 'playerState:', mediaStatus?.playerState);
     try {
       if (castIsPlaying) {
         await castClient.stop();
