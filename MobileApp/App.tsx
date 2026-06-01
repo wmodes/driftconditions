@@ -122,7 +122,11 @@ function AppContent() {
   useEffect(() => {
     try {
       const { CastContext, CastState } = require('react-native-google-cast');
-      CastContext.discoveryManager.startDiscovery();
+      // AppDelegate starts discovery immediately (startDiscoveryAfterFirstTapOnCastButton=NO).
+      // Call startDiscovery() from JS as well in case it's needed after bridge init.
+      if (CastContext.discoveryManager) {
+        CastContext.discoveryManager.startDiscovery();
+      }
 
       const unsubscribe = CastContext.onCastStateChanged(async (state: any) => {
         if (state === CastState.CONNECTED) {
@@ -169,7 +173,9 @@ function AppContent() {
         }
       });
       return () => unsubscribe();
-    } catch (e) {}
+    } catch (e) {
+      // Cast SDK not available or not yet initialized — non-fatal
+    }
   }, []);
 
   const castToggle = async () => {

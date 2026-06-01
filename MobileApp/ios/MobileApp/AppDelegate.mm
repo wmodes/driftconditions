@@ -10,12 +10,9 @@
   self.moduleName = @"MobileApp";
   self.initialProps = @{};
 
-  // Initialize Google Cast SDK
-  GCKDiscoveryCriteria *criteria = [[GCKDiscoveryCriteria alloc] initWithApplicationID:@"2BC05BE5"];
+  GCKDiscoveryCriteria *criteria = [[GCKDiscoveryCriteria alloc] initWithApplicationID:kGCKDefaultMediaReceiverApplicationID]; // TEST
   GCKCastOptions *options = [[GCKCastOptions alloc] initWithDiscoveryCriteria:criteria];
-  options.physicalVolumeButtonsWillControlDeviceVolume = YES;
   [GCKCastContext setSharedInstanceWithOptions:options];
-  [[GCKCastContext sharedInstance].discoveryManager startDiscovery];
 
   return [super application:application didFinishLaunchingWithOptions:launchOptions];
 }
