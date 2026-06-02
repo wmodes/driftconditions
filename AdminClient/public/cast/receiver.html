@@ -24,10 +24,13 @@
     </ul>
   </div>
 
+  <!-- Level meter — spans both columns -->
+  <canvas id="vu-meter"></canvas>
+
   <div id="status">Live</div>
 
-  <!-- Hidden audio element — SDK binds to this instead of <cast-media-player> so our custom UI shows through -->
-  <audio id="cast-audio-engine" style="display:none;"></audio>
+  <!-- crossorigin required for Web Audio API analysis of the stream -->
+  <audio id="cast-audio-engine" crossorigin="anonymous" style="display:none;"></audio>
 
   <script src="//www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js"></script>
   <script src="receiver.js"></script>

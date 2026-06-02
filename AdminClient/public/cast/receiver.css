@@ -10,8 +10,21 @@ body {
   font-family: -apple-system, Helvetica Neue, sans-serif;
   display: grid;
   grid-template-columns: 2fr 2fr;
+  grid-template-rows: 1fr auto;
+  grid-template-areas:
+    "cover info"
+    "meter meter";
   padding: 0 10%;
   overflow: hidden;
+}
+
+#vu-meter {
+  grid-area: meter;
+  width: 100%;
+  height: 12px;
+  margin-bottom: 2rem;
+  border-radius: 3px;
+  background: #1a1a1a;
 }
 
 /* Background — two crossfading layers for smooth cover transitions */
@@ -26,10 +39,15 @@ body {
 
 /* Left column — cover art */
 #cover-col {
+  grid-area: cover;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 3rem;
+}
+
+#info-col {
+  grid-area: info;
 }
 
 #cover-placeholder {
@@ -63,6 +81,7 @@ body {
   padding: 3rem 3rem 3rem 1.5rem;
   gap: 1.25rem;
 }
+
 
 #app-name {
   font-family: 'Rubik Distressed', sans-serif;
