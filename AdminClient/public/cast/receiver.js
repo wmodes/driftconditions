@@ -170,5 +170,6 @@ playerManager.addEventListener(
 // Bind SDK to our hidden <audio> element so custom UI is not covered by cast-media-player
 const options = new cast.framework.CastReceiverOptions();
 options.mediaElement = document.getElementById('cast-audio-engine');
+options.disableIdleTimeout = true;
 
 context.start(options);
