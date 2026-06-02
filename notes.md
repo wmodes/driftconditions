@@ -77,25 +77,7 @@ icecast -c /usr/local/etc/icecast.xml
 
 ### Mobile App Dev (React Native)
 
-All commands run from `MobileApp/`. Metro must be running before launching on either platform.
-
-```bash
-# 1. Start Metro bundler (keep running in its own terminal)
-cd MobileApp && npx react-native start --port 8084
-
-# 2a. iOS — launch on iPhone 17 simulator
-npx react-native run-ios --port 8084 --simulator "iPhone 17"
-
-# 2b. Android — start the Pixel 9 emulator first via Android Studio
-#     (Device Manager → play button), then:
-npx react-native run-android --port 8084
-```
-
-Notes:
-- Metro runs on port 8084 (8081 is AdminServer, 8082 is MixEngine proxy)
-- iOS simulator: iPhone 17, iOS 26.5 (installed via Xcode → Settings → Components)
-- Android emulator: Pixel 9, API 37 (created via Android Studio Device Manager)
-- After the first build, subsequent runs are faster — Metro hot-reloads JS changes instantly without a full rebuild
+See **[MOBILE.md](MOBILE.md)** for full setup, build, and run instructions.
 
 ---
 
