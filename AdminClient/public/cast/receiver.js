@@ -94,8 +94,8 @@ playerManager.setMessageInterceptor(
 playerManager.removeSupportedMediaCommands(cast.framework.messages.Command.SEEK, true);
 
 // VU meter — Web Audio API analysis of the hidden audio element
-const canvas  = document.getElementById('vu-meter');
-const canvasCtx = canvas.getContext('2d');
+const canvas    = document.getElementById('vu-meter');
+const canvasCtx = canvas ? canvas.getContext('2d') : null;
 let audioCtx  = null;
 let analyser  = null;
 let smoothed  = 0;
@@ -120,7 +120,7 @@ function initAnalyser() {
 /** Draw one frame of the level meter and schedule the next. */
 function drawMeter() {
   requestAnimationFrame(drawMeter);
-  if (!analyser) return;
+  if (!analyser || !canvasCtx) return;
 
   const data = new Uint8Array(analyser.fftSize);
   analyser.getByteTimeDomainData(data);
@@ -157,8 +157,14 @@ function drawMeter() {
 }
 
 playerManager.addEventListener(
-  cast.framework.events.EventType.PLAYER_PLAYING,
-  () => { if (audioCtx) audioCtx.resume(); else initAnalyser(); }
+  cast.framework.events.EventType.PLAYING,
+  () => {
+    try {
+      if (audioCtx) audioCtx.resume(); else initAnalyser();
+    } catch (e) {
+      console.warn('VU meter init error:', e);
+    }
+  }
 );
 
 // Bind SDK to our hidden <audio> element so custom UI is not covered by cast-media-player
