@@ -149,8 +149,8 @@ function drawMeter() {
   // Level gradient: deep blue → app blue → light blue → amber at peaks
   const grad = canvasCtx.createLinearGradient(0, 0, w, 0);
   grad.addColorStop(0,    '#336699');
-  grad.addColorStop(0.6,  '#336699');
-  grad.addColorStop(0.8,  '#998833');
+  grad.addColorStop(0.5,  '#336699');
+  grad.addColorStop(0.75, '#998833');
   grad.addColorStop(1,    '#993f33');
   canvasCtx.fillStyle = grad;
   canvasCtx.fillRect(0, 0, fill, h);
