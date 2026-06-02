@@ -93,9 +93,76 @@ playerManager.setMessageInterceptor(
 // Live streams don't support seeking — required per Cast SDK live stream docs
 playerManager.removeSupportedMediaCommands(cast.framework.messages.Command.SEEK, true);
 
+// VU meter — Web Audio API analysis of the hidden audio element
+const canvas  = document.getElementById('vu-meter');
+const canvasCtx = canvas.getContext('2d');
+let audioCtx  = null;
+let analyser  = null;
+let smoothed  = 0;
+
+/**
+ * Initialise AudioContext and connect audio element to AnalyserNode.
+ * Must be called after playback starts so the AudioContext isn't suspended.
+ */
+function initAnalyser() {
+  if (audioCtx) return;
+  const audioEl = document.getElementById('cast-audio-engine');
+  audioCtx = new AudioContext();
+  const source = audioCtx.createMediaElementSource(audioEl);
+  analyser = audioCtx.createAnalyser();
+  analyser.fftSize = 512;
+  analyser.smoothingTimeConstant = 0.75;
+  source.connect(analyser);
+  source.connect(audioCtx.destination);
+  drawMeter();
+}
+
+/** Draw one frame of the level meter and schedule the next. */
+function drawMeter() {
+  requestAnimationFrame(drawMeter);
+  if (!analyser) return;
+
+  const data = new Uint8Array(analyser.fftSize);
+  analyser.getByteTimeDomainData(data);
+
+  // RMS of the waveform — normalized to 0..1
+  let sum = 0;
+  for (let i = 0; i < data.length; i++) {
+    const s = (data[i] / 128) - 1;
+    sum += s * s;
+  }
+  const rms = Math.sqrt(sum / data.length);
+
+  // Smooth: fast attack, slow decay
+  const target = Math.min(rms * 5, 1);
+  smoothed = target > smoothed ? target * 0.6 + smoothed * 0.4
+                               : target * 0.05 + smoothed * 0.95;
+
+  const w = canvas.width = canvas.offsetWidth;
+  const h = canvas.height = canvas.offsetHeight;
+  const fill = Math.round(w * smoothed);
+
+  // Background
+  canvasCtx.fillStyle = '#1a1a1a';
+  canvasCtx.fillRect(0, 0, w, h);
+
+  // Level gradient: deep blue → app blue → light blue → amber at peaks
+  const grad = canvasCtx.createLinearGradient(0, 0, w, 0);
+  grad.addColorStop(0,    '#1e4d7a');
+  grad.addColorStop(0.65, '#336699');
+  grad.addColorStop(0.85, '#5599bb');
+  grad.addColorStop(1,    '#cc8833');
+  canvasCtx.fillStyle = grad;
+  canvasCtx.fillRect(0, 0, fill, h);
+}
+
+playerManager.addEventListener(
+  cast.framework.events.EventType.PLAYER_PLAYING,
+  () => { if (audioCtx) audioCtx.resume(); else initAnalyser(); }
+);
+
 // Bind SDK to our hidden <audio> element so custom UI is not covered by cast-media-player
 const options = new cast.framework.CastReceiverOptions();
 options.mediaElement = document.getElementById('cast-audio-engine');
-options.maxInactivity = 3600; // prevent idle/screensaver during audio playback
 
 context.start(options);
