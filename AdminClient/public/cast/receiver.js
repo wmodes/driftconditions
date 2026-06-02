@@ -96,5 +96,6 @@ playerManager.removeSupportedMediaCommands(cast.framework.messages.Command.SEEK,
 // Bind SDK to our hidden <audio> element so custom UI is not covered by cast-media-player
 const options = new cast.framework.CastReceiverOptions();
 options.mediaElement = document.getElementById('cast-audio-engine');
+options.maxInactivity = 3600; // prevent idle/screensaver during audio playback
 
 context.start(options);

@@ -33,6 +33,15 @@ function AppContent() {
   const mediaStatus = useMediaStatus();
   const devices = useDevices();
   const castChannel = useCastChannel(CAST_NAMESPACE);
+  const castChannelRef = useRef<any>(null);
+  useEffect(() => {
+    castChannelRef.current = castChannel;
+    console.log(`[${ts()}] castChannel changed:`, !!castChannel);
+    // Send metadata as soon as channel is ready (first connection timing fix)
+    if (castChannel?.connected && castState === CastState.CONNECTED) {
+      sendCastMetadata(currentMixRef.current);
+    }
+  }, [castChannel]);
   // Derive cast state from SDK hooks — single source of truth
   const isCasting = castState === CastState.CONNECTED;
   const castIsPlaying = mediaStatus?.playerState === MediaPlayerState.PLAYING
@@ -112,15 +121,22 @@ function AppContent() {
   const currentMixRef = useRef<any>(null);
   useEffect(() => { currentMixRef.current = currentMix; }, [currentMix]);
 
-  const sendCastMetadata = (mix: any) => {
-    if (!castChannel) { console.log('sendCastMetadata — no channel'); return; }
+  const sendCastMetadata = (mix: any, retries = 5) => {
+    if (!castChannelRef.current?.connected) {
+      if (retries > 0) {
+        setTimeout(() => sendCastMetadata(mix, retries - 1), 500);
+      } else {
+        console.log('sendCastMetadata — channel never became ready');
+      }
+      return;
+    }
     const clips = Array.isArray(mix?.playlist) ? mix.playlist : (mix?.playlist?.playlist || []);
     const tracks = clips.map((c: any) => c.title || c.filename).filter(Boolean);
     console.log('sendCastMetadata — coverImage:', !!mix?.coverImage, 'tracks:', tracks);
-    castChannel.sendMessage(JSON.stringify({
+    castChannelRef.current.sendMessage(JSON.stringify({
       coverImage: mix?.coverImage ? `https://driftconditions.org/${mix.coverImage}` : null,
       tracks,
-    }));
+    })).catch((e: any) => console.warn('sendCastMetadata sendMessage error:', e));
   };
 
   // Diagnostic: track discovery cycles via device list changes
@@ -182,8 +198,11 @@ function AppContent() {
     try {
       if (castIsPlaying) {
         await castClient.stop();
+      } else if (mediaStatus?.playerState === MediaPlayerState.PAUSED) {
+        // Media loaded and paused — resume directly
+        await castClient.play();
       } else {
-        // Live streams must reload to start — play() only works from PAUSED, not IDLE
+        // IDLE — live stream must reload to start
         console.log('Cast toggle — calling loadMedia, request:', !!castMediaRequestRef.current);
         await castClient.loadMedia({
           ...castMediaRequestRef.current,
