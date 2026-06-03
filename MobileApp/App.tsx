@@ -28,6 +28,7 @@ function AppContent() {
   const [incomingFile, setIncomingFile] = useState<any>(null);
   const castClientRef = useRef<any>(null);
   const castMediaRequestRef = useRef<any>(null);
+  const castLoadingRef = useRef(false);
   const castClient = useRemoteMediaClient();
   const castState = useCastState();
   const mediaStatus = useMediaStatus();
@@ -154,6 +155,8 @@ function AppContent() {
     const handleCastStateChange = async () => {
       console.log('Cast state changed:', castState, 'client:', !!castClient);
       if (castState === CastState.CONNECTED && castClient) {
+        if (castLoadingRef.current) return; // effect fired twice — already loading
+        castLoadingRef.current = true;
         const { State } = require('react-native-track-player');
         const playbackState = await TrackPlayer.getPlaybackState();
         const wasPlaying = playbackState.state === State.Playing;
@@ -187,6 +190,7 @@ function AppContent() {
           .catch((e: any) => console.warn('Cast loadMedia error:', e));
       } else if (castState === CastState.NOT_CONNECTED) {
         castClientRef.current = null;
+        castLoadingRef.current = false;
       }
     };
     handleCastStateChange();
