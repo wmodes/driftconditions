@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { usePlayer } from '../context/PlayerContext';
 import { CastButton } from 'react-native-google-cast';
+import { usePlayer } from '../context/PlayerContext';
 import MoreModal from '../modals/MoreModal';
 
 const ITEMS = [
@@ -9,8 +9,6 @@ const ITEMS = [
   { key: 'sleep',    label: 'Sleep',    icon: '☽' },
   { key: 'playlist', label: 'Playlist', icon: '≡' },
 ];
-
-const MORE_ITEM = { key: 'more', label: 'More', icon: '…' };
 
 export default function ControlBar({ currentScreen, navigate, onSleepPress, sleepMinutesLeft, bottomInset }) {
   const { currentMix, heartedIds, toggleHeart } = usePlayer();
@@ -64,19 +62,17 @@ export default function ControlBar({ currentScreen, navigate, onSleepPress, slee
         );
       })}
 
-      {/* Native CastButton — SDK handles discovery, state, and device picker */}
       <View style={styles.item}>
         <CastButton style={styles.castIcon} tintColor="#aaa" />
         <Text style={styles.label}>Cast</Text>
       </View>
 
-      {/* More — rendered last so Cast appears before it */}
       <TouchableOpacity
         style={styles.item}
         onPress={() => handlePress('more')}
         activeOpacity={0.6}>
-        <Text style={[styles.icon, { color: '#aaa' }]}>{MORE_ITEM.icon}</Text>
-        <Text style={styles.label}>{MORE_ITEM.label}</Text>
+        <Text style={[styles.icon, { color: '#aaa' }]}>…</Text>
+        <Text style={styles.label}>More</Text>
       </TouchableOpacity>
     </View>
     </>
@@ -99,9 +95,5 @@ const styles = StyleSheet.create({
   icon: { fontSize: 20, marginBottom: 3 },
   label: { color: '#aaa', fontSize: 10 },
   labelActive: { color: '#336699' },
-  castIcon: {
-    width: 20,
-    height: 20,
-    marginBottom: 3,
-  },
+  castIcon: { width: 20, height: 20, marginBottom: 3 },
 });

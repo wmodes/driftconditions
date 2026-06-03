@@ -1,8 +1,7 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, Modal, Share, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, Modal, Share, StyleSheet, NativeModules } from 'react-native';
 import { usePlayer } from '../context/PlayerContext';
 import { useAuth } from '../context/AuthContext';
-import { NativeModules } from 'react-native';
 
 function ShareIcon({ color }) {
   return (
@@ -69,35 +68,38 @@ export default function MoreModal({ visible, onClose, onNavigate }) {
       transparent
       animationType="slide"
       onRequestClose={onClose}>
-      <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={onClose}>
-        <View style={styles.sheet}>
-          <Text style={styles.heading}>MORE ACTIONS</Text>
+      {/* Backdrop and sheet are siblings — sheet is not inside the TouchableOpacity
+          so native components (CastButton) receive touches unobstructed */}
+      <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={onClose} />
+      <View style={styles.sheet}>
+        <Text style={styles.heading}>MORE ACTIONS</Text>
 
-          {ITEMS.map((item, index) => (
-            <TouchableOpacity
-              key={item.key}
-              style={[styles.row, index < ITEMS.length - 1 && styles.rowBorder]}
-              onPress={item.onPress}
-              activeOpacity={0.7}>
-              <View style={styles.iconWrap}>
-                {item.renderIcon()}
-              </View>
-              <Text style={styles.label}>{item.label}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </TouchableOpacity>
+        {ITEMS.map((item, index) => (
+          <TouchableOpacity
+            key={item.key}
+            style={[styles.row, index < ITEMS.length - 1 && styles.rowBorder]}
+            onPress={item.onPress}
+            activeOpacity={0.7}>
+            <View style={styles.iconWrap}>
+              {item.renderIcon()}
+            </View>
+            <Text style={styles.label}>{item.label}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
     </Modal>
   );
 }
 
 const styles = StyleSheet.create({
   backdrop: {
-    flex: 1,
+    position: 'absolute',
+    top: 0, left: 0, right: 0, bottom: 0,
     backgroundColor: 'rgba(0,0,0,0.6)',
-    justifyContent: 'flex-end',
   },
   sheet: {
+    position: 'absolute',
+    left: 0, right: 0, bottom: 0,
     backgroundColor: '#1e1e1e',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
