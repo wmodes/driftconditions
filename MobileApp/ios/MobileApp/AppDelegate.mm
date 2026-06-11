@@ -12,6 +12,7 @@
 
   GCKDiscoveryCriteria *criteria = [[GCKDiscoveryCriteria alloc] initWithApplicationID:@"2BC05BE5"];
   GCKCastOptions *options = [[GCKCastOptions alloc] initWithDiscoveryCriteria:criteria];
+  options.startDiscoveryAfterFirstTapOnCastButton = NO;
   [GCKCastContext setSharedInstanceWithOptions:options];
 
   return [super application:application didFinishLaunchingWithOptions:launchOptions];

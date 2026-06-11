@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { CastButton } from 'react-native-google-cast';
+import { CastContext } from 'react-native-google-cast';
 import { usePlayer } from '../context/PlayerContext';
 import MoreModal from '../modals/MoreModal';
 
@@ -62,10 +62,13 @@ export default function ControlBar({ currentScreen, navigate, onSleepPress, slee
         );
       })}
 
-      <View style={styles.item}>
-        <CastButton style={styles.castIcon} tintColor="#aaa" />
+      <TouchableOpacity
+        style={styles.item}
+        onPress={() => CastContext.showCastDialog()}
+        activeOpacity={0.6}>
+        <Text style={[styles.icon, { color: '#aaa' }]}>⊡</Text>
         <Text style={styles.label}>Cast</Text>
-      </View>
+      </TouchableOpacity>
 
       <TouchableOpacity
         style={styles.item}

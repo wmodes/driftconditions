@@ -117,7 +117,7 @@ function AppContent() {
     TrackPlayer.setVolume(1);
   };
 
-  const { isAuthenticated } = useAuth();
+const { isAuthenticated } = useAuth();
   const { currentMix, displayTitle } = usePlayer();
   const currentMixRef = useRef<any>(null);
   useEffect(() => { currentMixRef.current = currentMix; }, [currentMix]);
