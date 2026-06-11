@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { CastContext } from 'react-native-google-cast';
 import { usePlayer } from '../context/PlayerContext';
@@ -14,6 +14,7 @@ export default function ControlBar({ currentScreen, navigate, onSleepPress, slee
   const { currentMix, heartedIds, toggleHeart } = usePlayer();
   const isFavorited = currentMix?.mixID ? heartedIds.has(currentMix.mixID) : false;
   const [moreVisible, setMoreVisible] = useState(false);
+  const castPendingRef = useRef(false);
 
   const handlePress = key => {
     switch (key) {
@@ -34,9 +35,23 @@ export default function ControlBar({ currentScreen, navigate, onSleepPress, slee
     }
   };
 
+  // Set flag then close modal — onDismiss fires when iOS has fully removed it
+  const handleMoreCast = () => {
+    castPendingRef.current = true;
+    setMoreVisible(false);
+  };
+
+  // iOS Modal.onDismiss: guaranteed to fire after modal is gone from view hierarchy
+  const handleMoreDismiss = () => {
+    if (castPendingRef.current) {
+      castPendingRef.current = false;
+      CastContext.showCastDialog();
+    }
+  };
+
   return (
     <>
-    <MoreModal visible={moreVisible} onClose={() => setMoreVisible(false)} onNavigate={navigate} />
+    <MoreModal visible={moreVisible} onClose={() => setMoreVisible(false)} onNavigate={navigate} onCastPress={handleMoreCast} onDismiss={handleMoreDismiss} />
     <View style={[styles.bar, { paddingBottom: Math.max(bottomInset || 0, 8) }]}>
       {ITEMS.map(item => {
         const isPlaylistActive = item.key === 'playlist' && currentScreen === 'playlist';
@@ -61,14 +76,6 @@ export default function ControlBar({ currentScreen, navigate, onSleepPress, slee
           </TouchableOpacity>
         );
       })}
-
-      <TouchableOpacity
-        style={styles.item}
-        onPress={() => CastContext.showCastDialog()}
-        activeOpacity={0.6}>
-        <Text style={[styles.icon, { color: '#aaa' }]}>⊡</Text>
-        <Text style={styles.label}>Cast</Text>
-      </TouchableOpacity>
 
       <TouchableOpacity
         style={styles.item}

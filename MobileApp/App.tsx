@@ -23,87 +23,100 @@ type Screen = 'player' | 'playlist' | 'login' | 'forgotpassword' | 'profile' | '
 const CAST_NAMESPACE = 'urn:x-cast:org.driftconditions.app';
 
 function AppContent() {
+  // --- UI state ---
   const insets = useSafeAreaInsets();
   const [screen, setScreen] = useState<Screen>('player');
   const [incomingFile, setIncomingFile] = useState<any>(null);
-  const castClientRef = useRef<any>(null);
-  const castMediaRequestRef = useRef<any>(null);
-  const castLoadingRef = useRef(false);
+  const [sleepModalVisible, setSleepModalVisible] = useState(false);
+  const [sleepEndTime, setSleepEndTime] = useState<number | null>(null);
+  const [, setTick] = useState(0);
+
+  // --- Context hooks ---
+  const { isAuthenticated } = useAuth();
+  const { currentMix } = usePlayer();
+
+  // --- Cast hooks ---
   const castClient = useRemoteMediaClient();
   const castState = useCastState();
   const mediaStatus = useMediaStatus();
   const devices = useDevices();
   const castChannel = useCastChannel(CAST_NAMESPACE);
-  const castChannelRef = useRef<any>(null);
-  useEffect(() => {
-    castChannelRef.current = castChannel;
-    console.log(`[${ts()}] castChannel changed:`, !!castChannel);
-    // Send metadata as soon as channel is ready (first connection timing fix)
-    if (castChannel?.connected && castState === CastState.CONNECTED) {
-      sendCastMetadata(currentMixRef.current);
-    }
-  }, [castChannel]);
-  // Derive cast state from SDK hooks — single source of truth
+
+  // --- Derived state ---
   const isCasting = castState === CastState.CONNECTED;
   const castIsPlaying = mediaStatus?.playerState === MediaPlayerState.PLAYING
     || mediaStatus?.playerState === MediaPlayerState.BUFFERING;
-  const [sleepModalVisible, setSleepModalVisible] = useState(false);
-  const [sleepEndTime, setSleepEndTime] = useState<number | null>(null);
-  // Tick forces re-render so the minutes countdown updates
-  const [, setTick] = useState(0);
+  const sleepMinutesLeft = sleepEndTime != null
+    ? Math.max(1, Math.ceil((sleepEndTime - Date.now()) / 60000))
+    : null;
+
+  // --- Refs (for use in async callbacks where hook values would be stale) ---
   const fadeRef = useRef<NodeJS.Timeout | null>(null);
+  const castMediaRequestRef = useRef<any>(null);
+  const castChannelRef = useRef<any>(null);
+  const currentMixRef = useRef<any>(null);
 
-  const sleepMinutesLeft =
-    sleepEndTime != null
-      ? Math.max(1, Math.ceil((sleepEndTime - Date.now()) / 60000))
-      : null;
+  useEffect(() => { currentMixRef.current = currentMix; }, [currentMix]);
+  useEffect(() => { castChannelRef.current = castChannel; }, [castChannel]);
 
-  // Tick every 30s while timer is active so the displayed minutes stay current
+  // --- Helpers ---
+
+  const ts = () => new Date().toISOString().slice(11, 23);
+
+  /**
+   * Send cover image and track list to the Cast receiver via custom channel.
+   * Retries on failure — the channel may lag slightly behind session connect.
+   */
+  const sendCastMetadata = (mix: any, retries = 5) => {
+    const channel = castChannelRef.current;
+    if (!channel) {
+      if (retries > 0) setTimeout(() => sendCastMetadata(mix, retries - 1), 500);
+      else console.log('sendCastMetadata — channel never appeared');
+      return;
+    }
+    const clips = Array.isArray(mix?.playlist) ? mix.playlist : (mix?.playlist?.playlist || []);
+    const tracks = clips.map((c: any) => c.title || c.filename).filter(Boolean);
+    console.log('sendCastMetadata — coverImage:', !!mix?.coverImage, 'tracks:', tracks);
+    channel.sendMessage(JSON.stringify({
+      coverImage: mix?.coverImage ? `https://driftconditions.org/${mix.coverImage}` : null,
+      tracks,
+    })).catch((e: any) => {
+      // Channel not yet ready — retry
+      if (retries > 0) setTimeout(() => sendCastMetadata(mix, retries - 1), 500);
+      else console.warn('sendCastMetadata — gave up:', e);
+    });
+  };
+
+  // --- Sleep timer ---
+
   useEffect(() => {
     if (!sleepEndTime) return;
     const interval = setInterval(() => setTick(t => t + 1), 30000);
     return () => clearInterval(interval);
   }, [sleepEndTime]);
 
-  // Fire the actual stop when sleep time arrives
   useEffect(() => {
     if (!sleepEndTime) return;
     const remaining = sleepEndTime - Date.now();
-    if (remaining <= 0) {
-      setSleepEndTime(null);
-      return;
-    }
-
+    if (remaining <= 0) { setSleepEndTime(null); return; }
     let cancelled = false;
-
     const timeout = setTimeout(() => {
       setSleepEndTime(null);
-      // Fade volume to 0 over 10 seconds then pause
       let step = 0;
       fadeRef.current = setInterval(async () => {
-        if (cancelled) {
-          clearInterval(fadeRef.current!);
-          return;
-        }
+        if (cancelled) { clearInterval(fadeRef.current!); return; }
         step++;
         await TrackPlayer.setVolume(Math.max(0, 1 - step * 0.1));
         if (step >= 10) {
           clearInterval(fadeRef.current!);
-          if (!cancelled) {
-            await TrackPlayer.pause();
-            await TrackPlayer.setVolume(1);
-          }
+          if (!cancelled) { await TrackPlayer.pause(); await TrackPlayer.setVolume(1); }
         }
       }, 1000);
     }, remaining);
-
     return () => {
       cancelled = true;
       clearTimeout(timeout);
-      if (fadeRef.current) {
-        clearInterval(fadeRef.current);
-        TrackPlayer.setVolume(1);
-      }
+      if (fadeRef.current) { clearInterval(fadeRef.current); TrackPlayer.setVolume(1); }
     };
   }, [sleepEndTime]);
 
@@ -117,114 +130,79 @@ function AppContent() {
     TrackPlayer.setVolume(1);
   };
 
-const { isAuthenticated } = useAuth();
-  const { currentMix, displayTitle } = usePlayer();
-  const currentMixRef = useRef<any>(null);
-  useEffect(() => { currentMixRef.current = currentMix; }, [currentMix]);
+  // --- Cast effects ---
 
-  const sendCastMetadata = (mix: any, retries = 5) => {
-    if (!castChannelRef.current?.connected) {
-      if (retries > 0) {
-        setTimeout(() => sendCastMetadata(mix, retries - 1), 500);
-      } else {
-        console.log('sendCastMetadata — channel never became ready');
-      }
-      return;
-    }
-    const clips = Array.isArray(mix?.playlist) ? mix.playlist : (mix?.playlist?.playlist || []);
-    const tracks = clips.map((c: any) => c.title || c.filename).filter(Boolean);
-    console.log('sendCastMetadata — coverImage:', !!mix?.coverImage, 'tracks:', tracks);
-    castChannelRef.current.sendMessage(JSON.stringify({
-      coverImage: mix?.coverImage ? `https://driftconditions.org/${mix.coverImage}` : null,
-      tracks,
-    })).catch((e: any) => console.warn('sendCastMetadata sendMessage error:', e));
-  };
-
-  // Diagnostic: track discovery cycles via device list changes
-  const ts = () => new Date().toISOString().slice(11, 23); // HH:MM:SS.mmm
   useEffect(() => {
-    console.log(`[${ts()}] Cast devices changed: ${devices.length} device(s) —`, devices.map(d => d.friendlyName));
+    console.log(`[${ts()}] Cast devices: ${devices.length} —`, devices.map(d => d.friendlyName));
   }, [devices]);
 
   useEffect(() => {
     console.log(`[${ts()}] Cast state: ${castState}`);
   }, [castState]);
 
-  // Cast: react to connection state changes using hooks (road more traveled in 4.6.1)
+  /**
+   * On connect: pause local playback and load the stream on the cast device.
+   * Depends only on castClient — it goes null→client on connect and client→null
+   * on disconnect, so this fires exactly once per transition. No guard ref needed.
+   */
   useEffect(() => {
-    const handleCastStateChange = async () => {
-      console.log('Cast state changed:', castState, 'client:', !!castClient);
-      if (castState === CastState.CONNECTED && castClient) {
-        if (castLoadingRef.current) return; // effect fired twice — already loading
-        castLoadingRef.current = true;
-        const { State } = require('react-native-track-player');
-        const playbackState = await TrackPlayer.getPlaybackState();
-        const wasPlaying = playbackState.state === State.Playing;
-        console.log('Cast connected — wasPlaying:', wasPlaying);
-        await TrackPlayer.pause();
-        castClientRef.current = castClient;
-        const mediaRequest = {
-          mediaInfo: {
-            contentUrl: config.stream.url,
-            contentType: 'audio/mpeg',
-            streamType: 'live',
-            duration: -1,
-            metadata: {
-              type: 'generic',
-              title: 'DriftConditions',
-              subtitle: 'Live Stream',
-              images: currentMixRef.current?.coverImage
-                ? [{ url: `https://driftconditions.org/${currentMixRef.current.coverImage}` }]
-                : [],
-            },
+    if (!castClient) return;
+    (async () => {
+      const { State } = require('react-native-track-player');
+      const { state } = await TrackPlayer.getPlaybackState();
+      const wasPlaying = state === State.Playing;
+      await TrackPlayer.pause();
+      const mediaRequest = {
+        mediaInfo: {
+          contentUrl: config.stream.url,
+          contentType: 'audio/mpeg',
+          streamType: 'live',
+          duration: -1,
+          metadata: {
+            type: 'generic',
+            title: 'DriftConditions',
+            subtitle: 'Live Stream',
+            images: currentMixRef.current?.coverImage
+              ? [{ url: `https://driftconditions.org/${currentMixRef.current.coverImage}` }]
+              : [],
           },
-        };
-        castMediaRequestRef.current = mediaRequest;
-        console.log('Cast loadMedia starting...');
-        castClient
-          .loadMedia({ ...mediaRequest, autoplay: wasPlaying })
-          .then(() => {
-            console.log('Cast loadMedia success — autoplay:', wasPlaying);
-            sendCastMetadata(currentMixRef.current);
-          })
-          .catch((e: any) => console.warn('Cast loadMedia error:', e));
-      } else if (castState === CastState.NOT_CONNECTED) {
-        castClientRef.current = null;
-        castLoadingRef.current = false;
+        },
+      };
+      castMediaRequestRef.current = mediaRequest;
+      try {
+        await castClient.loadMedia({ ...mediaRequest, autoplay: wasPlaying });
+        console.log('Cast loadMedia success — autoplay:', wasPlaying);
+        sendCastMetadata(currentMixRef.current);
+      } catch (e) {
+        console.warn('Cast loadMedia error:', e);
       }
-    };
-    handleCastStateChange();
-  }, [castState, castClient]);
+    })();
+  }, [castClient]);
+
+  // Push updated cover/tracks to receiver when mix changes while casting
+  useEffect(() => {
+    if (isCasting) sendCastMetadata(currentMix);
+  }, [currentMix?.mixID]);
+
+  // --- Cast toggle (play/stop on the player screen) ---
 
   const castToggle = async () => {
     if (!castClient) return;
-    console.log(`[${ts()}] Cast toggle — castIsPlaying:`, castIsPlaying, 'playerState:', mediaStatus?.playerState);
     try {
       if (castIsPlaying) {
+        // Always stop (never pause) — live streams can't meaningfully resume
         await castClient.stop();
-      } else if (mediaStatus?.playerState === MediaPlayerState.PAUSED) {
-        // Media loaded and paused — resume directly
-        await castClient.play();
       } else {
-        // IDLE — live stream must reload to start
-        console.log('Cast toggle — calling loadMedia, request:', !!castMediaRequestRef.current);
-        await castClient.loadMedia({
-          ...castMediaRequestRef.current,
-          autoplay: true,
-        });
-        console.log('Cast toggle — loadMedia resolved');
+        // Always reload (never play/resume) — live stream buffer is gone after stop
+        await castClient.loadMedia({ ...castMediaRequestRef.current, autoplay: true });
       }
     } catch (e) {
       console.warn('Cast toggle error:', e);
     }
   };
 
-  // Push metadata to Cast receiver when mix changes — no stream reload
-  useEffect(() => {
-    if (castClientRef.current) sendCastMetadata(currentMix);
-  }, [currentMix?.mixID]);
+  // --- Navigation ---
 
-  // Navigate to player after OAuth or any async sign-in completes
   useEffect(() => {
     if (isAuthenticated && (screen === 'login' || screen === 'forgotpassword')) {
       setScreen('player');
@@ -249,6 +227,8 @@ const { isAuthenticated } = useAuth();
     Linking.getInitialURL().then(url => { if (url) handleIncomingUrl(url); });
     return () => sub.remove();
   }, []);
+
+  // --- Render ---
 
   const showMiniPlayer = !['player', 'login', 'forgotpassword', 'profile', 'upload'].includes(screen);
 
