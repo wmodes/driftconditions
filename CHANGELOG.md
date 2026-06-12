@@ -9,6 +9,29 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-06-11]
+
+### Added
+- **Mobile app — SVG icons in More menu** — Cast, AirPlay, and Share icons replaced with proper SVGs (`react-native-svg`) sourced from `graphic/`. Cast uses the Google Cast monochrome icon; AirPlay uses the AirPlay Video icon; Share uses a three-node network icon. All tinted `#aaa` to match the app's icon style.
+
+### Changed
+- **Mobile app — Cast button moved to More menu** — Cast entry now lives in the ··· More menu above AirPlay, matching a common pattern in media apps. Implemented via a custom `TouchableOpacity` calling `CastContext.showCastDialog()`. Key challenge: `showCastDialog()` must be called after the RN Modal is fully dismissed; solved using the Modal's `onDismiss` iOS lifecycle callback — the only reliable signal that the native view hierarchy is clear.
+- **Mobile app — Cast code restructured** (`App.tsx`) — removed `castLoadingRef` and `castClientRef` band-aids; connect effect now depends only on `[castClient]` so it fires exactly once per transition; `sendCastMetadata` retries on `.catch()` rather than checking `.connected` (unreliable); hooks, derived state, refs, helpers, and effects organized by concern.
+
+---
+
+## [2026-06-01]
+
+### Added
+- **Cast receiver — VU meter** — animated level meter on the Google TV display using Web Audio API (`AnalyserNode`, RMS calculation, `requestAnimationFrame`). Gradient stops at 0 / 0.5 / 0.75 / 1.0 with colors blue / blue / yellow / red. Rendered on a `<canvas>` spanning the full bottom of the receiver layout.
+- **Cast receiver — idle timeout disabled** — `options.disableIdleTimeout = true` prevents the Google TV from switching to its idle screensaver while DriftConditions is casting.
+
+### Fixed
+- **Cast receiver — bind SDK to hidden `<audio>` element** — replaced `<cast-media-player>` with a hidden `<audio id="cast-audio-engine">` bound via `options.mediaElement`. Gives full control over the receiver UI while the SDK still manages transport, buffering, and LOAD/STOP commands.
+- **Cast — custom message channel** — replaced broken `CastContext.sessionManager` approach with the `useCastChannel(CAST_NAMESPACE)` hook and a `castChannelRef` for use in async callbacks. Channel connection now retried on `.catch()` so metadata (cover art, track list) reaches the receiver reliably after session handshake.
+
+---
+
 ## [2026-05-31]
 
 ### Added
