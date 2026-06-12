@@ -32,6 +32,19 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-05-30]
+
+### Fixed
+- **Mobile OAuth — Google trailing `#` fragment** — Google appends a bare `#` to the redirect URL; `AuthContext` was capturing it as part of the token param, causing JWT verification to fail. Excluded `#` from the URL param capture regex.
+- **Mobile OAuth — server crash in `/check` catch block** — catch block referenced `user` from the try scope, crashing the server on any JWT error. Removed the undefined reference.
+- **Mobile OAuth — URL-encoded token from iOS redirect** — base64 padding chars (`=`) in the JWT were encoded as `%3D` by iOS before being embedded in the redirect URL. Token is now URL-decoded before JWT verification.
+- **Mobile OAuth — username from redirect URL** — server now includes `username=` in the mobile OAuth redirect; app extracts it directly instead of calling `/check`, eliminating a round-trip and a race condition.
+
+### Added
+- **`MOBILE.md`** — full mobile dev setup and run guide: prerequisites, Metro start, Xcode build, simulator vs device, Metro USB link-local address, library version pins, and known gotchas.
+
+---
+
 ## [2026-05-31]
 
 ### Added
