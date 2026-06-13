@@ -71,12 +71,12 @@ function AppContent() {
     const channel = castChannelRef.current;
     if (!channel) {
       if (retries > 0) setTimeout(() => sendCastMetadata(mix, retries - 1), 500);
-      else console.log('sendCastMetadata — channel never appeared');
+      else if (__DEV__) console.log('sendCastMetadata — channel never appeared');
       return;
     }
     const clips = Array.isArray(mix?.playlist) ? mix.playlist : (mix?.playlist?.playlist || []);
     const tracks = clips.map((c: any) => c.title || c.filename).filter(Boolean);
-    console.log('sendCastMetadata — coverImage:', !!mix?.coverImage, 'tracks:', tracks);
+    if (__DEV__) console.log('sendCastMetadata — coverImage:', !!mix?.coverImage, 'tracks:', tracks);
     channel.sendMessage(JSON.stringify({
       coverImage: mix?.coverImage ? `https://driftconditions.org/${mix.coverImage}` : null,
       tracks,
@@ -133,11 +133,11 @@ function AppContent() {
   // --- Cast effects ---
 
   useEffect(() => {
-    console.log(`[${ts()}] Cast devices: ${devices.length} —`, devices.map(d => d.friendlyName));
+    if (__DEV__) console.log(`[${ts()}] Cast devices: ${devices.length} —`, devices.map(d => d.friendlyName));
   }, [devices]);
 
   useEffect(() => {
-    console.log(`[${ts()}] Cast state: ${castState}`);
+    if (__DEV__) console.log(`[${ts()}] Cast state: ${castState}`);
   }, [castState]);
 
   /**
@@ -171,7 +171,7 @@ function AppContent() {
       castMediaRequestRef.current = mediaRequest;
       try {
         await castClient.loadMedia({ ...mediaRequest, autoplay: wasPlaying });
-        console.log('Cast loadMedia success — autoplay:', wasPlaying);
+        if (__DEV__) console.log('Cast loadMedia success — autoplay:', wasPlaying);
         sendCastMetadata(currentMixRef.current);
       } catch (e) {
         console.warn('Cast loadMedia error:', e);
