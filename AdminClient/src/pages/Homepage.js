@@ -124,6 +124,15 @@ const Homepage = () => {
                 </span>
                 </p>
                 <p>
+                <span className="icon-callout">
+                  <FeatherIcon icon="shield" size={24} />
+                  <span>
+                    <span class="keep-together"><Link className="link" to="/privacy">Privacy Policy</Link>.</span>
+                    <span class="keep-together">We collect the minimum. No ads, no tracking.</span>
+                  </span>
+                </span>
+                </p>
+                <p>
                   You have audio you think would fit {projectName}? <Link  className="link" to="/signup">Signup for an account,</Link> and then{' '}
                   <a className="link" target="_blank" rel="noopener noreferrer"
                     href={`mailto:${contactEmail}?subject=Please%20promote%20me%20to%20a%20contributor${user?.username ? `&body=My%20user%20name%20is%20${encodeURIComponent(user.username)}` : ''}`}>

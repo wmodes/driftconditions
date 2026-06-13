@@ -51,5 +51,13 @@ target 'MobileApp' do
       config[:reactNativePath],
       :mac_catalyst_enabled => false
     )
+    # Disable bitcode — Apple no longer accepts it (deprecated Xcode 14+)
+    # GoogleCast.framework is pre-built with bitcode; this strips it on copy
+    installer.pods_project.targets.each do |target|
+      target.build_configurations.each do |config|
+        config.build_settings['ENABLE_BITCODE'] = 'NO'
+        config.build_settings['STRIP_BITCODE_FROM_COPIED_FILES'] = 'YES'
+      end
+    end
   end
 end

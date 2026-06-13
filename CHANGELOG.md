@@ -9,6 +9,18 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-06-12]
+
+### Added
+- **Privacy policy page** (`/privacy`) — covers account data, audio uploads, favorites, authentication (JWT + OAuth), mobile Cast/local network usage, and data deletion. Linked from the homepage below the Creative Commons notice with a shield icon and tagline "We collect the minimum. No ads, no tracking."
+- **Mobile app plan doc** (`design/DriftConditions Plan 2026-05 Mobile Apps.md`) — Markdown version of the implementation plan with updated Cast architecture, corrected discovery section (§4.5), and current library versions.
+
+### Changed
+- **Mobile app — debug logging gated behind `__DEV__`** — noisy state-monitoring `console.log` calls (Cast devices, Cast state, loadMedia success, sendCastMetadata trace) now only fire in development builds. `console.warn` and `console.error` calls left unconditional for production error visibility.
+- **Mobile app — bitcode stripped from embedded frameworks** — Apple rejects pre-built frameworks containing bitcode (error 90482). Fixed via: `ENABLE_BITCODE = NO` in Xcode Build Settings (Debug + Release); Podfile `post_install` setting `ENABLE_BITCODE = 'NO'` and `STRIP_BITCODE_FROM_COPIED_FILES = 'YES'` for all pod targets; Run Script build phase using `xcrun bitcode_strip -r` to strip bitcode from all embedded `.framework` binaries at archive time.
+
+---
+
 ## [2026-06-11]
 
 ### Added
