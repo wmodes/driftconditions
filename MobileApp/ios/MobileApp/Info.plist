@@ -103,5 +103,7 @@
 	<false/>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>DriftConditions may access your photo library to select audio files for upload.</string>
 </dict>
 </plist>
