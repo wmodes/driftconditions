@@ -9,6 +9,17 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-06-21]
+
+### Fixed
+- **Mobile app — sleep timer never stopped playback** — two bugs combined to make the timer fire silently with no effect: (1) used `TrackPlayer.pause()` which does not disconnect a live stream (must use `stop()`); (2) `setSleepEndTime(null)` was called at the top of the `setTimeout` callback, triggering the `useEffect` cleanup which set `cancelled = true` and cleared the fade interval before it could run. Refactored from two fragile `useEffect` hooks into an imperative `startSleepTimer → setTimeout(fadeDown) → stop()` chain using refs, eliminating the state/cleanup race entirely.
+
+### Added
+- **Mobile app — `ITSAppUsesNonExemptEncryption = NO` in `Info.plist`** — declares that the app uses only OS-level encryption (HTTPS/TLS via system APIs). Suppresses the App Encryption Documentation prompt in App Store Connect and prevents builds from being held for manual export compliance review.
+- **Mobile app — `NSPhotoLibraryUsageDescription` in `Info.plist`** — required by Apple even when the app itself does not access the photo library; third-party SDKs reference the API and trigger ITMS-90683 without this key.
+
+---
+
 ## [2026-06-12]
 
 ### Added
