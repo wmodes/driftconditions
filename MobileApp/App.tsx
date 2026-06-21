@@ -51,6 +51,8 @@ function AppContent() {
     : null;
 
   // --- Refs (for use in async callbacks where hook values would be stale) ---
+  const sleepTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const sleepTickRef = useRef<NodeJS.Timeout | null>(null);
   const fadeRef = useRef<NodeJS.Timeout | null>(null);
   const castMediaRequestRef = useRef<any>(null);
   const castChannelRef = useRef<any>(null);
@@ -89,45 +91,38 @@ function AppContent() {
 
   // --- Sleep timer ---
 
-  useEffect(() => {
-    if (!sleepEndTime) return;
-    const interval = setInterval(() => setTick(t => t + 1), 30000);
-    return () => clearInterval(interval);
-  }, [sleepEndTime]);
-
-  useEffect(() => {
-    if (!sleepEndTime) return;
-    const remaining = sleepEndTime - Date.now();
-    if (remaining <= 0) { setSleepEndTime(null); return; }
-    let cancelled = false;
-    const timeout = setTimeout(() => {
-      setSleepEndTime(null);
-      let step = 0;
-      fadeRef.current = setInterval(async () => {
-        if (cancelled) { clearInterval(fadeRef.current!); return; }
-        step++;
-        await TrackPlayer.setVolume(Math.max(0, 1 - step * 0.1));
-        if (step >= 10) {
-          clearInterval(fadeRef.current!);
-          if (!cancelled) { await TrackPlayer.pause(); await TrackPlayer.setVolume(1); }
-        }
-      }, 1000);
-    }, remaining);
-    return () => {
-      cancelled = true;
-      clearTimeout(timeout);
-      if (fadeRef.current) { clearInterval(fadeRef.current); TrackPlayer.setVolume(1); }
-    };
-  }, [sleepEndTime]);
-
-  const startSleepTimer = (minutes: number) => {
-    setSleepEndTime(Date.now() + minutes * 60000);
-    setSleepModalVisible(false);
+  const cancelSleepTimer = () => {
+    clearTimeout(sleepTimeoutRef.current!);
+    clearInterval(sleepTickRef.current!);
+    clearInterval(fadeRef.current!);
+    TrackPlayer.setVolume(1);
+    setSleepEndTime(null);
   };
 
-  const cancelSleepTimer = () => {
-    setSleepEndTime(null);
-    TrackPlayer.setVolume(1);
+  /** Fade volume to 0 over 10s then stop the stream. */
+  const fadeDown = () => {
+    let step = 0;
+    fadeRef.current = setInterval(async () => {
+      step++;
+      await TrackPlayer.setVolume(Math.max(0, 1 - step * 0.1));
+      if (step >= 10) {
+        clearInterval(fadeRef.current!);
+        clearInterval(sleepTickRef.current!);
+        await TrackPlayer.stop();
+        await TrackPlayer.setVolume(1);
+        setSleepEndTime(null);
+      }
+    }, 1000);
+  };
+
+  const startSleepTimer = (minutes: number) => {
+    cancelSleepTimer(); // clear any existing timer first
+    setSleepEndTime(Date.now() + minutes * 60000);
+    setSleepModalVisible(false);
+    // Refresh the displayed countdown every 30s
+    sleepTickRef.current = setInterval(() => setTick(t => t + 1), 30000);
+    // Fire the fade at the right time
+    sleepTimeoutRef.current = setTimeout(fadeDown, minutes * 60000);
   };
 
   // --- Cast effects ---
