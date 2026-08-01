@@ -9,6 +9,13 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-08-01]
+
+### Fixed
+- **Audio upload — `generateTitle()` stripped periods from filename-derived titles** — the allowed-character regex (`AdminClient/src/utils/formatUtils.js`) omitted `.`, so titles like "St. Simons Island" or "ca. 1937-1940" lost their periods when auto-generated from a filename. Shared by both `AudioUpload.js` and `AudioBatchUpload.js`, so the fix applies to single and batch uploads alike. Found while preparing a batch of Library of Congress oral history recordings for upload.
+
+---
+
 ## [2026-06-21]
 
 ### Fixed
