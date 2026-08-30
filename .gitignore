@@ -26,3 +26,4 @@ CLAUDE.md
 setupfiles/liquidsoap.liq
 setupfiles/icecast-server.xml
 setupfiles/icecast-local.xml
+.claude/
