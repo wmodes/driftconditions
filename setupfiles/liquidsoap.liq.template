@@ -5,7 +5,7 @@
 #
 #   cp setupfiles/liquidsoap.liq.template setupfiles/liquidsoap.liq
 #
-# Then fill in the blanked-out password = "" fields below with the real
+# Then fill in the placeholder password fields below (marked [service name]) with the real
 # credentials before starting the liquidsoap service.
 
 # Fetch the next track path from MixEngine API.
@@ -33,7 +33,7 @@ safe_crossfaded_dynamic = fallback(track_sensitive=false, [crossfaded_dynamic, s
 output.icecast(%mp3,
   host = "localhost",
   port = 8001,
-  password = "",
+  password = "[icecast password]",
   mount = "/stream",
   description = "DriftConditions explores the intersection of intention and chance through an ever-evolving tapestry of audio. Each broadcast delves into a hidden world of code-generated sounds, echoing whispers, and serendipitous static, offering listeners a unique journey through an auditory landscape unconstrained by traditional narratives.",
   name = "DriftConditions: Whispers in the Static",
@@ -48,7 +48,7 @@ output.icecast(%mp3,
 # output.icecast(%mp3,
 #  host = "s4.voscast.com",
 #  port = 9155,
-#  password = "",
+#  password = "[voscast password]",
 #  mount = "/",
 #  description = "DriftConditions explores the intersection of intention and chance through an ever-evolving tapestry of audio. Each broadcast delves into a hidden world of code-generated sounds, echoing whispers, and serendipitous static, offering listeners a unique journey through an auditory landscape unconstrained by traditional narratives.",
 #  name = "DriftConditions: Whispers in the Static",
@@ -63,7 +63,7 @@ output.icecast(%mp3,
 output.shoutcast(%mp3,
   host = "usa14.fastcast4u.com",
   port = 7118,
-  password = "",
+  password = "[fastcast4u password]",
   mount = "/stream",
   name = "DriftConditions: Whispers in the Static",
   genre = "Experimental, Ambient, Soundscape",
