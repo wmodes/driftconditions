@@ -402,14 +402,17 @@ router.get('/callback/:provider', async (req, res) => {
   // clientUrl is where the frontend is served (separate from the API server)
   const clientOrigin = clientUrl;
 
+  // Declared outside the try block so it's reachable from the catch below too
+  // — a const declared inside try is not visible in the paired catch scope.
+  const storedState = req.cookies.oauth_state;
+  const isMobileCallback = storedState?.endsWith(':mobile');
+  const errorRedirect = (msg) => isMobileCallback
+    ? res.redirect(`driftconditions://auth?error=${msg}`)
+    : res.redirect(`${clientOrigin}/signin?error=${msg}`);
+
   try {
     // 1. Validate CSRF state
     const returnedState = req.query.state;
-    const storedState = req.cookies.oauth_state;
-    const isMobileCallback = storedState?.endsWith(':mobile');
-    const errorRedirect = (msg) => isMobileCallback
-      ? res.redirect(`driftconditions://auth?error=${msg}`)
-      : res.redirect(`${clientOrigin}/signin?error=${msg}`);
 
     if (!returnedState || !storedState || returnedState !== storedState) {
       logger.error('authRoutes:/callback: CSRF state mismatch');
