@@ -7,6 +7,7 @@ const logger = require('config/logger').custom('MixEngine', 'info');
 const ffmpeg = require('fluent-ffmpeg');
 const JSON5 = require('json5');
 const path = require('path');
+const fs = require('fs');
 
 // clear the require cache to get the latest config
 delete require.cache[require.resolve('config')];
@@ -1200,9 +1201,12 @@ class MixEngine {
 
       let cmd = ffmpeg(filepath).audioCodec('copy');
 
-      if (coverImagePath) {
+      if (coverImagePath && fs.existsSync(coverImagePath)) {
         cmd = cmd.input(coverImagePath);
         outputOpts.push('-map', '0:a', '-map', '1:v', '-c:v', 'copy');
+      } else if (coverImagePath) {
+        // Missing cover art shouldn't sink the whole mix — warn and tag audio-only.
+        logger.warn(`MixEngine:_embedMetadata: cover image not found, embedding metadata without cover art: ${coverImagePath}`);
       }
 
       cmd
