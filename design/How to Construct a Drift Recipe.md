@@ -235,6 +235,12 @@ head and the shortlist the system draws from — use as many tags and
 synonyms as you can think of, the same pro-tip given to every contributor,
 for the same reason.
 
+One caveat: this is advice for whichever track is carrying your recipe's
+theme, not a rule to apply evenly to every track in it. A background bed
+often works better nearly untagged — see "More Than One Way to Be
+Specific," below, for why a track can do its job precisely by staying
+generic.
+
 ## Silence as Material
 
 A clip slot can also ask for `classification: "silence"`, which generates
@@ -291,6 +297,63 @@ A clip slot's effects can include `repeat(n)` (or `clone(n)`) to reuse the
 a fresh one from the library. This is how a recipe creates a callback —
 the same voice returning later in a track, the same musical phrase
 recurring — without hardcoding a specific clip ID.
+
+## More Than One Way to Be Specific
+
+Everything so far might leave the impression that a recipe's character
+comes from one place: how richly its tags are written. Look across enough
+recipes already in the library and that turns out to be one technique
+among several, not the technique. Four are visible, each producing a
+distinct kind of specificity, and a strong recipe usually leans on more
+than one at once.
+
+**Tag density, spread evenly, all pointing the same direction.** The
+most legible version of this is a waiting-room mood built from three
+tracks — a muzak bed tagged `elevator-music, hold-music, muzak,
+easy-listening, lounge, smooth`, a drone tagged `hum, shortwave,
+tv-static, ham-radio, interference, static`, and PA announcements tagged
+`public-address, intercom, official, broadcast`. No single tag commits
+the mix to anything in particular. Together, from three simultaneous
+angles, they can't land anywhere else.
+
+**Concentrated tagging on the track carrying the theme, and almost none
+on the tracks around it.** A recipe built from anonymous telephone
+messages puts nineteen tags — `confession, testimonial, diary,
+oral-history, one-sided, soliloquy...` — on the voicemail track alone.
+The drone bed underneath it carries exactly two: `drone, ambient`. A
+comment in the recipe explains why: *"barely-there drone — presence, not
+content."* The background isn't under-tagged by accident. Its job is to
+not compete for identity, only to hold space under whatever the
+foreground is doing — and a track whose job is that can do it more
+reliably staying generic than trying to also mean something.
+
+**Lean, precise tags, carried by volume rather than vocabulary.** A
+different recipe tags thinly everywhere — two to four words per slot, no
+padding, nothing redundant — but stacks four narrow, single-purpose
+tracks at four distinct volumes: a foreground archival aircheck at 80,
+a wavering layer of static at 50, a fixed layer of static at 20, a drone
+at 20. None of those tracks is trying to say much on its own. The
+specificity is in the architecture — one clear voice, two graduated
+layers of noise beneath it, a bed almost below the threshold of
+hearing — not in how any one track is tagged.
+
+**Structure and timing alone, with next to no tags at all.** The most
+extreme case in the library has exactly one tagged slot across five
+tracks. Four spoken tracks carry no tags whatsoever; what identifies the
+recipe is that each one is preceded by a different amount of silence —
+one beat, two, three, four — so the voices don't start together, they
+accumulate, one at a time, over the course of the mix. The recipe's name
+describes that accumulation directly. Nothing about *what* is said
+matters to the effect; only *when* each voice arrives does.
+
+None of these four techniques is more correct than the others, and
+nothing stops a recipe from combining them — a concentrated foreground
+track, tagged richly, sitting over a deliberately bare bed, entering on a
+staggered delay. What they share is the same underlying move: specificity
+comes from a *choice about where to spend it*, not from applying more of
+it everywhere. A recipe that tags every track densely is not more
+specific than one of these — it's usually just noisier, every track
+competing to mean something at once, with none of them given room to.
 
 ## Writing for the Space, Not the Point
 
