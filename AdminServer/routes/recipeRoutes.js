@@ -6,12 +6,10 @@ const logger = require('config/logger').custom('AdminServer', 'info');
 const { database: db } = require('config');
 const { parse: JSONparse, stringify: JSONstringify } = require('comment-json');
 
-const jwt = require('jsonwebtoken');
 const verifyToken = require('../middleware/authMiddleware');
 const { logAudit } = require('../utils/audit');
 
 const { config } = require('config');
-const jwtSecretKey = config.authToken.jwtSecretKey;
 
 const { protocol, host, port } = config.mixEngineServer;
 const MIX_ENGINE_URL = `${protocol}://${host}:${port}`;
@@ -170,8 +168,7 @@ router.post('/list', verifyToken, async (req, res) => {
 router.post('/create', verifyToken, async (req, res) => {
   try {
     const record = req.body;
-    const decoded = jwt.verify(req.cookies.token, jwtSecretKey);
-    const creatorID = decoded.userID;
+    const creatorID = req.user.userID;
 
     const query = `INSERT INTO recipes (title, description, creatorID, recipeData, status, classification, tags, comments) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
     const values = [
@@ -202,8 +199,11 @@ router.post('/create', verifyToken, async (req, res) => {
 router.post('/update', verifyToken, async (req, res) => {
   const record = req.body;
   logger.debug(`recipeRoutes:/update: record: ${JSONstringify(record)}`);
-  const decoded = jwt.verify(req.cookies.token, jwtSecretKey);
-  const editorID = decoded.userID;
+  // verifyToken already decoded the token (cookie or bearer) into req.user --
+  // re-verifying req.cookies.token directly crashed the whole process on any
+  // bearer-authenticated request, since jwt.verify(undefined, ...) throws
+  // synchronously outside any try/catch.
+  const editorID = req.user.userID;
 
   if (!record.recipeID) {
     return res.status(400).json({ error: { message: 'Recipe ID is required for update.' } });
@@ -281,8 +281,8 @@ router.post('/trash', verifyToken, async (req, res) => {
     return res.status(400).json({ error: { message: 'Recipe ID is required.' } });
   }
   try {
-    const decoded = jwt.verify(req.cookies.token, jwtSecretKey);
-    const userID = decoded.userID;
+    // req.user is already decoded (cookie or bearer) by verifyToken
+    const userID = req.user.userID;
 
     // Fetch current state before trashing — full snapshot for audit (record will be gone)
     const [currentRows] = await db.query(

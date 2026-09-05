@@ -13,7 +13,6 @@ const logger = require('config/logger').custom('AdminServer', 'info');
 const { database: db } = require('config');
 
 // authentication imports
-const jwt = require('jsonwebtoken');
 const verifyToken = require('../middleware/authMiddleware');
 const { sendTemplate, FROM } = require('../utils/mailer');
 const { logAudit } = require('../utils/audit');
@@ -33,7 +32,6 @@ const { spawn } = require('child_process');
 const { config } = require('config');
 
 // pull these out of the config object
-const jwtSecretKey = config.authToken.jwtSecretKey;
 const clipsDir = config.content.clipsDir;
 const tmpFileDir = config.content.tmpFileDir;
 const coverImageDir = config.content.coverImage.dir;
@@ -166,10 +164,6 @@ router.post('/info', verifyToken, async (req, res) => {
     return res.status(400).json({ error: { message: 'Audio ID is required.' } });
   }
   try {
-    // Verify token and get userID (optional for this route, depending on your security model)
-    const decoded = jwt.verify(req.cookies.token, jwtSecretKey);
-    // You might not need the userID here unless you're checking if the user has the right to view this audio's info
-
     // Construct query to fetch audio info from the database
     const query = `
     SELECT
@@ -326,8 +320,11 @@ router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
 router.post('/update', verifyToken, async (req, res) => {
   const record = req.body;
   logger.debug(`audioURoutes:/update record: ${JSON.stringify(record, null, 2)}`);
-  const decoded = jwt.verify(req.cookies.token, jwtSecretKey);
-  const editorID = decoded.userID;
+  // verifyToken already decoded the token (cookie or bearer) into req.user --
+  // re-verifying req.cookies.token directly crashed the whole process on any
+  // bearer-authenticated request, since jwt.verify(undefined, ...) throws
+  // synchronously outside any try/catch.
+  const editorID = req.user.userID;
 
   const { audioID, title, status, classification, tags, comments } = req.body;
 
@@ -448,9 +445,8 @@ router.post('/trash', verifyToken, async (req, res) => {
     return res.status(400).json({ error: { message: 'Audio ID is required.' } });
   }
   try {
-    // Verify the token to get user ID
-    const decoded = jwt.verify(req.cookies.token, jwtSecretKey);
-    const userID = decoded.userID;
+    // req.user is already decoded (cookie or bearer) by verifyToken
+    const userID = req.user.userID;
 
     // Fetch current state before trashing — full snapshot for audit (record will be gone)
     const [currentRows] = await db.query(

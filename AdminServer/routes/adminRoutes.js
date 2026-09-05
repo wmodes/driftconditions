@@ -10,17 +10,17 @@ const logger = require('config/logger').custom('AdminServer', 'info');
 const { database: db } = require('config');
 
 // authentication imports
-const jwt = require('jsonwebtoken');
 const verifyToken = require('../middleware/authMiddleware');
-
-// configuration import
-const { config } = require('config');
-const jwtSecretKey = config.authToken.jwtSecretKey;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function getRequestingUserInfo(req) {
-  return jwt.verify(req.cookies.token, jwtSecretKey);
+  // verifyToken (required on every route calling this) already decoded the
+  // token -- from a cookie or an Authorization: Bearer header -- into
+  // req.user. Re-verifying req.cookies.token directly here crashed the
+  // whole process on any bearer-authenticated request (mobile), since
+  // jwt.verify(undefined, ...) throws synchronously outside any try/catch.
+  return req.user;
 }
 
 function hasPermission(userInfo, permission) {

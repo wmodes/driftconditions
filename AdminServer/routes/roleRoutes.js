@@ -7,13 +7,7 @@ const logger = require('config/logger').custom('AdminServer', 'info');
 const { database: db } = require('config');
 
 // authentication imports
-const jwt = require('jsonwebtoken');
 const verifyToken = require('../middleware/authMiddleware');
-
-// configuration import
-const { config } = require('config');
-// pull these out of the config object
-const jwtSecretKey = config.authToken.jwtSecretKey;
 
 const { logAudit } = require('../utils/audit');
 
@@ -41,8 +35,11 @@ router.post('/list', verifyToken, async (req, res) => {
 });
 
 router.post('/update', verifyToken, async (req, res) => {
-  // Require roleList permission — only admins have this; role edits are high-privilege
-  const requestingUserInfo = jwt.verify(req.cookies.token, jwtSecretKey);
+  // Require roleList permission — only admins have this; role edits are high-privilege.
+  // req.user is already decoded (cookie or bearer) by verifyToken -- re-verifying
+  // req.cookies.token directly crashed the whole process on any bearer-authenticated
+  // request, since jwt.verify(undefined, ...) throws synchronously outside any try/catch.
+  const requestingUserInfo = req.user;
   if (!requestingUserInfo?.permissions?.includes('roleList')) {
     return res.status(403).json({ error: { message: 'Permission denied.' } });
   }
