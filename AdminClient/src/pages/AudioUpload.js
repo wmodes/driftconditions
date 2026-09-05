@@ -162,7 +162,7 @@ function AudioUpload() {
     setIsLoading(true);
     const adjustedRecord = {
       ...record,
-      classification: formatClassificationForDB(record.classification),
+      classification: formatClassificationForDB(record.classification, classificationOptions),
       copyrightCert: record.copyrightCert ? 1 : 0
     };
     dispatch(audioUpload({ audioRecord: adjustedRecord, file }))

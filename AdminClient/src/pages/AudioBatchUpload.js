@@ -174,7 +174,7 @@ function AudioBatchUpload() {
       const adjustedRecord = {
         ...record,
         title,
-        classification: formatClassificationForDB(record.classification),
+        classification: formatClassificationForDB(record.classification, classificationOptions),
         copyrightCert: record.copyrightCert ? 1 : 0
       };
 

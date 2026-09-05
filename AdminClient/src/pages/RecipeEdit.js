@@ -84,7 +84,7 @@ function RecipeEdit() {
       ...updatedRecord,
       recipeData: formatJSONStrForDB(updatedRecord.recipeData),
       tags: updatedRecord.tags,
-      classification: formatClassificationForDB(updatedRecord.classification),
+      classification: formatClassificationForDB(updatedRecord.classification, classificationOptions),
     };
     // console.log('handleSubmit: adjustedRecord:', adjustedRecord);
     dispatch(recipeUpdate({ recipeRecord: adjustedRecord }))
