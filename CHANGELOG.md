@@ -9,6 +9,13 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-09-05]
+
+### Fixed
+- **Audio upload — valid WAV (and other) files rejected as "Invalid file type"** — client-side validation checked the browser-reported MIME type (`file.type`) against a narrow allowlist containing only `'audio/wav'`. Browsers/OSes report WAV files inconsistently (`audio/wav`, `audio/x-wav`, `audio/wave`, sometimes `''`), so a perfectly valid WAV could fail depending on the contributor's system — confirmed via a contributor-submitted file that macOS reports as `audio/x-wav`. Switched to validating by file extension instead (`isAllowedFileType()` in `formatUtils.js`), which is deterministic regardless of OS/browser MIME sniffing. Applies to `AudioUpload.js` and `AudioBatchUpload.js` alike. Also added `accept={allowedFileTypes.join(',')}` to both file inputs so the OS file picker itself filters to the same allowed extensions.
+
+---
+
 ## [2026-08-01]
 
 ### Fixed

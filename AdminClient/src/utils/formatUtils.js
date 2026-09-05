@@ -167,6 +167,22 @@ export const formatClassificationForDB = (classificationObject) => {
 };
 
 /**
+ * Checks whether a file's extension is in the allowed list.
+ * Validates by extension rather than the browser-reported MIME type (file.type),
+ * which is inconsistent across OS/browser combinations — e.g. a WAV file may be
+ * reported as 'audio/wav', 'audio/x-wav', 'audio/wave', or even '' depending on
+ * the system, causing valid files to be rejected.
+ * @param {File} file - The file object.
+ * @param {string[]} allowedExtensions - Lowercase extensions including the dot, e.g. ['.wav', '.mp3'].
+ * @returns {boolean} - True if the file's extension is in the allowed list.
+ */
+export const isAllowedFileType = (file, allowedExtensions) => {
+  const match = file.name.match(/\.[^/.]+$/);
+  const ext = match ? match[0].toLowerCase() : '';
+  return allowedExtensions.includes(ext);
+};
+
+/**
  * Generates a human-readable title from an audio filename.
  * Preserves commas, dashes, slashes, apostrophes, periods, and parentheses.
  * Applies title case only if the original filename stem was all uppercase.

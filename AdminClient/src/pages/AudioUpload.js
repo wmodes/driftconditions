@@ -10,7 +10,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { audioUpload } from '../store/audioSlice';
 import { Waiting } from '../utils/appUtils';
 
-import { setClassificationFormOptions, formatClassificationForDB, generateTitle } from '../utils/formatUtils';
+import { setClassificationFormOptions, formatClassificationForDB, generateTitle, isAllowedFileType } from '../utils/formatUtils';
 import { ClassificationCheckboxes, TagInput } from '../utils/formUtils';
 
 // unsavedChanges: global state, listeners, and handlers
@@ -111,13 +111,13 @@ function AudioUpload() {
   const handleFileChange = (e) => {
     dispatch(setUnsavedChanges(true));
     const selectedFile = e.target.files[0];
-    if (selectedFile && allowedFileTypes.includes(selectedFile.type)) {
+    if (selectedFile && isAllowedFileType(selectedFile, allowedFileTypes)) {
       setFile(selectedFile);
       generateAndSetTitle(selectedFile);
       setError(''); // Clear any previous error message
     } else {
       e.target.value = ''; // Clears the file input
-      console.error("Invalid file type:", selectedFile?.type);
+      console.error("Invalid file type:", selectedFile?.name);
       setError('Invalid file type. Please select a valid audio file.');
     }
   };
@@ -134,12 +134,12 @@ function AudioUpload() {
       fileInputRef.current.files = dt.files;
     }
     dispatch(setUnsavedChanges(true));
-    if (allowedFileTypes.includes(droppedFile.type)) {
+    if (isAllowedFileType(droppedFile, allowedFileTypes)) {
       setFile(droppedFile);
       generateAndSetTitle(droppedFile);
       setError('');
     } else {
-      console.error("Invalid file type:", droppedFile.type);
+      console.error("Invalid file type:", droppedFile.name);
       setError('Invalid file type. Please select a valid audio file.');
     }
   };
@@ -230,7 +230,7 @@ function AudioUpload() {
                     onDragOver={(e) => e.preventDefault()}
                     onDrop={handleFileDrop}
                   >
-                    <input className="form-upload" type="file" id="file" ref={fileInputRef} onChange={handleFileChange} />
+                    <input className="form-upload" type="file" id="file" accept={allowedFileTypes.join(',')} ref={fileInputRef} onChange={handleFileChange} />
                   </div>
                   <p className="form-note">{fieldNotes.filetypes}</p>
 

@@ -126,7 +126,8 @@ const config = {
     wrap: true,
   },
   audio: {
-    allowedFileTypes: ['audio/mpeg', 'audio/wav', 'audio/ogg', 'audio/flac', 'audio/aiff', 'audio/x-m4a'],
+    // Validated by extension, not MIME type — see isAllowedFileType() in formatUtils.js
+    allowedFileTypes: ['.mp3', '.wav', '.ogg', '.flac', '.aiff', '.aif', '.m4a'],
     classification: [
       'Ambient', 
       'Atmospheric', 

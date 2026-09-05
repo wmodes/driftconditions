@@ -9,7 +9,7 @@ import { audioUpload } from '../store/audioSlice';
 import Waiting from '../utils/appUtils';
 import { zoomies } from 'ldrs';
 
-import { setClassificationFormOptions, formatClassificationForDB, generateTitle } from '../utils/formatUtils';
+import { setClassificationFormOptions, formatClassificationForDB, generateTitle, isAllowedFileType } from '../utils/formatUtils';
 import { ClassificationCheckboxes, TagInput } from '../utils/formUtils';
 
 // unsavedChanges: global state, listeners, and handlers
@@ -107,7 +107,7 @@ function AudioBatchUpload() {
   const handleFileDrop = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    const droppedFiles = Array.from(e.dataTransfer.files).filter(f => allowedFileTypes.includes(f.type));
+    const droppedFiles = Array.from(e.dataTransfer.files).filter(f => isAllowedFileType(f, allowedFileTypes));
     if (!droppedFiles.length) {
       setError('Invalid file type. Please select a valid audio file.');
       return;
@@ -337,7 +337,7 @@ function AudioBatchUpload() {
                     onDragOver={(e) => e.preventDefault()}
                     onDrop={handleFileDrop}
                   >
-                    <input className="form-upload" type="file" id="file" onChange={handleFileChange} multiple ref={fileInputRef} />
+                    <input className="form-upload" type="file" id="file" accept={allowedFileTypes.join(',')} onChange={handleFileChange} multiple ref={fileInputRef} />
                   </div>
                   <p className="form-note">{fieldNotes.filetypes}</p>
 
