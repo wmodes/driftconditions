@@ -54,7 +54,7 @@ function RecipeCreate() {
     const adjustedRecord = {
       ...updatedRecord,
       recipeData: formatJSONStrForDB(updatedRecord.recipeData),
-      classification: formatClassificationForDB(updatedRecord.classification),
+      classification: formatClassificationForDB(updatedRecord.classification, classificationOptions),
     };
     dispatch(recipeCreate({recipeRecord: adjustedRecord}))
       .unwrap()

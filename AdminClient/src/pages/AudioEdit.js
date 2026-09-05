@@ -156,7 +156,7 @@ function AudioEdit() {
     const adjustedRecord = {
       ...record,
       // tags: formatTagStrAsArray(record.tags),
-      classification: formatClassificationForDB(record.classification),
+      classification: formatClassificationForDB(record.classification, classificationOptions),
     };
     dispatch(audioUpdate({audioRecord: adjustedRecord}))
       .unwrap()

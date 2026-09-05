@@ -133,9 +133,16 @@ export function formatDuration(seconds) {
 
 /**
  * Takes a classification array and formats it for the form.
+ *
+ * Keys are lowercased so this object's keys always match the checkbox
+ * `name`/`value` attributes in ClassificationCheckboxes (which are lowercase
+ * per config.audio.classificationFields). Without this, a checkbox change
+ * writes a new lowercase key instead of updating the existing one, so
+ * unchecking a box never removes it from what's submitted. See
+ * formatClassificationForDB for where this maps back to canonical casing.
  * @param {Array<string>} options - The classification options.
  * @param {Array<string>|boolean} keysSetToTrue - The keys to set to true or a boolean value.
- * @returns {Object} - The formatted classification form options.
+ * @returns {Object} - The formatted classification form options, lowercase-keyed.
  */
 export const setClassificationFormOptions = (options, keysSetToTrue) => {
   // console.log(`formatUtils.setClassificationFormOptions options: ${JSON.stringify(options)}, responses: ${JSON.stringify(keysSetToTrue)})`)
@@ -144,7 +151,7 @@ export const setClassificationFormOptions = (options, keysSetToTrue) => {
     // If responses is a boolean, set all options to that boolean value.
     return options.reduce((acc, option) => ({
       ...acc,
-      [option]: keysSetToTrue
+      [option.toLowerCase()]: keysSetToTrue
     }), {});
   } else {
     // If responses is an array, set true for options included in the array, false otherwise.
@@ -152,18 +159,24 @@ export const setClassificationFormOptions = (options, keysSetToTrue) => {
 
     return options.reduce((acc, option) => ({
       ...acc,
-      [option]: normalizedKeysSetToTrue.includes(option.toLowerCase())
+      [option.toLowerCase()]: normalizedKeysSetToTrue.includes(option.toLowerCase())
     }), {});
   }
 };
 
 /**
  * Takes a classification object and formats it for the database.
- * @param {Object} classificationObject - The classification object.
- * @returns {Array<string>} - The formatted classification as an array.
+ * @param {Object} classificationObject - The lowercase-keyed classification object.
+ * @param {Array<string>} options - The canonical classification options (for casing lookup).
+ * @returns {Array<string>} - The formatted classification as an array, canonically cased.
  */
-export const formatClassificationForDB = (classificationObject) => {
-  return Object.keys(classificationObject).filter(key => classificationObject[key]);
+export const formatClassificationForDB = (classificationObject, options) => {
+  // classificationObject is lowercase-keyed (see setClassificationFormOptions);
+  // map back to the canonical casing from `options` for storage/display.
+  const canonicalByLower = new Map(options.map(option => [option.toLowerCase(), option]));
+  return Object.keys(classificationObject)
+    .filter(key => classificationObject[key])
+    .map(key => canonicalByLower.get(key) || key);
 };
 
 /**
