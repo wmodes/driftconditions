@@ -10,10 +10,27 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <!--
-      Title, description, and social/OG meta tags are set at runtime by
-      react-helmet-async in RootLayout.js, sourced from config/brand.js.
-      Do not add them here — they will be overwritten.
+      Static fallback title/description/OG/Twitter tags, matching what
+      react-helmet-async sets at runtime in RootLayout.js (sourced from
+      config/brand.js). This is a client-side-only React app with no SSR,
+      so social crawlers (Facebook, Twitter/X, Slack, etc.) never execute
+      the JS that would inject those tags -- they only ever see this raw
+      HTML shell. Real browsers still get react-helmet-async's version
+      once JS runs (harmless duplicate, same values); keep these in sync
+      with brand.js by hand if that copy changes.
     -->
+    <title>DriftConditions: The Uncanny Sound of Serendipity</title>
+    <meta name="description" content="An online audio station where mysterious soundscapes meet the chaos and serendipity of late-night radio tuning." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://driftconditions.org" />
+    <meta property="og:title" content="DriftConditions" />
+    <meta property="og:description" content="Where mysterious soundscapes meet the chaos and serendipity of late-night radio tuning." />
+    <meta property="og:image" content="https://driftconditions.org/img/night-drive-woodcut.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://driftconditions.org" />
+    <meta name="twitter:title" content="DriftConditions" />
+    <meta name="twitter:description" content="An online audio station where mysterious soundscapes meet the chaos and serendipity of late-night radio tuning." />
+    <meta name="twitter:image" content="https://driftconditions.org/img/night-drive-woodcut.png" />
     <!-- reCAPTCHA v3 is loaded dynamically by Signin and Signup components -->
   </head>
   <body>
