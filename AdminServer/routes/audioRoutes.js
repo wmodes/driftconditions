@@ -233,7 +233,11 @@ router.get('/sample/:year/:month/:filename', verifyToken, async (req, res) => {
 // Route to create an audio element including uploading the file
 //
 router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
-  record = req.body;
+  // Must be block-scoped (const), not an implicit global -- without it, this
+  // name is shared across every concurrent request to this route, so two
+  // uploads overlapping in-flight (this route awaits several times before
+  // using `record`) can clobber each other's data mid-request.
+  const record = req.body;
   logger.debug(`audioUpload Route: record: ${JSON.stringify(record, null, 2)}`);
   if (!req.file) {
     return res.status(400).json({ error: { message: 'No file was received. Please select a file and try again.' } });
