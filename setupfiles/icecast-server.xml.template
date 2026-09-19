@@ -1,5 +1,5 @@
 <!--
-Icecast configuration file for local development
+Icecast configuration file for the production server
 
 icecast-server.xml is gitignored (it holds real passwords) — this template
 is the tracked reference. To deploy:
