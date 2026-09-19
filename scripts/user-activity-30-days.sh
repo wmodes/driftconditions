@@ -10,7 +10,7 @@
 DAYS=30
 DB_NAME="driftconditions"
 DB_USER="mysql"
-DB_PASS="my\$ql"
+DB_PASS=$(grep '^DATABASE_PASSWORD=' "$(dirname "$0")/../AdminServer/.env" | cut -d '=' -f2- | tr -d "'\"")
 
 SINCE_DATE=$(date -d "-${DAYS} days" '+%Y-%m-%d %H:%M:%S' 2>/dev/null \
   || date -v-${DAYS}d '+%Y-%m-%d %H:%M:%S')  # macOS fallback
