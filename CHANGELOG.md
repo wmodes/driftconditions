@@ -9,10 +9,33 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-09-19]
+
+### Added
+- **OAuth buttons on the Signup page** — `Signup.js` now offers the same "Continue with Google/GitHub/Discord" buttons (styled as "Sign up with...") already present on `Signin.js`. Both pages hit the same backend endpoints and callback logic, which resolves by existing OAuth link, then by matching email, before creating a new account — so using an OAuth button on the signup page when the user already has an account just logs them in rather than creating a duplicate. Originated on river-voices (same codebase) and ported here.
+- **River-voices migration tooling committed** (`scripts/rv-migrate-*`, `scripts/xfer-rating-*`) — working scripts and bookkeeping data from the Aug 30 river-voices content migration and Claude-assisted library rating pass, previously left untracked on disk.
+
+### Fixed
+- **`user-activity-30-days.sh` had a hardcoded plaintext DB password** — replaced with reading `DATABASE_PASSWORD` from `AdminServer/.env`, matching how every other script in the project accesses credentials.
+
+---
+
+## [2026-09-06]
+
+### Fixed
+- **Social share cards (Facebook, Twitter/X, Slack, etc.) showed no title, description, or image** — `react-native-helmet`/`react-helmet-async` in `RootLayout.js` only sets `<title>`/OG/Twitter meta tags at runtime, after JS executes. This is a client-side-only CRA app with no SSR, so social crawlers never run that JS — they only ever see the raw `index.html` shell, which had none of these tags. Found via Facebook's Sharing Debugger while diagnosing the same issue on river-voices (same codebase). Added the same tag set as static values directly to `public/index.html`, sourced from `config/brand.js`; real browsers still get `react-helmet-async`'s version once JS runs (harmless duplicate, same values).
+- **Stale "local development" comment in `icecast-server.xml.template`** — this template (and the real, gitignored `icecast-server.xml` it documents) is for the production server; `icecast-local.xml` is the actual local-dev config. Copy-paste leftover, harmless but misleading. Found while diagnosing the Sept 6 stream outage (see below).
+
+---
+
 ## [2026-09-05]
+
+### Added
+- **Recipe manual — "More Than One Way to Be Specific" section** — surveys the library's own recipes (Waiting Room for the Recently Dead, Voicemails from Strangers, Fucked Up Radio Air Check, More and More and More) to show tag density is one technique for a recipe having character, not the technique — concentrated foreground/generic background, volume-staggered narrow tracks, and pure structural timing all produce distinct specificity without relying on rich tags everywhere. Also caveats the tags-abundance advice in "Tags Are a Folksonomy" as per-track-role, not a blanket rule.
 
 ### Fixed
 - **Audio upload — valid WAV (and other) files rejected as "Invalid file type"** — client-side validation checked the browser-reported MIME type (`file.type`) against a narrow allowlist containing only `'audio/wav'`. Browsers/OSes report WAV files inconsistently (`audio/wav`, `audio/x-wav`, `audio/wave`, sometimes `''`), so a perfectly valid WAV could fail depending on the contributor's system — confirmed via a contributor-submitted file that macOS reports as `audio/x-wav`. Switched to validating by file extension instead (`isAllowedFileType()` in `formatUtils.js`), which is deterministic regardless of OS/browser MIME sniffing. Applies to `AudioUpload.js` and `AudioBatchUpload.js` alike. Also added `accept={allowedFileTypes.join(',')}` to both file inputs so the OS file picker itself filters to the same allowed extensions.
+- **`audio.upload` used an implicitly-global `record` variable, corrupting data under concurrent uploads** — `record = req.body` (missing `const`) meant every request to this route shared the same binding. The route `await`s several times (checksum, duplicate check, file move, duration probe) before using `record` to build the insert, so a second upload arriving while an earlier one was still mid-flight could overwrite `record` out from under it — the earlier request would then insert using the *second* request's title/classification/tags/comments, corrupted mid-flight. Now `const record = req.body`, block-scoped per request like the sibling `audio.update` route already was.
 
 ---
 
