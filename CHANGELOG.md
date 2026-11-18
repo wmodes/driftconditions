@@ -9,6 +9,13 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-11-17]
+
+### Changed
+- **Recipe Construction guide rewritten** (`design/How to Construct a Drift Recipe.md`) — restructured into four parts (concept, how the engine reads a recipe, writing craft, reference) and corrected two inaccuracies in the reference tables: `length` is optional on a clip (omitting it just means any duration matches, it doesn't fail), and recipe-level `classification`/`tags` only affect which recipe plays next — they don't feed clip selection within a mix.
+
+---
+
 ## [2026-09-19]
 
 ### Added

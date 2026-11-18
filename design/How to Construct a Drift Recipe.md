@@ -1,85 +1,112 @@
 # How to Construct a Drift Recipe
 
-## A Recipe Is Not a List of Ingredients
+*What a recipe is, how the engine reads one, and how to write one that opens up possibilities.*
 
-Contributors write recipes — blueprints, in JSON5, that describe the
-structure of a mix. Each one specifies tracks, and each track specifies
-clips, and each clip carries a handful of attributes: what kind of sound it
-is, roughly what it should feel like, how long it runs. The system matches
-those attributes against the library and assembles something coherent. That
-description undersells, in one important way, what "matches... against"
-actually means — and the fastest way there is a metaphor most people
-already carry around without knowing it applies here.
+This doc runs from concept to code. Part I is the idea, Part II is how the engine reads a recipe, Part III is the craft of writing one, and Part IV is reference for when you're actually typing. If you're brainstorming recipes rather than building them, Parts I and III are the ones that matter.
 
-Every home cook already understands this kind of recipe, just not by that
-name. A recipe for roast chicken calls for "an acid," and one cook reaches
-for lemon, another for vinegar, a third for a splash of white wine — the
-bird comes out a little different every time without ceasing to be the same
-recipe, correctly followed. A recipe for chocolate chip cookies survives
-being made with butterscotch chips, or a chopped-up candy bar, or raisins
-in a pinch, because what it actually specifies was never "Nestlé
-semi-sweet morsels" — it's a role: something sweet, something with a bit
-of body, scattered through the dough. Buttermilk pancakes still work with a
-spoon of vinegar stirred into regular milk, because what the recipe needs
-from buttermilk was never the buttermilk itself, only the acid it brings
-to react with the baking soda. Whoever wrote the recipe down had one
-particular bottle in their kitchen. What they wrote down, if it's a good
-recipe, was never that specific.
+# Part I: What a Recipe Is
 
-A drift recipe works the same way, formalized. Writing one, you are not
-naming which exact audio file plays in a given slot — you're specifying a
-*role*: a classification (which aisle of the pantry you're allowed to shop
-from — produce, dairy, spice), a rough sense of what you'd like it to taste
-of (tags — the brand you happened to have in mind), and how much of it
-(length). The system shops that aisle and hands back something that fits
-the role, leaning toward your stated preference but never limited to it.
-Understood this way, "why didn't my recipe produce the mix I had in my
-head?" is a bit like asking why the roast chicken tasted different the day
-you reached for vinegar instead of a lemon. It isn't a malfunction. It's
-what a recipe — any recipe, digital or otherwise — actually is.
+## Where the Mixes Come From
 
-## The Circus You Didn't Build
+DriftConditions is a platform for generative audio streams. A station built on it isn't playing a playlist. Every mix is assembled on the fly from a library of contributed clips: field recordings, music, archival radio, oral histories, noise. Something has to decide which clips go together, how many layers play at once, how loud each one is, and what happens to them along the way. That something is a recipe.
 
-Say you want to build a recipe called "Rainy Day Circus." You have a specific
-sound in your head: calliope music heard through canvas, rain on a tent roof,
-a distant ringmaster, the murmur of a crowd. You write five tracks. You tag
-the music track with `circus`, `calliope`, `carnival`, `brass-band`. You tag
-the rain track with `rain`, `storm`, `downpour`, `thunder`. You tag the
-announcements track with `ringmaster`, `PA`, `intercom`. You listen to the
-first mix it generates, and it sounds like what you imagined. You listen to
-the tenth, and the "circus" music is a solo piano nocturne, the "rain" is
-cicadas at dusk, and the "ringmaster" is a burst of shortwave static.
+A recipe is a short text file describing the shape of a mix. The engine reads it, pulls clips from the library that fit, and builds the mix. Run the same recipe again and it builds a different mix.
+
+The idea of a recipe comes from radio. As a producer on a mixed narrative and music radio show, the developer learned certain recipes for successful storytelling: a music bed that ducks under a narrative element, crossfades between pieces of music, sound design to build atmosphere. They were patterns, filled in with the material that helped tell a story. DriftConditions formalizes these types of patterns and uses them to generate unique mixes.
+
+## Adaptable Recipes
+
+Every home cook already understands this kind of recipe. A recipe for roast chicken calls for "an acid," and one cook reaches for lemon, another for vinegar, a third for white wine. The bird comes out a little different every time, and it's still the same recipe.
+
+A drift recipe works the same way. You don't name which audio file plays in a slot. You describe a role, and the engine finds something in the library that fits it, leaning toward your preferences but never limited to them.
+
+## A Space of Possibilities
+
+Say you want to build a recipe called "Rainy Day Circus." You have a specific sound in your head: calliope music heard through canvas, rain on a tent roof, a distant ringmaster, the murmur of a crowd. You write it up: a music layer leaning toward circus and calliope, a rain layer leaning toward storms and thunder, an announcements layer leaning toward ringmasters and PA systems. You listen to the mix it generates, and it may sound something like what you imagined. Or the "circus" music is a distant solo piano nocturne, the "rain" is cicadas at dusk, and the "ringmaster" is faint shortwave static.
 
 Nothing broke. This is the recipe working exactly as designed.
 
-The mistake — an easy one, and worth naming before anything else in this
-manual — is treating a recipe as a description of the mix you have in mind.
-It isn't. A recipe describes a *space of possible mixes*, and the mix you
-imagined when you wrote it is one point somewhere inside that space, not a
-blueprint the system is trying to reproduce. Learning to write recipes well
-means learning to think in terms of the shape of that space, not the point
-you started from — to ask not "will this produce my circus?" but "what is
-the full range of things this could produce, and do I want all of them?"
+A recipe doesn't describe the mix you have in mind. It describes a *space of possible mixes*, and the one you imagined is just one point inside that space.
 
-This manual is an attempt to make that space visible: how a recipe is built,
-what its parts actually control, and — critically — which parts constrain
-the outcome and which parts merely lean on it.
+## An Evocative Idea
 
-## Anatomy of a Recipe
+There are probably lots of ways to write good recipes. The developer’s process goes something like this:
 
-A recipe is a JSON5 document (JSON, but forgiving — unquoted keys, trailing
-commas, comments) describing a **list of tracks**. Tracks are the parallel
-layers of a mix — they play simultaneously, mixed together at the end.
-Within a track is a **list of clips** — these play in sequence, one after
-another, concatenated into that track's timeline.
+1. Start with an evocative idea, *Waiting Room for the Recently Dead*, *Fucked Up Radio Air Check*, or *Just a Story*.
+2. Next, imagine the elements that make up that idea, the room tone, the music bed, the narrative, the effects. These will be the ingredients of the recipe.
+3. Build a structure around that idea: a layout of layers, lengths, and kinds of sound that holds up whatever clips land in it.
+4. Preview to see if it needs adjustment: Too loose? Too tight?
 
-Here is the smallest recipe that does something interesting:
+Every recipe is an experiment: you listen to what it makes, near-misses included, and adjust. Too loose, and the mixes come out generic. Too tight, and the misses fail ugly instead of landing somewhere interesting. The craft is finding the setting where the surprises still fit the idea.
+
+# Part II: How the Engine Reads a Recipe
+
+## Layers and Sequences
+
+Picture multitrack mixing software, with tracks and audio clips. A recipe is laid out the same way: a stack of **tracks** that all play at the same time, mixed together at the end. A music bed on one track, a voice on another, a layer of static on a third.
+
+Along each track's timeline sit **clip slots**, which play one after another in order. A track might be one long piece of music, or a voice followed by a pause followed by another voice, or a loop of the same pattern for as long as the mix runs.
+
+One track usually sets the length of the whole mix. The others fill or loop to match it.
+
+The simplest recipes are one track playing one clip. *Basic Music Recipe* plays a single piece of music start to finish. *Just Environmental or Field-Recording* plays one field recording, nothing added. One step up is *Environmental with Far Away Music* ("You are sitting in the grass hearing distant music across the field"). One track loops a field recording. A second plays vintage jazz at low volume, muffled, alternating with stretches of silence. Two tracks, and already a place.
+
+## The Fence and the Nudge
+
+Every clip slot carries up to four kinds of instructions: what kind of sound it is (`classification`), what you'd like it to be about or feel like (`tags`), how long it runs (`length`), and what happens to it sonically (`effects`). It's tempting to read the first three as a checklist the engine searches the library against. Only two of them work that way.
+
+**`classification` is a fence.** It's a hard filter against the library's own classification field: Ambient, Environmental, Instrumental, Archival, Effect, and so on (the full list is in Part IV). A slot asking for only `environmental` will *only* ever be filled from clips classified `environmental`. List more than one and the fence widens to include these classifications: `["archival", "spoken"]` draws from either.
+
+**`length` is a fence too.** It restricts the pool to clips in a named duration bucket: `tiny` (0-10s), `short` (10s-2m), `medium` (2-5m), and so on. List more than one bucket and the slot draws from any of them: `["tiny", "short"]` gets you anything up to two minutes.
+
+**`tags` are a nudge, not a fence.**
+
+Put plainly: **classification and length decide what's possible. Tags decide what's more likely.** So write classification and length to describe the outer boundary of what you'd be happy to hear, and write tags to describe your ideal.
+
+Tags still matter, since they shift the odds. But nothing guarantees a specific sound: the fences are broad categories and durations, not particular sounds. Loose is the point.
+
+## How a Clip Gets Chosen
+
+For each slot, the engine does three things.
+
+**It builds a pool** of every clip that passes the fences: the right classification and the right length.
+
+**It scores each clip in the pool** on four things:
+
+- how well its tags match the slot's tags
+- how well its tags match the clips already chosen for this mix
+- how recently it played (recent clips score lower)
+- how often it has played overall (frequent clips score lower)
+
+The first two keep the mix on theme. The last two keep it fresh.
+
+**It picks from the top of the list.** The engine takes the best-scoring clips (the top 10% of the pool, or 25 clips, whichever is more) and picks one of them at random. A clip that matches your tags perfectly isn't guaranteed to play. It's just more likely to make that shortlist.
+
+That's how a piano nocturne can end up in "Rainy Day Circus." Its music track only allows instrumental and vocal music, and leans toward circus tags. If the library has only a few circus-tagged clips, the rest of the shortlist fills with other instrumental music, and a piano nocturne can win. The same goes for the rain track, which takes any environmental sound, cicadas included, and the announcements track, which takes any archival speech, shortwave static included.
+
+## How Clips Are Described
+
+The fence and the nudge only work because of how contributors describe clips when they upload them.
+
+### Classification: As Few as Possible
+
+Classification is a controlled vocabulary of fifteen fixed options. Next to the classification field, the upload form reads: *"A broad category that describes the broad type of audio. Pro-tip: Use as few classifications as applicable."* A clip classified only `Environmental` sits squarely inside every environmental slot in every recipe. A clip classified `Environmental, Instrumental, Effect` sits inside three fences at once.
+
+### Tags: As Many as Possible
+
+Tags are the opposite, a folksonomy: free-form words contributors attach themselves, as many as they like, with no shared list. The upload form asks contributors to describe topic, theme, and texture, and adds: *"Pro-tip: Use as many simple tags as you can think of."* The more angles a clip is tagged from, the more ways it can be found later.
+
+That means when you write tags in a recipe, you're guessing at words other people chose. More on what to do about that in Part III.
+
+## A First Recipe, Read Aloud
+
+Here's the smallest recipe that does something interesting. Recipes are written in JSON5, which is JSON but forgiving: unquoted keys, trailing commas, and comments (anything after `//`) are all fine.
 
 ```json5
 {
   tracks: [
     {
-      // The music bed — this track's length sets the length of the mix
+      // The music bed. This track's length sets the length of the mix
       effects: ["trim"],
       volume: 60,
       clips: [
@@ -87,7 +114,7 @@ Here is the smallest recipe that does something interesting:
           classification: ["instrumental"],
           tags: ["ambient", "drone"],
           length: ["long"],
-          effects: ["norm(musicbed)"],
+          effects: ["norm"],
         }
       ]
     },
@@ -110,270 +137,223 @@ Here is the smallest recipe that does something interesting:
 }
 ```
 
-Two tracks, layered. The first plays one long instrumental clip and sets the
-overall mix duration (`trim`). The second alternates silence and short
-spoken fragments, looping for as long as the mix runs, sounding distant
-(`faraway`) as if drifting in from another room. Every field here — what a
-clip is allowed to be, how long it runs, what happens to it sonically —
-is a lever. The next section is about which of those levers actually
-narrow the outcome, and which ones just tilt the odds.
+The first track is one clip slot: something instrumental (fence), five to ten minutes long (fence), ideally ambient or drone (nudge), normalized volume (effect). `trim` makes this the track that sets the length of the whole mix, and `volume: 60` keeps it under the voice.
 
-## The Fence and the Nudge
+The second track is three slots in sequence: a stretch of silence, a short spoken fragment from archival or spoken-word clips (ideally something radio-ish or found), then more silence. `loop` repeats that pattern for as long as the mix runs. `faraway` muffles it, so the voice sounds like it's drifting in from another room.
 
-Every clip slot in a recipe carries up to four kinds of criteria:
-`classification`, `tags`, `length`, and `effects`. It is tempting to read
-all of them as filters — a checklist the system searches the library
-against. Only two of them are. The other two are something closer to a
-recommendation.
+Part III is about how to use each of these fields.
 
-**`classification` is a fence.** It's a hard filter against the audio
-library's `classification` field — Ambient, Environmental, Instrumental,
-Archival, Effect, and so on (the full list follows below). A
-clip slot asking for `classification: ["environmental"]` will *only* ever
-be filled from clips tagged `environmental` in the library. Nothing outside
-that fence gets in, no matter what else the slot says.
+# Part III: Writing One
 
-**`length` is a fence too.** It restricts the pool to clips falling in a
-named duration bucket — `tiny` (0–10s), `short` (10s–2m), `medium` (2–5m),
-`long` (5–10m), and so on. Ask for `["tiny", "short"]` and you'll get
-nothing longer than two minutes.
+## Starting From an Idea
 
-**`tags`, on the other hand, are a nudge — not a fence at all.** They never
-appear in the database query that builds the candidate pool. Once the pool
-is built (everything matching classification and length), every candidate
-in it is *scored*, and tag overlap is only two of four ingredients in that
-score: how well a clip's tags match this specific slot's tags, and how well
-they match the tags accumulated by everything already chosen elsewhere in
-the mix (so the mix stays thematically coherent as it goes). The other two
-ingredients have nothing to do with tags at all — how recently a clip was
-used, and how often it's been used overall, both nudging the system toward
-variety over repetition.
+Recipe descriptions show where they start. *Rainy Day Circus*: "Out of the cold and into the big top. Rain patters on the canvas overhead while a calliope and brass band wheeze through an old carnival tune inside." The tracks follow from that: music, rain, crowd, ringmaster, animals.
 
-And even after scoring, the system doesn't just take the top result. It
-sorts the whole pool by score, takes a slice off the top — the best-scoring
-tenth of the pool, or twenty-five clips, whichever is larger — and picks
-*uniformly at random* from that shortlist. A perfect tag match doesn't win;
-it just buys a much better chance of making the cut.
+*Waiting Room for the Recently Dead*: "Hold music loops softly overhead. A distant PA makes occasional announcements. Take a number. Your name will be called."
 
-Put plainly: **`classification` and `length` decide what's possible. `tags`
-only decide what's more likely, and even "more likely" is a coin flip among
-a couple dozen finalists.** A recipe author writing `tags: ["circus",
-"calliope", "carnival"]` on a slot classified `instrumental` hasn't asked
-for circus music. They've asked for *any instrumental track in the library*,
-with circus-flavored ones getting better odds of making the shortlist — odds
-that mean very little if the library's circus-tagged instrumentals are thin
-and everything else in the `instrumental` classification is just as eligible
-to fill the remaining shortlist seats.
+*Voicemails from Strangers*: "Messages left, never retrieved, with a drone underneath that barely holds it together."
 
-This is exactly what happened to "Rainy Day Circus." Its music track is
-fenced to `instrumental`/`vocalmusic` and nudged toward circus and brass-band
-tags — so on a night when few circus-tagged tracks are queued up, the
-shortlist fills out with whatever other instrumental music is on deck, and a
-solo piano nocturne gets picked. Its rain track is fenced to `environmental`
-and nudged toward storm tags — so cicadas or dawn birdsong, both squarely
-`environmental`, are always in the running. Its announcements track is
-fenced to `archival` and nudged toward PA/ringmaster tags — so any archival
-speech, including a burst of shortwave static tagged only loosely toward
-`voice-over`, can surface in its place. None of this is a bug in the recipe.
-It's what "loose constraints" means, mechanically, and it's the entire
-reason the same recipe never produces the same mix twice.
+The idea can come from anywhere. *Drift*, a Voices recipe, started as a shipmate's memory of drifting the Sacramento River without a motor, a slow plucking song playing: "River flowing, little claps from the grasses swaying on the shore, slow slow music." The recipe is that memory broken into three tracks. The river current sets the length. A patch of reeds rustles in and out of silence. Someone plays a little banjo or guitar, listens a while, plays some more.
 
-The practical upshot: **write `classification` and `length` to describe the
-outer boundary of what you'd be happy to hear. Write `tags` to describe your
-ideal, knowing they're a thumb on the scale, not a lock on the door.** If a
-particular sound is truly non-negotiable, the only lever with that kind of
-power is `classification` — and the library rarely has a classification
-narrow enough to guarantee any one specific timbre. Loose is the point.
+## Where to Spend Specificity
 
-## Classification, From the Contributor's Side
+Tags are one way to lean toward the idea, and synonyms widen the net. *Rainy Day Circus* doesn't tag its rain track just `rain`. It uses `rain, storm, precipitation, downpour, drizzle, thunder, thunderstorm`.
 
-This isn't invented for this manual — it's the same instruction shown to
-every contributor uploading a clip. Next to the classification field, the
-upload form reads: *"A broad category that describes the broad type of
-audio. Pro-tip: Use as few classifications as applicable."* Contributors
-are actively discouraged from stacking classifications onto a clip, and
-that discipline is what makes the fence mean something. A clip classified
-only `Environmental` sits squarely inside every `environmental` slot in
-every recipe in the library; a clip carelessly classified `Environmental,
-Instrumental, Effect` sits inside three fences at once, diluting all of
-them a little. Writing a recipe's `classification` filter means relying on
-that upstream discipline — the tightness of your fence is only as real as
-the restraint contributors showed when they classified the clip that ends
-up filling it.
+Dense tagging is one technique among several. Across the recipes written for the DriftConditions station, four show up.
 
-The full set, matched case-insensitively: `Ambient`, `Atmospheric`,
-`Environmental`, `Premixed`, `Soundscape`, `Archival`, `Spoken`,
-`Narrative`, `Instructional`, `VocalMusic`, `Instrumental`,
-`Experimental`, `Digital`, `Effect`, `Other`.
+**Tag density, spread evenly, all pointing the same direction.** *Waiting Room for the Recently Dead* builds its mood from three tracks: a muzak bed tagged `elevator-music, hold-music, muzak, easy-listening, lounge, smooth`, a drone tagged seventeen ways (from `drone` and `hum` to `shortwave`, `tv-static`, and `ham-radio`), and PA announcements tagged `announcement, public-address, intercom, official, broadcast`. No single tag commits the mix to anything in particular. Together, from three angles, they all point the same way.
 
-## Tags Are a Folksonomy
+**Concentrated tagging on the track carrying the theme, and almost none on the tracks around it.** *Voicemails from Strangers* puts twenty tags (`confession, testimonial, diary, oral-history, one-sided, soliloquy...`) on the voicemail track alone. The drone bed underneath carries exactly two: `drone, ambient`. A comment in the recipe explains why: *"barely-there drone - presence, not content."*
 
-Classification is a controlled vocabulary — fifteen options, fixed by the
-system's designers, meant to be applied sparingly. Tags are the opposite:
-a folksonomy, free-form words contributors attach themselves, as many as
-they like, with no shared list to draw from. The upload form's guidance
-for the tags field is correspondingly different: *"Describe the topic,
-theme, or texture of the audio, such as 'thunderstorm', 'lo fi',
-'haunting', 'E#m key', or '100 bpm'. Use tags to highlight specific
-elements or moods in your audio. Separate tags with commas. Pro-tip: Use
-as many simple tags as you can think of."* Where classification asks for
-restraint, tags ask for abundance — the more angles a contributor tags a
-clip from, the more scoring hooks it has to be found by later.
+**Lean, precise tags, carried by volume rather than vocabulary.** *Fucked Up Radio Air Check* ("You're listening to KILL Satan's radio station") tags thinly everywhere, one to four words per slot, but stacks four narrow, single-purpose tracks at four distinct volumes: a foreground archival aircheck at 80, run through a telephone filter, a wavering layer of static at 50, a fixed layer of static at 20, a drone at 20. The specificity is in the architecture: one clear voice, two graduated layers of noise beneath it, a bed almost below the threshold of hearing.
 
-The same advice holds, almost word for word, when you're the one writing
-a recipe rather than uploading a clip. A slot's `tags` array is competing
-for a clip's attention against every synonym, misspelling, and adjacent
-mood someone might have reached for instead of the word that came to you
-first. "Rainy Day Circus" tagging its rain track with just `["rain"]`
-would narrow its own odds for no reason; tagging it `["rain", "storm",
-"precipitation", "downpour", "drizzle", "thunder", "thunderstorm"]` —
-which is what the actual recipe does — casts a wide net across however
-differently contributors happened to describe their own storm recordings.
-This doesn't turn a nudge into a fence; nothing does. But it's the one
-lever you actually have for narrowing the gap between the mix in your
-head and the shortlist the system draws from — use as many tags and
-synonyms as you can think of, the same pro-tip given to every contributor,
-for the same reason.
+**Structure and timing alone, with next to no tags at all.** *More and More and More* has exactly one tagged slot across five tracks: a piano drone underneath. Four spoken tracks carry no tags whatsoever. Each spoken track starts after a different amount of silence, so the voices enter one at a time, "piling up until the mix is dense with overlapping talk."
 
-One caveat: this is advice for whichever track is carrying your recipe's
-theme, not a rule to apply evenly to every track in it. A background bed
-often works better nearly untagged — see "More Than One Way to Be
-Specific," below, for why a track can do its job precisely by staying
-generic.
+The same thinking carries into Voices. *Anchored for the Night* asks for "crickets/frogs as a steady, thinly-tagged bed," with a dock creak, a distant train, and VHF chatter as rare accents, "not a themed layer competing for identity."
 
 ## Silence as Material
 
-A clip slot can also ask for `classification: "silence"`, which generates
-actual silence of a given length rather than pulling anything from the
-library. This isn't a fallback for when nothing else fits — it's a
-compositional tool in its own right. Interspersing silence between spoken
-or musical clips (as in the minimal example above, and in every track of
-"Rainy Day Circus" except the music bed itself) is what keeps a track from
-feeling like a wall of sound: pauses, breathing room, the sense that
-something is arriving from a distance rather than simply always being
-there. A track that's all clips and no silence tends to feel dense and
-mechanical; a track built from short fragments separated by generous
-silence tends to feel like something overheard.
+A clip slot can ask for `classification: "silence"`, which generates silence of a given length instead of pulling from the library. It's a compositional tool, not a fallback.
 
-## What Effects Actually Do
+Silence can set a rhythm. *Staticy Static* and *Ambient with Effects* alternate silence with short bursts, so things surface out of the quiet and sink back down. It can also make an event rare. In *Anchored for the Night*, the train track is one long stretch of silence followed by one distant train, with no loop. The comment in the recipe: "a distant train - once, maybe, then gone."
 
-Effects are strings, optionally carrying parameters in parentheses —
-`"trim"`, `"norm(voice)"`, `"wave(slow, lifted)"`. They can be attached to
-a whole track (applied to that track's full timeline) or to an individual
-clip (applied only while that clip plays), and a slot can carry more than
-one. One detail worth knowing before writing any: **effects are not applied
-in the order you list them.** They're reordered internally into a fixed
-priority — structural effects first (`trim`, `loop`, `fadeout`), then
-loudness normalization, then volume, then distance/coloration effects
-(`backward`, `faraway`, `telephone`), then movement effects (`wave`,
-`duck`) last. Writing `["wave(slow)", "norm(voice)"]` and `["norm(voice)",
-"wave(slow)"]` produce the identical filter chain. This matters because
-several of these effects only make sense applied in that order (normalizing
-loudness before shaping it with a slow volume wave, for instance) — the
-system enforces the sensible order for you, so don't fight it by trying to
-sequence effects yourself.
+## Shaping With Effects
 
-| Effect | Scope | What it does |
-|---|---|---|
-| `trim` | track | Marks this track as the one whose length sets the whole mix's length. (Alternatives: `first`, `shortest`, `longest` — pick the mix length from a different rule.) |
-| `norm(preset)` | either | Loudness-normalizes the audio. Presets: `voice`/`spoken` and `music` (foreground level), `bed`/`musicbed` (background level, quieter). No preset falls back to the foreground level. |
-| `volume(n)` | either | Sets gain as a percentage, `0`–`100`+. (Also settable as a plain `volume:` field on a track or clip, which is equivalent.) |
-| `loop` | either | Loops the clip or track indefinitely (or `loop(n)` for a fixed number of repeats) to fill whatever the mix's total duration turns out to be. |
-| `fadeout(seconds)` | either | Fades out over the given number of seconds (default 3) at the end. |
-| `backward` / `reverse` | either | Reverses the audio. |
-| `faraway` / `distant` | either | Muffles the audio as if heard from another room — a lowpass filter plus a touch of reverb. Add the modifier `vol` (`faraway(vol)`) to also drop the level. |
-| `telephone` / `phone` | either | Band-limits and lightly distorts the audio to sound like it's coming through an old telephone line. |
-| `wave(preset, modifiers...)` | either | Modulates volume over time using a slow, organic (coherent-noise) curve rather than a fixed level — the effect responsible for a track breathing in and out rather than sitting static. Presets: `fast`, `default`, `slow`, `slower` (period, fast to glacial). Modifiers: `counter`/`inverse` (invert the curve — useful for two tracks that should never peak together), `soft` (gentler swing), `lifted` (biased toward louder), `bridge`/`transition` (peaks only where a normal and inverted wave would cross — useful for a track that should swell briefly between two others). |
-| `duck(ref)` | track | Automatically quiets this track whenever the referenced track (by number or `label:`) has signal — the classic "music ducks under the announcer" behavior. |
+Effects change where a sound seems to be, how it moves, and how it sits against everything else. Think of them in four families.
 
-Two effects — `detune` and `crossfade` — appear in the recipe grammar but
-are not currently implemented; recipes referencing them will not behave as
-their names suggest. Don't rely on them yet.
+**Structure** decides how a track fills time: which track sets the mix length (`trim`), whether a track or clip repeats (`loop`), how it ends (`fadeout`).
 
-## Repetition
+**Level** sets the hierarchy: normalizing loudness so a voice sits forward or a bed sits back (`norm(voice)`, `norm(bed)`), and plain volume (`norm`).
 
-A clip slot's effects can include `repeat(n)` (or `clone(n)`) to reuse the
-*n*th clip already selected earlier in the same track, rather than drawing
-a fresh one from the library. This is how a recipe creates a callback —
-the same voice returning later in a track, the same musical phrase
-recurring — without hardcoding a specific clip ID.
+**Distance and color** put a sound somewhere: in the next room (`faraway`), down an old phone line (`telephone`), played backward (`backward`). *Voicemails from Strangers* runs every message through `telephone`. *Something Reversed + Drone* ("Paul is dead.") plays music or speech backward over an untouched drone.
 
-## More Than One Way to Be Specific
+**Movement** keeps layers from sitting static: `wave` lets a track swell and recede on a slow, organic curve, and an inverted wave on a second track means the two trade places instead of peaking together. *Interrupted Sermon* is built on exactly that. The sermon rides `wave(fast)`, the newscast rides `wave(fast, counter)`, so the two swap back and forth like a dial drifting between stations, and a static track on `wave(fast, bridge)` spikes right at the handoff. `duck` drops one track whenever another has signal, the classic music-under-the-announcer move. *Short Narrative with music bed* uses it so the bed gets out of the way whenever the story speaks.
 
-Everything so far might leave the impression that a recipe's character
-comes from one place: how richly its tags are written. Look across enough
-recipes already in the library and that turns out to be one technique
-among several, not the technique. Four are visible, each producing a
-distinct kind of specificity, and a strong recipe usually leans on more
-than one at once.
+The full list, with parameters, is in Part IV.
 
-**Tag density, spread evenly, all pointing the same direction.** The
-most legible version of this is a waiting-room mood built from three
-tracks — a muzak bed tagged `elevator-music, hold-music, muzak,
-easy-listening, lounge, smooth`, a drone tagged `hum, shortwave,
-tv-static, ham-radio, interference, static`, and PA announcements tagged
-`public-address, intercom, official, broadcast`. No single tag commits
-the mix to anything in particular. Together, from three simultaneous
-angles, they can't land anywhere else.
+## Callbacks
 
-**Concentrated tagging on the track carrying the theme, and almost none
-on the tracks around it.** A recipe built from anonymous telephone
-messages puts nineteen tags — `confession, testimonial, diary,
-oral-history, one-sided, soliloquy...` — on the voicemail track alone.
-The drone bed underneath it carries exactly two: `drone, ambient`. A
-comment in the recipe explains why: *"barely-there drone — presence, not
-content."* The background isn't under-tagged by accident. Its job is to
-not compete for identity, only to hold space under whatever the
-foreground is doing — and a track whose job is that can do it more
-reliably staying generic than trying to also mean something.
+A slot can use `repeat(n)` (or `clone(n)`) to reuse the *n*th clip already chosen earlier in the same track instead of drawing a fresh one. This is how a recipe creates a callback: the same voice returning later, the same musical phrase recurring, without naming a specific clip.
 
-**Lean, precise tags, carried by volume rather than vocabulary.** A
-different recipe tags thinly everywhere — two to four words per slot, no
-padding, nothing redundant — but stacks four narrow, single-purpose
-tracks at four distinct volumes: a foreground archival aircheck at 80,
-a wavering layer of static at 50, a fixed layer of static at 20, a drone
-at 20. None of those tracks is trying to say much on its own. The
-specificity is in the architecture — one clear voice, two graduated
-layers of noise beneath it, a bed almost below the threshold of
-hearing — not in how any one track is tagged.
+*Drift* uses it so the reeds are, in the recipe's words, "the same patch of shoreline throughout rather than a different sound each pass." *Anchored for the Night* does the same with its dock creak: one dock, one sound, all night.
 
-**Structure and timing alone, with next to no tags at all.** The most
-extreme case in the library has exactly one tagged slot across five
-tracks. Four spoken tracks carry no tags whatsoever; what identifies the
-recipe is that each one is preceded by a different amount of silence —
-one beat, two, three, four — so the voices don't start together, they
-accumulate, one at a time, over the course of the mix. The recipe's name
-describes that accumulation directly. Nothing about *what* is said
-matters to the effect; only *when* each voice arrives does.
+## Listen, Then Adjust
 
-None of these four techniques is more correct than the others, and
-nothing stops a recipe from combining them — a concentrated foreground
-track, tagged richly, sitting over a deliberately bare bed, entering on a
-staggered delay. What they share is the same underlying move: specificity
-comes from a *choice about where to spend it*, not from applying more of
-it everywhere. A recipe that tags every track densely is not more
-specific than one of these — it's usually just noisier, every track
-competing to mean something at once, with none of them given room to.
+On the recipe edit page, the **Preview** button plays a sample draw of your recipe.
 
-## Writing for the Space, Not the Point
+Sometimes a miss is the find. *Drone with Things Said In the Background* exists because a misconfiguration in *Fucked Up Radio Air Check* "made something cool I wanted to replicate." When a run surprises you in a way you like, work out what produced it and write that down as its own recipe.
 
-None of this means specificity is wasted effort — tags matter, they're
-real weight on real odds, and a recipe with careful, well-chosen tags will
-converge on its intended feeling far more often than one without. But it
-means the right question while drafting a recipe is never "does this
-produce the mix I'm hearing in my head?" It's "if I ran this a hundred
-times, would I be glad to hear all hundred results?" A recipe with a wide
-`classification` fence and thin, generic tags produces something closer to
-chaos. A recipe with a narrow fence and rich tags produces something close
-to control, but sacrifices exactly the quality — discovery, surprise, the
-sense of a mix arriving rather than being assembled — that makes this
-system worth building in the first place. The craft of recipe-writing is
-finding the setting between those two poles where the surprises still
-belong to the piece.
+# Part IV: Reference
 
-That's what happened with "Rainy Day Circus," and it's not a cautionary
-tale. The recipe was never really about a circus. It was about rain heard
-from somewhere warm and enclosed, with distant music and distant voices
-drifting through the walls — and every one of its outcomes, calliope or
-piano, storm or cicadas, ringmaster or static, is a true answer to that
-question, even the ones its author never pictured.
+## Recipe Anatomy
+
+A recipe is a JSON5 object with a `tracks` array. Each track has a `clips` array. Tracks play simultaneously; clips within a track play in sequence.
+
+Each recipe is stored with some metadata alongside the JSON5: a title, a description, and recipe-level classification and tags. The description usually sketches the recipe's idea. Recipe-level classification and tags are used to choose which recipe plays next. Along with how recently and how often each recipe has played, they score the recipes so the station stays varied.
+
+## Track Fields
+
+
+| Field     | Required | What it does                                                            |
+| --------- | -------- | ----------------------------------------------------------------------- |
+| `clips`   | yes      | Array of clip slots, played in order                                    |
+| `track`   | no       | The track's number, starting at 0. Another way for`duck` to refer to it |
+| `label`   | no       | A name for the track, so other tracks can refer to it (used by`duck`)   |
+| `tags`    | no       | Added to the pool of tags used to pick clips within the track           |
+| `volume`  | no       | Gain as a percentage, 0-100+ (default 100)                              |
+| `effects` | no       | Array of effects applied to the whole track                             |
+
+## Clip Fields
+
+
+| Field            | Required | What it does                                          |
+| ---------------- | -------- | ----------------------------------------------------- |
+| `classification` | yes      | Fence. One or more classifications, or`"silence"`     |
+| `length`         | no       | Fence. One or more length buckets                     |
+| `tags`           | no       | Nudge. Words that raise a clip's odds of being picked |
+| `volume`         | no       | Gain as a percentage, 0-100+ (default 100)            |
+| `effects`        | no       | Array of effects applied only while this clip plays   |
+
+## Classifications
+
+Matched case-insensitively: `Ambient`, `Atmospheric`, `Environmental`, `Premixed`, `Soundscape`, `Archival`, `Spoken`, `Narrative`, `Instructional`, `VocalMusic`, `Instrumental`, `Experimental`, `Digital`, `Effect`, `Other`.
+
+Plus `silence`, which is recipe-only: it generates silence instead of pulling from the library.
+
+## Length Buckets
+
+
+| Bucket   | Duration |
+| -------- | -------- |
+| `tiny`   | 0-10s    |
+| `short`  | 10s-2m   |
+| `medium` | 2-5m     |
+| `long`   | 5-10m    |
+| `huge`   | 10m-2h   |
+
+## Effects
+
+Effects are strings, optionally with parameters in parentheses: `"trim"`, `"norm(voice)"`, `"wave(slow, lifted)"`. They can go on a track (applied to its whole timeline) or a clip (applied only while it plays), and a slot can carry more than one.
+
+**Effects are not applied in the order you list them.** They're reordered into a fixed priority: structural effects first (`trim`, `loop`, `fadeout`), then loudness normalization, then volume, then distance and color (`backward`, `faraway`, `telephone`), then movement (`wave`, `duck`) last. `["wave(slow)", "norm(voice)"]` and `["norm(voice)", "wave(slow)"]` produce the identical result. Several of these only make sense in that order (normalize loudness before shaping it with a wave), so the engine enforces it for you.
+
+
+| Effect                       | Scope  | What it does                                                                                                                                                                                                                                                                                                                                                                    |
+| ---------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `trim`                       | track  | Makes this the track whose length sets the whole mix's length. Alternatives:`first`, `shortest`, `longest` (default)                                                                                                                                                                                                                                                            |
+| `norm(preset)`               | either | Loudness-normalizes. Presets:`voice`/`spoken` and `music` (foreground), `bed`/`musicbed` (background, quieter). No preset means foreground                                                                                                                                                                                                                                      |
+| `volume(n)`                  | either | Gain as a percentage. Same as the plain`volume` field                                                                                                                                                                                                                                                                                                                           |
+| `loop`                       | either | Loops to fill the mix's duration, or`loop(n)` for a fixed number of repeats                                                                                                                                                                                                                                                                                                     |
+| `fadeout(seconds)`           | either | Fades out over the given seconds (default 3) at the end                                                                                                                                                                                                                                                                                                                         |
+| `backward` / `reverse`       | either | Reverses the audio                                                                                                                                                                                                                                                                                                                                                              |
+| `faraway` / `distant`        | either | Lowpass plus a touch of reverb, as if from another room.`faraway(vol)` also drops the level                                                                                                                                                                                                                                                                                     |
+| `telephone` / `phone`        | either | Band-limits and lightly distorts, like an old phone line                                                                                                                                                                                                                                                                                                                        |
+| `wave(preset, modifiers...)` | either | Modulates volume on a slow, organic curve. Presets:`fast`, `default`, `slow`, `slower`. Modifiers: `counter`/`inverse` (inverted curve, for two tracks that should never peak together), `soft` (gentler swing), `lifted` (biased toward louder), `bridge`/`transition` (peaks only where a normal and inverted wave cross, for a track that swells briefly between two others) |
+| `duck(ref)`                  | track  | Quiets this track whenever the referenced track (by number or`label`) has signal                                                                                                                                                                                                                                                                                                |
+| `repeat(n)` / `clone(n)`     | clip   | Reuses the*n*th clip already chosen in this track                                                                                                                                                                                                                                                                                                                               |
+
+## A Complete Recipe: Anchored for the Night
+
+A Voices recipe, start to finish. Four tracks: a night bed that sets the length, a dock creak that repeats the same recording, a train that comes once if at all, and two bursts of radio chatter. Almost everything here is silence and volume.
+
+```json5
+{
+  tracks: [
+    {
+      // crickets and frogs - sets the mix length; no loop, no modulation, just settled presence
+      label: 'night',
+      volume: 100,
+      effects: ['trim'],
+      clips: [
+        {
+          classification: 'environmental',
+          tags: ['crickets', 'frogs', 'night', 'cicadas'],
+          length: ['long', 'huge'],
+          effects: ['norm'],
+        }
+      ]
+    },
+    {
+      // dock creak - tied to one structure, so it repeats the same recording all night
+      label: 'dock',
+      volume: 40,
+      effects: ['loop'],
+      clips: [
+        { classification: 'silence', length: ['medium', 'long'] },
+        {
+          classification: 'effect',
+          tags: ['dock', 'creak', 'wood', 'waves', 'wake', 'boats'],
+          length: ['tiny', 'short'],
+          effects: ['norm'],
+        },
+        { classification: 'silence', length: ['medium', 'long'] },
+        {
+          // same creak as above, not a fresh draw
+          classification: 'effect',
+          effects: ['repeat(2)'],
+        },
+        { classification: 'silence', length: ['medium', 'long'] },
+      ]
+    },
+    {
+      // a distant train - once, maybe, then gone; no loop, doesn't need to fill the mix
+      label: 'train',
+      volume: 35,
+      clips: [
+        { classification: 'silence', length: ['medium', 'long', 'huge'] },
+        {
+          classification: ['environmental', 'atmospheric'],
+          tags: ['train', 'distant', 'traffic'],
+          length: ['short', 'medium'],
+          effects: ['norm', 'faraway'],
+        }
+      ]
+    },
+    {
+      // VHF chatter - a couple of bursts, radio-filtered, then quiet for good
+      label: 'radio',
+      volume: 30,
+      clips: [
+        { classification: 'silence', length: ['medium', 'long'] },
+        {
+          classification: ['archival', 'spoken', 'effect'],
+          tags: ['VHF', 'marine-radio', 'radio', 'chatter'],
+          length: ['tiny', 'short'],
+          effects: ['norm(voice)', 'telephone'],
+        },
+        { classification: 'silence', length: ['medium', 'long'] },
+        {
+          classification: ['archival', 'spoken', 'effect'],
+          tags: ['VHF', 'marine-radio', 'radio', 'chatter'],
+          length: ['tiny', 'short'],
+          effects: ['norm(voice)', 'telephone'],
+        }
+      ]
+    },
+  ]
+}
+```
+
+## Not Yet Implemented
+
+`crossfade` and `detune` appear in the recipe grammar but don't do anything yet. Recipes that use them won't behave as their names suggest.
